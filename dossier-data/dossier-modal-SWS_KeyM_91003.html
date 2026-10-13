@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_91003" class="dossier-modal dossier-workbench" data-dossier-sha="3fa410673f735465" aria-labelledby="dossier-modal-SWS_KeyM_91003-title">
+<dialog id="dossier-modal-SWS_KeyM_91003" class="dossier-modal dossier-workbench" data-dossier-sha="4fbf6fd54fe7c1ab" aria-labelledby="dossier-modal-SWS_KeyM_91003-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_91003-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_91003)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,402 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,857 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_CertificateStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,31 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="dc730981e3e7bb58404ea1cd5c67ce0c60da3c4a83882fd32a07c0278e64c4b3" data-trace-output="3fa410673f735465e8271755c9f81d375c248bb52c407bdf043d41c78cc04c18" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="5b48c6da481bd38c03269d22a1838229b2aef2f6675c68c1a8450046d7ca2d33" data-trace-output="4fbf6fd54fe7c1ab29eaf708d1f506952c27e6ed5384a0668a9212d1b2b711be" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liefert den aktuellen Verifikations- und Verarbeitungsstatus eines Zertifikats einschließlich detaillierter Fehlerursachen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;The type &lt;code&gt;KeyM_CertificateStatusType&lt;/code&gt; is defined as an enumeration and represents the result of certificate checks as well as the current processing status of a certificate in the Key Manager (&lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;). The type is available via the header &lt;code&gt;Rte_KeyM_Type.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Status Values and Error Interpretation&lt;/h4&gt;
-  &lt;p&gt;The enumeration values reflect both regular processing states and specific verification errors (&lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Aufzählungstyp &lt;code&gt;KeyM_CertificateStatusType&lt;/code&gt; repräsentiert das Ergebnis von Zertifikatsprüfungen und bildet den aktuellen Verifikations- und Verarbeitungsstatus eines Zertifikats im Key Manager ab &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;. Der Typ wird über den Header &lt;code&gt;Rte_KeyM_Type.h&lt;/code&gt; bereitgestellt und dient Aufrufern dazu, den Zustand oder spezifische Fehlerursachen einer Zertifikatsverifikation differenziert auszuwerten &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/p&gt;
+  
+  &lt;p&gt;Die Enumerationswerte decken sowohl reguläre Zwischen- und Erfolgszustände als auch präzise Fehlerbilder ab &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_VALID&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Certificate successfully parsed and verified.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_INVALID&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): Certificate invalid (unspecified error).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_NOT_PARSED&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;): Not parsed so far.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_PARSED_NOT_VALIDATED&lt;/code&gt; (&lt;code&gt;0x03&lt;/code&gt;): Certificate parsed, but not yet validated.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_NOT_AVAILABLE&lt;/code&gt; (&lt;code&gt;0x04&lt;/code&gt;): Certificate not set.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_VALIDITY_PERIOD_FAIL&lt;/code&gt; (&lt;code&gt;0x05&lt;/code&gt;): Validity period invalid.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_SIGNATURE_FAIL&lt;/code&gt; (&lt;code&gt;0x06&lt;/code&gt;): Signature check failed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_CHAIN_OF_TRUST&lt;/code&gt; (&lt;code&gt;0x07&lt;/code&gt;): Chain of trust invalid.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_TYPE&lt;/code&gt; (&lt;code&gt;0x08&lt;/code&gt;): Invalid certificate type.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_FORMAT&lt;/code&gt; (&lt;code&gt;0x09&lt;/code&gt;): Invalid format.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_CONTENT&lt;/code&gt; (&lt;code&gt;0x0A&lt;/code&gt;): Invalid content.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERTIFICATE_REVOKED&lt;/code&gt; (&lt;code&gt;0x0B&lt;/code&gt;): Certificate check failed due to invalid scope or revocation.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_VALID&lt;/code&gt; (0x00): Das Zertifikat wurde erfolgreich geparst und verifiziert &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_INVALID&lt;/code&gt; (0x01): Das Zertifikat ist ungültig aufgrund eines nicht näher spezifizierten Fehlers &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_NOT_PARSED&lt;/code&gt; (0x02): Das Zertifikat wurde bislang noch nicht geparst &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_PARSED_NOT_VALIDATED&lt;/code&gt; (0x03): Das Zertifikat wurde geparst, aber noch nicht validiert &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_CERTIFICATE_NOT_AVAILABLE&lt;/code&gt; (0x04): Es ist kein Zertifikat gesetzt &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Fehlerspezifische Prüfergebnisse: Fehlgeschlagene Gültigkeitsdauer (&lt;code&gt;KEYM_E_CERTIFICATE_VALIDITY_PERIOD_FAIL&lt;/code&gt;, 0x05), fehlerhafte Signatur (&lt;code&gt;KEYM_E_CERTIFICATE_SIGNATURE_FAIL&lt;/code&gt;, 0x06), ungültige Vertrauenskette (&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_CHAIN_OF_TRUST&lt;/code&gt;, 0x07), ungültiger Typ (&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_TYPE&lt;/code&gt;, 0x08), fehlerhaftes Format (&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_FORMAT&lt;/code&gt;, 0x09), ungültiger Inhalt (&lt;code&gt;KEYM_E_CERTIFICATE_INVALID_CONTENT&lt;/code&gt;, 0x0A) sowie Widerruf bzw. ungültiger Gültigkeitsbereich (&lt;code&gt;KEYM_E_CERTIFICATE_REVOKED&lt;/code&gt;, 0x0B) &lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;p&gt;Callers typically evaluate the status to determine whether a certificate has already been checked (&lt;code&gt;0x02&lt;/code&gt;, &lt;code&gt;0x03&lt;/code&gt;), is ready for use (&lt;code&gt;0x00&lt;/code&gt;), or due to which specific cause the verification was rejected (&lt;a class="spec-record-ref" data-req="SWS_KeyM_91003" href="../../spec/record.html?id=SWS_KeyM_91003"&gt;[SWS_KeyM_91003]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification for R20-11.&lt;/p&gt;
+  &lt;p&gt;Aufrufer sollten den Status vor der Verwendung kryptografischer Schlüssel prüfen; Operationen dürfen typischerweise nur dann auf einem Zertifikat aufsetzen, wenn der Status explizit &lt;code&gt;KEYM_CERTIFICATE_VALID&lt;/code&gt; signalisiert. Da der Typ über &lt;code&gt;Rte_KeyM_Type.h&lt;/code&gt; deklariert wird, dürfte er vorrangig in standardisierten Service-Schnittstellen und Ports zur Interaktion zwischen KeyM und Applikations-SWCs eingesetzt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Typ dürfte vorrangig an RTE-Schnittstellen zur Kommunikation zwischen KeyM und SWCs eingesetzt werden – Begründung: Header-Ursprung Rte_KeyM_Type.h deutet auf RTE-Typdefinition hin. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Er ersetzt nicht das Studium der offiziellen AUTOSAR-Spezifikationen.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -239,9 +251,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>dc730981e3e7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>5b48c6da481b…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -276,8 +288,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -314,7 +326,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 10 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 8 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -377,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_91003","k":"type","d":"AUTOSAR","t":"","n":"KeyM_CertificateStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/54069ace16a72830.json?v=393edb62" data-total="10" data-new="10" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_91003","k":"type","d":"AUTOSAR","t":"","n":"KeyM_CertificateStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/54069ace16a72830.json?v=5cbc739b" data-total="8" data-new="8" data-figures="2" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_ComM_91021" class="dossier-modal dossier-workbench" data-dossier-sha="433a602630b3e407" aria-labelledby="dossier-modal-SWS_ComM_91021-title">
+<dialog id="dossier-modal-SWS_ComM_91021" class="dossier-modal dossier-workbench" data-dossier-sha="3be5932b16230583" aria-labelledby="dossier-modal-SWS_ComM_91021-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_ComM_91021-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_ComM_91021)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,736 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,191 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'ComM_UpdatePncMembership'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,24 +206,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="4a9f210485e72d321b0adf0b2e8d2d2a0173a7f29886d2d47e9eb77fa566b9c2" data-trace-output="433a602630b3e4079d3bf074b23f8c74094bc497d9ecbe4286b69787141a81c7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c5ef187173c5be42ba8749429d6b3d371b917bf459225393d576431fe97d6d56" data-trace-output="3be5932b16230583b1ce3aaf2c31437656d2aa7864b052f90f23ac3fd0304824" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktualisiert die PNC-Mitgliedschaft eines Knotens für das dynamische Mapping auf Kommunikationskanäle." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous function &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt; is called by software components (SWCs) to update the PNC membership (PNC Membership) for transmission during PNC learning. It is part of the optional feature for dynamic PNC-to-channel mapping and is only available if the configuration parameter &lt;code&gt;ComMDynamicPncToChannelMappingSupport&lt;/code&gt; is set to &lt;code&gt;TRUE&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_01047" href="../../spec/record.html?id=SWS_ComM_01047"&gt;[SWS_ComM_01047]&lt;/a&gt;.&lt;/p&gt;
-&lt;h4&gt;Parameters&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Control&lt;/code&gt;: Controls the bitwise operation of the PNC membership. With the value &lt;code&gt;1&lt;/code&gt;, a logical disjunction (OR) is applied to the current PNC membership to set corresponding bits in the &lt;code&gt;PncBitMask&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;. With the value &lt;code&gt;0&lt;/code&gt;, a logical conjunction (AND) is applied to clear bits &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;ComM_PncMembership&lt;/code&gt;: Pointer to a byte array of type &lt;code&gt;uint8&lt;/code&gt; with the length of the PNC vector, containing the PNC membership of the node to be applied &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The PNC membership was updated successfully &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;. This requires that &lt;code&gt;ComMDynamicPncToChannelMappingEnabled&lt;/code&gt; is active on at least one channel and no PNC learning phase is running &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;COMM_E_LEARNING_ACTIVE&lt;/code&gt;: The function cannot be executed because the PNC learning phase is active &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_ComM_01048" href="../../spec/record.html?id=SWS_ComM_01048"&gt;[SWS_ComM_01048]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: An error occurred while updating the PNC membership &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;The function is declared as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;. Parallel calls from multiple contexts must therefore be synchronized externally. In addition, the element has the status &lt;em&gt;draft&lt;/em&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;.&lt;/p&gt;
-&lt;p class="ai-note"&gt;This usage note was created automatically based on the specification data of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;
+    Die synchrone und nicht-reentrante Funktion &lt;code&gt;ComM_UpdatePncMembership&lt;/code&gt; wird von Software-Components (SWCs) genutzt, um die während des PNC-Learnings übertragene PNC-Mitgliedschaft für das optionale dynamische PNC-zu-Kanal-Mapping anzupassen &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;. Sie steht über den Header &lt;code&gt;ComM.h&lt;/code&gt; nur dann zur Verfügung, wenn der Konfigurationsparameter &lt;code&gt;ComMDynamicPncToChannelMappingSupport&lt;/code&gt; auf &lt;code&gt;TRUE&lt;/code&gt; gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_ComM_01047" href="../../spec/record.html?id=SWS_ComM_01047"&gt;[SWS_ComM_01047]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Über den Parameter &lt;code&gt;ComM_PncMembership&lt;/code&gt; wird ein Byte-Array mit der Länge des PNC-Vektors übergeben, das die aktuelle PNC-Mitgliedschaft des Knotens enthält &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;. Wenn die Funktion auf mindestens einem Kanal aktiviert und die PNC-Lernphase inaktiv ist, wird der Parameter &lt;code&gt;Control&lt;/code&gt; ausgewertet &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;
+      Bei &lt;code&gt;Control = 0&lt;/code&gt; wird die aktuelle PNC-Mitgliedschaft mittels einer logischen UND-Verknüpfung mit &lt;code&gt;ComM_PncMembership&lt;/code&gt; verrechnet, um entsprechende Bits in der Maske gezielt zurückzusetzen &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;.
+    &lt;/li&gt;
+    &lt;li&gt;
+      Bei &lt;code&gt;Control = 1&lt;/code&gt; wird eine logische ODER-Verknüpfung angewendet, um Bits in der Maske zu setzen &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;.
+    &lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;
+    War die Aktualisierung erfolgreich, liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_ComM_01049" href="../../spec/record.html?id=SWS_ComM_01049"&gt;[SWS_ComM_01049]&lt;/a&gt;. Ist hingegen auf mindestens einem Kanal die dynamische Zuordnung konfiguriert und die PNC-Lernphase aktiv, wird die Ausführung verweigert und der spezifische Fehlerwert &lt;code&gt;COMM_E_LEARNING_ACTIVE&lt;/code&gt; gemeldet &lt;a class="spec-record-ref" data-req="SWS_ComM_01048" href="../../spec/record.html?id=SWS_ComM_01048"&gt;[SWS_ComM_01048]&lt;/a&gt;. Tritt während des Aktualisierungsvorgangs ein anderer Fehler auf, wird &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben &lt;a class="spec-record-ref" data-req="SWS_ComM_91021" href="../../spec/record.html?id=SWS_ComM_91021"&gt;[SWS_ComM_91021]&lt;/a&gt;.
+  &lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI generiert und basiert ausschließlich auf den Spezifikationsvorgaben von AUTOSAR R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -245,7 +267,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>4a9f210485e7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c5ef187173c5…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -383,4 +405,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_91021","k":"function","d":"AUTOSAR","t":"","n":"ComM_UpdatePncMembership"}],"inbound":[{"i":"SWS_ComM_01047","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_ComM_01047].","n":"SWS_ComM_01047"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/74391cf1e462a666.json?v=b73d4f66" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_91021","k":"function","d":"AUTOSAR","t":"","n":"ComM_UpdatePncMembership"}],"inbound":[{"i":"SWS_ComM_01047","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_ComM_01047].","n":"SWS_ComM_01047"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/74391cf1e462a666.json?v=17d5580d" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

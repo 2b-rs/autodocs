@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00948" class="dossier-modal dossier-workbench" data-dossier-sha="19d22fb341823209" aria-labelledby="dossier-modal-SWS_Dem_00948-title">
+<dialog id="dossier-modal-SWS_Dem_00948" class="dossier-modal dossier-workbench" data-dossier-sha="69e81b573facdb4b" aria-labelledby="dossier-modal-SWS_Dem_00948-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00948-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00948)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,599 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,054 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_J1939DcmLampStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,32 +202,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="886c3c4a22521a95ff8da3e840ef82c823edf948bdaeff957f192cccdc51c089" data-trace-output="19d22fb341823209cba0da3acd95ae477aa446d5fb64b5c307bd9bd71ebce883" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="92989a7111aebdba64b8431b7ef72b06843014cd0de6e941ea3b001c13673461" data-trace-output="69e81b573facdb4b4b9fa6c261a06121f9745694a667e38fd28464c71829abba" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient zur Aufnahme und Rückgabe des Lampen- sowie Blinkstatus bei der Filterung von J1939-DTCs." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Verwendung und Struktur&lt;/h4&gt;
-&lt;p&gt;
-Der Typ &lt;code&gt;Dem_J1939DcmLampStatusType&lt;/code&gt; ist eine Struktur zur Abbildung des Lampenstatus gemäß SAE J1939-73 und wird über die Header-Datei &lt;code&gt;Dem.h&lt;/code&gt; bereitgestellt (&lt;a class="spec-record-ref" data-req="SWS_Dem_00948" href="../../spec/record.html?id=SWS_Dem_00948"&gt;[SWS_Dem_00948]&lt;/a&gt;). Sie setzt sich aus folgenden Elementen zusammen:
-&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Strukturtyp &lt;code&gt;Dem_J1939DcmLampStatusType&lt;/code&gt; ist gemäß &lt;a class="spec-record-ref" data-req="SWS_Dem_00948" href="../../spec/record.html?id=SWS_Dem_00948"&gt;[SWS_Dem_00948]&lt;/a&gt; in &lt;code&gt;Dem.h&lt;/code&gt; deklariert und dient der Erfassung des J1939-Lampenstatus nach SAE J1939-73. Die Datenstruktur bündelt zwei Statusinformationen als &lt;code&gt;uint8&lt;/code&gt;-Elemente: &lt;code&gt;LampStatus&lt;/code&gt; für den aktuellen Lampenzustand und &lt;code&gt;FlashLampStatus&lt;/code&gt; für das zugehörige Blinkverhalten.&lt;/p&gt;
+&lt;p&gt;In der J1939-DTC-Filterung des Diagnostic Event Managers fungiert der Typ als Zeiger-Ausgabeparameter in zwei synchronen Schnittstellen:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;LampStatus&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Überträgt den Lampenstatus (&lt;a class="spec-record-ref" data-req="SWS_Dem_00948" href="../../spec/record.html?id=SWS_Dem_00948"&gt;[SWS_Dem_00948]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;FlashLampStatus&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Überträgt den Blinkstatus der Lampe (&lt;a class="spec-record-ref" data-req="SWS_Dem_00948" href="../../spec/record.html?id=SWS_Dem_00948"&gt;[SWS_Dem_00948]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;Über &lt;code&gt;Dem_J1939DcmSetDTCFilter&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00970" href="../../spec/record.html?id=SWS_Dem_00970"&gt;[SWS_Dem_00970]&lt;/a&gt;) wird beim Initialisieren des DTC-Filters für einen spezifischen J1939-Eventspeicher (adressiert über &lt;code&gt;ClientId&lt;/code&gt;) der anfängliche Lampenstatus abgefragt.&lt;/li&gt;
+&lt;li&gt;Über &lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00975" href="../../spec/record.html?id=SWS_Dem_00975"&gt;[SWS_Dem_00975]&lt;/a&gt;) wird die Struktur für jeden passenden Fehlerspeichereintrag iterativ mit dem zugehörigen Lampenstatus befüllt.&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;h4&gt;Zusammenspiel und Serviceaufrufe&lt;/h4&gt;
-&lt;p&gt;
-Die Struktur wird als Ausgabeparameter in Form eines Zeigers (&lt;code&gt;Dem_J1939DcmLampStatusType* LampStatus&lt;/code&gt;) in synchronen J1939-Diensten des Diagnostic Event Managers verwendet:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Dem_J1939DcmSetDTCFilter&lt;/code&gt;: Übergibt den Zeiger als Ausgabeparameter &lt;code&gt;LampStatus&lt;/code&gt;. Die Funktion arbeitet synchron und ist reentrant für unterschiedliche &lt;code&gt;ClientId&lt;/code&gt;-Werte, jedoch nicht reentrant für dieselbe &lt;code&gt;ClientId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00970" href="../../spec/record.html?id=SWS_Dem_00970"&gt;[SWS_Dem_00970]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt;: Schreibt den Lampenstatus des nächsten gefilterten J1939-DTC in den übergebenen Zeiger. Dieser synchrone Dienst ist generell nicht reentrant (&lt;a class="spec-record-ref" data-req="SWS_Dem_00975" href="../../spec/record.html?id=SWS_Dem_00975"&gt;[SWS_Dem_00975]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Gültigkeit der Daten&lt;/h4&gt;
-&lt;p&gt;
-Beim Aufruf von &lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt; ist die Gültigkeit der zurückgegebenen Lampenstatus-Werte an den Rückgabewert der Funktion gebunden: Falls der Rückgabewert von &lt;code&gt;DEM_FILTERED_OK&lt;/code&gt; abweicht, enthält der Parameter &lt;code&gt;LampStatus&lt;/code&gt; keine gültigen Daten (&lt;a class="spec-record-ref" data-req="SWS_Dem_00975" href="../../spec/record.html?id=SWS_Dem_00975"&gt;[SWS_Dem_00975]&lt;/a&gt;).
-&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
+&lt;p&gt;Bei der Fehlerbehandlung ist zwingend zu beachten, dass &lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt; laut &lt;a class="spec-record-ref" data-req="SWS_Dem_00975" href="../../spec/record.html?id=SWS_Dem_00975"&gt;[SWS_Dem_00975]&lt;/a&gt; nur dann valide Werte in den Ausgabeparameter schreibt, wenn der Rückgabewert der Funktion &lt;code&gt;DEM_FILTERED_OK&lt;/code&gt; lautet. Liefert der Aufruf einen anderen Rückgabewert, enthält die Struktur keine gültigen Daten.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich Nebenläufigkeit und Aufrufbedingungen besitzt die Struktur selbst keinen internen Schutz. Die Reentranz richtet sich nach dem jeweiligen Aufrufkontext: &lt;code&gt;Dem_J1939DcmSetDTCFilter&lt;/code&gt; ist für unterschiedliche Client-IDs reentrant, jedoch nicht-reentrant für dieselbe &lt;code&gt;ClientId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00970" href="../../spec/record.html?id=SWS_Dem_00970"&gt;[SWS_Dem_00970]&lt;/a&gt;). Der iterative Abruf über &lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt; ist vollständig nicht-reentrant spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dem_00975" href="../../spec/record.html?id=SWS_Dem_00975"&gt;[SWS_Dem_00975]&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und basiert auf den Spezifikationen des AUTOSAR-Releases R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -249,7 +254,7 @@ Beim Aufruf von &lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt; is
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>886c3c4a2252…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>92989a7111ae…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -387,4 +392,4 @@ Beim Aufruf von &lt;code&gt;Dem_J1939DcmGetNextDTCwithLampStatus&lt;/code&gt; is
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00948","k":"type","d":"AUTOSAR","t":"","n":"Dem_J1939DcmLampStatusType"}],"inbound":[{"i":"SWS_Dem_00970","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00970].","n":"SWS_Dem_00970"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/62f418b4d85452f4.json?v=e3342e74" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00948","k":"type","d":"AUTOSAR","t":"","n":"Dem_J1939DcmLampStatusType"}],"inbound":[{"i":"SWS_Dem_00970","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00970].","n":"SWS_Dem_00970"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/62f418b4d85452f4.json?v=999dd9a8" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

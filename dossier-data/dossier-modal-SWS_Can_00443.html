@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Can_00443" class="dossier-modal dossier-workbench" data-dossier-sha="4199bdca3b06341d" aria-labelledby="dossier-modal-SWS_Can_00443-title">
+<dialog id="dossier-modal-SWS_Can_00443" class="dossier-modal dossier-workbench" data-dossier-sha="e43aba93ead8262a" aria-labelledby="dossier-modal-SWS_Can_00443-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Can_00443-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Can_00443)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,164 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,866 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,16 +101,42 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für ''.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
- "dokumentstellen": [],
+ "dokumentstellen": [
+  {
+   "doc": "SWS_CANDriver",
+   "figure": false,
+   "id": "SNIP_CLASSIC_CAN_SECTION_8_4_1_Call_out_function",
+   "page": 77,
+   "text": "8.4.1 Call-out function\nThe AUTOSAR CAN module supports optional L-PDU callouts on every reception of a\nL-PDU.\n[SWS_Can_00443] Definition of configurable interface &lt;LPDU_CalloutName&gt; ⌈\nService Name\n&lt;LPDU_CalloutName&gt;\nSyntax\nboolean &lt;LPDU_CalloutName&gt; (\nuint8 Hrh,\nCan_IdType CanId,\nuint8 CanDataLegth,\nconst uint8* CanSduPtr\n)\nService ID [hex]\n0x20\nSync/Async\nAsynchronous\nReentrancy\nNon Reentrant\nHrh\n–\nCanId\n–\nCanDataLegth\n–\nParameters (in)\nCanSduPtr\n–\nParameters (inout)\nNone\nParameters (out)\nNone\nReturn value\nboolean\n–\nDescription\n–\nAvailable via\nCan_Externals.h\n⌋\nwhere &lt;LPDU_CalloutName&gt; has to be substituted with the concrete L-PDU callout\nname which is configurable, see [ECUC_Can_00434].\n[SWS_Can_00444] ⌈If the L-PDU callout returns false, the L-PDU shall not be pro-\ncessed any further.⌋"
+  }
+ ],
  "element": {
   "description": "-",
   "id": "SWS_Can_00443",
@@ -175,32 +201,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="cf8f6318236ec529860173925c25c7db1fb911c2d1f647a6b0a8a1836885be03" data-trace-output="4199bdca3b06341d5bddad01714c588d867ef663962283df75d51a2f7b1d1a3b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="3538baa0cf7b59d13209980d643cbc9809bf9fee3c393fe7c260bfdb40b63fbf" data-trace-output="e43aba93ead8262a81fd08274b8de4c47b8b8cb5e5dbe75a357d92897855be4d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Prüft und filtert empfangene CAN-L-PDUs vor der Weiterverarbeitung im Treiber und bricht diese bei Bedarf ab." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The specification element &lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt; defines the function interface for a configurable L-PDU callout with the identifier &lt;code&gt;&amp;lt;LPDU_ Callout Name&amp;gt;&lt;/code&gt; and the service ID &lt;code&gt;0x20&lt;/code&gt;. The function declaration is provided via the header file &lt;code&gt;Can_ Externals.h&lt;/code&gt;. According to the specification, the function has asynchronous execution semantics (&lt;code&gt;Asynchronous&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    During invocation, four input parameters are passed:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Hrh&lt;/code&gt; (type &lt;code&gt;uint8&lt;/code&gt;): Hardware receive handle for the received CAN object.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Can Id&lt;/code&gt; (type &lt;code&gt;Can_ Id Type&lt;/code&gt;): Identifier of the received CAN message.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Can Data Legth&lt;/code&gt; (type &lt;code&gt;uint8&lt;/code&gt;): Data length of the payload in bytes.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Can Sdu Ptr&lt;/code&gt; (type &lt;code&gt;const uint8*&lt;/code&gt;): Pointer to the buffer containing the received service data (SDU).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    The function returns a return value of type &lt;code&gt;boolean&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;. Presumably, this return value indicates to the CAN driver layer whether the received L-PDU shall be forwarded or discarded (interpretation: filter or confirmation function upon message reception).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;, the interface is classified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;). Calling instances must therefore ensure that no concurrent or nested invocations of the callout occur. Specific error codes as well as requirements for error handling via the DET or DEM are not specified for this interface in the sources.
-  &lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Der boolesche Rückgabewert dürfte die Annahme oder das Verwerfen der L-PDU durch den Empfänger steuern – Begründung: Der Spezifikationstext liefert keine Funktionsbeschreibung; bei Empfangs-Callouts ist ein boolescher Rückgabewert typisch für eine Filter- oder Akzeptanzentscheidung. --&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI and serves as guidance based on AUTOSAR R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;Die konfigurierbare Call-out-Schnittstelle &lt;code&gt;&amp;lt;LPDU_CalloutName&amp;gt;&lt;/code&gt; wird vom AUTOSAR-CAN-Modul optional bei jedem Empfang einer L-PDU aufgerufen (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=SWS_CANDriver&amp;amp;page=77"&gt;SWS_CANDriver §8.4.1 „Call-out function“&lt;/a&gt;). Die Deklaration der Funktion wird über die Header-Datei &lt;code&gt;Can_Externals.h&lt;/code&gt; bereitgestellt (&lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;). Der tatsächliche Name der Funktion wird projektspezifisch konfiguriert (&lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Als Eingangsparameter werden das Hardware-Receive-Handle &lt;code&gt;Hrh&lt;/code&gt;, der Bezeichner &lt;code&gt;CanId&lt;/code&gt;, die Datenlänge &lt;code&gt;CanDataLegth&lt;/code&gt; sowie ein Zeiger auf die Nutzdaten &lt;code&gt;CanSduPtr&lt;/code&gt; übergeben (&lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;).&lt;/p&gt;
+  &lt;h4&gt;Filterung und Rückgabewert&lt;/h4&gt;
+  &lt;p&gt;Die Funktion liefert einen &lt;code&gt;boolean&lt;/code&gt;-Wert zurück. Gibt der Call-out &lt;code&gt;false&lt;/code&gt; zurück, darf die empfangene L-PDU nicht weiterverarbeitet werden (&lt;a class="spec-record-ref" data-req="SWS_Can_00444" href="../../spec/record.html?id=SWS_Can_00444"&gt;[SWS_Can_00444]&lt;/a&gt;). Interpretation: Liefert der Aufruf &lt;code&gt;true&lt;/code&gt;, dürfte die reguläre Weiterleitung der L-PDU an die übergeordneten Schichten erfolgen.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist mit der Service-ID &lt;code&gt;0x20&lt;/code&gt; versehen und als asynchron (&lt;em&gt;Asynchronous&lt;/em&gt;) sowie nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Can_00443" href="../../spec/record.html?id=SWS_Can_00443"&gt;[SWS_Can_00443]&lt;/a&gt;). Da sie nicht reentrant ist, dürfen parallele Aufrufe im selben Kontext nicht stattfinden.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Bei Rückgabe von true erfolgt die reguläre Weiterverarbeitung der L-PDU – Begründung: SWS_Can_00444 spezifiziert ausschließlich den Abbruch der Weiterverarbeitung bei Rückgabe von false. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Verbindlich sind die Vorgaben der AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,9 +253,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>cf8f6318236e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3538baa0cf7b…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -299,7 +312,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">1 von 1 Elementen angezeigt</span>
+              <span id="dossier-visible-count">2 von 2 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -315,11 +328,11 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
           </div>
         </div>
 
@@ -378,4 +391,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Can_00443","k":"function","d":"AUTOSAR","t":"","n":""}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f9b228f74e236c64.json?v=75214d50" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Can_00443","k":"function","d":"AUTOSAR","t":"","n":""}],"inbound":[{"i":"SNIP_CLASSIC_CAN_SECTION_8_4_1_Call_out_function","d":"SWS_CANDriver","p":77,"t":"8.4.1 Call-out function\nThe AUTOSAR CAN module supports optional L-PDU callouts on every reception of a\nL-PDU.\n[SWS_Can_00443] Definition of configurable interface \u003cLPDU_CalloutName> ⌈\nService Name\n\u003cLPDU_CalloutName>\nSyntax\nboolean \u003cLPDU_CalloutName> (\nuint8 Hrh,\nCan_IdType CanId,\nuint8 CanDataLegth,\nconst uint8* CanSduPtr\n)\nService ID [hex]\n0x20\nSync/Async\nAsynchronous\nReentrancy\nNon Reentrant\nHrh\n–\nCanId\n–\nCanDataLegth\n–\nParameters (in)\nCanSduPtr\n–\nParameters (inout)\nNone\nParameters (out)\nNone\nReturn value\nboolean\n–\nDescription\n–\nAvailable via\nCan_Externals.h\n⌋\nwhere \u003cLPDU_CalloutName> has to be substituted with the concrete L-PDU callout\nname which is configurable, see [ECUC_Can_00434].\n[SWS_Can_00444] ⌈If the L-PDU callout returns false, the L-PDU shall not be pro-\ncessed any further.⌋"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f9b228f74e236c64.json?v=23a44b32" data-total="1" data-new="0" data-figures="0" data-used="1"></script></dialog>

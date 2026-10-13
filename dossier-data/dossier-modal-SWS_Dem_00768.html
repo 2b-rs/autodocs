@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00768" class="dossier-modal dossier-workbench" data-dossier-sha="a68f23f282500a94" aria-labelledby="dossier-modal-SWS_Dem_00768-title">
+<dialog id="dossier-modal-SWS_Dem_00768" class="dossier-modal dossier-workbench" data-dossier-sha="09daed3019b3a252" aria-labelledby="dossier-modal-SWS_Dem_00768-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00768-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00768)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,821 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,276 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_DcmGetDTRData'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,21 +206,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="bb8bfc4e08d361312769b02987e57fe665b7b9b4b4979edd89210a487b7110fd" data-trace-output="a68f23f282500a9403952cd3645e24b013772069cd0cdee750e7e5a9b2baefd9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="18535af5aa7f6b53a7901e4c22a2308e7a90de891bfd28cf8f73587cb7197469" data-trace-output="09daed3019b3a2527ef11d87b398eb29b56864f8ba296950062ef25ab2cfd3f1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liefert DTR-Testergebnisse, Grenzwerte und Kennungen für eine OBDMID an den DCM zur Ausgabe an den Diagnosetester." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die synchrone Funktion &lt;code&gt;Dem_DcmGetDTRData&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;) dient dem DCM dazu, DTR-Daten (Diagnostic Test Results) zusammen mit der Test-ID (&lt;code&gt;TIDvalue&lt;/code&gt;), der &lt;code&gt;UaSID&lt;/code&gt; sowie dem aktuellen Testergebnis (&lt;code&gt;Testvalue&lt;/code&gt;) mit unterem (&lt;code&gt;Lowlimvalue&lt;/code&gt;) und oberem Grenzwert (&lt;code&gt;Upplimvalue&lt;/code&gt;) auszulesen. Die API ist reentrant und über die Header-Datei &lt;code&gt;Dem_Dcm.h&lt;/code&gt; deklariert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;Dem_DcmGetDTRData&lt;/code&gt; dient dem Diagnostic Communication Manager (DCM) dazu, DTR-Daten (Diagnostic Test Results) einschließlich TID-Wert, UaSID sowie aktuellem Testergebnis mit Unter- und Obergrenze abzufragen &lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;. Sie steht ausschließlich in Steuergeräten mit OBD-Unterstützung zur Verfügung, wenn &lt;code&gt;DemOBDSupport != DEM_OBD_NO_OBD_SUPPORT&lt;/code&gt; konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;.&lt;/p&gt;
+  
+  &lt;h4&gt;Verwendung und Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Der DCM ruft die Funktion auf, um die verfügbaren DTR-Daten für eine bestimmte &lt;code&gt;Obdmid&lt;/code&gt; und einen &lt;code&gt;TIDindex&lt;/code&gt; abzurufen &lt;a class="spec-record-ref" data-req="SWS_Dem_00762" href="../../spec/record.html?id=SWS_Dem_00762"&gt;[SWS_Dem_00762]&lt;/a&gt;. Die Abfrage erfolgt typischerweise iterativ über den Index &lt;code&gt;TIDindex&lt;/code&gt; von &lt;code&gt;0&lt;/code&gt; bis &lt;code&gt;numberOfTIDs - 1&lt;/code&gt;, wobei die Gesamtzahl zuvor über &lt;code&gt;Dem_DcmGetNumTIDsOfOBDMID()&lt;/code&gt; ermittelt wird &lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00762" href="../../spec/record.html?id=SWS_Dem_00762"&gt;[SWS_Dem_00762]&lt;/a&gt;. Über die Ausgabeparameter &lt;code&gt;TIDvalue&lt;/code&gt;, &lt;code&gt;UaSID&lt;/code&gt;, &lt;code&gt;Testvalue&lt;/code&gt;, &lt;code&gt;Lowlimvalue&lt;/code&gt; und &lt;code&gt;Upplimvalue&lt;/code&gt; werden die Werte für die Tester-Antwort bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Aufrufkontext und Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;Die Schnittstelle ist ausschließlich in OBD-relevanten Steuergeräten verfügbar, sofern &lt;code&gt;{ecuc(Dem/DemGeneral.DemOBDSupport)}&lt;/code&gt; nicht auf &lt;code&gt;DEM_OBD_NO_OBD_SUPPORT&lt;/code&gt; konfiguriert ist (&lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;). Gemäß &lt;a class="spec-record-ref" data-req="SWS_Dem_00762" href="../../spec/record.html?id=SWS_Dem_00762"&gt;[SWS_Dem_00762]&lt;/a&gt; fordert das DCM die Daten für eine bestimmte &lt;code&gt;Obdmid&lt;/code&gt; iterativ an. Hierbei läuft der Eingabeparameter &lt;code&gt;TIDindex&lt;/code&gt; von &lt;code&gt;0&lt;/code&gt; bis zur Anzahl der TIDs minus eins (&lt;code&gt;numberOfTIDs - 1&lt;/code&gt;), die zuvor über &lt;code&gt;Dem_DcmGetNumTIDsOfOBDMID()&lt;/code&gt; abgefragt wurde.&lt;/p&gt;
-
-  &lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+  &lt;h4&gt;Fehlerbehandlung und Randbedingungen&lt;/h4&gt;
+  &lt;p&gt;Die Funktion gibt &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ermittlung der DTR-Ergebnisse zurück und &lt;code&gt;E_NOT_OK&lt;/code&gt; im Fehlerfall &lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;. Ein Fehler tritt insbesondere auf, wenn das referenzierte Diagnose-Event nicht verfügbar ist:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der DTR-Datensatz wurde erfolgreich zurückgemeldet (&lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Das Auslesen der DTR-Daten ist fehlgeschlagen (&lt;a class="spec-record-ref" data-req="SWS_Dem_00768" href="../../spec/record.html?id=SWS_Dem_00768"&gt;[SWS_Dem_00768]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Ist ein Event als nicht verfügbar gesetzt, wird es wie ein nicht konfiguriertes Event behandelt und &lt;code&gt;Dem_DcmGetDTRData&lt;/code&gt; schlägt fehl &lt;a class="spec-record-ref" data-req="SWS_Dem_01108" href="../../spec/record.html?id=SWS_Dem_01108"&gt;[SWS_Dem_01108]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Wird die Funktion für ein DTR aufgerufen, dessen über &lt;code&gt;DemDtrEventRef&lt;/code&gt; referenziertes Event mit &lt;code&gt;DemEventAvailable == FALSE&lt;/code&gt; konfiguriert ist, gibt das DEM zwingend &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Dem_01336" href="../../spec/record.html?id=SWS_Dem_01336"&gt;[SWS_Dem_01336]&lt;/a&gt;. In diesem Fall sind sämtliche Ausgabeparameter undefiniert &lt;a class="spec-record-ref" data-req="SWS_Dem_01336" href="../../spec/record.html?id=SWS_Dem_01336"&gt;[SWS_Dem_01336]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;Ein Fehlerfall tritt insbesondere dann ein, wenn ein referenziertes Event als nicht verfügbar deklariert ist: Nicht verfügbare Events werden im System so behandelt, als seien sie nicht konfiguriert (&lt;a class="spec-record-ref" data-req="SWS_Dem_01108" href="../../spec/record.html?id=SWS_Dem_01108"&gt;[SWS_Dem_01108]&lt;/a&gt;). Wird &lt;code&gt;Dem_DcmGetDTRData&lt;/code&gt; für ein DTR aufgerufen, das über &lt;code&gt;DemDtrEventRef&lt;/code&gt; ein Event referenziert, bei dem &lt;code&gt;DemEventAvailable&lt;/code&gt; auf &lt;code&gt;FALSE&lt;/code&gt; gesetzt ist, gibt das DEM zwingend &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück (&lt;a class="spec-record-ref" data-req="SWS_Dem_01336" href="../../spec/record.html?id=SWS_Dem_01336"&gt;[SWS_Dem_01336]&lt;/a&gt;). In diesem Fall sind sämtliche Out-Parameter der Funktion undefiniert.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Maßgeblich ist die AUTOSAR-Spezifikation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikationsanforderungen generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -242,9 +261,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>bb8bfc4e08d3…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>18535af5aa7f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -279,8 +298,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">10</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">9</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -317,7 +336,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 8 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 7 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -380,4 +399,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00768","k":"function","d":"AUTOSAR","t":"","n":"Dem_DcmGetDTRData"}],"inbound":[{"i":"SWS_Dem_00762","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00762].","n":"SWS_Dem_00762"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ecbde86b3d14c4e0.json?v=35ee6713" data-total="8" data-new="8" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00768","k":"function","d":"AUTOSAR","t":"","n":"Dem_DcmGetDTRData"}],"inbound":[{"i":"SWS_Dem_00762","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00762].","n":"SWS_Dem_00762"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ecbde86b3d14c4e0.json?v=b0aaa576" data-total="7" data-new="7" data-figures="1" data-used="0"></script></dialog>

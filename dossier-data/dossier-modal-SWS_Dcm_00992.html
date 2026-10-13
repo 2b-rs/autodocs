@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00992" class="dossier-modal dossier-workbench" data-dossier-sha="de2086cc12f5ae2f" aria-labelledby="dossier-modal-SWS_Dcm_00992-title">
+<dialog id="dossier-modal-SWS_Dcm_00992" class="dossier-modal dossier-workbench" data-dossier-sha="a230e46095e05d07" aria-labelledby="dossier-modal-SWS_Dcm_00992-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00992-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00992)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,432 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,887 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_MsgAddInfoType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,18 +198,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="b2b128343dd30807f57a488a982ff334cc1ba8414d7219ed736d3d5cab12ee90" data-trace-output="de2086cc12f5ae2f494bea9b455489b4814cd0c8210a2a85e1aec88d6f93fb75" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="7c8af2ec6aedcd4fafbc0e3c0a33be3b21df5b73f795b0500a56d579e0791ef8" data-trace-output="a230e46095e05d075201327d28b5ba6f15bacbd3bddf85c197e775aa94f78bb5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Bitfeld zur Angabe der Adressierungsart sowie zur Steuerung der Unterdrückung positiver Antworten." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;p&gt;Der Datentyp &lt;code&gt;Dcm_MsgAddInfoType&lt;/code&gt; ist gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_00992" href="../../spec/record.html?id=SWS_Dcm_00992"&gt;[SWS_Dcm_00992]&lt;/a&gt; als Bitfeld-Struktur definiert und über die Header-Datei &lt;code&gt;Dcm.h&lt;/code&gt; verfügbar. Die Struktur dient der Übertragung zusätzlicher Steuerungs- und Statusinformationen zu einer Diagnoseanforderung.&lt;/p&gt;
-&lt;h4&gt;Struktur und Bit-Belegung&lt;/h4&gt;
-&lt;p&gt;Gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_00992" href="../../spec/record.html?id=SWS_Dcm_00992"&gt;[SWS_Dcm_00992]&lt;/a&gt; enthält der Typ folgende Bit-Elemente:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;Dcm_MsgAddInfoType&lt;/code&gt; ist gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_00992" href="../../spec/record.html?id=SWS_Dcm_00992"&gt;[SWS_Dcm_00992]&lt;/a&gt; als Bitfeld-Struktur definiert und dient der Bereitstellung ergänzender Status- und Steuerinformationen zu einer Diagnosenachricht. Der Typ wird im klassischen AUTOSAR über die Header-Datei &lt;code&gt;Dcm.h&lt;/code&gt; zur Verfügung gestellt und kommt als Element &lt;code&gt;msgAddInfo&lt;/code&gt; innerhalb der übergeordneten Kontextstruktur &lt;code&gt;Dcm_MsgContextType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;) zum Einsatz, um Zusatzinformationen zu Service-Anfragen sowie zugehörigen Antworten konsistent zu bündeln.&lt;/p&gt;
+
+&lt;p&gt;Die Bitfeld-Struktur spezifiziert nach &lt;a class="spec-record-ref" data-req="SWS_Dcm_00992" href="../../spec/record.html?id=SWS_Dcm_00992"&gt;[SWS_Dcm_00992]&lt;/a&gt; einzelne Steuerflags mit genau definierter Bitposition:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;reqType&lt;/code&gt; (Position LSB+0): Gibt den Adressierungstyp der Anforderung an. Der Wert &lt;code&gt;0&lt;/code&gt; kennzeichnet eine physikalische Anfrage (physical request), der Wert &lt;code&gt;1&lt;/code&gt; eine funktionale Anfrage (functional request).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;suppressPosResponse&lt;/code&gt; (Position LSB+1): Steuert das Unterdrücken einer positiven Antwort. Der Wert &lt;code&gt;0&lt;/code&gt; bedeutet, dass die positive Antwort gesendet wird (do not suppress), während &lt;code&gt;1&lt;/code&gt; festlegt, dass keine positive Antwort gesendet werden darf (no positive response will be sent).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;reqType&lt;/code&gt; (Position LSB+0): Kennzeichnet die Adressierungsart der Diagnoseanfrage. Ein Wert von &lt;code&gt;0&lt;/code&gt; signalisiert einen physikalischen Request (&lt;code&gt;physical request&lt;/code&gt;), während ein Wert von &lt;code&gt;1&lt;/code&gt; einen funktionalen Request (&lt;code&gt;functional request&lt;/code&gt;) anzeigt.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;suppressPosResponse&lt;/code&gt; (Position LSB+1): Bestimmt das Verhalten bezüglich positiver Antworten. Bei &lt;code&gt;0&lt;/code&gt; wird die positive Antwort nicht unterdrückt (&lt;code&gt;do not suppress&lt;/code&gt;), wohingegen ein Wert von &lt;code&gt;1&lt;/code&gt; vorgibt, dass keine positive Antwort gesendet werden darf (&lt;code&gt;no positive response will be sent&lt;/code&gt;).&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
-&lt;p&gt;Gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt; ist &lt;code&gt;Dcm_MsgAddInfoType&lt;/code&gt; als Element &lt;code&gt;msgAddInfo&lt;/code&gt; in die übergeordnete Nachrichtenstruktur &lt;code&gt;Dcm_MsgContextType&lt;/code&gt; eingebettet. Dadurch erhalten Verarbeitungsfunktionen im DCM Zugriff auf den Anfragetyp sowie die Information, ob der positive Antwortversand unterdrückt werden muss.&lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
+
+&lt;p&gt;Da &lt;code&gt;Dcm_MsgAddInfoType&lt;/code&gt; eine reine Datenstruktur zur Parameter- und Kontextübergabe darstellt, existieren für diesen Typen selbst keine synchronen oder asynchronen Aufrufsemantiken, Rückgabewerte, Reentranzvorschriften oder eigene Fehlermeldungen für DET oder DEM. Die konkrete Auswertung und Berücksichtigung der gesetzten Bits im weiteren Ablauf obliegt vermutlich den internen Verarbeitungsroutinen des Diagnostic Communication Managers, wenn diese auf den Nachrichtenkontext aus &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt; zugreifen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Auswertung der Bits obliegt den internen Verarbeitungsroutinen des DCM – Begründung: Der Payload beschreibt Dcm_MsgAddInfoType und dessen Einbettung in Dcm_MsgContextType, spezifiziert jedoch keine Verarbeitungsfunktionen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe im AUTOSAR-Umfeld.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -231,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>b2b128343dd3…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7c8af2ec6aed…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

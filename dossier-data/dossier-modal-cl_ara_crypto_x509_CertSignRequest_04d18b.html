@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b" class="dossier-modal dossier-workbench" data-dossier-sha="f47c719c2d486c81" aria-labelledby="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b-title">
+<dialog id="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b" class="dossier-modal dossier-workbench" data-dossier-sha="5758643f6c90d85a" aria-labelledby="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_crypto_x509_CertSignRequest_04d18b-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_crypto_x509_CertSignRequest_04d18b)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,681 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,204 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::crypto::x509::CertSignRequest' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_crypto_x509_CertSignRequest_04d18b",
@@ -208,69 +227,29 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="9a850e4c469b6a56349c0d32ecf1ca13d1f493971ab22070b7883509d95383e4" data-trace-output="f47c719c2d486c81836757ec4294fed8ed3c77ce22411c973b7bf8ce0ba6e69a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="3439f3ad3ffae10de9fc7890dfca2d5dc8ec9db59db366c0c97038c3ab41f5b8" data-trace-output="5758643f6c90d85a035e645314149718df0acdc5c040b12f1ae03979c5f99eda" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Schnittstelle für serialisierbare X.509-Zertifikatsignierungsanträge und deren gemeinsame Besitzverwaltung." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-In the AUTOSAR Adaptive Platform, functional module &lt;code&gt;crypto&lt;/code&gt; provides standardized cryptographic interfaces for safety- and security-relevant vehicle applications. Within this module and dedicated namespace &lt;code&gt;ara::crypto::x509&lt;/code&gt;, class &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; defines an interface for representing Certificate Signing Requests (CSR).
-&lt;/p&gt;
-&lt;p&gt;
-In modern public key infrastructures (PKI), certificate signing requests form the link between a key owner and a certificate authority (CA). A CSR encapsulates the applicant's public key together with identity attributes and proves possession of the corresponding private key. Interface &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; represents the object-oriented counterpart for this cryptographic standard in the Adaptive Platform.
-&lt;/p&gt;
-&lt;p&gt;
-The class declaration shows that the class inherits publicly from &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;: &lt;code&gt;class CertSignRequest : public ara::crypto::Serializable&lt;/code&gt;. Through this base class, &lt;code&gt;CertSignRequest&lt;/code&gt; is directly connected to the serialization framework of the crypto module. Interpretation: As an interface object for certificate requests, &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; is likely to serve primarily to encapsulate the validation and transmission of CSR data structures on the software side.
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Definiert die Schnittstelle für serialisierbare X.509-Zertifikatsignierungsanträge und deren gemeinsame Besitzverwaltung.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Schnittstelle &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; dient in AUTOSAR Adaptive als Abstraktion für Certificate Signing Requests (CSR) und erbt von &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;, um Zertifikatsanträge für externe Zertifizierungsstellen serialisierbar zu machen. Der Lebenszyklus und der gemeinsame Besitz werden primär über den Typ-Alias &lt;code&gt;Sptrc&lt;/code&gt; gesteuert, der als &lt;code&gt;std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;&lt;/code&gt; definiert ist &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;. Dieser konstante Smart-Pointer stellt sicher, dass CSR-Instanzen nach ihrer Erstellung unveränderlich bleiben und nebenläufig von mehreren Komponenten sicher gelesen werden können.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die C++-Klasse &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; stellt innerhalb der Adaptive Platform von AUTOSAR im Modul &lt;code&gt;crypto&lt;/code&gt; die abstrakte Schnittstelle für Certificate-Signing-Request-Objekte (CSR) bereit. Deklariert im Namensraum &lt;code&gt;ara::crypto::x509&lt;/code&gt; und bereitgestellt über den Includepfad &lt;code&gt;#include "ara/crypto/x509/cert_sign_request.h"&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;, bildet dieser Schnittstellentyp das fundamentale Element zur Repräsentation von Signierungsanfragen für digitale Zertifikate. Gemäß ihrer Deklarationssyntax erbt die Klasse direkt von der Basisschnittstelle &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;. Durch diese Vererbungshierarchie ist festgelegt, dass konkrete CSR-Objekte serialisierbar sind, was den Export, die Speicherung und die Übertragung der strukturierten Antragsdaten über Modul- und Netzwerkgrenzen hinweg ermöglicht.&lt;/p&gt;
+&lt;p&gt;In der Gesamtarchitektur übernimmt &lt;code&gt;CertSignRequest&lt;/code&gt; die Rolle eines Datencontainers und Interaktionspartners zwischen kryptografischen Diensten und anwendender Software. Wenn eine Anwendung neue kryptografische Schlüsselpaare für den Einsatz in einer Public-Key-Infrastruktur zertifizieren lassen möchte, kapselt diese Schnittstelle alle relevanten Angaben des Antrags. Vermutlich dient die Schnittstelle der herstellerunabhängigen Kapselung vollständiger PKCS#10- oder herstellerspezifischer Signierungsanträge, wobei die konkrete Ausprägung durch zugrunde liegende Krypto-Treiber implementiert wird. Die Entkopplung über ein reines Interface schützt aufrufende Module vor Implementierungsdetails und sichert die funktionale Austauschbarkeit der kryptografischen Backends.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-The lifecycle of an instance of &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; is managed via smart pointers in the AUTOSAR crypto concept. For interaction with constant objects, the specification defines a standardized pointer definition:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-According to &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;, the class declares type alias &lt;code&gt;using Sptrc = std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;;&lt;/code&gt; in header &lt;code&gt;ara/crypto/x509/cert_sign_request.h&lt;/code&gt; as a smart pointer to the constant interface object.
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-From this declaration, essential aspects for managing and concurrency of the instances can be derived:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;strong&gt;Shared ownership:&lt;/strong&gt; The use of &lt;code&gt;std::shared_ptr&lt;/code&gt; enables flexible passing of the object to different functional units, such as processing services or communication adapters, with the lifetime being managed automatically via reference counting.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Immutability:&lt;/strong&gt; Because &lt;code&gt;Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) points to a constant interface, it is ensured that consumers can no longer modify the properties of the signing request after its creation.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Destruction:&lt;/strong&gt; As soon as the last &lt;code&gt;Sptrc&lt;/code&gt; copy is released, the object is automatically destroyed and all associated resources are deallocated.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Concurrency:&lt;/strong&gt; Read-only access via the constant interface enables thread-safe usage across multiple execution contexts without requiring additional synchronization mechanisms.
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Erzeugung und Lebenszeitverwaltung von &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; folgt den Prinzipien moderner C++-Speicherverwaltung für geteilte Ressourcen. Für die Referenzierung und den Besitz definiert die Spezifikation den Typ-Alias &lt;code&gt;Sptrc&lt;/code&gt; als &lt;code&gt;std::shared_ptr&amp;lt;const CertSignRequest&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;. Dieser Smart-Pointer bildet das maßgebliche Modell für den Besitz und die Weitergabe von CSR-Instanzen zwischen verschiedenen Softwarekomponenten.&lt;/p&gt;
+&lt;p&gt;Durch die Verwaltung mittels &lt;code&gt;std::shared_ptr&lt;/code&gt; unterliegt der Lebenszyklus einer Instanz der automatisierten Referenzzählung. Das Objekt existiert genau so lange, wie mindestens ein aktiver &lt;code&gt;Sptrc&lt;/code&gt;-Zeiger darauf verweist, und wird bei der Zerstörung des letzten referenzierenden Zeigers automatisch freigegeben. Ein zentrales Merkmal der Schnittstelle ist die explizite Bindung des Smart-Pointers an den Typ &lt;code&gt;const CertSignRequest&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;. Diese Konstanzqualifizierung erzwingt semantische Unveränderlichkeit (Immutabilität): Nach der ursprünglichen Generierung des Antrags dürfen Konsumenten die enthaltenen Felder oder Signaturen nicht mehr verändern. Dies stellt die Integrität des Signierungsantrags während der gesamten Lebensdauer sicher.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit resultiert aus der konstanten Zeigerbindung ein wesentlicher Sicherheitsvorteil. Da der Typ-Alias &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt; ausschließlich lesenden Zugriff gewährt, können mehrere Threads und Systemprozesse dieselbe CSR-Instanz parallel und ohne zusätzliche Mutex-Synchronisation verarbeiten. Datenrennen bei nebenläufigen Lesezugriffen sind durch das Design der Schnittstelle strukturell ausgeschlossen.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-A characteristic usage flow of &lt;code&gt;ara::crypto::x509::CertSignRequest&lt;/code&gt; is divided into the following logical phases:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;strong&gt;Creation:&lt;/strong&gt; An application initiates the generation of a new key pair and triggers the creation of a corresponding CSR object.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Encapsulation and provision:&lt;/strong&gt; The finished object is passed as &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt;) to consuming components, thereby guaranteeing an immutable state.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Serialization:&lt;/strong&gt; Via the inheritance from &lt;code&gt;ara::crypto::Serializable&lt;/code&gt;, the CSR object is converted into a standardized byte stream (interpretation: presumably into DER-encoded format according to PKCS#10).
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Dispatch and certificate receipt:&lt;/strong&gt; The byte stream is transmitted to an external certificate authority via standardized protocols in order to receive the signed X.509 certificate in return.
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;!-- annahmen:
-1) Als Schnittstelle für CSR-Objekte dürfte ara::crypto::x509::CertSignRequest die softwareseitige Kapselung und Validierung von Zertifikatsanträgen vor der Übermittlung bilden. – Begründung: Der Payload spezifiziert die Klasse als "Certificate Signing Request (CSR) object interface", nennt jedoch keine Fabrik- oder Inspektionsmethoden.
-2) Über ara::crypto::Serializable dürfte die Serialisierung in ein DER-kodiertes Format (PKCS#10) erfolgen. – Begründung: Die Klassensyntax weist die Vererbung von ara::crypto::Serializable aus, ohne ein konkretes Encoding festzulegen.
---&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specification of AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungsablauf gliedert sich in die Bereitstellung, die funktionale Übergabe und die nachgelagerte Serialisierung des Antrags. In Ermangelung öffentlicher Konstruktoren im Schnittstellen-Payload dürfte die Instanziierung typischerweise durch spezialisierte X.509-Provider im Krypto-Stack erfolgen. Der Aufrufer erhält die fertige Instanz in Form des konstanten Smart-Pointers &lt;code&gt;CertSignRequest::Sptrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt; zurück.&lt;/p&gt;
+&lt;p&gt;Im weiteren Verlauf fungiert das CSR-Objekt als Eingangsdatenstruktur für Validierungs- oder Weiterleitungsprozesse. Über die von &lt;code&gt;ara::crypto::Serializable&lt;/code&gt; geerbte Funktionalität kann die anwendende Software das Objekt in einen plattformunabhängigen Bytestrom serialisieren. Diese Serialisierung dürfte typischerweise in standardisierte ASN.1-DER- oder PEM-kodierte Datenstrukturen münden, die anschließend an eine externe Zertifizierungsstelle (Certificate Authority) übermittelt oder im Dateisystem persistiert werden. Über die gesamte Aufrufkette hinweg bleibt die Lebensdauer der Instanz durch den gehaltenen &lt;code&gt;Sptrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_40301" href="../spec/record.html?id=SWS_CRYPT_40301"&gt;[SWS_CRYPT_40301]&lt;/a&gt; zuverlässig gesichert.&lt;/p&gt;&lt;!-- annahmen: 1) Die Schnittstelle dürfte herstellerunabhängig vollständige Zertifikatsanträge kapseln, deren konkrete Instanziierung durch spezialisierte X.509-Provider erfolgt – Begründung: Der Schnittstellen-Payload spezifiziert keine öffentlichen Konstruktoren oder Fabrikmethoden. 2) Die Serialisierung über ara::crypto::Serializable dürfte in ASN.1-DER- oder PEM-Strukturen münden – Begründung: CertSignRequest ist von ara::crypto::Serializable abgeleitet und CSR-Standards erfordern typischerweise diese Formate zur Übertragung. 3) Nach der Erzeugung dürfte ein CSR-Objekt unveränderlich sein – Begründung: Der kanonische Smart-Pointer Sptrc verweist typbedingt ausschließlich auf konstante Instanzen (const CertSignRequest). --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der AUTOSAR-Adaptive-Spezifikation R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -312,9 +291,9 @@ A characteristic usage flow of &lt;code&gt;ara::crypto::x509::CertSignRequest&lt
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9a850e4c469b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3439f3ad3ffa…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -349,8 +328,8 @@ A characteristic usage flow of &lt;code&gt;ara::crypto::x509::CertSignRequest&lt
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -387,7 +366,7 @@ A characteristic usage flow of &lt;code&gt;ara::crypto::x509::CertSignRequest&lt
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -450,4 +429,4 @@ A characteristic usage flow of &lt;code&gt;ara::crypto::x509::CertSignRequest&lt
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_40301","k":"type","d":"CRYPTO","t":"type alias Sptrc [SWS_CRYPT_40301] Upstream: RS_CRYPTO_02306 using Sptrc = std::shared_ptr \u003cconst CertSignRequest >; Smart pointer of the constant interface. Header-Datei #include \"ara/crypto/x509/cert_sign_request.h\" class mono Scope class ara::crypto::x509::CertSignRequest class mono Symbol Sptrc class mono","n":"alias"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/d0eb9089de032024.json?v=eb7a4172" data-total="5" data-new="5" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_40301","k":"type","d":"CRYPTO","t":"type alias Sptrc [SWS_CRYPT_40301] Upstream: RS_CRYPTO_02306 using Sptrc = std::shared_ptr \u003cconst CertSignRequest >; Smart pointer of the constant interface. Header-Datei #include \"ara/crypto/x509/cert_sign_request.h\" class mono Scope class ara::crypto::x509::CertSignRequest class mono Symbol Sptrc class mono","n":"alias"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/d0eb9089de032024.json?v=8fa9e5fc" data-total="1" data-new="1" data-figures="1" data-used="0"></script></dialog>

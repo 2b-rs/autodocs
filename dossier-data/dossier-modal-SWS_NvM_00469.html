@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_NvM_00469" class="dossier-modal dossier-workbench" data-dossier-sha="12c57c595aee863b" aria-labelledby="dossier-modal-SWS_NvM_00469-title">
+<dialog id="dossier-modal-SWS_NvM_00469" class="dossier-modal dossier-workbench" data-dossier-sha="c429aa65f1ebf484" aria-labelledby="dossier-modal-SWS_NvM_00469-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_NvM_00469-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_NvM_00469)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,340 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,795 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'NvM_InitBlockCallbackFunction'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,21 +193,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="efeb172686dc51ae2a095eb61d0450289ecaefef876e19a9f1df96e4712479a7" data-trace-output="12c57c595aee863b3e17dc9986855acf1014ab3d25b4d1952181dc47cd2d9c4d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="6fa779cf7b6278989b91d2e5c0c7e8ac736b27ea5c112151142859e4b78aee68" data-trace-output="c429aa65f1ebf4849b69aea8538f75f2306485c8f82e6880c3218ff7a5175495" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Initialisiert Standarddaten eines Blocks im RAM, falls kein ROM-Block konfiguriert ist." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The block-individual callback routine &lt;code&gt;NvM_InitBlockCallbackFunction&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;) is called by the NVRAM Manager (&lt;code&gt;NvM&lt;/code&gt;) as soon as default data must be restored in RAM and no ROM block is configured for the affected block. The function declaration is available via header file &lt;code&gt;NvM_Externals.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;Die anwenderspezifische Callback-Routine &lt;code&gt;NvM_InitBlockCallbackFunction&lt;/code&gt; wird vom NvM-Modul aufgerufen, wenn Standarddaten für einen NVRAM-Block im RAM wiederhergestellt werden müssen und kein entsprechender ROM-Block konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;. Der Aufruf erfolgt synchron und die Schnittstelle ist über den Header &lt;code&gt;NvM_Externals.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Als Übergabeparameter erhält die Funktion &lt;code&gt;InitBlockRequest&lt;/code&gt; vom Typ &lt;code&gt;NvM_InitBlockRequestType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;. Dieser Wert informiert die Routine über den spezifischen Anforderungstyp des aktuell verarbeiteten Blocks, wie etwa das Lesen oder Wiederherstellen von Daten (&lt;code&gt;read&lt;/code&gt;, &lt;code&gt;restore&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Die Routine gibt einen Statuswert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Call context and semantics:&lt;/strong&gt; The call by the NvM module is synchronous (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Input parameters:&lt;/strong&gt; The request type of the block currently being processed, such as read or restore operations like Read or Restore, is transmitted via the input parameter &lt;code&gt;InitBlockRequest&lt;/code&gt; of type &lt;code&gt;NvM_InitBlockRequestType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Return value:&lt;/strong&gt; The callback function returns a status value of type &lt;code&gt;Std_ReturnType&lt;/code&gt;. The return value &lt;code&gt;E_OK&lt;/code&gt; signals that the initialization routine was processed successfully (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Signalisiert dem NvM-Modul, dass die Callback-Funktion die Daten im RAM erfolgreich initialisiert und verarbeitet hat &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Jeder andere Rückgabewert: Zeigt an, dass die Initialisierung nicht erfolgreich abgeschlossen werden konnte &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-  &lt;p&gt;Any other return value differing from &lt;code&gt;E_OK&lt;/code&gt; indicates to the NvM module that the callback function could not be executed successfully (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;). Specific error codes, DET, or DEM messages are not identified in the specification data for this callback.&lt;/p&gt;
-  &lt;p&gt;Regarding concurrency behavior, &lt;code&gt;NvM_InitBlockCallbackFunction&lt;/code&gt; is specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note is based on the AUTOSAR specification for the NvM module in Release R20-11.&lt;/p&gt;
+  &lt;p&gt;Spezifische Fehlercodes für DET oder DEM sind für die Schnittstelle selbst nicht spezifiziert &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Ausführungseinschränkungen&lt;/h4&gt;
+  &lt;p&gt;Die Schnittstelle ist als synchron und nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) festgelegt &lt;a class="spec-record-ref" data-req="SWS_NvM_00469" href="../../spec/record.html?id=SWS_NvM_00469"&gt;[SWS_NvM_00469]&lt;/a&gt;. Da der NVRAM Manager synchron auf die Rückkehr der Funktion wartet, dürfte eine blockierende Ausführung innerhalb der Routine die Weiterverarbeitung des NvM unmittelbar anhalten (Interpretation).&lt;/p&gt;
+  &lt;!-- annahmen: 1) Eine blockierende Implementierung der Routine verzögert die übergeordnete NvM-Verarbeitung – Begründung: Der Funktionsaufruf ist synchron und nicht reentrant gemäß SWS_NvM_00469. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der Spezifikation AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -229,9 +250,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>efeb172686dc…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>6fa779cf7b62…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -266,8 +287,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -304,7 +325,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -367,4 +388,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_NvM_00469","k":"function","d":"AUTOSAR","t":"","n":"NvM_InitBlockCallbackFunction"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6acaeda04667c720.json?v=67d7ee8b" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_NvM_00469","k":"function","d":"AUTOSAR","t":"","n":"NvM_InitBlockCallbackFunction"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6acaeda04667c720.json?v=92ac56d2" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>

@@ -1,8 +1,11 @@
 {
  "annahmen": [
-  "1) Text/diag-read: Aufträge in MEMIF_UNINIT oder MEMIF_BUSY werden mit E_NOT_OK abgewiesen – Begründung: Die betreffende Regel ist im Payload abgeschnitten; E_NOT_OK ist als „Auftrag nicht angenommen“ definiert.",
-  "2) Text: Ein intern als „corrupted“ markierter Block wird als MEMIF_BLOCK_INCONSISTENT gemeldet – Begründung: Der Payload verknüpft beides nicht ausdrücklich, die Rückgabewertbeschreibung legt es nahe.",
-  "3) diag-read: Reihenfolge Invalidierungsprüfung vor Blank-Check – Begründung: Der Payload legt die Reihenfolge der Prüfungen nicht fest."
+  "1) Nach regulärem Auftragsende kehrt der Modulstatus nach MEMIF_IDLE zurück (Text und Diagramm diag-modulstatus) – Begründung: Belegt ist nur die Rückkehr nach Fee_Cancel; das Ende eines Auftrags beendet den Grund für MEMIF_BUSY.",
+  "2) Ein Auftrag im Status MEMIF_BUSY wird mit E_NOT_OK abgelehnt (Text) – Begründung: FEE_E_BUSY in SWS_Fee_91002 und Rückgabebeschreibung „not accepted“; die zugehörige Regel ist im Auszug abgeschnitten.",
+  "3) MEMIF_BLOCK_INCONSISTENT ist das Fee-seitige Gegenstück zum Konsistenzfehler aus Abb. 6.11 (Text) – Begründung: Wertebeschreibung „block is inconsistent, may contain corrupted data“ in SWS_Fee_00091.",
+  "4) Fee_MainFunction stößt den Treiberauftrag, z. B. Fls_Write, an (Diagramm diag-auftrag) – Begründung: Die Hauptfunktion bearbeitet die Aufträge asynchron, und Fls_Write gehört zu den benötigten Treiberdiensten (SWS_Fee_00105).",
+  "5) Nach FEE_E_UNINIT bricht Fee_Cancel ohne weitere Verarbeitung ab (Diagramm diag-cancel) – Begründung: übliches Verhalten nach DET-Prüfung, im Auszug nicht ausgeführt.",
+  "6) Der Treiber meldet Fehler über Fee_JobErrorNotification (Diagramm diag-fehlerpfad) – Begründung: ErrorDescription „Reported by the Flash Driver“ und Zweck von SWS_Fee_00096."
  ],
  "diagrams": [
   {
@@ -17,28 +20,28 @@
   },
   {
    "art": "dot",
-   "id": "diag-status",
-   "quelle": "anchor_r20_11.diag-status.dot"
+   "id": "diag-modulstatus",
+   "quelle": "anchor_r20_11.diag-modulstatus.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-auftrag",
+   "quelle": "anchor_r20_11.diag-auftrag.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-read",
-   "quelle": "anchor_r20_11.diag-read.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-write",
-   "quelle": "anchor_r20_11.diag-write.seq.json"
-  },
-  {
-   "art": "seq",
    "id": "diag-cancel",
-   "quelle": "anchor_r20_11.diag-cancel.seq.json"
+   "quelle": "anchor_r20_11.diag-cancel.dot"
   },
   {
    "art": "seq",
-   "id": "diag-fehler",
-   "quelle": "anchor_r20_11.diag-fehler.seq.json"
+   "id": "diag-fehlerpfad",
+   "quelle": "anchor_r20_11.diag-fehlerpfad.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-konsistenz",
+   "quelle": "anchor_r20_11.diag-konsistenz.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/fee/anchor_r20_11.html",
@@ -71,14 +74,72 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 45,
-  "im_prompt_schaubilder": 18,
-  "kandidaten": 64,
+  "im_prompt": 38,
+  "im_prompt_schaubilder": 9,
+  "kandidaten": 57,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "707f2280451bd46fc06f6579bef802b8f4d99af3376d8f3f62de4a133c750c09",
- "output_store": "ai/store/outputs/70/707f2280451bd46fc06f6579bef802b8f4d99af3376d8f3f62de4a133c750c09.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-modulstatus"
+  ],
+  "oneliner_chars": 110,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 75,
+   "3": 309,
+   "4": 1909
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_2_MemIf_Write: SWS_MemoryAbstractionInterface S. 19 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_Callback_notifications_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 24 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DET_SECTION_8_6_2_Optional_Interfaces_FLASHEEPROMEMULATION: SWS_FlashEEPROMEmulation S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_General_Overview_FLASHEEPROMEMULATION: SWS_FlashEEPROMEmulation S. 4 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_1_Fee_MainFunction: SWS_FlashEEPROMEmulation S. 38 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-9dd743302da5dd53: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 38 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_Scheduled_functions: SWS_FlashEEPROMEmulation S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_5_Fee_GetStatus: SWS_FlashEEPROMEmulation S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_2_Fee_Read: SWS_FlashEEPROMEmulation S. 26 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_FIGURE_Figure_5_2: RS_MemoryHWAbstractionLayer S. 24 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_2_Fee_Read: SWS_FlashEEPROMEmulation S. 26 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_7_1_5_Managing_block_correctness_information: SWS_FlashEEPROMEmulation S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_7_1_5_Managing_block_correctness_information: SWS_FlashEEPROMEmulation S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_1_Fee_JobEndNotification: SWS_FlashEEPROMEmulation S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_7_Fee_InvalidateBlock: SWS_FlashEEPROMEmulation S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_1_Fee_MainFunction: SWS_FlashEEPROMEmulation S. 38 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_9_Fee_EraseImmediateBlock: SWS_FlashEEPROMEmulation S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_1_Fee_JobEndNotification: SWS_FlashEEPROMEmulation S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_Callback_notifications_FLASHEEPROMEMULATION: SWS_FlashEEPROMEmulation S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_3_MemIf_Cancel: SWS_MemoryAbstractionInterface S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-7f949c5bac91ccb7: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 39 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_8_Fee_GetVersionInfo: SWS_FlashEEPROMEmulation S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-e8dfe0907fcb77ab: AUTOSAR_SWS_FlashEEPROMEmulation S. 11 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_9_Sequence_diagrams: SWS_FlashEEPROMEmulation S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_FIGURE_Figure_6_11: ErrorDescription S. 64 nicht im Anker R20-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_FIGURE_Figure_6_11: ErrorDescription S. 64 nicht im Anker R20-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_1_Fee_MainFunction: SWS_FlashEEPROMEmulation S. 38 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FEE_SECTION_7_1_5_Managing_block_correctness_information: SWS_FlashEEPROMEmulation S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "3225bc757f532c30e99aed6c8a68f73215fc7686706b964457e37c2f351c324e",
+ "output_store": "ai/store/outputs/32/3225bc757f532c30e99aed6c8a68f73215fc7686706b964457e37c2f351c324e.html",
  "params": {
   "module": "fee",
   "platform": "classic",
@@ -107,9 +168,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "58f73f8da7932229b4ba56c3757eda205f0cd5ead4583d92447b6a1a250c74b4",
- "prompt_store": "ai/store/prompts/58/58f73f8da7932229b4ba56c3757eda205f0cd5ead4583d92447b6a1a250c74b4.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "82b558e5a038eab55eaeaaceca0885cd7c35dd99cd9d183d6578decdf963e204",
+ "prompt_store": "ai/store/prompts/82/82b558e5a038eab55eaeaaceca0885cd7c35dd99cd9d183d6578decdf963e204.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -122,14 +183,58 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.091828,
-   "cost_usd_reported": 1.091828,
-   "created_at": "2026-10-09T07:02:01Z",
-   "duration_api_seconds": 347.353,
-   "duration_seconds": 347.449,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.060428,
+   "cost_usd_reported": 1.060428,
+   "created_at": "2026-10-13T02:50:42Z",
+   "duration_api_seconds": 343.918,
+   "duration_seconds": 346.765,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_2_MemIf_Write: SWS_MemoryAbstractionInterface S. 19 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_Callback_notifications_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 24 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DET_SECTION_8_6_2_Optional_Interfaces_FLASHEEPROMEMULATION: SWS_FlashEEPROMEmulation S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_General_Overview_FLASHEEPROMEMULATION: SWS_FlashEEPROMEmulation S. 4 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_1_Fee_MainFunction: SWS_FlashEEPROMEmulation S. 38 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-9dd743302da5dd53: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 38 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_Scheduled_functions: SWS_FlashEEPROMEmulation S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_5_Fee_GetStatus: SWS_FlashEEPROMEmulation S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_2_Fee_Read: SWS_FlashEEPROMEmulation S. 26 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_FIGURE_Figure_5_2: RS_MemoryHWAbstractionLayer S. 24 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_2_Fee_Read: SWS_FlashEEPROMEmulation S. 26 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_7_1_5_Managing_block_correctness_information: SWS_FlashEEPROMEmulation S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_7_1_5_Managing_block_correctness_information: SWS_FlashEEPROMEmulation S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_1_Fee_JobEndNotification: SWS_FlashEEPROMEmulation S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_7_Fee_InvalidateBlock: SWS_FlashEEPROMEmulation S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_1_Fee_MainFunction: SWS_FlashEEPROMEmulation S. 38 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_9_Fee_EraseImmediateBlock: SWS_FlashEEPROMEmulation S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_1_Fee_JobEndNotification: SWS_FlashEEPROMEmulation S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_4_Callback_notifications_FLASHEEPROMEMULATION: SWS_FlashEEPROMEmulation S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_3_MemIf_Cancel: SWS_MemoryAbstractionInterface S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_4_Fee_Cancel: SWS_FlashEEPROMEmulation S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-7f949c5bac91ccb7: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 39 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_8_Fee_GetVersionInfo: SWS_FlashEEPROMEmulation S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-e8dfe0907fcb77ab: AUTOSAR_SWS_FlashEEPROMEmulation S. 11 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_9_Sequence_diagrams: SWS_FlashEEPROMEmulation S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_FIGURE_Figure_6_11: ErrorDescription S. 64 nicht im Anker R20-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_FIGURE_Figure_6_11: ErrorDescription S. 64 nicht im Anker R20-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_5_1_Fee_MainFunction: SWS_FlashEEPROMEmulation S. 38 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_3_Fee_Write: SWS_FlashEEPROMEmulation S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FEE_SECTION_7_1_5_Managing_block_correctness_information: SWS_FlashEEPROMEmulation S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -138,19 +243,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.091828,
-     "inputTokens": 43197,
+     "costUSD": 1.060428,
+     "inputTokens": 35452,
      "maxOutputTokens": 128000,
-     "outputTokens": 45952,
+     "outputTokens": 45931,
      "provider": "firstParty",
-     "thinkingTokens": 23661,
+     "thinkingTokens": 23175,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "578d5bd8-1819-4a09-ab71-311235c1ae0b",
+   "run_id": "d36a6197-5ead-42e0-a370-291f23e93174",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/578d5bd8-1819-4a09-ab71-311235c1ae0b.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/d36a6197-5ead-42e0-a370-291f23e93174.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -159,11 +264,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 43197,
-    "output_tokens": 45952,
+    "inference_geo": "global",
+    "input_tokens": 35452,
+    "output_tokens": 45931,
     "output_tokens_details": {
-     "thinking_tokens": 23661
+     "thinking_tokens": 23175
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -175,11 +280,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 43197,
-    "output": 45952,
-    "thinking": 23661
+    "input_uncached": 35452,
+    "output": 45931,
+    "thinking": 23175
    },
-   "wall_seconds": 349.155
+   "wall_seconds": 348.164
   }
  ],
  "schema": "ai-trace@2",

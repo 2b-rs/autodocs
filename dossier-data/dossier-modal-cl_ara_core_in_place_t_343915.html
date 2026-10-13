@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_in_place_t_343915" class="dossier-modal dossier-workbench" data-dossier-sha="1f13ee716fb9698d" aria-labelledby="dossier-modal-cl_ara_core_in_place_t_343915-title">
+<dialog id="dossier-modal-cl_ara_core_in_place_t_343915" class="dossier-modal dossier-workbench" data-dossier-sha="63fa570abd6e5fbb" aria-labelledby="dossier-modal-cl_ara_core_in_place_t_343915-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_in_place_t_343915-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_in_place_t_343915)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,694 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,217 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::in_place_t' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_in_place_t_343915",
@@ -208,59 +227,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="7a91de511d596814af262f9d193757974c271a61a3fcfa14a77f522a0dfb2edf" data-trace-output="1f13ee716fb9698d783935be30fa5295147d8692643d1024aa20200dbc46278e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="011b812476bc14530bfcbf0f3d26c9d7223379fb467058c3df06c43e7cbc41ba" data-trace-output="63fa570abd6e5fbb488fff3b982409cf8bc0919fcdbe2eeb1f405ade97cd621f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Tag-Typ zur Kennzeichnung von In-Place-Konstruktionen in Containern wie Optional ohne Kopiervorgänge." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-The struct &lt;code&gt;ara::core::in_place_t&lt;/code&gt; acts as a so-called tag type (disambiguation type) in module &lt;code&gt;core&lt;/code&gt; of the AUTOSAR Adaptive Platform. Its primary purpose is to mark operations that are to be performed directly on site (“in-place”). Specifically, an instance of this type serves as a signal when passed to selected constructors of &lt;code&gt;ara::core::Optional&lt;/code&gt;. This signals that the target type held in the container is to be constructed directly in the container's memory area, without temporary objects having to be created, copied, or moved for this purpose.
-&lt;/p&gt;
-&lt;p&gt;
-In modern C++ architectures for functional safety and resource efficiency, in-place mechanisms play an essential role. They allow the instantiation of types that are neither copyable nor movable, or whose copying process should be avoided due to dynamic allocations or large data structures. In this context, the struct &lt;code&gt;ara::core::in_place_t&lt;/code&gt; primarily interacts with &lt;code&gt;ara::core::Optional&lt;/code&gt; and the application code that controls object creation.
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als Tag-Typ zur Kennzeichnung von In-Place-Konstruktionen in Containern wie Optional ohne Kopiervorgänge.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::core::in_place_t&lt;/code&gt; dient als Tag-Typ zur Kennzeichnung von Operationen, bei denen Objekte direkt an Ort und Stelle ohne Kopiervorgänge konstruiert werden sollen &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;. Eine Instanz wird typischerweise an Konstruktoren von Wrapper-Klassen wie &lt;code&gt;ara::core::Optional&lt;/code&gt; übergeben, um die Argumente direkt an den Konstruktor des enthaltenen Typs weiterzuleiten. Die Erzeugung erfolgt über einen expliziten Standardkonstruktor, der als ausnahmesicher und &lt;code&gt;noexcept&lt;/code&gt; definiert ist &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;. Da der Typ zustandslos ist, existieren keine Fehlerszenarien oder komplexen Lebenszyklusphasen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::core::in_place_t&lt;/code&gt; ist ein Tag-Typ innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform und wird über die Header-Datei &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;. In modernen C++-Schnittstellen dient ein solcher Tag-Typ als semantisches Steuerungselement für Überladungen bei der Objekterzeugung. Die primäre Rolle von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; besteht darin, Operationen explizit als In-Place-Konstruktionen zu deklarieren. Eine Instanz dieses Typs wird an spezialisierte Konstruktoren von Wrapper-Klassen wie &lt;code&gt;ara::core::Optional&lt;/code&gt; übergeben, um die eindeutige Absicht zu signalisieren, dass das im Container gehaltene Objekt direkt an Ort und Stelle konstruiert werden soll.&lt;/p&gt;
+&lt;p&gt;Durch diesen Mechanismus entfällt die Notwendigkeit, außerhalb des Containers ein temporäres Objekt zu erzeugen, das anschließend per Kopier- oder Verschiebekonstruktor in den Container übertragen werden müsste. Die Klasse fungiert somit als Vermittler zwischen dem aufrufenden Anwendungscode und den Initialisierungsroutinen umschließender Typen, wodurch sie insbesondere für Ressourcenverwaltung und Effizienz im Kontext sicherheitskritischer Anwendungen von Bedeutung ist.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-The lifecycle of &lt;code&gt;ara::core::in_place_t&lt;/code&gt; is extremely lightweight. The struct is provided via header &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; and defines an explicit default constructor:
-&lt;/p&gt;
-&lt;p&gt;
-According to &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;, the default constructor is declared as &lt;code&gt;explicit in_place_t() noexcept = default;&lt;/code&gt;. Because it is an empty struct, the lifecycle involves no complex state transitions, allocations, or ownership relationships.
-&lt;/p&gt;
-&lt;p&gt;
-Interpretation: As a pure tag type, &lt;code&gt;ara::core::in_place_t&lt;/code&gt; has no internal state, so instances can be created concurrently at will, copied, or passed to functions as temporary values without requiring synchronization mechanisms. Typically, an instance is created only as a temporary passing object in the call context of a target constructor and is destroyed again immediately after completion of the expression.
-&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; ist minimalistisch gestaltet. Die Klasse deklariert einen expliziten Standardkonstruktor &lt;code&gt;explicit in_place_t() noexcept = default;&lt;/code&gt;, der als &lt;code&gt;noexcept&lt;/code&gt; ausgezeichnet ist &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;. Als zustandslose Tag-Struktur besitzt der Typ keinerlei Membervariablen oder dynamische Ressourcen. Interpretation: Die Struktur dient ausschließlich als Typ-Markierung zur Überladungsauflösung beim Compiler und kapselt keine Laufzeitdaten. Entsprechend existieren weder komplexe Zustände noch Übergänge zwischen unterschiedlichen Lebensphasen.&lt;/p&gt;
+&lt;p&gt;Instanzen von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; werden üblicherweise direkt am Aufrufpunkt als temporäre Werte erzeugt und unmittelbar an die Zielmethode weitergegeben. Es entstehen keine Besitzverhältnisse an verwalteten Ressourcen, und bei der Zerstörung des Objekts fallen keinerlei Aufräumarbeiten an. Da der Typ vollkommen unveränderlich und zustandslos ist, sind Instanziierung und Zerstörung von Natur aus nebenläufigkeitssicher und können gefahrlos über mehrere Threads hinweg ohne Synchronisationsmechanismen genutzt werden.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The typical usage path of &lt;code&gt;ara::core::in_place_t&lt;/code&gt; is divided into the following steps:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;strong&gt;Including the header file:&lt;/strong&gt; The type is provided by including &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; in accordance with &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Instantiating the tag object:&lt;/strong&gt; An instance of &lt;code&gt;ara::core::in_place_t&lt;/code&gt; is created for initialization. Due to the explicit constructor according to &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;, this is usually done by direct value initialization (for example, &lt;code&gt;ara::core::in_place_t{}&lt;/code&gt;).
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Passing to the container constructor:&lt;/strong&gt; The instance is passed as the first argument to a designated constructor of &lt;code&gt;ara::core::Optional&lt;/code&gt;, followed by the constructor arguments of the payload type to be embedded.
-&lt;/li&gt;
-&lt;li&gt;
-&lt;strong&gt;Direct construction in the target memory:&lt;/strong&gt; &lt;code&gt;ara::core::Optional&lt;/code&gt; evaluates the tag and forwards the subsequent arguments to the constructor of the encapsulated value. The payload value object is constructed directly in the internal memory of &lt;code&gt;ara::core::Optional&lt;/code&gt; without any copy or move operations taking place.
-&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; konzentriert sich auf die direkte Weiterleitung von Konstruktionsargumenten an Wrapper wie &lt;code&gt;ara::core::Optional&lt;/code&gt;. Zunächst bindet die Anwendung die erforderliche Header-Datei &lt;code&gt;#include "ara/core/utility.h"&lt;/code&gt; ein &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;. Bei der Deklaration oder Initialisierung eines &lt;code&gt;ara::core::Optional&lt;/code&gt;-Objekts übergibt der Entwickler eine Instanz von &lt;code&gt;ara::core::in_place_t&lt;/code&gt; als erstes Argument an den Konstruktor. Die nachfolgenden Argumente entsprechen exakt der Parameterliste des Konstruktors des Typs, der im &lt;code&gt;Optional&lt;/code&gt; gehalten werden soll.&lt;/p&gt;
+&lt;p&gt;Durch die Auswertung des Tags ruft der Containerkonstruktor intern direkt den passenden Konstruktor des Nutzdatenobjekts im internen Speicherbereich auf. Dies verhindert unnötige Kopier- und Verschiebevorgänge, was insbesondere bei Typen vorteilhaft ist, die teure Kopiervorgänge nach sich ziehen oder deren Kopierkonstruktor gelöscht ist. Nach dem erfolgreichen Aufruf des Zielkonstruktors ist der Zweck des Tags vollständig erfüllt, und die temporäre Tag-Instanz wird automatisch zerstört.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-No error scenarios are foreseen for the creation of &lt;code&gt;ara::core::in_place_t&lt;/code&gt;. According to &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;, the default constructor is designated with &lt;code&gt;noexcept&lt;/code&gt; and is considered exception-safe (“exception safe”). Misuse during the object creation of &lt;code&gt;in_place_t&lt;/code&gt; itself does not lead to runtime errors, but is caught at compile time by the type system.
-&lt;/p&gt;
-&lt;p&gt;
-Interpretation: Designating the constructor with &lt;code&gt;explicit&lt;/code&gt; according to &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt; is likely intended to prevent accidental implicit type conversion from empty initializer lists (such as &lt;code&gt;{}&lt;/code&gt;). Callers must formulate the instantiation deliberately and with exact typing, thereby avoiding ambiguities with overloaded constructors of &lt;code&gt;ara::core::Optional&lt;/code&gt;. If an exception is thrown during the in-place construction of the target object held in the container, it does not originate from &lt;code&gt;ara::core::in_place_t&lt;/code&gt;, but is subject to the exception safety of the payload value's constructor.
-&lt;/p&gt;
-
-&lt;!-- annahmen:
-1) Interpretation: Als reiner Tag-Typ besitzt ara::core::in_place_t keinen internen Zustand und erfordert keine Synchronisation bei nebenläufigem Zugriff. – Begründung: Der Payload spezifiziert eine leere struct ohne Datenmitglieder und mit trivialem Default-Konstruktor.
-2) Interpretation: Das Schlüsselwort explicit am Default-Konstruktor dürfte implizite Konvertierungen aus leeren Initialisierungslisten {} unterbinden und so Überladungskonflikte bei ara::core::Optional verhindern. – Begründung: SWS_CORE_04012 deklariert explicit in_place_t() noexcept = default, was in modernem C++ typischerweise zur Vermeidung unabsichtlicher impliziter Tag-Konstruktionen dient.
---&gt;
-&lt;p class="ai-note"&gt;This guide is based on the requirements of AUTOSAR Adaptive specification R25-11. All normative specifications regarding signatures, header mappings, and exception behavior originate from the referenced SWS entries.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;In Hinblick auf Fehlerszenarien und Ausnahmesicherheit verhält sich &lt;code&gt;ara::core::in_place_t&lt;/code&gt; vollständig fehlerfrei. Gemäß Spezifikation ist der Standardkonstruktor als &lt;code&gt;noexcept&lt;/code&gt; deklariert und besitzt die Einstufung &lt;code&gt;exception safe&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_04012" href="../spec/record.html?id=SWS_CORE_04012"&gt;[SWS_CORE_04012]&lt;/a&gt;. Es existieren keine Vorbedingungen für den Aufruf des Standardkonstruktors, und es werden weder Fehlercodes noch C++-Ausnahmen ausgelöst.&lt;/p&gt;
+&lt;p&gt;Sollte während einer In-Place-Konstruktion ein Fehler auftreten, liegt die Ursache nicht in &lt;code&gt;ara::core::in_place_t&lt;/code&gt;, sondern ausschließlich im Konstruktor des umschlossenen Nutzdatentyps. Falls dessen Konstruktor bei ungültigen Parametern Ausnahmen wirft oder Fehlerzustände meldet, greifen die definierten Fehlerbehandlungsmechanismen des umschließenden Containers oder des Zieltyps. Für &lt;code&gt;in_place_t&lt;/code&gt; selbst sind keine Nachbedingungen oder Aufräumarbeiten im Fehlerfall erforderlich.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Struktur dient rein als typbasierter Disambiguierungs-Parameter zur Überladungsauflösung ohne Nutzdaten – Begründung: Der Payload spezifiziert eine leere struct-Syntax mit noexcept-Default-Konstruktor zur Kennzeichnung von In-Place-Konstruktionen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden basiert auf den AUTOSAR-Adaptive-Spezifikationen für das Modul core und wurde automatisch kuratiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -302,9 +295,9 @@ Interpretation: Designating the constructor with &lt;code&gt;explicit&lt;/code&g
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>7a91de511d59…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>011b812476bc…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -339,8 +332,8 @@ Interpretation: Designating the constructor with &lt;code&gt;explicit&lt;/code&g
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -377,7 +370,7 @@ Interpretation: Designating the constructor with &lt;code&gt;explicit&lt;/code&g
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -440,4 +433,4 @@ Interpretation: Designating the constructor with &lt;code&gt;explicit&lt;/code&g
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CORE_04012","k":"function","d":"CORE","t":"function in_place_t [SWS_CORE_04012] Upstream: RS_AP_00130 explicit in_place_t () noexcept=default; Default constructor Header-Datei #include \"ara/core/utility.h\" class mono Scope struct ara::core::in_place_t class mono Exception-Sicherheit exception safe class mono","n":"in_place_t"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/886566385daffea3.json?v=4ede248a" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CORE_04012","k":"function","d":"CORE","t":"function in_place_t [SWS_CORE_04012] Upstream: RS_AP_00130 explicit in_place_t () noexcept=default; Default constructor Header-Datei #include \"ara/core/utility.h\" class mono Scope struct ara::core::in_place_t class mono Exception-Sicherheit exception safe class mono","n":"in_place_t"}],"inbound":[]}</script></dialog>

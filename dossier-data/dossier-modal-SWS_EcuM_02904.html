@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EcuM_02904" class="dossier-modal dossier-workbench" data-dossier-sha="2f7e58cfb3a28c41" aria-labelledby="dossier-modal-SWS_EcuM_02904-title">
+<dialog id="dossier-modal-SWS_EcuM_02904" class="dossier-modal dossier-workbench" data-dossier-sha="9fdd989f40103263" aria-labelledby="dossier-modal-SWS_EcuM_02904-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EcuM_02904-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EcuM_02904)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,478 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,933 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EcuM_ErrorHook'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,21 +202,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="10d188e80f3b2563f11dcfde6d5f1f0498e23a0aba58084c29cc5c1642903419" data-trace-output="2f7e58cfb3a28c4141b1e8d474ee77e63844024c2a99241c6e37f1ae9667c3d8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a96df00e2811280280b28b09ff4e41e0925597ef797481b8c6ba01aa61615fe7" data-trace-output="9fdd989f40103263104478565ec1a3aac828d273507cb2de9863b1da57e6320d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem kontrollierten Stilllegen des Steuergeräts bei kritischen Fehlern wie fehlgeschlagener RAM-Prüfung." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-&lt;p&gt;The callback function &lt;code&gt;EcuM_ErrorHook&lt;/code&gt; is a synchronous, non-reentrant hook of the ECU State Manager (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;). It is provided via header file &lt;code&gt;EcuM_Externals.h&lt;/code&gt; and has service ID &lt;code&gt;0x30&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;). &lt;code&gt;reason&lt;/code&gt; of type &lt;code&gt;uint16&lt;/code&gt; is passed as the sole input parameter, indicating the cause of the error; a return value does not exist (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Error Handling and Shutdown&lt;/h4&gt;
-&lt;p&gt;The hook is called when severe errors occur where regular further processing is impossible and the ECU must be stopped (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;). This particularly applies to error codes &lt;code&gt;ECUM_E_RAM_CHECK_FAILED&lt;/code&gt; and &lt;code&gt;ECUM_E_CONFIGURATION_DATA_INCONSISTENT&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;). The specific modality of the shutdown—for example reset, halt, restart, or entering a safe state—is the responsibility of the integrator (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Interaction and Boundary Conditions&lt;/h4&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und nicht-reentrante Callback-Funktion &lt;code&gt;EcuM_ErrorHook&lt;/code&gt; (bereitgestellt über &lt;code&gt;EcuM_Externals.h&lt;/code&gt;) wird vom ECU State Manager aufgerufen, sobald schwerwiegende Fehler auftreten, die eine reguläre Weiterverarbeitung unmöglich machen und das Anhalten des Steuergeräts erfordern &lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;. Über den Übergabeparameter &lt;code&gt;reason&lt;/code&gt; wird die spezifische Fehlerursache übermittelt &lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Zu den definierten Fehlerursachen zählen &lt;code&gt;ECUM_E_RAM_CHECK_FAILED&lt;/code&gt; und &lt;code&gt;ECUM_E_CONFIGURATION_DATA_INCONSISTENT&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;. Schlägt die RAM-Prüfung beim Wakeup fehl, ist der ECU Manager verpflichtet, &lt;code&gt;EcuM_ErrorHook&lt;/code&gt; mit dem Grund &lt;code&gt;ECUM_E_RAM_CHECK_FAILED&lt;/code&gt; auszulösen &lt;a class="spec-record-ref" data-req="SWS_EcuM_02987" href="../../spec/record.html?id=SWS_EcuM_02987"&gt;[SWS_EcuM_02987]&lt;/a&gt;. Zudem erfolgt die Fehlerbehandlung über diesen Hook, wenn ein Aufruf einer Betriebssystemfunktion fehlschlägt und keine andere Fehlerreaktion spezifiziert ist; der EcuM verbleibt in diesem Fall im bisherigen Zustand &lt;a class="spec-record-ref" data-req="SWS_EcuM_04139" href="../../spec/record.html?id=SWS_EcuM_04139"&gt;[SWS_EcuM_04139]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Für den Systemintegrator gelten bei der Implementierung folgende Rahmenbedingungen:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;RAM check during wakeup:&lt;/strong&gt; If the RAM check fails during wakeup, module EcuM calls &lt;code&gt;EcuM_ErrorHook&lt;/code&gt; with parameter &lt;code&gt;ECUM_E_RAM_CHECK_FAILED&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02987" href="../../spec/record.html?id=SWS_EcuM_02987"&gt;[SWS_EcuM_02987]&lt;/a&gt;). It is at the integrator's discretion to forward this error to the DEM, provided it is ensured that the DEM does not write to damaged NVRAM blocks (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02987" href="../../spec/record.html?id=SWS_EcuM_02987"&gt;[SWS_EcuM_02987]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Failed operating system calls:&lt;/strong&gt; If a call to an OS function fails and no other error reaction is defined, the EcuM does not transition to the requested state; in such cases, error reporting likewise occurs via &lt;code&gt;EcuM_ErrorHook&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04139" href="../../spec/record.html?id=SWS_EcuM_04139"&gt;[SWS_EcuM_04139]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Stopp-Modalität des Steuergeräts:&lt;/strong&gt; Der Integrator wählt die Art und Weise, wie die ECU stillgelegt wird (z. B. Reset, Halt, Neustart oder sicherer Zustand) &lt;a class="spec-record-ref" data-req="SWS_EcuM_02904" href="../../spec/record.html?id=SWS_EcuM_02904"&gt;[SWS_EcuM_02904]&lt;/a&gt;. Interpretation: Bei drastischen Maßnahmen wie einem Reset oder Halt dürfte die Funktion typischerweise nicht mehr zur regulären Ablaufsteuerung zurückkehren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlermeldung an das DEM:&lt;/strong&gt; Es liegt im Ermessen des Integrators, ob der Fehler an das DEM weitergeleitet wird, sofern sichergestellt ist, dass das DEM keine beschädigten NVRAM-Blöcke beschreibt &lt;a class="spec-record-ref" data-req="SWS_EcuM_02987" href="../../spec/record.html?id=SWS_EcuM_02987"&gt;[SWS_EcuM_02987]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;p class="ai-note"&gt;This usage note is based on the AUTOSAR CP R20-11 specification for module EcuM.&lt;/p&gt;
+&lt;!-- annahmen: 1) Rücksprungverhalten bei Stilllegung – Begründung: SWS_EcuM_02904 verlangt das Stoppen des Steuergeräts (z. B. Reset/Halt), spezifiziert aber nicht explizit das Rückkehrverhalten des Hooks. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch eine KI erstellt und basiert auf der Spezifikation AUTOSAR CP R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,9 +254,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>10d188e80f3b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a96df00e2811…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -275,8 +291,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">11</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -313,7 +329,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 9 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 10 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -376,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02904","k":"function","d":"AUTOSAR","t":"","n":"EcuM_ErrorHook"}],"inbound":[{"i":"SWS_EcuM_02987","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_02987].","n":"SWS_EcuM_02987"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f303f494d7bff4a3.json?v=1177914b" data-total="9" data-new="9" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02904","k":"function","d":"AUTOSAR","t":"","n":"EcuM_ErrorHook"}],"inbound":[{"i":"SWS_EcuM_02987","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_02987].","n":"SWS_EcuM_02987"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f303f494d7bff4a3.json?v=08625a51" data-total="10" data-new="10" data-figures="2" data-used="0"></script></dialog>

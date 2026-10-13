@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_PduR_00617" class="dossier-modal dossier-workbench" data-dossier-sha="c9213c32a2bd06be" aria-labelledby="dossier-modal-SWS_PduR_00617-title">
+<dialog id="dossier-modal-SWS_PduR_00617" class="dossier-modal dossier-workbench" data-dossier-sha="17756fbc8a2b1d75" aria-labelledby="dossier-modal-SWS_PduR_00617-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_PduR_00617-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_PduR_00617)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,385 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,840 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'PduR_DisableRouting'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,35 +198,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="e2ac2ae9ce9596cc1609651c7291f116185f75e468480e87df55a2fa5487626d" data-trace-output="c9213c32a2bd06be3b3542352b8082ac4d196eae55d0e9757f8a895742314129" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="79b319e1f13bf17637c3f69cb8f7889c42af341cd6297f6d7b9f0c2d4cc3de6c" data-trace-output="17756fbc8a2b1d753d5b4155cad3dc39d6e32a50fd9d00788e7bf4cc0bfc7b7e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Deaktiviert synchron eine konfigurierte Routing-Pfadgruppe mit optionaler Reinitialisierung der Puffer." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;PduR_DisableRouting&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;) serves to disable a routing path group (Routing Path Group) in the PDU Router. It has no return value (&lt;code&gt;void&lt;/code&gt;) and is provided via the header &lt;code&gt;PduR.h&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Upon invocation, the function expects two input parameters:
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;PduR_DisableRouting&lt;/code&gt; dient dem Deaktivieren einer konfigurierten Routing-Pfadgruppe (&lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;). Sie ist reentrant ausgelegt und besitzt keinen Rückgabewert (&lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;).&lt;/p&gt;
+
+  &lt;h4&gt;Parameter und Verhalten&lt;/h4&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;id&lt;/code&gt;: Identifies the routing path group to be disabled, as defined in the PDU Router configuration.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;initialize&lt;/code&gt;: Controls the handling of single buffers (Single Buffers). When &lt;code&gt;true&lt;/code&gt; is passed, these buffers are initialized to their default value; with &lt;code&gt;false&lt;/code&gt;, the current buffer contents are retained.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;id&lt;/code&gt; (&lt;code&gt;PduR_RoutingPathGroupIdType&lt;/code&gt;): Identifikation der zu deaktivierenden Routing-Pfadgruppe, wie sie in der Konfiguration des PDU-Routers definiert ist (&lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;initialize&lt;/code&gt; (&lt;code&gt;boolean&lt;/code&gt;): Steuert das Pufferverhalten beim Deaktivieren. Bei Übergabe von &lt;code&gt;true&lt;/code&gt; werden Single-Buffer auf ihren Standardwert initialisiert; bei &lt;code&gt;false&lt;/code&gt; behalten Single-Buffer ihren aktuellen Wert bei (&lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;, the function is specified as reentrant. For a valid call, the PduR module must have been initialized previously.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    With regard to error handling, direct references to &lt;a class="spec-record-ref" data-req="SWS_PduR_00100" href="../../spec/record.html?id=SWS_PduR_00100"&gt;[SWS_PduR_00100]&lt;/a&gt; exist:
-  &lt;/p&gt;
+  &lt;h4&gt;Fehlerbehandlung und Randbedingungen&lt;/h4&gt;
+  &lt;p&gt;Im Fehlerfall sind laut Fehlertabelle spezifische Fehlercodes definiert (&lt;a class="spec-record-ref" data-req="SWS_PduR_00100" href="../../spec/record.html?id=SWS_PduR_00100"&gt;[SWS_PduR_00100]&lt;/a&gt;):&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;If the function is called without the module being initialized, this pertains to error &lt;code&gt;PDUR_E_UNINIT&lt;/code&gt; (error value &lt;code&gt;0x01&lt;/code&gt;).&lt;/li&gt;
-    &lt;li&gt;If an invalid routing table or group ID is passed to &lt;code&gt;PduR_DisableRouting&lt;/code&gt;, the error code &lt;code&gt;PDUR_E_ROUTING_PATH_GROUP_ID_INVALID&lt;/code&gt; (error value &lt;code&gt;0x08&lt;/code&gt;) is provided.&lt;/li&gt;
+    &lt;li&gt;Wird die Funktion aufgerufen, ohne dass das Modul initialisiert ist, ist der Fehlercode &lt;code&gt;PDUR_E_UNINIT&lt;/code&gt; (0x01) vorgesehen (&lt;a class="spec-record-ref" data-req="SWS_PduR_00100" href="../../spec/record.html?id=SWS_PduR_00100"&gt;[SWS_PduR_00100]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Wird an &lt;code&gt;PduR_DisableRouting&lt;/code&gt; eine ungültige Routing-Tabelle bzw. Gruppen-ID übergeben, ist der Fehler &lt;code&gt;PDUR_E_ROUTING_PATH_GROUP_ID_INVALID&lt;/code&gt; (0x08) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_PduR_00100" href="../../spec/record.html?id=SWS_PduR_00100"&gt;[SWS_PduR_00100]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification data of AUTOSAR Classic R20-11.&lt;/p&gt;
+  &lt;p&gt;Die Funktion steht über den Header &lt;code&gt;PduR.h&lt;/code&gt; zur Verfügung (&lt;a class="spec-record-ref" data-req="SWS_PduR_00617" href="../../spec/record.html?id=SWS_PduR_00617"&gt;[SWS_PduR_00617]&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikationsanforderungen generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -248,9 +257,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e2ac2ae9ce95…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>79b319e1f13b…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 15 <span class="dossier-meta-sub">(15 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 15 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 16 <span class="dossier-meta-sub">(16 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 16 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -285,8 +294,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">17</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">16</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">18</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">17</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -323,7 +332,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 15 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 16 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -386,4 +395,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PduR_00617","k":"function","d":"AUTOSAR","t":"","n":"PduR_DisableRouting"}],"inbound":[{"i":"SWS_PduR_00100","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PduR_00100].","n":"SWS_PduR_00100"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/56de89b91f3f2235.json?v=f50c206f" data-total="15" data-new="15" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PduR_00617","k":"function","d":"AUTOSAR","t":"","n":"PduR_DisableRouting"}],"inbound":[{"i":"SWS_PduR_00100","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PduR_00100].","n":"SWS_PduR_00100"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/56de89b91f3f2235.json?v=6e1a0136" data-total="16" data-new="16" data-figures="0" data-used="0"></script></dialog>

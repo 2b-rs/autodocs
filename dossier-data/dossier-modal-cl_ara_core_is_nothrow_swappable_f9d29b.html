@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_is_nothrow_swappable_f9d29b" class="dossier-modal dossier-workbench" data-dossier-sha="517e1537780aed2f" aria-labelledby="dossier-modal-cl_ara_core_is_nothrow_swappable_f9d29b-title">
+<dialog id="dossier-modal-cl_ara_core_is_nothrow_swappable_f9d29b" class="dossier-modal dossier-workbench" data-dossier-sha="126196a2fa88d7a1" aria-labelledby="dossier-modal-cl_ara_core_is_nothrow_swappable_f9d29b-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_is_nothrow_swappable_f9d29b-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_is_nothrow_swappable_f9d29b)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,607 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,130 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::is_nothrow_swappable' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_is_nothrow_swappable_f9d29b",
@@ -203,39 +222,39 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1ca7c4aab81f60afbd89c2f4ea0a3009ce0957303b9cec3d5bdbd2f5c1bf7b9c" data-trace-output="517e1537780aed2f0ea862fcc1bcb768379e24cda9f2a4ea8fc7c04b333206a6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="dd0bb825525af0d82410619b762a9e022a19bc6fe139de17ce8dcabcd3940051" data-trace-output="126196a2fa88d7a1560c184a7cbf5588da27d6fa0dc516765b645fa63a8b18f5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Prüft zur Compile-Zeit, ob zwei Werte eines Typs ohne Auslösen von Ausnahmen vertauscht werden können." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The template structure &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; represents a type trait element within module &lt;code&gt;core&lt;/code&gt; of the AUTOSAR Adaptive Platform. According to the specification description, this metaprogramming tool is based on &lt;code&gt;std::is_nothrow_swappable&lt;/code&gt; from the C++ standard ISO/IEC 14882:2017 (section &lt;code&gt;[meta.unary.prop]&lt;/code&gt;). The primary role of this trait is to query at compile time whether two lvalue objects of a given type &lt;code&gt;T&lt;/code&gt; can be swapped without throwing an exception (no-throw guarantee). Interpretation: The provision in namespace &lt;code&gt;ara::core&lt;/code&gt; presumably serves unification and safeguarding within the AUTOSAR Adaptive core type definitions, so that generic components can rely on uniform type traits.&lt;/p&gt;
-&lt;p&gt;In the context of safety-critical automotive software architectures, exception safety plays a central role. The trait typically interacts as a predicate with template interfaces, generic algorithms, utility functions, and container structures. It allows developers to specifically specialize or constrain swap operation algorithms (&lt;code&gt;swap&lt;/code&gt;) such that strong guarantees for exception handling are formally complied with and statically verified.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Prüft zur Compile-Zeit, ob zwei Werte eines Typs ohne Auslösen von Ausnahmen vertauscht werden können.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Template-Struktur &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) ein Compile-Zeit-Hilfsmittel bereit, das analog zu &lt;code&gt;std::is_nothrow_swappable&lt;/code&gt; gemäß C++17 [meta.unary.prop] prüft, ob zwei Instanzen eines Typs ohne Ausnahmen vertauschbar sind. Sie wird vor allem in generischen Algorithmen und Datenstrukturen genutzt, um ausnahmesichere Vertauschungen per SFINAE oder statischen Zusicherungen abzusichern. Da die Auswertung vollständig statisch durch den Compiler erfolgt, fallen weder Laufzeit-Ressourcen noch dynamische Fehler an. Als wesentliche Randbedingung setzt die fehlerfreie Prüfung voraus, dass der übergebene Datentyp zum Zeitpunkt der Instanziierung vollständig definiert ist.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Template-Struktur &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) ein Metafunktions-Hilfsmittel zur statischen Typprüfung bereit. Ihre semantische Definition verweist direkt auf &lt;code&gt;std::is_nothrow_swappable&lt;/code&gt; gemäß dem ISO-C++17-Standard ISO/IEC 14882:2017 (Abschnitt [meta.unary.prop]). Als Trait dient sie Entwicklern generischer Komponenten dazu, bereits zur Übersetzungszeit abzufragen, ob zwei lvalues eines konkreten Datentyps &lt;code&gt;T&lt;/code&gt; ohne das Werfen von Ausnahmen miteinander vertauscht werden können.&lt;/p&gt;
+&lt;p&gt;Im architektonischen Kontext interagiert das Trait primär mit generischen Algorithmen, Containern und Hilfsfunktionen des AUTOSAR-Core-Moduls sowie anwendungsspezifischen Implementierungen. Die Prüfung dürfte typischerweise in generischen Bibliotheksfunktionen oder Datenstrukturen des Moduls zur Absicherung ausnahmesicherer Tauschoperationen via SFINAE, &lt;code&gt;static_assert&lt;/code&gt; oder bedingten &lt;code&gt;noexcept&lt;/code&gt;-Spezifikationen herangezogen werden. Durch diese Prüfung wird sichergestellt, dass Operationen wie das Vertauschen von Pufferinhalten oder Zuständen den Anforderungen an robuste und deterministische Abläufe im Adaptive-Ökosystem genügen.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a pure compile-time construct (template structure), &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; is not subject to a classic runtime lifecycle. There are no dynamic states, no allocations on the free store, and no necessity for explicit object creation or destruction at runtime. The lifecycle is completely limited to the phases of the compilation process:&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Da es sich bei &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; um eine reine Template-Metaprogrammierungs-Struktur handelt, besitzt sie keinen klassischen Lebenszyklus zur Laufzeit. Es existieren keine Instanziierungsphasen, keine dynamischen Speicherallokationen und keine Destruktionsabläufe in der ausgeführten Anwendung. Die Auswertung der Eigenschaften erfolgt vollständig statisch durch den Compiler während des Übersetzungsprozesses.&lt;/p&gt;
+&lt;p&gt;Aus diesem rein statischen Charakter folgt auch die Abwesenheit von Laufzeitzuständen oder Zustandsübergängen. Das Trait unterliegt keinen Beschränkungen hinsichtlich der Nebenläufigkeit, da die Abfrage von Typmerkmalen thread-neutral und seiteneffektfrei ist. Vermutlich erbt &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; analog zum Standard-Vorbild von &lt;code&gt;std::integral_constant&amp;lt;bool, ...&amp;gt;&lt;/code&gt;, wodurch die Typkonstante &lt;code&gt;value&lt;/code&gt; sowie entsprechende Konvertierungsoperatoren bereitgestellt werden, die ohne Laufzeitaufwand als Konstanten zur Verfügung stehen.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; gliedert sich in die Definition eines zu prüfenden Typs, die statische Abfrage der Vertauschbarkeit und die Steuerung von Compile-Zeit-Verzweigungen:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instantiation:&lt;/strong&gt; Upon mention of &lt;code&gt;ara::core::is_nothrow_swappable&amp;lt;T&amp;gt;&lt;/code&gt;, the compiler generates a concrete specialization for the type argument parameter &lt;code&gt;T&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Evaluation:&lt;/strong&gt; During semantic analysis, the compiler checks whether a free or type-specific &lt;code&gt;swap&lt;/code&gt; function is declared for lvalues of &lt;code&gt;T&lt;/code&gt; and whether this call is evaluated with the identifier &lt;code&gt;noexcept(true)&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Value provision:&lt;/strong&gt; Like its role model from ISO/IEC 14882:2017, the structure template presumably inherits from &lt;code&gt;std::integral_constant&amp;lt;bool, ...&amp;gt;&lt;/code&gt;, thereby providing the constant &lt;code&gt;value&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Bereitstellung des Datentyps: Ein Zieltyp &lt;code&gt;T&lt;/code&gt; wird deklariert und implementiert idealerweise eine eigene, als &lt;code&gt;noexcept&lt;/code&gt; markierte &lt;code&gt;swap&lt;/code&gt;-Funktion oder greift auf elementweise vertauschbare Unterstrukturen zurück.&lt;/li&gt;
+&lt;li&gt;Statische Überprüfung: Innerhalb eines generischen Kontextes instanziiert der Entwickler &lt;code&gt;ara::core::is_nothrow_swappable&amp;lt;T&amp;gt;&lt;/code&gt; und liest das statische boolesche Datenelement &lt;code&gt;value&lt;/code&gt; aus.&lt;/li&gt;
+&lt;li&gt;Bedingte Optimierung oder Zusicherung: Das Ergebnis steuert &lt;code&gt;static_assert&lt;/code&gt;-Zusicherungen, SFINAE-Überladungen oder &lt;code&gt;noexcept(...)&lt;/code&gt;-Klauseln in benutzerdefinierten Vertauschungsoperationen.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Regarding concurrency and ownership, the trait is completely stateless. Since the evaluation takes place purely deterministically during compilation, no runtime conflicts or synchronization requirements occur between different threads or processes.&lt;/p&gt;
+&lt;p&gt;Durch diese Abfolge lässt sich garantieren, dass vertauschende Algorithmen nur dann eine ausnahmesichere Garantie nach außen abgeben, wenn der zugrundeliegende Typ &lt;code&gt;T&lt;/code&gt; diese Bedingung tatsächlich erfüllt.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical usage path of &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; occurs when implementing generic functions, containers, or move semantics in systems of the AUTOSAR Adaptive Platform. The evaluation is divided into the following application steps:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Requirement analysis for exception safety:&lt;/strong&gt; A generic data structure or a template algorithm requires non-throwing swappability of two instances of type &lt;code&gt;T&lt;/code&gt; for an operation, for example to ensure the basic or strong exception safety level.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Conditional declaration via SFINAE or &lt;code&gt;noexcept&lt;/code&gt;:&lt;/strong&gt; The type &lt;code&gt;ara::core::is_nothrow_swappable&amp;lt;T&amp;gt;&lt;/code&gt; is used as a predicate in a condition. Typical manifestations are &lt;code&gt;noexcept(ara::core::is_nothrow_swappable&amp;lt;T&amp;gt;::value)&lt;/code&gt; on a &lt;code&gt;swap&lt;/code&gt; function or the activation of certain implementation paths via &lt;code&gt;std::enable_if_t&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Static assertion (&lt;code&gt;static_assert&lt;/code&gt;):&lt;/strong&gt; In cases where error-free swapping is a mandatory architectural requirement, the trait is used within static assertions to reject erroneous types already during compilation.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Code generation:&lt;/strong&gt; The compiler evaluates the boolean value and generates optimized machine code without additional runtime checks or overhead.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Klassische Laufzeitfehler, Fehlercodes oder Ausnahmen treten bei der Verwendung von &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; nicht auf, da das Konstrukt nicht zur Laufzeit ausgeführt wird. Fehlersituationen manifestieren sich stattdessen ausschließlich während der Kompilierung.&lt;/p&gt;
+&lt;p&gt;Interpretation: Typen &lt;code&gt;T&lt;/code&gt;, die zum Zeitpunkt der Instanziierung unvollständig sind (sogenannte incomplete types), dürften zu Compiler-Fehlern führen, da die Gültigkeit und Ausnahmesicherheit des &lt;code&gt;swap&lt;/code&gt;-Ausdrucks eine vollständige Typdefinition erfordert. Ein weiteres Fehlerszenario entsteht, wenn Entwickler fälschlicherweise annehmen, ein Typ sei nicht-werfend vertauschbar, woraufhin eine statische Zusicherung (&lt;code&gt;static_assert&lt;/code&gt;) den Übersetzungsvorgang gezielt abbricht, um unerwartete Laufzeitrisiken abzuwenden.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Since &lt;code&gt;ara::core::is_nothrow_swappable&lt;/code&gt; is evaluated at compile time, no runtime errors or error codes occur. The potential error scenarios therefore manifest exclusively in the form of compiler error messages or unexpected static evaluation results:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Incomplete types:&lt;/strong&gt; For incomplete types, instantiating &lt;code&gt;ara::core::is_nothrow_swappable&amp;lt;T&amp;gt;&lt;/code&gt; is likely to lead to a hard compilation error or undefined behavior, since the signatures and attributes of the associated &lt;code&gt;swap&lt;/code&gt; functions cannot be determined as long as the class definition is not completely available to the compiler.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Unresolvable or ambiguous overloads:&lt;/strong&gt; If a user-defined &lt;code&gt;swap&lt;/code&gt; function that is ambiguously overloaded is declared for the type &lt;code&gt;T&lt;/code&gt;, ADL (Argument-Dependent Lookup) fails, which can lead to an error during template instantiation.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Incorrect assumption about exception guarantees:&lt;/strong&gt; If the trait yields the value &lt;code&gt;false&lt;/code&gt;, this does not necessarily mean that no swap is possible, but merely that the operation potentially throws exceptions or does not have a valid no-throw specification. An incorrect evaluation in &lt;code&gt;static_assert&lt;/code&gt; leads in such cases to the targeted termination of the build process.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specifications of AUTOSAR Adaptive Platform Release R25-11 as well as the referenced C++ standard ISO/IEC 14882:2017.&lt;/p&gt;
-&lt;!-- annahmen: 1) Interpretation: Die Bereitstellung im Namensraum ara::core dient vermutlich der Vereinheitlichung und Absicherung innerhalb der AUTOSAR Adaptive Core-Typdefinitionen. – Begründung: Der Payload verweist auf std::is_nothrow_swappable nach ISO/IEC 14882:2017, spezifiziert jedoch keine abweichenden systemspezifischen Implementierungsdetails. 2) Vermutlich erbt das Struktur-Template analog zu std::is_nothrow_swappable von std::integral_constant&lt;bool, ...&gt;. – Begründung: Standardkonforme Type-Traits in C++17 implementieren dieses Vererbungsverhalten für den Zugriff auf ::value. 3) Für unvollständige Typen dürfte die Instanziierung zu einem Übersetzungsfehler oder undefiniertem Verhalten führen. – Begründung: Das Ermitteln von noexcept-Eigenschaften setzt gemäß ISO/IEC 14882:2017 eine vollständige Typdeklaration voraus. --&gt;
+&lt;!-- annahmen: 1) Typische Nutzung zur Absicherung generischer Funktionen via SFINAE oder static_assert – Begründung: Standardmäßiger Einsatzzweck von Not-Throw-Swappable-Traits in generischen C++-Bibliotheken. 2) Vererbung von std::integral_constant – Begründung: Anlehnung an std::is_nothrow_swappable gemäß C++17 [meta.unary.prop] ohne abweichende Spezifikationsvorgaben im Payload. 3) Unvollständige Typen führen zu Übersetzungsfehlern – Begründung: C++-Regelwerk für Typ-Eigenschaftsprüfungen bei unvollständigen Typen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der Spezifikationsdaten des AUTOSAR-Releases R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -277,7 +296,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1ca7c4aab81f…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>dd0bb825525a…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91060" class="dossier-modal dossier-workbench" data-dossier-sha="ae63d4d826de18ea" aria-labelledby="dossier-modal-SWS_EthIf_91060-title">
+<dialog id="dossier-modal-SWS_EthIf_91060" class="dossier-modal dossier-workbench" data-dossier-sha="f3c8db260454a475" aria-labelledby="dossier-modal-SWS_EthIf_91060-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91060-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91060)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,406 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,861 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_ClearSwitchPortSignalQuality'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,29 +198,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9a0526805a95aac0be2361ad453e5002d711a32d43d1b0347e89b39c8202e9f2" data-trace-output="ae63d4d826de18ea40cdae847efa9bf5efec70d9871b26b18be9010d527202cb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="821340633a61aaebc40cd3d7e9123a6ec2643980e6c22ec1b4dacd3ad731957a" data-trace-output="f3c8db260454a475f74902ac823219d2abab1d99d32f51035749795e16fd01e2" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Löscht synchron die gespeicherten Signalqualitätswerte der Verbindung für einen angegebenen Ethernet-Switch-Port." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;EthIf_ClearSwitchPortSignalQuality&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;) serves to reset the stored signal quality values of the link of a specified Ethernet switch port. The index of the Ethernet switch (&lt;code&gt;SwitchIdx&lt;/code&gt;) and the index of the respective switch port (&lt;code&gt;SwitchPortIdx&lt;/code&gt;) within the context of module &lt;code&gt;EthIf&lt;/code&gt; are passed via the parameters. The service is available via header &lt;code&gt;EthIf.h&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;
-    The function reports the success of the operation via the return type &lt;code&gt;Std_ReturnType&lt;/code&gt;:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The signal quality of the switch port was successfully reset.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Resetting the signal quality was not successful.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to the specification (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;), &lt;code&gt;EthIf_ClearSwitchPortSignalQuality&lt;/code&gt; is reentrant for different Ethernet switches and different port indices. However, it is non-reentrant for the same switch port (&lt;code&gt;SwitchPortIdx&lt;/code&gt;). Parallel calls for the same port must therefore be avoided or synchronized by the caller.
-  &lt;/p&gt;
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00404" href="../../spec/record.html?id=SWS_EthIf_00404"&gt;[SWS_EthIf_00404]&lt;/a&gt;, the function specifically clears the stored signal quality values (in connection with &lt;code&gt;EthIf_SignalQualityResultType&lt;/code&gt;) of the port addressed by &lt;code&gt;SwitchIdx&lt;/code&gt; and &lt;code&gt;SwitchPortIdx&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR R20-11 specification.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;EthIf_ClearSwitchPortSignalQuality&lt;/code&gt; dient dem Zurücksetzen der gespeicherten Signalqualitätswerte für die Verbindung eines bestimmten Ethernet-Switch-Ports &lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;. Die Adressierung des Zielports erfolgt über die beiden Eingangsparameter &lt;code&gt;SwitchIdx&lt;/code&gt; (Index des Ethernet-Switches) und &lt;code&gt;SwitchPortIdx&lt;/code&gt; (Index des Ports innerhalb des Interface-Kontexts) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;. Die Funktion ist über die Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Zusammenspiel und Datenstrukturen&lt;/h4&gt;
+&lt;p&gt;Gemäß &lt;a class="spec-record-ref" data-req="SWS_EthIf_00404" href="../../spec/record.html?id=SWS_EthIf_00404"&gt;[SWS_EthIf_00404]&lt;/a&gt; löscht der Aufruf die intern vorgehaltenen Signalqualitätswerte des adressierten Switch-Ports, welche dem Typ &lt;code&gt;EthIf_SignalQualityResultType&lt;/code&gt; entsprechen. Dies ermöglicht es übergeordneten Modulen, historische Messwerte gezielt zu verwerfen und eine Neubewertung der Verbindungsqualität zu initiieren.&lt;/p&gt;
+
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Der Erfolg der Operation wird über den Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; angezeigt: Bei erfolgreichem Löschen liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt;, andernfalls &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;. Spezifische DET- oder DEM-Fehlercodes sind im Payload nicht definiert. Interpretation: Der Rückgabewert &lt;code&gt;E_NOT_OK&lt;/code&gt; dürfte insbesondere dann auftreten, wenn ungültige Indizes übergeben werden oder der zugrundeliegende Switch-Treiber das Zurücksetzen nicht ausführen kann.&lt;/p&gt;
+
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Hinsichtlich der Reentranz ist &lt;code&gt;EthIf_ClearSwitchPortSignalQuality&lt;/code&gt; reentrant für unterschiedliche Switch- und Switch-Port-Indizes &lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;. Für denselben Switch-Port (&lt;code&gt;SwitchPortIdx&lt;/code&gt;) ist die Funktion jedoch als nicht reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91060" href="../../spec/record.html?id=SWS_EthIf_91060"&gt;[SWS_EthIf_91060]&lt;/a&gt;. Aufrufer müssen daher sicherstellen, dass zeitgleiche Aufrufe für denselben Port vermieden oder durch geeignete Synchronisationsmechanismen geschützt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Ein Rückgabewert von E_NOT_OK dürfte auf ungültige Index-Parameter oder hardwareseitige Fehler beim Zurücksetzen der Signalqualität zurückzuführen sein – Begründung: Der Payload spezifiziert für E_NOT_OK lediglich ein nicht erfolgreiches Löschen ohne Nennung konkreter Fehlerursachen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als orientierende Dokumentation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -242,7 +254,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9a0526805a95…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>821340633a61…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

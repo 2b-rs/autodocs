@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00981" class="dossier-modal dossier-workbench" data-dossier-sha="283ac8568d6290d4" aria-labelledby="dossier-modal-SWS_Dem_00981-title">
+<dialog id="dossier-modal-SWS_Dem_00981" class="dossier-modal dossier-workbench" data-dossier-sha="2d682ed62c6c91b1" aria-labelledby="dossier-modal-SWS_Dem_00981-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00981-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00981)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,781 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,235 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_J1939DcmGetNextFilteredRatio'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,41 +202,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="09c34e5edfc5b4f120952140668e59b523b96b7bb07061f1561c21338c4c618f" data-trace-output="283ac8568d6290d47bd3225648cd7da0489724300e3918948f07182d17d27d7f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a599c5bc4d308d777a9484902d3969e1fb7153290d867238c4e047c854d2f88b" data-trace-output="2d682ed62c6c91b1ec5fa45962faad95ef1683a0b2acdbcfa61f9f7073cb31e5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liest das nächste gefilterte IUMPR-Verhältnis eines J1939-Ereignisspeichers synchron aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    Die Funktion &lt;code&gt;Dem_J1939DcmGetNextFilteredRatio&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;) dient dem schrittweisen Abruf des nächsten gefilterten Verhältnisses (Ratio) für J1939 und wird über den Header &lt;code&gt;Dem_J1939Dcm.h&lt;/code&gt; deklariert. Sie wird synchron ausgeführt und ist als nicht reentrant spezifiziert.
-  &lt;/p&gt;
-  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
-  &lt;p&gt;
-    Über den Eingangsparameter &lt;code&gt;ClientId&lt;/code&gt; wird der entsprechende J1939-Ereignisspeicher adressiert. Über die Zeiger-Parameter werden die Daten des jeweiligen Systemmonitors zurückgegeben (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;SPN&lt;/code&gt;: Nimmt die Suspect Parameter Number (SPN) des zutreffenden Systemmonitors auf.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Numerator&lt;/code&gt;: Empfängt den Zählerwert (Numerator) des Systemmonitors.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Denominator&lt;/code&gt;: Empfängt den Nennerwert (Denominator) des Systemmonitors.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion liefert einen Status vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Operation erfolgreich ausgeführt.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DEM_NO_SUCH_ELEMENT&lt;/code&gt;: Das angeforderte Ratio-Element ist nicht verfügbar.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DEM_PENDING&lt;/code&gt;: Die Ausführung läuft noch und das Ergebnis steht aus.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DEM_BUFFER_TOO_SMALL&lt;/code&gt;: Der bereitgestellte Puffer ist zu klein.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Sofern der Rückgabewert nicht den erfolgreichen Abruf signalisiert, enthalten die Ausgabeparameter &lt;code&gt;SPN&lt;/code&gt;, &lt;code&gt;Numerator&lt;/code&gt; und &lt;code&gt;Denominator&lt;/code&gt; keine gültigen Werte (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;; Interpretation: Die Parameterbeschreibung nennt hierbei &lt;code&gt;DEM_FILTERED_OK&lt;/code&gt;, womit vermutlich der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; gemeint ist).
-  &lt;/p&gt;
-  &lt;h4&gt;Reihenfolgebedingungen und Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;
-    Vor den iterativen Aufrufen von &lt;code&gt;Dem_J1939DcmGetNextFilteredRatio&lt;/code&gt; muss der Filter über &lt;code&gt;Dem_J1939DcmSetRatioFilter&lt;/code&gt; gesetzt werden. Dieser initialisiert einen internen Zähler auf die erste gültige SPN mit definierter &lt;code&gt;DemRatioId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00912" href="../../spec/record.html?id=SWS_Dem_00912"&gt;[SWS_Dem_00912]&lt;/a&gt;). Unterdrückte Diagnose-Ereignisse (suppressed DTCs) werden dabei ausgeblendet: Gemäß &lt;a class="spec-record-ref" data-req="SWS_Dem_01101" href="../../spec/record.html?id=SWS_Dem_01101"&gt;[SWS_Dem_01101]&lt;/a&gt; sind unterdrückte DTCs für die Abfrage nicht sichtbar und werden so behandelt, als ob der Filter nicht zutrifft.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) Die Nennung von DEM_FILTERED_OK in der Parameterbeschreibung bezieht sich auf den Rückgabewert E_OK – Begründung: DEM_FILTERED_OK ist in der Tabelle der Rückgabewerte von SWS_Dem_00981 nicht definiert; E_OK signalisiert die erfolgreiche Operation. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die synchrone und nicht reentrante Funktion &lt;code&gt;Dem_J1939DcmGetNextFilteredRatio&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;) dient dem iterativen Auslesen des nächsten gefilterten IUMPR-Verhältnisses (Ratio). Über den Parameter &lt;code&gt;ClientId&lt;/code&gt; wird der jeweilige J1939-Ereignisspeicher adressiert. Bei erfolgreichem Aufruf liefert die Funktion über die Ausgabeparameter &lt;code&gt;SPN&lt;/code&gt;, &lt;code&gt;Numerator&lt;/code&gt; und &lt;code&gt;Denominator&lt;/code&gt; die Suspect Parameter Number sowie Zähler und Nenner des zutreffenden System-Monitors (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;).&lt;/p&gt;
+&lt;h4&gt;Ablauf und Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Für eine korrekte Iteration muss der Filter vorab über &lt;code&gt;Dem_J1939DcmSetRatioFilter&lt;/code&gt; initialisiert werden (&lt;a class="spec-record-ref" data-req="SWS_Dem_00912" href="../../spec/record.html?id=SWS_Dem_00912"&gt;[SWS_Dem_00912]&lt;/a&gt;). Dieser Aufruf setzt einen internen Zähler auf die erste gültige SPN mit definierter &lt;code&gt;DemRatioId&lt;/code&gt; zurück, auf der nachfolgende Aufrufe von &lt;code&gt;Dem_J1939DcmGetNextFilteredRatio&lt;/code&gt; aufsetzen. Ein unterdrücktes DTC ist für die Abfrage nicht sichtbar und wird so behandelt, als treffe der Filter nicht zu (&lt;a class="spec-record-ref" data-req="SWS_Dem_01101" href="../../spec/record.html?id=SWS_Dem_01101"&gt;[SWS_Dem_01101]&lt;/a&gt;).&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Gemäß &lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt; sind folgende Rückgabewerte definiert:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Operation war erfolgreich. Nur in diesem Fall enthalten &lt;code&gt;SPN&lt;/code&gt;, &lt;code&gt;Numerator&lt;/code&gt; und &lt;code&gt;Denominator&lt;/code&gt; gültige Daten (die Erwähnung von &lt;code&gt;DEM_FILTERED_OK&lt;/code&gt; in der Parameterbeschreibung dürfte als Interpretation für &lt;code&gt;E_OK&lt;/code&gt; stehen).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DEM_NO_SUCH_ELEMENT&lt;/code&gt;: Es ist kein weiteres passendes Element vorhanden.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DEM_PENDING&lt;/code&gt;: Die Operation war erfolgreich, das Ergebnis steht jedoch noch aus.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DEM_BUFFER_TOO_SMALL&lt;/code&gt;: Der übergebene Puffer ist zu klein.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Da die Funktion als nicht reentrant deklariert ist (&lt;a class="spec-record-ref" data-req="SWS_Dem_00981" href="../../spec/record.html?id=SWS_Dem_00981"&gt;[SWS_Dem_00981]&lt;/a&gt;), darf sie für dieselbe &lt;code&gt;ClientId&lt;/code&gt; nicht nebenläufig aufgerufen werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Bedingung DEM_FILTERED_OK in der Parameterbeschreibung bezieht sich vermutlich auf den Rückgabewert E_OK. – Begründung: Die Rückgabewerttabelle von SWS_Dem_00981 führt E_OK auf, während die Parameterbeschreibung DEM_FILTERED_OK als Erfolgsbedingung für gültige Ausgabedaten nennt. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Maßgeblich sind die referenzierten AUTOSAR-Spezifikationen.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -258,7 +261,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>09c34e5edfc5…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a599c5bc4d30…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -396,4 +399,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00981","k":"function","d":"AUTOSAR","t":"","n":"Dem_J1939DcmGetNextFilteredRatio"}],"inbound":[{"i":"SWS_Dem_00912","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00912].","n":"SWS_Dem_00912"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b0006cdbcb9c8f4f.json?v=83816478" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00981","k":"function","d":"AUTOSAR","t":"","n":"Dem_J1939DcmGetNextFilteredRatio"}],"inbound":[{"i":"SWS_Dem_00912","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00912].","n":"SWS_Dem_00912"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b0006cdbcb9c8f4f.json?v=4359db9e" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>

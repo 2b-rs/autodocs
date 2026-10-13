@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00041" class="dossier-modal dossier-workbench" data-dossier-sha="7770fd6b2b53a325" aria-labelledby="dossier-modal-SWS_KeyM_00041-title">
+<dialog id="dossier-modal-SWS_KeyM_00041" class="dossier-modal dossier-workbench" data-dossier-sha="e2bdca294f3d9b22" aria-labelledby="dossier-modal-SWS_KeyM_00041-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00041-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00041)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,165 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,620 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_CertDataType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,23 +193,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="2a26209c7a4fb2f21b6d758f6a6276b02e915169ab53d292c9f82259f9accb69" data-trace-output="7770fd6b2b53a325e320ae2b1ce4319a872bf2b51c63816a82164f8443a747f4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="87fc94a82c3dc8f5c3cb3e9e9a4511986204da62d7edbda086f2af18cf9927a9" data-trace-output="e2bdca294f3d9b227ffae3a4c95ba66115b619e51a82babecee221810ebdb612" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem Austausch von Zertifikatsdaten und deren Länge über Schnittstellenfunktionen des Moduls KeyM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Usage of &lt;code&gt;KeyM_CertDataType&lt;/code&gt;&lt;/h4&gt;
-&lt;p&gt;The data structure &lt;code&gt;KeyM_CertDataType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;) serves to exchange certificate data via interface functions of module &lt;code&gt;KeyM&lt;/code&gt;. It is provided via the header file &lt;code&gt;KeyM.h&lt;/code&gt; and bundles the raw data of a certificate with the corresponding length specification.&lt;/p&gt;
-
-&lt;p&gt;The structure defines two elements (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;certDataLength&lt;/code&gt; (type &lt;code&gt;uint32&lt;/code&gt;): Determines the length of the provided certificate data.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;certData&lt;/code&gt; (type &lt;code&gt;void*&lt;/code&gt;): Pointer to the certificate data located in a local data area of the caller.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Since &lt;code&gt;certData&lt;/code&gt; points to a local data area of the caller, the caller is likely to be responsible for ensuring that the referenced buffer remains allocated and unmodified for the entire duration of the interface call (interpretation: memory management and buffer validity are the responsibility of the caller). In addition, &lt;code&gt;certDataLength&lt;/code&gt; should correspond exactly to the size of the referenced memory area in order to avoid faulty accesses during processing.&lt;/p&gt;
-
-&lt;p&gt;Since the specification in &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt; defines no error codes, DET/DEM messages, or concurrency requirements, aspects such as reentrancy and error handling depend on the specific functions that use &lt;code&gt;KeyM_CertDataType&lt;/code&gt; as an input parameter.&lt;/p&gt;
-
-&lt;!-- annahmen: 1) Puffergültigkeit von certData – Begründung: Der Zeiger referenziert laut Spezifikation einen lokalen Datenbereich des Aufrufers, weshalb der Aufrufer für dessen Lebensdauer während des Aufrufs zuständig sein dürfte. --&gt;
-&lt;p class="ai-note"&gt;This usage note was generated automatically and is based on the requirements of the specification AUTOSAR R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;KeyM_CertDataType&lt;/code&gt; wird im Modul &lt;code&gt;KeyM&lt;/code&gt; zur Übergabe und zum Austausch von Zertifikatsdaten über Schnittstellenfunktionen eingesetzt &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;. Die Typdefinition ist über die Header-Datei &lt;code&gt;KeyM.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Struktur bündelt zwei wesentliche Elemente &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;certDataLength&lt;/code&gt;: Element vom Typ &lt;code&gt;uint32&lt;/code&gt;, das die Länge der Zertifikatsdaten angibt &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;certData&lt;/code&gt;: Element vom Typ &lt;code&gt;VoidPtr&lt;/code&gt;, das als Zeiger direkt auf die Zertifikatsdaten in einem lokalen Datenbereich des Aufrufers referenziert &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;Da &lt;code&gt;certData&lt;/code&gt; auf Speicherbereiche im lokalen Kontext des Aufrufers verweist &lt;a class="spec-record-ref" data-req="SWS_KeyM_00041" href="../../spec/record.html?id=SWS_KeyM_00041"&gt;[SWS_KeyM_00041]&lt;/a&gt;, obliegt die Pufferverwaltung der aufrufenden Instanz. Interpretation: Der Aufrufer dürfte gewährleisten müssen, dass der referenzierte Speicher für die gesamte Ausführungsdauer der jeweiligen Schnittstellenfunktion gültig bleibt und mindestens die in &lt;code&gt;certDataLength&lt;/code&gt; angegebene Bytezahl umfasst. Zudem dürfte vermutet werden, dass bei einer Länge größer null ein gültiger Zeiger ungleich &lt;code&gt;NULL&lt;/code&gt; übergeben werden muss, um fehlerhafte Speicherzugriffe innerhalb der Schnittstellenfunktion zu vermeiden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Aufrufer ist für die Gültigkeit, Allokation und minimale Puffergröße gemäß certDataLength verantwortlich – Begründung: SWS_KeyM_00041 spezifiziert certData als Zeiger auf lokalen Speicher des Aufrufers, ohne modulinterne Kopier- oder Lebensdauermechanismen vorzuschreiben. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR R20-11 erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -231,9 +245,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2a26209c7a4f…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>87fc94a82c3d…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -268,8 +282,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -306,7 +320,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 8 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -369,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00041","k":"type","d":"AUTOSAR","t":"","n":"KeyM_CertDataType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a3c32869aadcda96.json?v=bcab6375" data-total="7" data-new="7" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00041","k":"type","d":"AUTOSAR","t":"","n":"KeyM_CertDataType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a3c32869aadcda96.json?v=d3877b56" data-total="8" data-new="8" data-figures="1" data-used="0"></script></dialog>

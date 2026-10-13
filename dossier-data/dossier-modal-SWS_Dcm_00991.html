@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00991" class="dossier-modal dossier-workbench" data-dossier-sha="5242f613793789e1" aria-labelledby="dossier-modal-SWS_Dcm_00991-title">
+<dialog id="dossier-modal-SWS_Dcm_00991" class="dossier-modal dossier-workbench" data-dossier-sha="84549776b71fed52" aria-labelledby="dossier-modal-SWS_Dcm_00991-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00991-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00991)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,383 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,837 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_MsgLenType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,19 +198,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="85d290bdb37ce0f01d29da83ff3ba4aae9b5b7fe72b22d6445e514c6249fd8da" data-trace-output="5242f613793789e1ce8ef3455f54e761b6e1d5d5b731dd41fa57d893eb6509d6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d28165df74e2d6b62f246cd9ce76a06d0855abd5abd1d23239abf30e3e04a651" data-trace-output="84549776b71fed5257c676ef7d72e7ee47b51352505987b84ae740d215f1a3b4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Gibt die Länge diagnostischer Anfragen und Antworten abhängig vom Transportmedium an." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Der Typ &lt;code&gt;Dcm_MsgLenType&lt;/code&gt; beschreibt die Länge einer Diagnosenachricht (Anfrage, positive oder negative Antwort) innerhalb des Moduls DCM (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;). Er ist vom Basistyp &lt;code&gt;uint32&lt;/code&gt; abgeleitet und wird über den Header &lt;code&gt;Dcm.h&lt;/code&gt; bereitgestellt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;Die maximal zulässige bzw. verarbeitbare Nachrichtenlänge ist dabei vom jeweils zugrunde liegenden Transportprotokoll bzw. den verwendeten Übertragungsmedien abhängig (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;Im Zusammenspiel mit Diagnoseanfragen und -antworten wird &lt;code&gt;Dcm_MsgLenType&lt;/code&gt; als Typ für mehrere Längenfelder der Struktur &lt;code&gt;Dcm_MsgContextType&lt;/code&gt; eingesetzt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;Dcm_MsgLenType&lt;/code&gt; ist über den Header &lt;code&gt;Dcm.h&lt;/code&gt; verfügbar und vom Basistyp &lt;code&gt;uint32&lt;/code&gt; abgeleitet &lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;. Er wird im Diagnostic Communication Manager (DCM) verwendet, um die Länge diagnostischer Botschaften zu beschreiben. Dies umfasst sowohl Diagnoseanfragen (Requests) als auch positive und negative Antwortnachrichten (Responses) &lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich der Wertebereichsgrenzen legt die Spezifikation fest, dass die maximal übertragbare Länge einer Diagnosenachricht vom jeweils zugrunde liegenden Transportprotokoll bzw. Übertragungsmedium abhängt &lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;. Interpretation: Obwohl der zugrunde liegende Datentyp &lt;code&gt;uint32&lt;/code&gt; softwareseitig Nachrichtenlängen von bis zu 4 GiB darstellen kann, dürfte die tatsächliche Maximallänge in der Praxis stets durch das Kommunikationsmedium sowie die Puffergrößen limitiert sein.&lt;/p&gt;
+  &lt;p&gt;Eine zentrale Rolle spielt &lt;code&gt;Dcm_MsgLenType&lt;/code&gt; in der Struktur &lt;code&gt;Dcm_MsgContextType&lt;/code&gt;, welche den Kontext eines Diagnoseauftrags kapselt &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;. Innerhalb dieser Struktur typisiert er mehrere fundamentale Längenangaben:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;reqDataLen&lt;/code&gt;: Spezifiziert die Länge der Anfragedaten (&lt;code&gt;reqData&lt;/code&gt;), gerechnet ohne den Service-Identifier (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;resDataLen&lt;/code&gt;: Gibt die Länge der positiven Antwortdaten (&lt;code&gt;resData&lt;/code&gt;) an, ebenfalls exklusive des Service-Identifiers (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;resMaxDataLen&lt;/code&gt;: Definiert die maximale Antwortlänge, welche strikt durch die Dimensionierung des zugeordneten Puffers beschränkt ist (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;reqDataLen&lt;/code&gt;: Repräsentiert die Länge der Anfragedaten (Request Data). Die Zählung beginnt unmittelbar nach dem Service-Identifier, sodass dieser nicht in der Längenangabe enthalten ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;resDataLen&lt;/code&gt;: Gibt die Länge der positiven Antwortdaten an, ebenfalls exklusive des Service-Identifiers &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;resMaxDataLen&lt;/code&gt;: Spezifiziert die maximal mögliche Länge einer Antwort, welche durch die Größe des allokierten Puffers beschränkt wird &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;Interpretation: Obwohl der Datentyp &lt;code&gt;uint32&lt;/code&gt; theoretisch sehr große Wertebereiche eröffnet, dürfte die tatsächliche Länge einer Diagnosenachricht in der Praxis stets durch das Transportmedium sowie die in &lt;code&gt;resMaxDataLen&lt;/code&gt; hinterlegte Puffergröße begrenzt werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00991" href="../../spec/record.html?id=SWS_Dcm_00991"&gt;[SWS_Dcm_00991]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;).&lt;/p&gt;
-  &lt;!-- annahmen: 1) Interpretation: Trotz des uint32-Wertebereichs dürfte die tatsächliche Nachrichtenlänge durch Transportmedium und Puffergröße begrenzt sein – Begründung: Folgt aus der Transportabhängigkeit in SWS_Dcm_00991 und der Pufferbeschränkung von resMaxDataLen in SWS_Dcm_00994. --&gt;
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
+  &lt;p&gt;Bei der Implementierung von Service-Handlern ist daher strikt darauf zu achten, dass Längenberechnungen für &lt;code&gt;reqDataLen&lt;/code&gt; und &lt;code&gt;resDataLen&lt;/code&gt; stets ohne den Service-Identifier erfolgen und Antwortdaten die durch &lt;code&gt;resMaxDataLen&lt;/code&gt; vorgegebene Puffergrenze nicht überschreiten &lt;a class="spec-record-ref" data-req="SWS_Dcm_00994" href="../../spec/record.html?id=SWS_Dcm_00994"&gt;[SWS_Dcm_00994]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Der theoretische 32-Bit-Wertebereich wird in realen Systemen nicht voll ausgeschöpft, sondern primär durch Puffer- und Buslimits begrenzt – Begründung: SWS_Dcm_00991 nennt die Abhängigkeit vom Transportprotokoll/Medium und SWS_Dcm_00994 beschränkt Antworten auf die Puffergröße. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -232,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>85d290bdb37c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d28165df74e2…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -370,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00991","k":"type","d":"AUTOSAR","t":"","n":"Dcm_MsgLenType"}],"inbound":[{"i":"SWS_Dcm_00994","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00994].","n":"SWS_Dcm_00994"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/08b00c91b66972e1.json?v=b284dc16" data-total="5" data-new="5" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00991","k":"type","d":"AUTOSAR","t":"","n":"Dcm_MsgLenType"}],"inbound":[{"i":"SWS_Dcm_00994","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00994].","n":"SWS_Dcm_00994"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/08b00c91b66972e1.json?v=afefb5b3" data-total="5" data-new="5" data-figures="1" data-used="0"></script></dialog>

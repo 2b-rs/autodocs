@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_00956" class="dossier-modal dossier-workbench" data-dossier-sha="c1ba1448c154a79d" aria-labelledby="dossier-modal-SWS_Csm_00956-title">
+<dialog id="dossier-modal-SWS_Csm_00956" class="dossier-modal dossier-workbench" data-dossier-sha="9a2004ad574d331d" aria-labelledby="dossier-modal-SWS_Csm_00956-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_00956-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_00956)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,482 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,937 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_KeyDerive'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,42 +198,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="18fc779037b0f5223735d686542558d3d07085655b090f82140681494a32a622" data-trace-output="c1ba1448c154a79d5d1f92abf4d951bc3c2fde3de780c1b7012483e80f742673" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="7b47880a88dd98c23bd16c30ec9eb3d23d917257545e5c496abda5b86be50c30" data-trace-output="9a2004ad574d331d38864f53112b5554cfe27f478a05a6aaf25e17c415d15d64" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Leitet synchron einen neuen kryptografischen Schlüssel aus Passwort- und Salt-Elementen eines Quellschlüssels ab." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;Csm_KeyDerive&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;) derives a new cryptographic key. The interface is declared via the header &lt;code&gt;Csm.h&lt;/code&gt; and expects two input parameters:
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Csm_KeyDerive&lt;/code&gt; dient der Ableitung eines neuen kryptografischen Schlüssels aus einem vorgegebenen Ausgangsschlüssel &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;. Die Funktion ist in der Header-Datei &lt;code&gt;Csm.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x6b&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Der synchrone Aufruf verarbeitet zwei Eingangsparameter &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;keyId&lt;/code&gt;: Identifier of the source key providing the required key elements for password and salt.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;targetKeyId&lt;/code&gt;: Identifier of the target key; the derived key result is stored in the key element with ID 1 of this key.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;keyId&lt;/code&gt;: Kennung des Ausgangsschlüssels, der die Schlüsselelemente für Passwort und Salt enthält &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;targetKeyId&lt;/code&gt;: Kennung des Zielschlüssels; das abgeleitete Schlüsselmaterial wird im Schlüsselelement mit der ID 1 abgelegt &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Interaction and call hierarchy&lt;/h4&gt;
-  &lt;p&gt;
-    If no internal errors are detected in the CSM beforehand, the service &lt;code&gt;Csm_KeyDerive()&lt;/code&gt; forwards the request synchronously to the interface &lt;code&gt;CryIf_KeyDerive()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_01018" href="../../spec/record.html?id=SWS_Csm_01018"&gt;[SWS_Csm_01018]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;, &lt;code&gt;Csm_KeyDerive&lt;/code&gt; is reentrant, but must not be called in parallel for the same &lt;code&gt;keyId&lt;/code&gt;.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;
-    The service signals the status via the return type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;):
-  &lt;/p&gt;
+  &lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Als Rückgabewert liefert die Funktion den Status &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;. Neben &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Durchführung und &lt;code&gt;E_NOT_OK&lt;/code&gt; bei allgemeinen Fehlern sind spezifische Krypto-Fehler definiert &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The request was successful.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The execution failed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The Crypto Driver Object is busy.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Reading or extracting the key element is not permitted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Writing the key element is not permitted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: The status of the key is invalid (&lt;code&gt;invalid&lt;/code&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Sizes of the key elements are not compatible.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: The source key element is uninitialized.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Das Crypto-Treiber-Objekt ist ausgelastet &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Auslesen des Schlüsselelements ist nicht erlaubt &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Schreiben in das Zielschlüsselelement ist nicht erlaubt &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Der Zustand des Schlüssels ist ungültig &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Größen der Schlüsselelemente sind inkompatibel &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Schlüsselelement der Quelle ist uninitialisiert &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+
+  &lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist reentrant, jedoch ausdrücklich nicht für dieselbe &lt;code&gt;keyId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Csm_00956" href="../../spec/record.html?id=SWS_Csm_00956"&gt;[SWS_Csm_00956]&lt;/a&gt;. Werden im CSM keine Fehler festgestellt, leitet der Dienst die Ausführung unmittelbar an &lt;code&gt;CryIf_KeyDerive&lt;/code&gt; weiter &lt;a class="spec-record-ref" data-req="SWS_Csm_01018" href="../../spec/record.html?id=SWS_Csm_01018"&gt;[SWS_Csm_01018]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI basierend auf den AUTOSAR-Spezifikationen generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -255,7 +264,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>18fc779037b0…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7b47880a88dd…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -393,4 +402,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_00956","k":"function","d":"AUTOSAR","t":"","n":"Csm_KeyDerive"}],"inbound":[{"i":"SWS_Csm_01018","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Csm_01018].","n":"SWS_Csm_01018"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6301f6fdc08e025e.json?v=d8e9bcdb" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_00956","k":"function","d":"AUTOSAR","t":"","n":"Csm_KeyDerive"}],"inbound":[{"i":"SWS_Csm_01018","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Csm_01018].","n":"SWS_Csm_01018"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6301f6fdc08e025e.json?v=510f12c7" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

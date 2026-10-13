@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef" class="dossier-modal dossier-workbench" data-dossier-sha="db5288a426d918bb" aria-labelledby="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef-title">
+<dialog id="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef" class="dossier-modal dossier-workbench" data-dossier-sha="68a2edfebe451165" aria-labelledby="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,739 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~4,261 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für '{&lt;hierarchical-namespace-list-lower-skeleton&gt;}::skeleton::{ &lt;service-interface-name&gt;}Skeleton' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef",
@@ -269,89 +288,79 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="4a9713a1a7c99e6498d1a2a60a897fec486da6102ff23ea8677d3c373a7b0386" data-trace-output="db5288a426d918bb7b2dc8e362970ede62c10f9f85d1e8605b600ea6e6e161b1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="3d03b3b797b67e4336ca68f334985fdb0fe0c0b6ec154f5d024f4a43031ca36d" data-trace-output="68a2edfebe4511655906ae5eae40ecde64ba6ad7687a936e6ad86b73770017a7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Basisklasse zur serverseitigen Implementierung und Bereitstellung von Methoden eines Service-Interface." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    The class &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; forms the server-side base abstraction for providing a service interface within the Communication Management module (&lt;code&gt;com&lt;/code&gt;) of the AUTOSAR Adaptive Platform. As a generated interface skeleton, the skeleton assumes the intermediary role between the platform-specific communication infrastructure (such as a SOME/IP binding) and the application-specific service provider implementation. It decouples the service business logic from protocol details, message deserialization, and the underlying dispatching.
-  &lt;/p&gt;
-  &lt;p&gt;
-    In the overall system, the skeleton class interacts with three essential partners:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Service application (Service Provider):&lt;/strong&gt; The concrete application derives from the skeleton class and implements the pure virtual method functions for regular request-response patterns &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt; as well as fire-and-forget methods &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Communication infrastructure (middleware):&lt;/strong&gt; The runtime environment receives incoming request messages from service clients, deserializes the transmitted data, and forwards them to the skeleton for method execution &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;AUTOSAR_AP_SWS_CommunicationManagement p. 99&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Asynchronous execution context:&lt;/strong&gt; Return types such as &lt;code&gt;ara::core::Future&lt;/code&gt; decouple call acceptance from asynchronous result provision &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
-    &lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als Basisklasse zur serverseitigen Implementierung und Bereitstellung von Methoden eines Service-Interface.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse dient als serverseitige Basisklasse zur Implementierung eines Service-Interface in &lt;code&gt;ara::com&lt;/code&gt;, von der die Dienstanbieter-Anwendung ableitet. Beim Erzeugen wird über den Konstruktor festgelegt, ob eintreffende Methodenaufrufe ereignisgesteuert oder per Polling verarbeitet werden &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;. Fehlerhafte Abläufe werden bei ausnahmesicher deklarierten Methoden über das zurückgegebene &lt;code&gt;ara::core::Future&lt;/code&gt; als Fehlercode signalisiert &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; dient in der Adaptive Platform im Modul &lt;code&gt;com&lt;/code&gt; als generierte, abstrakte Basisklasse für die serverseitige Bereitstellung eines Service-Interface. Eine anwendungsspezifische Dienstanbieter-Komponente leitet von dieser Skeleton-Klasse ab, um die funktionale Geschäftslogik des Dienstes zu implementieren. Die Klasse vermittelt zwischen der konkreten Dienstanbieter-Anwendung und der Kommunikations-Middleware bzw. dem zugrunde liegenden Protokoll-Binding wie SOME/IP (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;SWS CommunicationManagement §8.1 „Method invocation“&lt;/a&gt;). Zu den Interaktionspartnern gehören die Dienstanbieter-Anwendung, welche die Instanz erzeugt und besitzt, die Skeleton-Klasse selbst sowie die Kommunikationsinfrastruktur, welche eingehende Service-Anfragen empfängt, deserialisiert und an das Skeleton weiterleitet (&lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;).&lt;/p&gt;
 
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    The derived skeleton object is instantiated explicitly by the service application. During creation via the constructor, the processing mode for method calls (&lt;code&gt;ara::com::MethodCallProcessingMode&lt;/code&gt;) must be passed &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;. This mode determines how incoming method calls are processed in terms of threading and execution flow:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Event-driven processing (&lt;code&gt;kEvent&lt;/code&gt; or &lt;code&gt;kEventSingleThread&lt;/code&gt;):&lt;/strong&gt; As soon as an incoming request message has been deserialized, the corresponding virtual method of the skeleton class is called directly as part of message reception &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Buffered polling processing (&lt;code&gt;kPoll&lt;/code&gt;):&lt;/strong&gt; Incoming messages are buffered and only executed when the application actively triggers processing via the dedicated polling interface &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    The lifetime of the skeleton object is entirely the responsibility of the creating service application. Before destroying the instance, the service should be deregistered in an orderly manner (Interpretation: A controlled termination ensures that no further method calls access released resources of the service application and that pending asynchronous calculations can be completed cleanly).
-  &lt;/p&gt;
+&lt;div class="diagram" id="diag-context"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 757.35 66.58" style="max-width:1010px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 52.18)"&gt;
+&lt;title&gt;Context&lt;/title&gt;
+&lt;!-- Provider --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Provider&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M147.56,-37.78C147.56,-37.78 12,-37.78 12,-37.78 6,-37.78 0,-31.78 0,-25.78 0,-25.78 0,-13.78 0,-13.78 0,-7.78 6,-1.78 12,-1.78 12,-1.78 147.56,-1.78 147.56,-1.78 153.56,-1.78 159.56,-7.78 159.56,-13.78 159.56,-13.78 159.56,-25.78 159.56,-25.78 159.56,-31.78 153.56,-37.78 147.56,-37.78"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="79.78" y="-16.48" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Dienstanbieter-Implementierung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Skeleton --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;Skeleton&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M367.96,-37.78C367.96,-37.78 304.48,-37.78 304.48,-37.78 298.48,-37.78 292.48,-31.78 292.48,-25.78 292.48,-25.78 292.48,-13.78 292.48,-13.78 292.48,-7.78 298.48,-1.78 304.48,-1.78 304.48,-1.78 367.96,-1.78 367.96,-1.78 373.96,-1.78 379.96,-7.78 379.96,-13.78 379.96,-13.78 379.96,-25.78 379.96,-25.78 379.96,-31.78 373.96,-37.78 367.96,-37.78"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="336.22" y="-16.48" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;ServiceSkeleton&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Provider&amp;#45;&amp;gt;Skeleton --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Provider-&amp;gt;Skeleton&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M159.89,-19.78C199.08,-19.78 245.41,-19.78 280.6,-19.78"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="280.41,-23.28 290.41,-19.78 280.41,-16.28 280.41,-23.28"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="226.02" y="-22.78" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erbt von / implementiert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Binding --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;Binding&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M716.55,-37.78C716.55,-37.78 547.35,-37.78 547.35,-37.78 541.35,-37.78 535.35,-31.78 535.35,-25.78 535.35,-25.78 535.35,-13.78 535.35,-13.78 535.35,-7.78 541.35,-1.78 547.35,-1.78 547.35,-1.78 716.55,-1.78 716.55,-1.78 722.55,-1.78 728.55,-7.78 728.55,-13.78 728.55,-13.78 728.55,-25.78 728.55,-25.78 728.55,-31.78 722.55,-37.78 716.55,-37.78"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="631.95" y="-16.48" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Kommunikations-Binding / Middleware&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Skeleton&amp;#45;&amp;gt;Binding --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Skeleton-&amp;gt;Binding&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M380.24,-19.78C417.79,-19.78 473.88,-19.78 523.49,-19.78"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="523.29,-23.28 533.29,-19.78 523.29,-16.28 523.29,-23.28"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="457.65" y="-22.78" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;liefert Future / Ergebnis&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Binding&amp;#45;&amp;gt;Skeleton --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;Binding-&amp;gt;Skeleton&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M534.9,-4.69C492.77,-0.26 442.79,2.02 397.96,-3.78 395.9,-4.05 393.81,-4.37 391.7,-4.72"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="391.17,-1.26 382.04,-6.63 392.53,-8.12 391.17,-1.26"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="457.65" y="-6.78" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;leitet Methodenaufrufe weiter&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel von Dienstanbieter-Anwendung, ServiceSkeleton und Kommunikations-Middleware. Quellen: &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;SWS CommunicationManagement §8.1 „Method invocation“&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    The typical usage sequence for providing a service via the skeleton comprises the following steps:
-  &lt;/p&gt;
-  &lt;ol&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Interface implementation:&lt;/strong&gt; The service application derives from &lt;code&gt;{&amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}::skeleton::{ &amp;lt;service-interface-name&amp;gt;}Skeleton&lt;/code&gt; and implements the pure virtual methods:
-      &lt;ul&gt;
-        &lt;li&gt;Regular methods with a return value implement the signature &lt;code&gt;virtual ara::core::Future&amp;lt;{&amp;lt;method-name&amp;gt;}Output&amp;gt; {&amp;lt;method-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.&lt;/li&gt;
-        &lt;li&gt;One-way methods without a response implement &lt;code&gt;virtual void {&amp;lt;fnfmethod-name&amp;gt;}(...) noexcept = 0&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Instantiation:&lt;/strong&gt; The derived skeleton class is constructed with the desired &lt;code&gt;MethodCallProcessingMode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Method execution:&lt;/strong&gt; When requests arrive, the middleware calls the implemented method &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Result return:&lt;/strong&gt; For regular methods, the service application returns a &lt;code&gt;ara::core::Future&lt;/code&gt; with the generated &lt;code&gt;Output&lt;/code&gt; object &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, which is serialized by the middleware and sent to the client as a response message. For fire-and-forget methods, no response transmission takes place &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.
-    &lt;/li&gt;
-  &lt;/ol&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Erzeugung der Skeleton-Instanz erfolgt über den Konstruktor, dem der gewünschte Verarbeitungsmodus &lt;code&gt;ara::com::MethodCallProcessingMode&lt;/code&gt; übergeben wird &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;. Dieser Modus legt die Nebenläufigkeitsstrategie für eintreffende Methodenaufrufe fest: Wird &lt;code&gt;kEvent&lt;/code&gt; oder &lt;code&gt;kEventSingleThread&lt;/code&gt; konfiguriert, werden ankommende Methodenaufrufe unmittelbar ereignisgesteuert durch die Kommunikations-Middleware aufgerufen &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;. Wird stattdessen &lt;code&gt;kPoll&lt;/code&gt; übergeben, erfolgt die Abwicklung abfragebasiert durch die Anwendung &lt;a class="spec-record-ref" data-req="SWS_CM_10307" href="../spec/record.html?id=SWS_CM_10307"&gt;[SWS_CM_10307]&lt;/a&gt;. Interpretation: Die Skeleton-Instanz verbleibt vermutlich während der gesamten aktiven Dienstbereitstellung im Besitz der Dienstanbieter-Anwendung und wird erst beim Herunterfahren des Service zerstört.&lt;/p&gt;
 
-  &lt;div class="diagram" id="diag-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 536" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf der Methodenverarbeitung am Skeleton&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="522" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="522" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="522" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Dienstanwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;ServiceSkeleton&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Kommunikationsinfrastruktur&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="258" width="610" height="244" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;line x1="40" y1="120" x2="650" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Initialisierung&lt;/text&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Erzeugung mit MethodCallProcessingMode
-[SWS_CM_00130]&lt;/title&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeugung mit MethodCallProcessingMode&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;line x1="40" y1="191" x2="650" y2="191" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="206" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: Eingehender Methodenaufruf&lt;/text&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Empfang Request-Nachricht
-[SWS_CM_10306]&lt;/title&gt;&lt;text x="450.0" y="234" text-anchor="middle" font-size="11" fill="#28251d"&gt;Empfang Request-Nachricht&lt;/text&gt;&lt;line x1="555" y1="240" x2="345" y2="240" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Reguläre Methode
-[SWS_CM_00191]&lt;/title&gt;&lt;path d="M 40 258 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="273" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="273" font-size="11" font-style="italic" fill="#28251d"&gt;Reguläre Methode&lt;/text&gt;&lt;/g&gt;&lt;text x="240.0" y="298" text-anchor="middle" font-size="11" fill="#28251d"&gt;&amp;lt;method-name&amp;gt;(Argumente)&lt;/text&gt;&lt;line x1="345" y1="304" x2="135" y2="304" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Rückgabe ara::core::Future&amp;lt;Output&amp;gt;
-[SWS_CM_99556]&lt;/title&gt;&lt;text x="240.0" y="332" text-anchor="middle" font-size="11" fill="#28251d"&gt;Rückgabe &lt;a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html"&gt;ara::core::Future&lt;/a&gt;&amp;lt;Output&amp;gt;&lt;/text&gt;&lt;line x1="135" y1="338" x2="345" y2="338" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;text x="450.0" y="366" text-anchor="middle" font-size="11" fill="#28251d"&gt;Antwortnachricht senden&lt;/text&gt;&lt;line x1="345" y1="372" x2="555" y2="372" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Fire-and-Forget Methode
-[SWS_CM_90434]&lt;/title&gt;&lt;line x1="40" y1="394" x2="650" y2="394" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="409" font-size="11" font-style="italic" fill="#28251d"&gt;Fire-and-Forget Methode&lt;/text&gt;&lt;/g&gt;&lt;text x="240.0" y="437" text-anchor="middle" font-size="11" fill="#28251d"&gt;&amp;lt;fnfmethod-name&amp;gt;(Argumente)&lt;/text&gt;&lt;line x1="345" y1="443" x2="135" y2="443" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 135 457 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="472" text-anchor="start" font-size="11" fill="#28251d"&gt;Verarbeitung ohne Antwort&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Sequence diagram: Typical sequence of method processing via the skeleton. Sources: &lt;a class="spec-record-ref" data-req="SWS_CM_00130" href="../spec/record.html?id=SWS_CM_00130"&gt;[SWS_CM_00130]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt; [SWS_CM_00130], [SWS_CM_00191], [SWS_CM_90434], [SWS_CM_10306], [SWS_CM_99556]&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Ablauf umfasst die Implementierung der rein virtuellen Methoden durch die abgeleitete Anbieterklasse und die spätere Ausführung bei eintreffenden Anfragen. Für reguläre Methodenaufrufe (Request-Response) definiert das Skeleton eine Schnittstelle, die ein &lt;code&gt;ara::core::Future&lt;/code&gt; mit dem entsprechenden Ausgabe-Objekt zurückliefert &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_99556" href="../spec/record.html?id=SWS_CM_99556"&gt;[SWS_CM_99556]&lt;/a&gt;. Für Fire-and-Forget-Methoden ohne Rückantwort stellt das Skeleton rein virtuelle Operationen mit dem Rückgabetyp &lt;code&gt;void&lt;/code&gt; bereit &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;. Bei eingehenden Anforderungen deserialisiert die Kommunikations-Middleware die Nutzdaten und leitet den Aufruf gemäß des konfigurierten Verarbeitungsmodus an die konkrete Implementierung der Skeleton-Klasse weiter (&lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;).&lt;/p&gt;
 
-  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
-  &lt;p&gt;
-    With regard to error behavior, method calls differ fundamentally based on their communication semantics:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Regular methods:&lt;/strong&gt; The interface is declared as &lt;code&gt;noexcept&lt;/code&gt; and requires exception safety (&lt;code&gt;exception safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;. If method processing fails, the error is not reported via C++ exceptions, but is transported asynchronously via the returned &lt;code&gt;ara::core::Future&lt;/code&gt;. In the event of an error, this contains either an error code from &lt;code&gt;ara::com::ComErrc&lt;/code&gt; or a domain-specific application error of type &lt;code&gt;ApApplicationError&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Fire-and-forget methods:&lt;/strong&gt; These methods are also declared as &lt;code&gt;noexcept&lt;/code&gt; and must be implemented to be exception-safe &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;. Since by design no back-channel to the calling client exists, neither success nor error information can be transmitted. If an error occurs during processing, it must be handled internally within the service provider (Interpretation: Local logging or internal compensation measures are mandatory for fire-and-forget methods, as no error transmission to the client takes place).
-    &lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="diagram" id="diag-call-flow"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 346" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Aufruf einer Service-Methode am Skeleton&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="332" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="332" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="332" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Kommunikations-Binding&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;ServiceSkeleton&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Dienstanbieter-Implementierung&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Eingehende Anfragenachricht (SOME/IP)&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 345 146 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="399" y="161" text-anchor="start" font-size="11" fill="#28251d"&gt;Nutzdaten deserialisieren&lt;/text&gt;&lt;text x="450.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;virtual &amp;lt;Method&amp;gt;(inArgs)&lt;/text&gt;&lt;line x1="345" y1="203" x2="555" y2="203" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 555 217 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="547" y="232" text-anchor="end" font-size="11" fill="#28251d"&gt;Geschäftslogik ausführen&lt;/text&gt;&lt;text x="450.0" y="268" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_Future_420ba8.html" href="../classes/cl_ara_core_Future_420ba8.html"&gt;ara::core::Future&lt;/a&gt;&amp;lt;&amp;lt;Method&amp;gt;Output&amp;gt;&lt;/text&gt;&lt;line x1="555" y1="274" x2="345" y2="274" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="302" text-anchor="middle" font-size="11" fill="#28251d"&gt;Antwortnachricht bereitstellen&lt;/text&gt;&lt;line x1="345" y1="308" x2="135" y2="308" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Ablauf eines Methodenaufrufs über das Skeleton. Quellen: &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_10306" href="../spec/record.html?id=SWS_CM_10306"&gt;[SWS_CM_10306]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=99"&gt;SWS CommunicationManagement §8.1 „Method invocation“&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;!-- annahmen: 1) Kontrollierte Beendigung vor Zerstörung – Begründung: Verhindert fehlerhafte Zugriffe bei noch offenen asynchronen Vorgängen. 2) Interne Fehlerbehandlung bei Fire-and-Forget – Begründung: Signatur besitzt void-Rückgabe und keinen Fehlerrückkanal an den Aufrufer. --&gt;
-  &lt;p class="ai-note"&gt;This class guide was created based on the AUTOSAR Adaptive Platform specification for Release R25-11.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Sowohl Request-Response-Methoden als auch Fire-and-Forget-Methoden sind auf Schnittstellenebene mit &lt;code&gt;noexcept&lt;/code&gt; annotiert und als ausnahmesicher deklariert (&lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;). Fehler bei der Bearbeitung regulärer Methodenaufrufe werden nicht über C++-Ausnahmen übermittelt; stattdessen transportiert das zurückgegebene &lt;code&gt;ara::core::Future&lt;/code&gt; im Fehlerfall einen entsprechenden Fehlercode vom Typ &lt;code&gt;ara::com::ComErrc&lt;/code&gt; oder einen &lt;code&gt;ApApplicationError&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CM_00191" href="../spec/record.html?id=SWS_CM_00191"&gt;[SWS_CM_00191]&lt;/a&gt;. Für Fire-and-Forget-Methoden sind spezifikationsgemäß weder Rückgabewerte noch standardisierte Fehlercodes vorgesehen &lt;a class="spec-record-ref" data-req="SWS_CM_90434" href="../spec/record.html?id=SWS_CM_90434"&gt;[SWS_CM_90434]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- annahmen: 1) Die Skeleton-Instanz verbleibt typischerweise bis zum Beenden des Dienstes im Besitz der Dienstanbieter-Anwendung. – Begründung: Die Spezifikationsauszüge definieren Konstruktion und Methodenbereitstellung, spezifizieren die Besitzdauer in der Anwendung jedoch nicht explizit. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch einen KI-Assistenten auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -393,9 +402,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>4a9713a1a7c9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3d03b3b797b6…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 19 <span class="dossier-meta-sub">(19 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 19 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -430,8 +439,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">21</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">20</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -468,7 +477,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 19 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -531,4 +540,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CM_00191","k":"requirement","d":"AUTOSAR Specification","t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CM_00191]."}],"inbound":[{"i":"SWS_CM_90434","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CM_90434].","n":"SWS_CM_90434"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/7840443647898473.json?v=acae5353" data-total="19" data-new="19" data-figures="4" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CM_00130","k":"requirement","d":"AUTOSAR Specification","t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CM_00130]."}],"inbound":[{"i":"SWS_CM_00191","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CM_00191].","n":"SWS_CM_00191"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/7840443647898473.json?v=0e925b86" data-total="1" data-new="1" data-figures="1" data-used="0"></script></dialog>

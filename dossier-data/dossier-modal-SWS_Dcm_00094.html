@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00094" class="dossier-modal dossier-workbench" data-dossier-sha="56ec2753c25cb1b7" aria-labelledby="dossier-modal-SWS_Dcm_00094-title">
+<dialog id="dossier-modal-SWS_Dcm_00094" class="dossier-modal dossier-workbench" data-dossier-sha="2540be544d674290" aria-labelledby="dossier-modal-SWS_Dcm_00094-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00094-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00094)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,441 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,895 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_StartOfReception'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -212,23 +230,18 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="bb416eae6ee7a2638f4508d4e467c5ac2f703bdf8c8a60e6bf6124216153cd13" data-trace-output="56ec2753c25cb1b7fc85642a2e54b1739f3108143eb59cabdc1aedbfb3c6ac06" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ab9eb5ff232fd0ec14b16519a57c66eb46da10d15e40aa11698a9588ebeb6eb8" data-trace-output="2540be544d674290dd488dd64e79258fb270b2609d7ec0913c60f63eafda8e0e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Initiiert den N-SDU-Empfang im DCM, prüft Pufferkapazitäten und liefert den verfügbaren Speicherplatz zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;Dcm_StartOfReception&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt; wird zu Beginn des Empfangs einer N-SDU aufgerufen – sowohl bei Einzelnachrichten (Single Frame, SF) als auch bei fragmentierten Nachrichten (First Frame, FF gefolgt von Consecutive Frames, CF). Sie kann im Interrupt-Kontext ausgeführt werden &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;Dcm_StartOfReception&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;) wird von einem Transportprotokollmodul zu Beginn des Empfangs einer N-SDU aufgerufen – sowohl bei Einzelnachrichten (Single Frame, SF) als auch bei segmentierten Nachrichten (First Frame, FF). Sie kann im Interrupt-Kontext aufgerufen werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;). Der Aufruf bewirkt unter anderem das Stoppen des S3Server-Timers bei Beginn des Empfangs (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00141" href="../../spec/record.html?id=SWS_Dcm_00141"&gt;[SWS_Dcm_00141]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Über &lt;code&gt;info&lt;/code&gt; werden Nutzdaten und Metadaten übergeben; bei generischen Verbindungen werden hierüber unter anderem &lt;code&gt;SOURCE_ADDRESS_16&lt;/code&gt; gespeichert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00848" href="../../spec/record.html?id=SWS_Dcm_00848"&gt;[SWS_Dcm_00848]&lt;/a&gt;) sowie &lt;code&gt;TARGET_ADDRESS_16&lt;/code&gt; geprüft (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01347" href="../../spec/record.html?id=SWS_Dcm_01347"&gt;[SWS_Dcm_01347]&lt;/a&gt;). Ist weder Payload noch Metadatum vorhanden, wird &lt;code&gt;NULL_PTR&lt;/code&gt; übergeben (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;). Über &lt;code&gt;bufferSizePtr&lt;/code&gt; meldet die Funktion den verfügbaren Puffer zur Berechnung der Block Size (BS) zurück (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;). Bei erfolgreicher Annahme liefert sie &lt;code&gt;BUFREQ_OK&lt;/code&gt;, woraufhin Folgedaten über &lt;code&gt;Dcm_CopyRxData&lt;/code&gt; kopiert werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00443" href="../../spec/record.html?id=SWS_Dcm_00443"&gt;[SWS_Dcm_00443]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Fehler- und Ablehnungsfälle werden über den Rückgabewert signalisiert:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;id&lt;/code&gt; identifiziert die empfangene I-PDU &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;info&lt;/code&gt; verweist auf Nutzdaten und MetaData des ersten bzw. einzelnen Rahmens oder ist &lt;code&gt;NULL_PTR&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;. Über die Metadaten werden bei generischen Verbindungen unter anderem &lt;code&gt;SOURCE_ADDRESS_16&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00848" href="../../spec/record.html?id=SWS_Dcm_00848"&gt;[SWS_Dcm_00848]&lt;/a&gt; und optional &lt;code&gt;TARGET_ADDRESS_16&lt;/code&gt; zur Adressprüfung übermittelt &lt;a class="spec-record-ref" data-req="SWS_Dcm_01347" href="../../spec/record.html?id=SWS_Dcm_01347"&gt;[SWS_Dcm_01347]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;TpSduLength&lt;/code&gt; übergibt die Gesamtlänge der zu empfangenden N-SDU. Wird &lt;code&gt;TpSduLength == 0&lt;/code&gt; übergeben, gibt die API &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; zurück und unternimmt keine weiteren Aktionen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00642" href="../../spec/record.html?id=SWS_Dcm_00642"&gt;[SWS_Dcm_00642]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;bufferSizePtr&lt;/code&gt; gibt bei Annahme (&lt;code&gt;BUFREQ_OK&lt;/code&gt;) den verfügbaren Empfangspuffer zurück, der vom Transportprotokoll zur Berechnung der Block Size (BS) verwendet wird &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;. Bei Ablehnung bleibt der Wert unverändert &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Rückgabewerte:&lt;/strong&gt; &lt;code&gt;BUFREQ_OK&lt;/code&gt; akzeptiert die Verbindung; &lt;code&gt;BUFREQ_E_OVFL&lt;/code&gt; bricht den Empfang ab, wenn die geforderte Länge größer als der im DCM verfügbare Puffer ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00443" href="../../spec/record.html?id=SWS_Dcm_00443"&gt;[SWS_Dcm_00443]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00444" href="../../spec/record.html?id=SWS_Dcm_00444"&gt;[SWS_Dcm_00444]&lt;/a&gt;; &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; weist die Verbindung ab &lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BUFREQ_E_OVFL&lt;/code&gt;: Wird zurückgegeben, wenn die angeforderte Länge &lt;code&gt;TpSduLength&lt;/code&gt; größer als der im DCM verfügbare Puffer ist (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00444" href="../../spec/record.html?id=SWS_Dcm_00444"&gt;[SWS_Dcm_00444]&lt;/a&gt;). &lt;code&gt;bufferSizePtr&lt;/code&gt; bleibt unverändert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00094" href="../../spec/record.html?id=SWS_Dcm_00094"&gt;[SWS_Dcm_00094]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt;: Wird zurückgegeben, wenn &lt;code&gt;TpSduLength&lt;/code&gt; gleich 0 ist (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00642" href="../../spec/record.html?id=SWS_Dcm_00642"&gt;[SWS_Dcm_00642]&lt;/a&gt;) oder eine laufende Anforderung auf derselben Verbindung blockiert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00557" href="../../spec/record.html?id=SWS_Dcm_00557"&gt;[SWS_Dcm_00557]&lt;/a&gt;). Bei einer anderen Verbindung entscheidet der Parameter &lt;code&gt;DcmDslDiagRespOnSecondDeclinedRequest&lt;/code&gt;, ob mit &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; abgewiesen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00790" href="../../spec/record.html?id=SWS_Dcm_00790"&gt;[SWS_Dcm_00790]&lt;/a&gt;) oder mit &lt;code&gt;BUFREQ_OK&lt;/code&gt; akzeptiert wird (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00788" href="../../spec/record.html?id=SWS_Dcm_00788"&gt;[SWS_Dcm_00788]&lt;/a&gt;). Nebenläufige TesterPresent-Anfragen werden ebenfalls mit &lt;code&gt;BUFREQ_OK&lt;/code&gt; quittiert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00557" href="../../spec/record.html?id=SWS_Dcm_00557"&gt;[SWS_Dcm_00557]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Zusammenspiel und Nebenläufigkeit&lt;/h4&gt;
-  &lt;p&gt;Wird eine laufende Diagnoseanfrage verarbeitet, lehnt das DCM neue Anfragen über dieselbe Verbindung (&lt;code&gt;DcmDslConnection&lt;/code&gt;) mit &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; ab, akzeptiert jedoch parallele TesterPresent-Anfragen mit &lt;code&gt;BUFREQ_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00557" href="../../spec/record.html?id=SWS_Dcm_00557"&gt;[SWS_Dcm_00557]&lt;/a&gt;. Bei Anfragen über eine abweichende Verbindung steuert der Konfigurationsparameter &lt;code&gt;DcmDslDiagRespOnSecondDeclinedRequest&lt;/code&gt;, ob mit &lt;code&gt;BUFREQ_OK&lt;/code&gt; angenommen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00788" href="../../spec/record.html?id=SWS_Dcm_00788"&gt;[SWS_Dcm_00788]&lt;/a&gt; oder mit &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; abgewiesen wird &lt;a class="spec-record-ref" data-req="SWS_Dcm_00790" href="../../spec/record.html?id=SWS_Dcm_00790"&gt;[SWS_Dcm_00790]&lt;/a&gt;. Der Aufruf stoppt zudem den Session-Timer &lt;code&gt;S3Server&lt;/code&gt; für die Dauer des Empfangs &lt;a class="spec-record-ref" data-req="SWS_Dcm_00141" href="../../spec/record.html?id=SWS_Dcm_00141"&gt;[SWS_Dcm_00141]&lt;/a&gt;. Nach erfolgreicher Annahme kopiert &lt;code&gt;Dcm_CopyRxData&lt;/code&gt; die Daten schrittweise in den DCM-Puffer &lt;a class="spec-record-ref" data-req="SWS_Dcm_00443" href="../../spec/record.html?id=SWS_Dcm_00443"&gt;[SWS_Dcm_00443]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Alle Angaben basieren ausschließlich auf dem AUTOSAR-R20-11-Spezifikationsauszug.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -268,9 +281,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>bb416eae6ee7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ab9eb5ff232f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 21 <span class="dossier-meta-sub">(21 neu · 8 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 21 Belege dazugekommen (8 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 18 <span class="dossier-meta-sub">(18 neu · 8 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 18 Belege dazugekommen (8 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -305,8 +318,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">23</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">22</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">20</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">19</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -343,7 +356,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 21 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 18 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -406,4 +419,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00094","k":"function","d":"AUTOSAR","t":"","n":"Dcm_StartOfReception"}],"inbound":[{"i":"SWS_Dcm_00848","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00848].","n":"SWS_Dcm_00848"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6107be194a251320.json?v=ad62bc09" data-total="21" data-new="21" data-figures="8" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00094","k":"function","d":"AUTOSAR","t":"","n":"Dcm_StartOfReception"}],"inbound":[{"i":"SWS_Dcm_00141","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00141].","n":"SWS_Dcm_00141"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6107be194a251320.json?v=3500f767" data-total="18" data-new="18" data-figures="8" data-used="0"></script></dialog>

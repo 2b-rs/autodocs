@@ -144,6 +144,9 @@
 
   function oeffnePfad(el) {
     var geoeffnet = false;
+    // Ziel in einer verborgenen Ausführlichkeitsstufe (z. B. #diag-… nur in Stufe 4): Stufe zeigen
+    var lv = el && el.closest ? el.closest(".ai-level[data-ai-level]") : null;
+    if (lv && window.autodocsGuideLevels) window.autodocsGuideLevels.showLevelOf(lv);
     for (var d = el; d; d = d.parentElement) {
       if (d.tagName === "DETAILS" && !d.open) {
         d.open = true;
@@ -563,6 +566,7 @@
       if (fallback) fallback.remove();
     });
     updateAnchorStatus(rel);
+    if (window.autodocsGuideLevels) window.autodocsGuideLevels.syncOneLiners();
 
     applyStandardsLinkRewrites(document, rel);
     checkAndApplySupersessions(rel);
@@ -1342,6 +1346,7 @@
     bindDossierControls();
     bindSnippetCurationControls();
     bindGuideTabs();
+    bindGuideLevels();
   }
 
   // Volltextsuche der Kopfzeile: static/site-search.js (Index search/, _src/tools/export_search.py) wird
@@ -1361,6 +1366,119 @@
     if (form) form.addEventListener("submit", function (e) { e.preventDefault(); start(); });
     if (/[?&]q=/.test(location.search)) start();
   }
+
+  // ---- Ausführlichkeitsstufen der User Guides (guide-levels, Fragmentschema ai-levels@1)
+  // Ein Guide mit data-ai-levels trägt Einzeiler (1), Kurzfassung (2), Überblick (3) und ausführliche
+  // Fassung (4). Sichtbar ist die Stufe in data-ai-level-cur (CSS); „mehr ›“/„‹ weniger“ und die
+  // Stufennamen schalten um. Die Wahl gilt je Guide-Art (data-ai-level-kind: element, module, cluster …)
+  // und liegt im Browser-Speicher; neue Seiten öffnen die Guides dieser Art in der gemerkten Stufe.
+  // Der Einzeiler des sichtbaren Guides steht im Kopf des Folds (.ai-oneliner), auch eingeklappt.
+  var GUIDE_LEVEL_KEY = "autodocs-guide-level:";
+  var GUIDE_LEVEL_MIN = 2, GUIDE_LEVEL_MAX = 4, GUIDE_LEVEL_START = 2;
+  function guideLevelStored(kind) {
+    try {
+      var v = parseInt(localStorage.getItem(GUIDE_LEVEL_KEY + kind) || "", 10);
+      return v >= GUIDE_LEVEL_MIN && v <= GUIDE_LEVEL_MAX ? v : 0;
+    } catch (e) { return 0; }
+  }
+  // Gezeigte Stufen der Guide-Art (data-ai-levels-shown, Anzeigeprofil in lib_docmodel.AI_LEVEL_PROFILES)
+  function guideLevels(ai) {
+    var l = (ai.getAttribute("data-ai-levels-shown") || "2 3 4").split(/\s+/).map(function (x) { return parseInt(x, 10); })
+      .filter(function (x) { return x >= GUIDE_LEVEL_MIN && x <= GUIDE_LEVEL_MAX; });
+    return l.length ? l : [GUIDE_LEVEL_MAX];
+  }
+  function setGuideLevel(ai, n, remember) {
+    if (!ai) return;
+    var levels = guideLevels(ai);
+    n = n | 0;
+    if (levels.indexOf(n) < 0) {
+      // nicht gezeigte Stufe: nächsthöhere gezeigte (Anker landen so in der ausführlichen Fassung)
+      n = levels.filter(function (x) { return x >= n; })[0] || levels[levels.length - 1];
+    }
+    ai.setAttribute("data-ai-level-cur", String(n));
+    var i = levels.indexOf(n);
+    ai.querySelectorAll("[data-ai-level-step]").forEach(function (b) {
+      var step = parseInt(b.getAttribute("data-ai-level-step"), 10);
+      b.disabled = step < 0 ? i <= 0 : i >= levels.length - 1;
+    });
+    ai.querySelectorAll("[data-ai-level-go]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(parseInt(b.getAttribute("data-ai-level-go"), 10) === n));
+    });
+    if (remember) {
+      try { localStorage.setItem(GUIDE_LEVEL_KEY + (ai.getAttribute("data-ai-level-kind") || "guide"), String(n)); } catch (e) {}
+    }
+  }
+  function syncOneLiners(scope) {
+    (scope || document).querySelectorAll("details > summary .ai-oneliner").forEach(function (span) {
+      var d = span.closest("details");
+      if (!d) return;
+      var cands = Array.prototype.filter.call(d.querySelectorAll(".ai[data-ai-oneliner]"), function (ai) {
+        var v = ai.closest(".ai-guide-release-variant");
+        return !v || v.style.display !== "none";
+      });
+      var ai = cands[0];
+      if (!ai) return;
+      var t = ai.getAttribute("data-ai-oneliner") || "";
+      if (span.textContent !== t) span.textContent = t;
+      span.title = t;
+    });
+  }
+  function bindGuideLevels() {
+    if (bindGuideLevels.done) return;
+    bindGuideLevels.done = true;
+    document.querySelectorAll(".ai[data-ai-levels]").forEach(function (ai) {
+      var lv = guideLevels(ai);
+      var n = guideLevelStored(ai.getAttribute("data-ai-level-kind") || "guide");
+      setGuideLevel(ai, lv.indexOf(n) >= 0 ? n : lv[0], false);
+    });
+    syncOneLiners();
+    // Anker auf einen Inhalt einer verborgenen Stufe (Querverweis #diag-…): diese Stufe zeigen
+    var tid = getAnchorTargetFromHash(location.hash), tel = null;
+    try { tel = tid && document.getElementById(tid); } catch (e) { tel = null; }
+    var tlv = tel && tel.closest(".ai-level[data-ai-level]");
+    if (tlv) window.autodocsGuideLevels.showLevelOf(tlv);
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-ai-level-step], [data-ai-level-go]");
+      if (!b) return;
+      var ai = b.closest(".ai[data-ai-levels]");
+      if (!ai) return;
+      e.preventDefault();
+      var cur = parseInt(ai.getAttribute("data-ai-level-cur"), 10) || GUIDE_LEVEL_START;
+      var inline = !!b.closest(".ai-level-more-inline");
+      var lv = guideLevels(ai), ci = Math.max(0, lv.indexOf(cur));
+      var n = b.hasAttribute("data-ai-level-go") ? parseInt(b.getAttribute("data-ai-level-go"), 10)
+        : lv[Math.max(0, Math.min(lv.length - 1, ci + parseInt(b.getAttribute("data-ai-level-step"), 10)))];
+      setGuideLevel(ai, n, true);
+      // Fokus bleibt in der Leiste; ein deaktivierter Knopf gibt ihn an den Gegenknopf ab
+      var nav = ai.querySelector(".ai-level-nav");
+      var focus = b;
+      if (nav && (inline || b.disabled)) {
+        var dir = b.hasAttribute("data-ai-level-step") ? parseInt(b.getAttribute("data-ai-level-step"), 10) : 0;
+        var same = nav.querySelector(dir > 0 ? ".ai-level-more" : ".ai-level-less");
+        var other = nav.querySelector(dir > 0 ? ".ai-level-less" : ".ai-level-more");
+        focus = same && !same.disabled ? same : other && !other.disabled ? other
+          : nav.querySelector('[data-ai-level-go][aria-pressed="true"]');
+      }
+      if (focus && focus.focus) focus.focus({ preventScroll: true });
+      if (inline && nav && nav.getBoundingClientRect().top < 0) nav.scrollIntoView({ block: "nearest" });
+    });
+  }
+  window.autodocsGuideLevels = {
+    set: setGuideLevel,
+    syncOneLiners: syncOneLiners,
+    showLevelOf: function (levelEl) {
+      var ai = levelEl.closest(".ai[data-ai-levels]");
+      var n = parseInt(levelEl.getAttribute("data-ai-level"), 10);
+      if (ai && n >= GUIDE_LEVEL_MIN && String(n) !== ai.getAttribute("data-ai-level-cur")) setGuideLevel(ai, n, false);
+    },
+    oneliner: function (scope) {
+      var cands = Array.prototype.filter.call((scope || document).querySelectorAll(".ai[data-ai-oneliner]"), function (ai) {
+        var v = ai.closest(".ai-guide-release-variant");
+        return !v || v.style.display !== "none";
+      });
+      return cands.length ? cands[0].getAttribute("data-ai-oneliner") || "" : "";
+    }
+  };
 
   // Reiter „User Guide“ / „Implementer's Guide“ an Elementen (ARIA tablist, Klick + Pfeiltasten)
   function bindGuideTabs() {

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_00152" class="dossier-modal dossier-workbench" data-dossier-sha="3c7fbc7d8395630e" aria-labelledby="dossier-modal-SWS_SecOC_00152-title">
+<dialog id="dossier-modal-SWS_SecOC_00152" class="dossier-modal dossier-workbench" data-dossier-sha="c64016bb79184a09" aria-labelledby="dossier-modal-SWS_SecOC_00152-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_00152-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_00152)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,247 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,702 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_TpTxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,34 +193,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="09b3ca1da4667e50073151293189236989f5b330c40fed56a05d93fbcdd43bd8" data-trace-output="3c7fbc7d8395630ec7c5d4d18778d4b815f83f28c75b9529f4fbf792c222b6f5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ed0d4b6dacab0db68af9f4e8d77ea03bed83b8e94df01d8b5c593a504788e40e" data-trace-output="c64016bb79184a0924c6b39920d8843d18fd07f2d436f2c1adc953e8550ed016" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bestätigt die Netzwerkübertragung einer I-PDU und übermittelt deren Sendestatus synchron an das SecOC-Modul." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage of &lt;code&gt;SecOC_TpTxConfirmation&lt;/code&gt;&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;SecOC_TpTxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;) serves as a confirmation after an I-PDU has been transmitted on the network. Via the parameter &lt;code&gt;result&lt;/code&gt;, the module &lt;code&gt;SecOC&lt;/code&gt; is informed whether the transmission completed successfully or failed. Execution is synchronous.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;SecOC_TpTxConfirmation&lt;/code&gt; dient der Bestätigung einer über das Netzwerk übertragenen I-PDU und informiert das SecOC-Modul synchron über den Erfolg oder Misserfolg des Sendevorgangs &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Der Aufruf erfolgt nach der physischen Übertragung einer I-PDU auf dem Netzwerk &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;. Die Schnittstelle ist im Header &lt;code&gt;SecOC.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x48&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;. Sie nimmt zwei Eingabeparameter entgegen und liefert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;):&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;&lt;code&gt;id&lt;/code&gt; (&lt;code&gt;PduIdType&lt;/code&gt;, In):&lt;/strong&gt; Identifier of the transmitted I-PDU.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;&lt;code&gt;result&lt;/code&gt; (&lt;code&gt;Std_ReturnType&lt;/code&gt;, In):&lt;/strong&gt; Transmission result of the I-PDU (success or failure).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Return value:&lt;/strong&gt; None (&lt;code&gt;void&lt;/code&gt;).
-    &lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;id&lt;/code&gt; (Typ &lt;code&gt;PduIdType&lt;/code&gt;): Eindeutige Identifikation der übertragenen I-PDU &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;result&lt;/code&gt; (Typ &lt;code&gt;Std_ReturnType&lt;/code&gt;): Gibt an, ob die Übertragung auf dem Netzwerk erfolgreich war oder fehlgeschlagen ist &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Properties&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;, the call is specified as reentrant, meaning parallel confirmations for different PDU instances are permissible. The function has the service ID &lt;code&gt;0x48&lt;/code&gt; and is declared via the header file &lt;code&gt;SecOC.h&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Due to its semantics as a confirmation interface for transport PDUs, the call is typically triggered by lower-layer communication layers as soon as the transmission process on the network has finished.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This note was automatically generated by an AI.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) Der Aufruf dürfte durch unterlagerte Kommunikations- bzw. Transportschichten erfolgen – Begründung: Das Element dient als Bestätigung nach Netzwerkübertragung einer I-PDU, der konkrete Aufrufer ist im Payload jedoch nicht explizit genannt. --&gt;
+
+  &lt;h4&gt;Nebenläufigkeit und Ausführung&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist laut Spezifikation synchron auszuführen und vollständig reentrant (&lt;code&gt;Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;. Sie kann somit parallel für unterschiedliche oder dieselben I-PDUs aufgerufen werden, sofern dies der Aufrufkontext erfordert.&lt;/p&gt;
+
+  &lt;h4&gt;Fehlerbehandlung und Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Spezifische DET- oder DEM-Fehlercodes werden im Payload nicht ausgewiesen. Die Fehlerbehandlung bezüglich der Übertragung erfolgt primär über den übergebenen Statusparameter &lt;code&gt;result&lt;/code&gt;, welcher dem Modul mitteilt, ob der Sendevorgang glückte &lt;a class="spec-record-ref" data-req="SWS_SecOC_00152" href="../../spec/record.html?id=SWS_SecOC_00152"&gt;[SWS_SecOC_00152]&lt;/a&gt;. Interpretation: Die Funktion dürfte primär als Callback-Schnittstelle für unterlagerte Transportprotokoll-Instanzen dienen, um nach dem Abschluss großer oder fragmentierter Übertragungen den Sendestatus zurückzumelden.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Die Funktion dürfte primär als Callback für unterlagerte Transport-Instanzen dienen – Begründung: Der Funktionsname und das Präfix TpTxConfirmation deuten auf eine Transportprotokoll-Rückmeldung hin, der Aufrufer wird im Payload aber lediglich abstrakt als Netzwerküberträger bezeichnet. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Verwendungshinweis wurde von einer KI erstellt und fasst die Anforderungen aus der AUTOSAR-Spezifikation für das Modul SecOC zusammen.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -242,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>09b3ca1da466…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ed0d4b6dacab…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -380,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00152","k":"function","d":"AUTOSAR","t":"","n":"SecOC_TpTxConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6035786824de8f95.json?v=6eababe4" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00152","k":"function","d":"AUTOSAR","t":"","n":"SecOC_TpTxConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6035786824de8f95.json?v=1dd2ae56" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

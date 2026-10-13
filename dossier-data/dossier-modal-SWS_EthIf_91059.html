@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91059" class="dossier-modal dossier-workbench" data-dossier-sha="db0ccbf746a7c1ca" aria-labelledby="dossier-modal-SWS_EthIf_91059-title">
+<dialog id="dossier-modal-SWS_EthIf_91059" class="dossier-modal dossier-workbench" data-dossier-sha="e24f0269a5918a1e" aria-labelledby="dossier-modal-SWS_EthIf_91059-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91059-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91059)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,339 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,794 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_ClearTrcvSignalQuality'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,33 +198,16 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="1252e6d53cdf453ffce49742a1fe593d42e8f1780dac3a158ef9917a3c744987" data-trace-output="db0ccbf746a7c1ca0ae3cc698f67528b2dfdb6f669ce86672c156e6214c069d4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="b5e0adba46242f55fe285b0d40342349cd8cdce4a930af504a30eab884195e28" data-trace-output="e24f0269a5918a1ecf9657de46404847d8f63603d7ead79195e04abf34962e12" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Löscht synchron die gespeicherten Signalqualitätswerte für einen angegebenen Ethernet-Transceiver." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;EthIf_ClearTrcvSignalQuality&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;) serves to clear the stored signal quality of the link for a specific Ethernet transceiver. The call is executed synchronously. As an input parameter, the function expects &lt;code&gt;TrcvIdx&lt;/code&gt; (type &lt;code&gt;uint8&lt;/code&gt;), which represents the unique index of the transceiver within the context of the Ethernet Interface module. The declaration is available via the header &lt;code&gt;EthIf.h&lt;/code&gt;.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-  &lt;p&gt;
-    The function returns a status value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; as the result:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The stored signal quality was successfully cleared (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Resetting the signal quality failed (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    With regard to reentrancy, &lt;code&gt;EthIf_ClearTrcvSignalQuality&lt;/code&gt; is reentrant for calls with different transceiver indices (&lt;code&gt;TrcvIdx&lt;/code&gt;), but non-reentrant for the same index (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;). Calls for the same transceiver must therefore not occur concurrently from different tasks or contexts.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00400" href="../../spec/record.html?id=SWS_EthIf_00400"&gt;[SWS_EthIf_00400]&lt;/a&gt;, the function resets the stored signal quality values (see type &lt;code&gt;EthIf_SignalQualityResultType&lt;/code&gt;) of the &lt;code&gt;EthIfTransceiver&lt;/code&gt; referenced by &lt;code&gt;TrcvIdx&lt;/code&gt;.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EthIf_ClearTrcvSignalQuality&lt;/code&gt; dient dem synchronen Löschen der gespeicherten Signalqualitätswerte einer Ethernet-Verbindung für einen bestimmten Transceiver &lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;. Der Aufrufer übergibt dazu mit dem Parameter &lt;code&gt;TrcvIdx&lt;/code&gt; den Index des Transceivers im Kontext des Ethernet Interface, woraufhin die entsprechenden Messwerte gelöscht werden &lt;a class="spec-record-ref" data-req="SWS_EthIf_00400" href="../../spec/record.html?id=SWS_EthIf_00400"&gt;[SWS_EthIf_00400]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Als Rückgabewert liefert die Schnittstelle den Typ &lt;code&gt;Std_ReturnType&lt;/code&gt;: War das Zurücksetzen der Signalqualität erfolgreich, wird &lt;code&gt;E_OK&lt;/code&gt; gemeldet, andernfalls schlägt der Vorgang mit &lt;code&gt;E_NOT_OK&lt;/code&gt; fehl &lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;. Interpretation: Der Fehlerwert &lt;code&gt;E_NOT_OK&lt;/code&gt; dürfte vermutlich auf ungültige Indexparameter oder Fehler bei der Weiterleitung an unterlagerte Treiber zurückzuführen sein, da der Payload keine spezifischen Fehlercodes oder DET-Einträge nennt.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich der Nebenläufigkeit ist der Dienst reentrant für unterschiedliche Transceiver-Indizes implementiert, jedoch explizit nicht reentrant für denselben &lt;code&gt;TrcvIdx&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;. Mehrere Aufrufe für den identischen Transceiver dürfen daher nicht gleichzeitig aus nebenläufigen Kontexten erfolgen und müssen entsprechend abgesichert werden.&lt;/p&gt;
+  &lt;p&gt;Im Modulzusammenspiel löscht der Aufruf gezielt die hinterlegten Signalqualitätswerte des Typs &lt;code&gt;EthIf_SignalQualityResultType&lt;/code&gt; für den über &lt;code&gt;TrcvIdx&lt;/code&gt; adressierten &lt;code&gt;EthIfTransceiver&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_00400" href="../../spec/record.html?id=SWS_EthIf_00400"&gt;[SWS_EthIf_00400]&lt;/a&gt;. Die Deklaration der synchronen Schnittstelle mit der Service-ID &lt;code&gt;0x19&lt;/code&gt; wird über den Header &lt;code&gt;EthIf.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91059" href="../../spec/record.html?id=SWS_EthIf_91059"&gt;[SWS_EthIf_91059]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Ursachen für E_NOT_OK dürften ungültige Indizes oder Treiberfehler sein – Begründung: Der Payload spezifiziert für E_NOT_OK nur den Misserfolg, nennt jedoch keine konkreten DET-Fehlercodes. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -246,7 +247,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1252e6d53cdf…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>b5e0adba4624…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -384,4 +385,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91059","k":"function","d":"AUTOSAR","t":"","n":"EthIf_ClearTrcvSignalQuality"}],"inbound":[{"i":"SWS_EthIf_00400","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00400].","n":"SWS_EthIf_00400"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/92ba38f9d0b3077f.json?v=315a6568" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91059","k":"function","d":"AUTOSAR","t":"","n":"EthIf_ClearTrcvSignalQuality"}],"inbound":[{"i":"SWS_EthIf_00400","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00400].","n":"SWS_EthIf_00400"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/92ba38f9d0b3077f.json?v=a18ce6df" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

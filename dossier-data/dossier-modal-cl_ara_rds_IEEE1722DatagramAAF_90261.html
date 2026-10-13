@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramAAF_90261" class="dossier-modal dossier-workbench" data-dossier-sha="e04729ee9fdd7f08" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramAAF_90261-title">
+<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramAAF_90261" class="dossier-modal dossier-workbench" data-dossier-sha="4e5ff8ea398cc67d" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramAAF_90261-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_rds_IEEE1722DatagramAAF_90261-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_rds_IEEE1722DatagramAAF_90261)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,529 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,527 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,14 +145,83 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::rds::IEEE1722DatagramAAF' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_rds_IEEE1722DatagramAAF_90261",
  "class_name": "ara::rds::IEEE1722DatagramAAF",
  "description": "IEEE 1722 datagram representation: IEEE1722DatagramAAF.",
- "dokumentstellen": [],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90262",
+   "page": 1,
+   "text": "[SWS_RDS_90262] std::uint8_t format;\nProtected IEEE 1722 datagram field format."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90263",
+   "page": 1,
+   "text": "[SWS_RDS_90263] std::uint8_t sp;\nProtected IEEE 1722 datagram field streams_per_frame."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90264",
+   "page": 1,
+   "text": "[SWS_RDS_90264] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; evt;\nProtected IEEE 1722 datagram field evt."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90265",
+   "page": 1,
+   "text": "[SWS_RDS_90265] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; nsr;\nProtected IEEE 1722 datagram field nfr."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90266",
+   "page": 1,
+   "text": "[SWS_RDS_90266] ara::core::Optional&amp;lt;std::uint16_t&amp;gt; channels_per_frame;\nProtected IEEE 1722 datagram field bit_depth."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90267",
+   "page": 1,
+   "text": "[SWS_RDS_90267] ara::core::Optional&amp;lt;std::uint16_t&amp;gt; bit_depth;\nProtected IEEE 1722 datagram field channels_per_frame."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90268",
+   "page": 1,
+   "text": "[SWS_RDS_90268] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; nfr;\nProtected IEEE 1722 datagram field nsr."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90269",
+   "page": 1,
+   "text": "[SWS_RDS_90269] ara::core::Optional&amp;lt;std::uint16_t&amp;gt; streams_per_frame;\nProtected IEEE 1722 datagram field sp."
+  }
+ ],
  "member_requirements": [
   {
    "id": "SWS_RDS_90270",
@@ -252,60 +328,43 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e3bc34107ebf4e8839e714cdbc44e3a298dcb8f7a9786e99ea27cab3d89bcd62" data-trace-output="e04729ee9fdd7f08723696ec99de00a52ee19f460540b36206c6cd8ee05dc0cb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="57a5a8ff765cb91ae54d6e532a4afef3124767172d150ea9e41819c05e5358da" data-trace-output="4e5ff8ea398cc67d4449e03e905382dd0c616b1e56802bc8994efd47ffeecbcf" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient der Repräsentation von IEEE-1722-Audio-Datagrammen mit geschützten Kopfdatenfeldern und virtuellem Destruktor." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    The class &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; represents the functional representation of a datagram according to the IEEE 1722 standard for the AVTP Audio Format (AAF) within the &lt;em&gt;Raw Data Stream&lt;/em&gt; module (&lt;code&gt;rds&lt;/code&gt;) of the AUTOSAR Adaptive Platform. It serves to hold and manage protocol fields and format parameters in a structured manner for time-critical audio streams over Ethernet networks.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The class encapsulates the protocol-specific control and format attributes of the audio format. This includes the fundamental data field &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;, which defines the basic structure of the audio payload, as well as &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt; to define the contained audio channels or substreams. Since all declared fields have the access modifier &lt;code&gt;protected&lt;/code&gt;, the class is likely primarily designed as a specializable base class within a class hierarchy for AAF datagrams. Interaction with higher-level applications or stream endpoints thus typically occurs via derived classes or specific interfaces of the RDS subsystem.
-  &lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient der Repräsentation von IEEE-1722-Audio-Datagrammen mit geschützten Kopfdatenfeldern und virtuellem Destruktor.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse dient im Raw-Data-Stream-Modul der strukturierten Repräsentation von Audio-Datagrammen gemäß IEEE 1722 AVTP Audio Format &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream S. 1&lt;/a&gt;. Sie kapselt protokollspezifische Kopfdaten wie Format, Kanalanzahl und Bittiefe in geschützten Attributen, die typischerweise durch abgeleitete Datenstromklassen initialisiert und ausgewertet werden. Ein virtueller Destruktor stellt sicher, dass spezialisierte Datagramm-Objekte über Basisklassenzeiger ausnahmesicher und polymorph freigegeben werden können &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;. Da keine interne Synchronisation existiert, müssen nebenläufige Zugriffe von der anwendenden Streaming-Architektur koordiniert werden.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; stellt im Modul Raw Data Stream (&lt;code&gt;rds&lt;/code&gt;) der AUTOSAR Adaptive Platform die datentechnische Abbildung eines IEEE-1722-Datagramms für das AVTP Audio Format (AAF) bereit &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream S. 1&lt;/a&gt;. Der Standard IEEE 1722 (Audio Video Transport Protocol, AVTP) dient der zeitsynchronen Übertragung zeitkritischer Audio- und Videodatenströme über Ethernet-Netzwerke in Automobilumgebungen. Die Header-Datei &lt;code&gt;ara/rds/raw_data_stream_IEEE1722.h&lt;/code&gt; deklariert die Struktur innerhalb des Namensraums &lt;code&gt;ara::rds&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Verantwortlich ist die Klasse für die Kapselung der protokollspezifischen Steuer- und Metadatenfelder eines AAF-Datenrahmens. Hierzu zählt das obligatorische Formatfeld &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt; sowie Angaben zur Anzahl der Datenströme pro Rahmen über &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt; beziehungsweise &lt;code&gt;sp&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269"&gt;[SWS_RDS_90269]&lt;/a&gt;. Zur flexiblen Abbildung unterschiedlicher Audioformate und AES3-Spezifikationen umfasst die Klasse optionale Attribute für Abtastraten und Frame-Raten wie &lt;code&gt;nsr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90268" href="../spec/record.html?id=SWS_RDS_90268"&gt;[SWS_RDS_90268]&lt;/a&gt; und &lt;code&gt;nfr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265"&gt;[SWS_RDS_90265]&lt;/a&gt;, Ereigniskennungen &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;, Kanalinformationen &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt;, Bittiefen &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; sowie AES3-Datentyp- und Referenzfelder &lt;code&gt;aes3_data_type_h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270"&gt;[SWS_RDS_90270]&lt;/a&gt;, &lt;code&gt;aes3_data_type_l&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271"&gt;[SWS_RDS_90271]&lt;/a&gt; und &lt;code&gt;aes3_dt_ref&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272"&gt;[SWS_RDS_90272]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Da sämtliche Datenfelder im geschützten Bereich (&lt;code&gt;protected&lt;/code&gt;) definiert sind und keine öffentlichen Zugriffsmethoden deklariert werden, dürfte die Klasse primär als Vererbungsbasis für konkrete, modulintern spezialisierte Datagrammtypen und Treiber dienen. Interaktionspartner sind die verarbeitenden Komponenten des RDS-Subsystems, welche Rohdatenströme aus dem Netzwerk empfangen, parsen oder für den Versand vorbereiten.&lt;/p&gt;
 
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    The lifecycle of &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; is tightly coupled to the buffering and streaming mechanisms of the Raw Data Stream driver. Since the class exhibits no public constructors within the specification scope and all attributes are protected, instantiation is presumably performed by derived concrete datagram classes or platform-internal factories of module &lt;code&gt;rds&lt;/code&gt; during the receive or transmit process.
-  &lt;/p&gt;
-  &lt;p&gt;
-    For destruction, the class provides a virtual destructor &lt;code&gt;~IEEE1722DatagramAAF()&lt;/code&gt;, which is explicitly declared as &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;. This guarantees safe and exception-free polymorphic cleanup of resources via pointers or references to the base class. Ownership typically remains with the processing streaming pipeline throughout the lifetime, with instances being passed along the processing pipeline (e.g., between the network driver and audio processing node).
-  &lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Objekte von &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; werden zur Laufzeit typischerweise im Zuge der Streaming-Pipeline erzeugt, sobald ein neuer Audio-Datenrahmen über Ethernet empfangen oder zur Übertragung zusammengestellt wird. Die Verwaltung und Allokation obliegt der übergeordneten Datenstromverwaltung des RDS-Moduls oder einer spezialisierten abgeleiteten Klasse.&lt;/p&gt;
+&lt;p&gt;Für die kontrollierte Zerstörung deklariert die Klasse einen virtuellen Destruktor &lt;code&gt;~IEEE1722DatagramAAF() noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;. Die virtuelle Deklaration stellt sicher, dass abgeleitete Klassen bei der Freigabe über Basisklassenzeiger vollständig und fehlerfrei bereinigt werden, ohne dass es zu Ressourcenlecks kommt. Durch die &lt;code&gt;noexcept&lt;/code&gt;-Spezifikation wird garantiert, dass bei der Objektauflösung keine Ausnahmen ausgelöst werden, was insbesondere bei der Rückabwicklung im Fehlerfall (Stack Unwinding) unerlässlich ist.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit bietet &lt;code&gt;ara::rds::IEEE1722DatagramAAF&lt;/code&gt; keine eigene interne Synchronisation. Da Audio-Streaming-Verarbeitungen häufig auf separaten Echtzeit-Threads ausgeführt werden, müssen gleichzeitige Lese- und Schreibzugriffe durch externe Synchronisationsmechanismen der aufrufenden Architektur koordiniert werden.&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    In a typical application scenario, a &lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; is used in the context of transmitting or receiving raw audio data packets:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Initialization and format definition:&lt;/strong&gt; When establishing a stream or during packetization, basic format definitions are configured via the field &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt; and the number of streams via &lt;code&gt;streams_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90263" href="../spec/record.html?id=SWS_RDS_90263"&gt;[SWS_RDS_90263]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Configuration of optional audio attributes:&lt;/strong&gt; Depending on the audio specification, specific metadata is set. This includes event flags via &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;, sample rates and frame rates via &lt;code&gt;nsr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90268" href="../spec/record.html?id=SWS_RDS_90268"&gt;[SWS_RDS_90268]&lt;/a&gt; and &lt;code&gt;nfr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265"&gt;[SWS_RDS_90265]&lt;/a&gt;, as well as format parameters such as &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; and &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt;. Additional stream specification parameters can be mapped via &lt;code&gt;sp&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269"&gt;[SWS_RDS_90269]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;AES3 specifics:&lt;/strong&gt; For digital audio data streams according to the AES3 standard, the optional parameters &lt;code&gt;aes3_data_type_h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270"&gt;[SWS_RDS_90270]&lt;/a&gt;, &lt;code&gt;aes3_data_type_l&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271"&gt;[SWS_RDS_90271]&lt;/a&gt;, and the reference &lt;code&gt;aes3_dt_ref&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272"&gt;[SWS_RDS_90272]&lt;/a&gt; are available.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Processing and handover:&lt;/strong&gt; After reading out or setting the attributes, the datagram is serialized via the interfaces of the RDS driver and transmitted onto the network or forwarded to the audio sink.
-    &lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Einsatz der Klasse erfolgt über eine spezialisierte Ableitung, welche die geschützten Attribute für die Nutzdatenverarbeitung zugänglich macht. Ein repräsentativer Nutzungspfad umfasst vier aufeinanderfolgende Phasen:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Die anwendende Komponente oder der Audio-Treiber instanziiert ein spezialisiertes Datagramm-Objekt, wodurch die Basisklasse &lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; erzeugt wird.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Header-Initialisierung:&lt;/strong&gt; Die geschützten Attribute werden gemäß der Spezifikation des Datenstroms belegt. Das Format &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt; wird festgelegt, und Attribute wie &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt; sowie &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt; werden als &lt;code&gt;ara::core::Optional&lt;/code&gt; mit Werten belegt. Sofern ein AES3-Format vorliegt, werden auch &lt;code&gt;aes3_data_type_h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90270" href="../spec/record.html?id=SWS_RDS_90270"&gt;[SWS_RDS_90270]&lt;/a&gt;, &lt;code&gt;aes3_data_type_l&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90271" href="../spec/record.html?id=SWS_RDS_90271"&gt;[SWS_RDS_90271]&lt;/a&gt; und &lt;code&gt;aes3_dt_ref&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90272" href="../spec/record.html?id=SWS_RDS_90272"&gt;[SWS_RDS_90272]&lt;/a&gt; initialisiert.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Verarbeitung der Audio-Payload:&lt;/strong&gt; Der Audiodatenstrom wird unter Berücksichtigung der konfigurierten Header-Parameter übertragen oder dekodiert.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Objektzerstörung:&lt;/strong&gt; Nach Abschluss des Streaming-Vorgangs oder nach Verarbeitung des Pakets wird das Objekt polymorph über den virtuellen Destruktor &lt;code&gt;~IEEE1722DatagramAAF()&lt;/code&gt; freigegeben &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="diagram" id="diag-aaf-nutzung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 348" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Nutzungspfad eines &lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html" href="../classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html"&gt;IEEE1722DatagramAAF&lt;/a&gt;-Objekts&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="334" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="334" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="334" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;SpezifischesAAFDatagramm&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html" href="../classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html"&gt;IEEE1722DatagramAAF&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeugen der Datagramm-Instanz&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;Initialisierung Basisklasse&lt;/text&gt;&lt;line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 310.0 183 h 270 l 10 10 v 19 h -280 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;path d="M 580.0 183 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="318.0" y="197" font-size="11" fill="#28251d"&gt;Belegung geschützter Attribute (format, &lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html#SWS_RDS_90266" href="../classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html#SWS_RDS_90266"&gt;bit_depth&lt;/a&gt;)&lt;/text&gt;&lt;text x="240.0" y="236" text-anchor="middle" font-size="11" fill="#28251d"&gt;Audio-Payload verarbeiten oder übertragen&lt;/text&gt;&lt;line x1="135" y1="242" x2="345" y2="242" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="270" text-anchor="middle" font-size="11" fill="#28251d"&gt;~&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html" href="../classes/cl_ara_rds_IEEE1722DatagramAAF_90261.html"&gt;IEEE1722DatagramAAF&lt;/a&gt;() noexcept&lt;/text&gt;&lt;line x1="135" y1="276" x2="555" y2="276" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="304" text-anchor="middle" font-size="11" fill="#28251d"&gt;Ressourcen freigegeben&lt;/text&gt;&lt;line x1="555" y1="310" x2="135" y2="310" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typische Abfolge von Instanziierung, Belegung der geschützten Protokollfelder und Zerstörung. Quellen: &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
-  &lt;p&gt;
-    Error situations when using &lt;code&gt;IEEE1722DatagramAAF&lt;/code&gt; are essentially related to incomplete or inconsistent fields of the IEEE 1722 header:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Missing optional fields:&lt;/strong&gt; Numerous attributes are encapsulated as &lt;code&gt;ara::core::Optional&lt;/code&gt;, for example &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;, &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt;, or &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt;. Accessing the value of an empty optional without prior checking leads to runtime errors or exception handling in derived layers.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Inconsistent format and channel descriptions:&lt;/strong&gt; If the specifications in &lt;code&gt;format&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90262" href="../spec/record.html?id=SWS_RDS_90262"&gt;[SWS_RDS_90262]&lt;/a&gt;, &lt;code&gt;bit_depth&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90266" href="../spec/record.html?id=SWS_RDS_90266"&gt;[SWS_RDS_90266]&lt;/a&gt;, and &lt;code&gt;channels_per_frame&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90267" href="../spec/record.html?id=SWS_RDS_90267"&gt;[SWS_RDS_90267]&lt;/a&gt; do not match the actual payload size of the underlying datagram, buffer overflows or protocol discards can occur in the RDS subsystem during serialization or deserialization.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Exception safety during destruction:&lt;/strong&gt; The designation of the destructor with &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt; ensures that no exceptions escape during the destruction of the object. Errors during teardown must be handled or logged internally to prevent program termination via &lt;code&gt;std::terminate&lt;/code&gt;.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;!-- annahmen: 1) Die Klasse dient aufgrund der geschützten Datenmitglieder als spezialisierbare Basisklasse für AAF-Datagramme. – Begründung: Alle Felder sind mit Zugriff 'protected' spezifiziert. 2) Instanziierung und Zuweisung erfolgen plattformintern durch Fabriken oder abgeleitete Klassen. – Begründung: Der Payload enthält ausschließlich geschützte Member und keine öffentlichen Konstruktoren. 3) Die Verwendung von ara::core::Optional reflektiert, dass bestimmte AVTP-Felder je nach Unterformat nicht zwingend vorliegen. – Begründung: Felder wie aes3_data_type_h, bit_depth und evt sind als ara::core::Optional modelliert. --&gt;
-  &lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive Platform R25-11 specification (module rds). Statements are based exclusively on the specified specification requirements.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Im Rahmen der Fehlerbehandlung und Schnittstellensicherheit sind insbesondere zwei Aspekte maßgeblich:&lt;/p&gt;
+&lt;p&gt;Zum einen erfordert die Kapselung optionaler Headerfelder in &lt;code&gt;ara::core::Optional&lt;/code&gt; (beispielsweise bei &lt;code&gt;evt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90264" href="../spec/record.html?id=SWS_RDS_90264"&gt;[SWS_RDS_90264]&lt;/a&gt;, &lt;code&gt;nfr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90265" href="../spec/record.html?id=SWS_RDS_90265"&gt;[SWS_RDS_90265]&lt;/a&gt; oder &lt;code&gt;sp&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90269" href="../spec/record.html?id=SWS_RDS_90269"&gt;[SWS_RDS_90269]&lt;/a&gt;) eine explizite Prüfung des Vorhandenseins vor dem lesenden Zugriff. Ein direkter Zugriff auf nicht gesetzte optionale Werte führt zu Programmierfehlern oder Laufzeitfehlern. Konsumierende Softwaremodule müssen daher vor der Auswertung stets prüfen, ob das jeweilige Feld für den aktuellen Datenstrom gültig gesetzt ist.&lt;/p&gt;
+&lt;p&gt;Zum anderen stellt die Spezifikation des Destruktors als &lt;code&gt;noexcept&lt;/code&gt; sicher, dass während der Bereinigung keine Ausnahmen entweichen können &lt;a class="spec-record-ref" data-req="SWS_RDS_90273" href="../spec/record.html?id=SWS_RDS_90273"&gt;[SWS_RDS_90273]&lt;/a&gt;. Sollten bei der Freigabe interner oder abgeleiteter Ressourcen Fehler auftreten, müssen diese zwingend lokal innerhalb des Destruktors abgefangen werden, um eine Terminierung des Prozesses durch die C++-Laufzeitumgebung zu verhindern.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Klasse IEEE1722DatagramAAF dürfte als Vererbungsbasis für konkrete AAF-Datenstrukturen dienen – Begründung: Der Destruktor ist als virtual deklariert [SWS_RDS_90273] und sämtliche Felder sind protected deklariert. 2) Der Zugriff auf geschützte Protokollattribute dürfte durch abgeleitete Klassen oder Streaming-Treiber im RDS-Modul erfolgen – Begründung: Es sind keine öffentlichen Getter- oder Setter-Methoden im Payload vorhanden. 3) Optionale Headerfelder dürften je nach Audioformat (z. B. PCM vs. AES3) selektiv initialisiert werden – Begründung: Spezifische Attribute wie AES3-Typen oder Bittiefen sind als ara::core::Optional modelliert. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der Spezifikationsunterlagen zu AUTOSAR Adaptive R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -347,9 +406,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e3bc34107ebf…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>57a5a8ff765c…</code></div>
               <div><strong>Konstituierende Records:</strong> 12</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(12 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 12 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 13 <span class="dossier-meta-sub">(5 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -384,8 +443,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">24</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">12</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">25</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">13</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -406,7 +465,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">12 von 12 Elementen angezeigt</span>
+              <span id="dossier-visible-count">20 von 20 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -422,11 +481,11 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 12 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 5 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
           </div>
         </div>
 
@@ -485,4 +544,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90270","k":"variable","d":"RDS","t":"variable aes3_data_type_h [SWS_RDS_90270] ara::core::Optional\u003cstd::uint16_t> aes3_data_type_h; Protected IEEE 1722 datagram field aes3_data_type_h. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"aes3_data_type_h"},{"i":"SWS_RDS_90271","k":"variable","d":"RDS","t":"variable aes3_data_type_l [SWS_RDS_90271] ara::core::Optional\u003cstd::uint8_t> aes3_dt_ref; Protected IEEE 1722 datagram field aes3_data_type_l. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"aes3_data_type_l"},{"i":"SWS_RDS_90272","k":"variable","d":"RDS","t":"variable aes3_dt_ref [SWS_RDS_90272] ara::core::Optional\u003cstd::uint16_t> aes3_data_type_l; Protected IEEE 1722 datagram field aes3_dt_ref. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"aes3_dt_ref"},{"i":"SWS_RDS_90266","k":"variable","d":"RDS","t":"variable bit_depth [SWS_RDS_90266] ara::core::Optional\u003cstd::uint16_t> channels_per_frame; Protected IEEE 1722 datagram field bit_depth. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"bit_depth"},{"i":"SWS_RDS_90267","k":"variable","d":"RDS","t":"variable channels_per_frame [SWS_RDS_90267] ara::core::Optional\u003cstd::uint16_t> bit_depth; Protected IEEE 1722 datagram field channels_per_frame. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"channels_per_frame"},{"i":"SWS_RDS_90264","k":"variable","d":"RDS","t":"variable evt [SWS_RDS_90264] ara::core::Optional\u003cstd::uint8_t> evt; Protected IEEE 1722 datagram field evt. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"evt"},{"i":"SWS_RDS_90262","k":"variable","d":"RDS","t":"variable format [SWS_RDS_90262] std::uint8_t format; Protected IEEE 1722 datagram field format. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"format"},{"i":"SWS_RDS_90265","k":"variable","d":"RDS","t":"variable nfr [SWS_RDS_90265] ara::core::Optional\u003cstd::uint8_t> nsr; Protected IEEE 1722 datagram field nfr. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"nfr"},{"i":"SWS_RDS_90268","k":"variable","d":"RDS","t":"variable nsr [SWS_RDS_90268] ara::core::Optional\u003cstd::uint8_t> nfr; Protected IEEE 1722 datagram field nsr. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"nsr"},{"i":"SWS_RDS_90269","k":"variable","d":"RDS","t":"variable sp [SWS_RDS_90269] ara::core::Optional\u003cstd::uint16_t> streams_per_frame; Protected IEEE 1722 datagram field sp. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"sp"},{"i":"SWS_RDS_90263","k":"variable","d":"RDS","t":"variable streams_per_frame [SWS_RDS_90263] std::uint8_t sp; Protected IEEE 1722 datagram field streams_per_frame. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"streams_per_frame"},{"i":"SWS_RDS_90273","k":"function","d":"RDS","t":"function ~IEEE1722DatagramAAF [SWS_RDS_90273] ~IEEE1722DatagramAAF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono","n":"~IEEE1722DatagramAAF"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/39fe60e831a5a799.json?v=bc444a0e" data-total="12" data-new="12" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90270","k":"variable","d":"RDS","t":"variable aes3_data_type_h [SWS_RDS_90270] ara::core::Optional\u003cstd::uint16_t> aes3_data_type_h; Protected IEEE 1722 datagram field aes3_data_type_h. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"aes3_data_type_h"},{"i":"SWS_RDS_90271","k":"variable","d":"RDS","t":"variable aes3_data_type_l [SWS_RDS_90271] ara::core::Optional\u003cstd::uint8_t> aes3_dt_ref; Protected IEEE 1722 datagram field aes3_data_type_l. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"aes3_data_type_l"},{"i":"SWS_RDS_90272","k":"variable","d":"RDS","t":"variable aes3_dt_ref [SWS_RDS_90272] ara::core::Optional\u003cstd::uint16_t> aes3_data_type_l; Protected IEEE 1722 datagram field aes3_dt_ref. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"aes3_dt_ref"},{"i":"SWS_RDS_90266","k":"variable","d":"RDS","t":"variable bit_depth [SWS_RDS_90266] ara::core::Optional\u003cstd::uint16_t> channels_per_frame; Protected IEEE 1722 datagram field bit_depth. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"bit_depth"},{"i":"SWS_RDS_90267","k":"variable","d":"RDS","t":"variable channels_per_frame [SWS_RDS_90267] ara::core::Optional\u003cstd::uint16_t> bit_depth; Protected IEEE 1722 datagram field channels_per_frame. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"channels_per_frame"},{"i":"SWS_RDS_90264","k":"variable","d":"RDS","t":"variable evt [SWS_RDS_90264] ara::core::Optional\u003cstd::uint8_t> evt; Protected IEEE 1722 datagram field evt. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"evt"},{"i":"SWS_RDS_90262","k":"variable","d":"RDS","t":"variable format [SWS_RDS_90262] std::uint8_t format; Protected IEEE 1722 datagram field format. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"format"},{"i":"SWS_RDS_90265","k":"variable","d":"RDS","t":"variable nfr [SWS_RDS_90265] ara::core::Optional\u003cstd::uint8_t> nsr; Protected IEEE 1722 datagram field nfr. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"nfr"},{"i":"SWS_RDS_90268","k":"variable","d":"RDS","t":"variable nsr [SWS_RDS_90268] ara::core::Optional\u003cstd::uint8_t> nfr; Protected IEEE 1722 datagram field nsr. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"nsr"},{"i":"SWS_RDS_90269","k":"variable","d":"RDS","t":"variable sp [SWS_RDS_90269] ara::core::Optional\u003cstd::uint16_t> streams_per_frame; Protected IEEE 1722 datagram field sp. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"sp"},{"i":"SWS_RDS_90263","k":"variable","d":"RDS","t":"variable streams_per_frame [SWS_RDS_90263] std::uint8_t sp; Protected IEEE 1722 datagram field streams_per_frame. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono Zugriff protected","n":"streams_per_frame"},{"i":"SWS_RDS_90273","k":"function","d":"RDS","t":"function ~IEEE1722DatagramAAF [SWS_RDS_90273] ~IEEE1722DatagramAAF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramAAF class mono","n":"~IEEE1722DatagramAAF"}],"inbound":[{"i":"SNIP_rds_SWS_RDS_90262","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90262] std::uint8_t format;\nProtected IEEE 1722 datagram field format."},{"i":"SNIP_rds_SWS_RDS_90263","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90263] std::uint8_t sp;\nProtected IEEE 1722 datagram field streams_per_frame."},{"i":"SNIP_rds_SWS_RDS_90264","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90264] ara::core::Optional\u003cstd::uint8_t> evt;\nProtected IEEE 1722 datagram field evt."},{"i":"SNIP_rds_SWS_RDS_90265","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90265] ara::core::Optional\u003cstd::uint8_t> nsr;\nProtected IEEE 1722 datagram field nfr."},{"i":"SNIP_rds_SWS_RDS_90266","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90266] ara::core::Optional\u003cstd::uint16_t> channels_per_frame;\nProtected IEEE 1722 datagram field bit_depth."},{"i":"SNIP_rds_SWS_RDS_90267","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90267] ara::core::Optional\u003cstd::uint16_t> bit_depth;\nProtected IEEE 1722 datagram field channels_per_frame."},{"i":"SNIP_rds_SWS_RDS_90268","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90268] ara::core::Optional\u003cstd::uint8_t> nfr;\nProtected IEEE 1722 datagram field nsr."},{"i":"SNIP_rds_SWS_RDS_90269","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90269] ara::core::Optional\u003cstd::uint16_t> streams_per_frame;\nProtected IEEE 1722 datagram field sp."}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/39fe60e831a5a799.json?v=2dbdd210" data-total="13" data-new="5" data-figures="1" data-used="8"></script></dialog>

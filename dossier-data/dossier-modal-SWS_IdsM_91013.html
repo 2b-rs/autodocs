@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_IdsM_91013" class="dossier-modal dossier-workbench" data-dossier-sha="a4b242e67e77d979" aria-labelledby="dossier-modal-SWS_IdsM_91013-title">
+<dialog id="dossier-modal-SWS_IdsM_91013" class="dossier-modal dossier-workbench" data-dossier-sha="54f627eb6d0bc24f" aria-labelledby="dossier-modal-SWS_IdsM_91013-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_IdsM_91013-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_IdsM_91013)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,255 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,709 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'IdsM_Filters_ReportingModeType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,45 +193,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="52b71141bbdba249506ea8c52d5c45e492703a66dbe38b0bb571c5ba9767f6c0" data-trace-output="a4b242e67e77d97902d0140aa152e347d849692017bd379847d6ce225a18ba9f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4e0ba45d004710b1ee13b68a6c190089986bad9523993683553bd9287dc5cae1" data-trace-output="54f627eb6d0bc24f843e67896b6f7421cc6348a2bfbb038578e6ae00ec248810" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Berichtsmodi zur Steuerung von Filterung und Kontextdaten bei Sicherheitsmeldungen im IdsM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The type &lt;code&gt;IdsM_Filters_ReportingModeType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;) defines the reporting modes used by the reporting mode filter (&lt;em&gt;reporting mode filter&lt;/em&gt;) of the module &lt;code&gt;IdsM&lt;/code&gt;. The base type is derived from &lt;code&gt;uint8&lt;/code&gt; and is provided via the header &lt;code&gt;IdsM_Types.h&lt;/code&gt;.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Value Range and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The type specifies how or whether a detected security event is further reported:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;IDSM_REPORTING_MODE_OFF&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): The event is not reported.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;IDSM_REPORTING_MODE_BRIEF&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): The event is reported in compact form without context data.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;IDSM_REPORTING_MODE_DETAILED&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;): The event is reported in detail including context data.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;IDSM_REPORTING_MODE_BRIEF_BYPASSING_FILTERS&lt;/code&gt; (&lt;code&gt;0x03&lt;/code&gt;): The event is reported unfiltered without context data, bypassing the filters.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;IDSM_REPORTING_MODE_DETAILED_BYPASSING_FILTERS&lt;/code&gt; (&lt;code&gt;0x04&lt;/code&gt;): The event is reported unfiltered along with context data, bypassing the filters.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;IDSM_REPORTING_MODE_INVALID&lt;/code&gt; (&lt;code&gt;0xFF&lt;/code&gt;): Indicates an invalid reporting mode.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Usage and restrictions&lt;/h4&gt;
-  &lt;p&gt;
-    As an enumeration or configuration type, &lt;code&gt;IdsM_Filters_ReportingModeType&lt;/code&gt; controls the filtering and forwarding logic of security events within the IdsM filter chain. Because this is a pure type definition, no direct parameters, return values, or specific DET/DEM error codes exist. Invalid or uninitialized states can be signaled or trapped via the value &lt;code&gt;IDSM_REPORTING_MODE_INVALID&lt;/code&gt;.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically based on the specification of AUTOSAR Classic Release R20-11.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;IdsM_Filters_ReportingModeType&lt;/code&gt; basiert auf dem Basistyp &lt;code&gt;uint8&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;IdsM_Types.h&lt;/code&gt; für Software-Komponenten bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;. Er beschreibt die standardisierten Berichtsmodi, die innerhalb des Reporting-Mode-Filters im Intrusion Detection System Manager (IdsM) zur gezielten Verarbeitung und Weiterleitung von Sicherheitsereignissen angewendet werden &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Über die definierten Enumerationswerte wird präzise gesteuert, ob ein Ereignis gemeldet wird und welcher Detaillierungsgrad dabei zum Einsatz kommt &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;IDSM_REPORTING_MODE_OFF&lt;/code&gt; (0x00): Das Ereignis wird unterdrückt und nicht an übergeordnete Instanzen gemeldet &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;IDSM_REPORTING_MODE_BRIEF&lt;/code&gt; (0x01): Das Ereignis wird ohne zusätzliche Kontextdaten in kompakter Form gemeldet &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;IDSM_REPORTING_MODE_DETAILED&lt;/code&gt; (0x02): Das Ereignis wird ausführlich unter Einbeziehung aller relevanten Kontextdaten gemeldet &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;IDSM_REPORTING_MODE_BRIEF_BYPASSING_FILTERS&lt;/code&gt; (0x03): Das Ereignis umgeht nachfolgende Filterstufen und wird ohne Kontextdaten ungefiltert gemeldet &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;IDSM_REPORTING_MODE_DETAILED_BYPASSING_FILTERS&lt;/code&gt; (0x04): Das Ereignis umgeht nachfolgende Filterstufen und wird ungefiltert inklusive sämtlicher Kontextdaten gemeldet &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;IDSM_REPORTING_MODE_INVALID&lt;/code&gt; (0xFF): Kennzeichnet einen ungültigen Berichtsmodus innerhalb des Wertebereichs &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Die Werte kombinieren somit zwei funktionale Steuerungsdimensionen: den Detaillierungsgrad über die Kontextdaten sowie die gezielte Umgehung regulärer Filtermechanismen durch das Bypassing &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;. Dies erlaubt dem IdsM eine differenzierte Behandlung von Sicherheitsvorfällen je nach Kritikalität und Filterkonfiguration &lt;a class="spec-record-ref" data-req="SWS_IdsM_91013" href="../../spec/record.html?id=SWS_IdsM_91013"&gt;[SWS_IdsM_91013]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -253,9 +248,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>52b71141bbdb…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4e0ba45d0047…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(12 neu · 8 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 12 Belege dazugekommen (8 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 5 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (5 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -290,8 +285,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">12</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -328,7 +323,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 12 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 8 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -391,4 +386,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91013","k":"type","d":"AUTOSAR","t":"","n":"IdsM_Filters_ReportingModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b59a26bd09132eab.json?v=88ee1409" data-total="12" data-new="12" data-figures="8" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91013","k":"type","d":"AUTOSAR","t":"","n":"IdsM_Filters_ReportingModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b59a26bd09132eab.json?v=152a6a61" data-total="8" data-new="8" data-figures="5" data-used="0"></script></dialog>

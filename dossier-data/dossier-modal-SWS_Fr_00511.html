@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Fr_00511" class="dossier-modal dossier-workbench" data-dossier-sha="0df51f3e08c8d3ed" aria-labelledby="dossier-modal-SWS_Fr_00511-title">
+<dialog id="dossier-modal-SWS_Fr_00511" class="dossier-modal dossier-workbench" data-dossier-sha="c27a09e945776c47" aria-labelledby="dossier-modal-SWS_Fr_00511-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Fr_00511-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Fr_00511)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,163 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,617 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Fr_TxLPduStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,38 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="2c848ecfe68edd7a005d88fe6e7b2f903bc84a4184b60dee9eecb1d5f92f33c6" data-trace-output="0df51f3e08c8d3ed4b9b9b7d171530914b3460a4c13a7bf7a004639581631aea" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="2ca1e4be5d96ce68bd2305db21cd076a93ba734d4a46aba9877675c2ce89492a" data-trace-output="c27a09e945776c47d84b1a736d33d96c38d118aadcc2991f0a4eb19c265e693c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Gibt an, ob eine FlexRay-LPdu übertragen wurde, ein Konflikt auftrat oder keine Übertragung erfolgte." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The enumeration type &lt;code&gt;Fr_TxLPduStatusType&lt;/code&gt; is specified according to &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt; and serves to determine whether an LPdu has been transmitted or not. The type is provided via the header &lt;code&gt;Fr_GeneralTypes.h&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;h4&gt;Value Range and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;, the enumeration comprises three discrete status values to indicate the transmission status of an LPdu:
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Aufzählungstyp &lt;code&gt;Fr_TxLPduStatusType&lt;/code&gt; dient in der AUTOSAR-Classic-Plattform dazu festzustellen, ob eine FlexRay-LPdu (Link Layer Protocol Data Unit) erfolgreich übertragen wurde oder nicht &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;. Die Typdefinition wird über die Header-Datei &lt;code&gt;Fr_GeneralTypes.h&lt;/code&gt; für Software-Module bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Der Wertebereich der Enumeration umfasst drei eindeutige Statuszustände für Sendevorgänge &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;FR_TRANSMITTED&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): The LPdu was transmitted (&lt;em&gt;LPdu has been transmitted&lt;/em&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;FR_TRANSMITTED_CONFLICT&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): A transmission conflict has occurred (&lt;em&gt;A transmission conflict has occurred.&lt;/em&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;FR_NOT_TRANSMITTED&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;): The LPdu was not transmitted (&lt;em&gt;LPdu has not been transmitted&lt;/em&gt;).
-    &lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;FR_TRANSMITTED&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Die LPdu wurde erfolgreich über den Bus übertragen &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;FR_TRANSMITTED_CONFLICT&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): Während der Übertragung ist ein Konflikt aufgetreten &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;FR_NOT_TRANSMITTED&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;): Die LPdu wurde nicht übertragen &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    Calling modules are likely to use &lt;code&gt;Fr_TxLPduStatusType&lt;/code&gt; to evaluate transmission success (interpretation: use as a return value or output parameter in status interfaces). Thanks to the three states, higher-level layers can distinguish whether an LPdu was transmitted regularly (&lt;code&gt;FR_TRANSMITTED&lt;/code&gt;), transmission has not taken place yet (&lt;code&gt;FR_NOT_TRANSMITTED&lt;/code&gt;), or a transmission conflict (&lt;code&gt;FR_TRANSMITTED_CONFLICT&lt;/code&gt;) exists that requires dedicated handling.
-  &lt;/p&gt;
-  &lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    Specific error codes, DET or DEM messages, as well as specifications on reentrancy are not defined for this data type in &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;, as it is a pure type definition.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) Verwendung als Rückgabewert oder Ausgabeparameter bei Statusabfragen – Begründung: Der Typ dient laut SWS_Fr_00511 der Ermittlung des Übertragungsstatus einer LPdu, konkrete Funktionssignaturen sind im Payload nicht enthalten. --&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically.
-  &lt;/p&gt;
+  &lt;p&gt;Hinsichtlich des Zusammenspiels und des Aufrufkontexts dürfte dieser Statuswert typischerweise von übergeordneten Schichten zur Abfrage des Sendepuffer-Zustands im FlexRay-Treiber herangezogen werden (Interpretation). Spezifische Fehlercodes, Fehlerbehandlungsroutinen sowie DET- oder DEM-Meldungen sind für diesen Datentyp in den Spezifikationen nicht vorgesehen, da es sich um eine reine Typdeklaration handelt &lt;a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511"&gt;[SWS_Fr_00511]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Übergeordnete Module dürften den Aufzählungswert bei Statusabfragen von Sendepuffern auswerten – Begründung: Die Spezifikation beschreibt den Zweck des Typs, nennt im vorliegenden Payload jedoch keine konkreten Schnittstellenfunktionen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -246,9 +246,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2c848ecfe68e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2ca1e4be5d96…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -283,8 +283,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -321,7 +321,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -384,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fr_00511","k":"type","d":"AUTOSAR","t":"","n":"Fr_TxLPduStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/87bb77d988132228.json?v=ff3cba40" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fr_00511","k":"type","d":"AUTOSAR","t":"","n":"Fr_TxLPduStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/87bb77d988132228.json?v=cc82fd24" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

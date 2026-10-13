@@ -6081,6 +6081,54 @@ details.impl-fold > summary h2.sect { color: var(--impl-accent); }
 /* Kompaktansicht: angedockter Guide-Block mit nur einer Art braucht keinen Reiter (Titel nennt die Art) */
 .nsx-detpanel .guide-tablist:has(> [role="tab"]:only-child) { display: none; }
 
+/* Ausführlichkeitsstufen der User Guides (guide-levels, ai-levels@1; fold.js bindGuideLevels):
+   1 Einzeiler, 2 Kurzfassung, 3 Überblick, 4 Ausführlich. Sichtbar ist die Stufe in data-ai-level-cur. */
+.ai[data-ai-levels] > .ai-level { display: none; }
+.ai[data-ai-levels][data-ai-level-cur="2"] > .ai-level[data-ai-level="2"],
+.ai[data-ai-levels][data-ai-level-cur="3"] > .ai-level[data-ai-level="3"],
+.ai[data-ai-levels][data-ai-level-cur="4"] > .ai-level[data-ai-level="4"] { display: block; }
+/* Einzeiler als Leitsatz, wo kein Kopf ihn zeigt (eingebettete Element-Guides) */
+.ai[data-ai-levels] > .ai-level[data-ai-level="1"] { display: block; margin: 4px 0 6px; font-weight: 600; color: var(--text); }
+details.fold .ai[data-ai-levels] > .ai-level[data-ai-level="1"],
+.nsx-detpanel .ai[data-ai-levels] > .ai-level[data-ai-level="1"] { display: none; }
+.ai-level-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 10px; font-size: 12.5px; line-height: 1.2; }
+.ai-level-picks { display: inline-flex; border: 1px solid var(--border-default, var(--border)); border-radius: 999px; overflow: hidden; }
+.ai-level-go { font: inherit; padding: 4px 11px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.ai-level-go + .ai-level-go { border-inline-start: 1px solid var(--border-default, var(--border)); }
+.ai-level-go:hover { color: var(--primary); }
+.ai-level-go[aria-pressed="true"] { background: var(--primary); color: #fff; font-weight: 600; }
+.ai-level-step { font: inherit; font-weight: 600; padding: 4px 11px; border: 1px solid var(--primary); border-radius: 999px;
+  background: transparent; color: var(--primary); cursor: pointer; }
+.ai-level-step:hover:not([disabled]) { background: var(--primary); color: #fff; }
+.ai-level-step[disabled] { opacity: .4; cursor: default; border-color: var(--border-default, var(--border)); color: var(--muted); }
+.ai-level-go:focus-visible, .ai-level-step:focus-visible { outline: 2px solid var(--color-focus, var(--primary)); outline-offset: 2px; }
+.ai-level-more-inline { margin: 10px 0 0; font-size: 12.5px; }
+/* Einzeiler im Kopf eines Guide-Folds bzw. Reiters (auch eingeklappt) */
+summary .ai-oneliner { display: block; margin: 2px 0 0 1.35em; font-size: 13px; font-weight: 400; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: none; letter-spacing: normal; }
+.nsx-folds > details.nsx-fold > summary > .ai-oneliner,
+.nsx-tab .ai-oneliner { flex: 1 1 12em; min-width: 0; margin: 0; font-size: 12.5px; }
+/* Reiter bleiben schmal genug, damit das Panel an der Gliederung ausgerichtet bleibt (placePop) */
+.nsx-tab .ai-oneliner { display: block; max-width: 14em; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Aufgeklappter Reiter: das Panel zeigt den Guide, der Einzeiler im Reiter entfällt (sonst wird die Reiterzeile
+   breiter, bricht um, und das Panel unter dem Reiter verdeckt die nächste Reiterzeile) */
+.nsx-tab[aria-expanded="true"] .ai-oneliner { display: none; }
+/* Titelleiste: der Einzeiler trägt nichts zur Eigenbreite des Reiters bei (contain: inline-size), damit die
+   Reiterzeile nicht umbricht (Ablagezonen und Panel hängen an ihrer Höhe); der Reiter wächst stattdessen in
+   den freien Platz der Zeile und zeigt dort so viel vom Einzeiler, wie passt. */
+.nsx-tdock .nsx-tab:has(> .ai-oneliner) { flex: 1 1 auto; flex-wrap: nowrap; min-width: 0; }
+.nsx-tdock .nsx-tab > .ai-oneliner { contain: inline-size; flex: 1 1 14em; min-width: 0; max-width: 28em; }
+.nsx-tdock .nsx-tab:has(> .ai-oneliner) > .nsx-stats { flex: 0 50 auto; min-width: 0; overflow: hidden; }
+.nsx-tdock .nsx-tab:has(> .ai-oneliner) > .nsx-tab-h { flex: none; white-space: nowrap; }
+/* Detail-Reiter eines Elements (Kompaktansicht): Einzeiler vor den Kennzahlen sichtbar halten */
+.nsx-dtab:has(.ai-oneliner) { min-width: min(28em, 50%); }
+.nsx-dtab .ai-oneliner { flex: 0 0 auto; max-width: 18em; }
+@media print {
+  .ai[data-ai-levels] > .ai-level { display: none !important; }
+  .ai[data-ai-levels] > .ai-level[data-ai-level="4"] { display: block !important; }
+  .ai-level-nav, .ai-level-more-inline { display: none !important; }
+}
+
 /* Dossier: seit der Generierung zugeordnete Belege (lib_current_context.py, fold.js hydrateCurrentContext) */
 .dossier-stale-banner { margin: 8px 0 12px; padding: 10px 12px; border: 1px solid #f59e0b; border-left-width: 4px; border-radius: 6px; background: #fffbeb; color: #78350f; font-size: 0.9em; line-height: 1.45; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .dossier-stale-banner .curation-btn { margin: 0; }
@@ -6603,3 +6651,18 @@ table.nsx-hprops th { width: 24%; color: var(--muted); font-weight: 600; }
 table.nsx-hprops tr.nsx-hl-chg { background: color-mix(in srgb, var(--nsx-h-chg) 12%, transparent); }
 table.nsx-hprops tr.nsx-hl-add { background: color-mix(in srgb, var(--nsx-h-add) 12%, transparent); }
 table.nsx-hprops tr.nsx-hl-del { background: color-mix(in srgb, var(--nsx-h-del) 10%, transparent); }
+
+/* Historie: Release-Kopf wählt das Release (gewähltes Release deutlich markiert); Inspektor
+   zeigt beim Überfahren einer Zelle eine Vorschau */
+.nsx-hcol { cursor: pointer; border-radius: 3px; padding: 3px 0; }
+.nsx-hcol:hover, .nsx-hcol:focus-visible { color: var(--primary); background: var(--surface2); outline: none; }
+.nsx-hcol.cur { color: #fff; background: var(--primary); }
+.nsx-hc.cur { box-shadow: 0 0 0 1.5px var(--primary); }
+.nsx-hpair code { font-size: 12px; }
+.nsx-rel .nsx-hist-is.nsx-hist-hover { outline: 1px dashed var(--primary); outline-offset: 4px; border-radius: 4px; }
+/* Name in der Titelzeile der Detailansicht: Verweis auf die eigene Kompaktansicht des Elements */
+.nsx-dettitle a.nsx-detname { cursor: pointer; pointer-events: auto; }
+.nsx-dettitle a.nsx-detname:hover { text-decoration-thickness: 2px; }
+.nsx-dettitle a.nsx-detname:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
+/* Inspektor: Doppelklick öffnet die Ansicht eines Elements */
+.nsx-rel [data-jump], .nsx-rel a[data-n] { cursor: pointer; }

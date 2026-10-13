@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_BswM_00207" class="dossier-modal dossier-workbench" data-dossier-sha="fd7199a1cdefcac1" aria-labelledby="dossier-modal-SWS_BswM_00207-title">
+<dialog id="dossier-modal-SWS_BswM_00207" class="dossier-modal dossier-workbench" data-dossier-sha="1c9cc9c21baa09c3" aria-labelledby="dossier-modal-SWS_BswM_00207-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_BswM_00207-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_BswM_00207)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,332 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,787 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'BswM_Sd_ConsumedEventGroupCurrentState'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,33 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="244047b9844c48e0279578377dd3c378689079d7693ed0fefbb002891b19b087" data-trace-output="fd7199a1cdefcac105ba16bc801d166e3f8cbada2c0172a74e237387af017660" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8146488c68a531637a45588c8361921d6eb1f3f915d7f7d36b0ab0202136c704" data-trace-output="1c9cc9c21baa09c3c04da9f9413d82e60b3fefb96214cbb75d73cda0a1957856" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet dem BswM synchron den aktuellen Status einer konsumierten Eventgruppe aus der Service Discovery." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;BswM_Sd_ConsumedEventGroupCurrentState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;) serves as an interface of the Basic Software Mode Manager (BswM) that is called by Service Discovery (SD). Its purpose is to signal the current status of a consumed event group to the BswM, in particular whether it is available (available) or unavailable (down).
-  &lt;/p&gt;
-  &lt;p&gt;
-    Execution is performed synchronously (Synchronous), and the function has no return value (&lt;code&gt;void&lt;/code&gt;). For integration, it is available via the header &lt;code&gt;BswM_Sd.h&lt;/code&gt; with the service ID &lt;code&gt;0x21&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The following input parameters must be passed during the call:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;Sd Consumed Event Group Handle Id&lt;/code&gt; (data type &lt;code&gt;uint16&lt;/code&gt;): Handle ID for identifying the consumed event group.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;Consumed Event Group State&lt;/code&gt; (data type &lt;code&gt;Sd_Consumed Event Group Current State Type&lt;/code&gt;): Current status of the consumed event group.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;, the function is specified as reentrant (Reentrant). It can therefore be executed in the synchronous context by Service Discovery. Specific error codes, DET or DEM notifications, and separate error behavior are not defined for this interface in the specification.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note is based on the AUTOSAR CP R20-11 specification (&lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;BswM_Sd_ConsumedEventGroupCurrentState&lt;/code&gt; dient als Callback-Schnittstelle, die von der Service Discovery aufgerufen wird, um dem Basic Software Mode Manager (BswM) den aktuellen Zustand einer konsumierten Eventgruppe anzuzeigen &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;. Sie informiert den BswM darüber, ob die entsprechende Eventgruppe im Netzwerk verfügbar (available) oder ausgefallen (down) ist &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Verwendung und Signatur&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle besitzt die Service-ID &lt;code&gt;0x21&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;BswM_Sd.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;. Der Aufruf wird synchron verarbeitet und besitzt keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;. Beim Funktionsaufruf übergibt die Service Discovery zwei Eingangsparameter, während weder Ein-/Ausgangs- noch reine Ausgangsparameter definiert sind &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Sd Consumed Event Group Handle Id&lt;/code&gt; (Datentyp &lt;code&gt;uint16&lt;/code&gt;): Eindeutige Handle-ID zur Identifikation der jeweiligen konsumierten Eventgruppe &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Consumed Event Group State&lt;/code&gt; (Datentyp &lt;code&gt;Sd_Consumed Event Group Current State Type&lt;/code&gt;): Aktueller Status der konsumierten Eventgruppe zur Anzeige der Verfügbarkeit &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Nebenläufigkeit und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Gemäß Spezifikation ist die Funktion als reentrant gekennzeichnet und darf somit bei Bedarf nebenläufig aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;. Für diesen Dienst sind in der Spezifikation keine spezifischen Fehlercodes, Ausnahmen oder Rückmeldungen an das Entwicklungsfehler-Tracking (DET) oder das Diagnose-Event-Management (DEM) aufgeführt &lt;a class="spec-record-ref" data-req="SWS_BswM_00207" href="../../spec/record.html?id=SWS_BswM_00207"&gt;[SWS_BswM_00207]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: keine – alle Angaben stammen direkt aus der Spezifikation SWS_BswM_00207. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -241,9 +247,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>244047b9844c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8146488c68a5…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -278,8 +284,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -316,7 +322,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 3 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -379,4 +385,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00207","k":"function","d":"AUTOSAR","t":"","n":"BswM_Sd_ConsumedEventGroupCurrentState"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f29d381ae250ad29.json?v=a92cca45" data-total="5" data-new="5" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00207","k":"function","d":"AUTOSAR","t":"","n":"BswM_Sd_ConsumedEventGroupCurrentState"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f29d381ae250ad29.json?v=ab1faf77" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

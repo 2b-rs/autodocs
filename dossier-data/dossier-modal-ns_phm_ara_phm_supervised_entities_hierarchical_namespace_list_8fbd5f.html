@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_phm_ara_phm_supervised_entities_hierarchical_namespace_list_8fbd5f" class="dossier-modal dossier-workbench" data-dossier-sha="bf6d8dfcb50c45e3" aria-labelledby="dossier-modal-ns_phm_ara_phm_supervised_entities_hierarchical_namespace_list_8fbd5f-title">
+<dialog id="dossier-modal-ns_phm_ara_phm_supervised_entities_hierarchical_namespace_list_8fbd5f" class="dossier-modal dossier-workbench" data-dossier-sha="785ff4da59f0b547" aria-labelledby="dossier-modal-ns_phm_ara_phm_supervised_entities_hierarchical_namespace_list_8fbd5f-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_phm_ara_phm_supervised_entities_hierarchical_namespace_list_8fbd5f-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_phm_ara_phm_supervised_entities_hierarchical_namespace_list_8fbd5f)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,014 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,536 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace ara::phm::supervised_entities::{ &lt;hierarchical-namespace-list-lower-skeleton&gt;}' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [],
@@ -214,40 +233,82 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="6e9a513cb416b363555fb3b863b4b00635a9d8a759f7609cbef765c74218310d" data-trace-output="bf6d8dfcb50c45e358f628bb58352248a56136914a3a4f6b12fbd585594be8b6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="b0c83abdbab1aab02e00e8a19ecbcc1d855dde2bc65dab35ec8f4bc06aef8373" data-trace-output="785ff4da59f0b5474fd4c244d2f51a6a95333313524ab6e089dd93da6795dcae" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert typsichere Checkpoint-Enumerationen für die Funktionsüberwachung über das Platform Health Management." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-In the Platform Health Management module (&lt;code&gt;phm&lt;/code&gt;) of the AUTOSAR Adaptive Platform (Release R25-11), the namespace &lt;code&gt;ara::phm::supervised_entities::{ &amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}&lt;/code&gt; forms the model-specifically generated namespace for the checkpoints of supervised entities. It serves as a typing wrapper for symbolic identifiers used for structured monitoring of the control flow and timing behavior of functional sequences within an application.
-&lt;/p&gt;
-&lt;p&gt;
-Within this scope, according to &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;, a strongly typed enumeration type &lt;code&gt;enum class {&amp;lt;phmssi-sn&amp;gt;}&lt;/code&gt; with the fixed underlying type &lt;code&gt;std::uint32_t&lt;/code&gt; is defined for a modeled supervised entity. This enumeration type defines the permitted checkpoints used in conjunction with the interface &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;). In addition, &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt; specifies that for each entry defined in the checkpoint list, a concrete C++ enumerator declaration of the form &lt;code&gt;{&amp;lt;symbol-phm-checkpoint&amp;gt;} = {&amp;lt;phm-checkpoint-value&amp;gt;}&lt;/code&gt; must exist within the scope of the enumeration.
-&lt;/p&gt;
-&lt;p&gt;
-The primary interaction partner is the application-side software component that implements the Supervised Entity and reports its internal control flow progress to Platform Health Management via the &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt;. The hierarchical structure of the namespace ensures that checkpoint identifiers of different supervised entities remain isolated from one another and name collisions during the integration of multiple components are avoided.
-&lt;/p&gt;
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-The namespace comprises exclusively data type and constant definitions and does not declare any active software components with internal operational state. Interpretation: Since the members according to &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt; are a scoped enumeration (&lt;code&gt;enum class&lt;/code&gt;) with the primitive underlying type &lt;code&gt;std::uint32_t&lt;/code&gt; and static enumerator declarations according to &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt;, these types have no dynamic lifecycle, no construction or destruction phases, and do not bind runtime resources on the heap.
-&lt;/p&gt;
-&lt;p&gt;
-The compile-time availability of the identifiers is established by including the generated header file &lt;code&gt;#include "ara/phm/supervised_entities/{ &amp;lt;si-namespace-derived-directory-path-lower&amp;gt;}/{&amp;lt;phmssi-sn&amp;gt;}.h"&lt;/code&gt; or via the forwarding header &lt;code&gt;#include "ara/phm/phm_fwd.h"&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;). Since enumeration values represent pure value types, they are inherently immutable and thread-safe. They can be referenced concurrently from different execution contexts without synchronization overhead and passed as parameters to interface functions.
-&lt;/p&gt;
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The regular usage path of the symbols declared in the namespace is divided into provision, functional placement in the source code, and forwarding to the monitoring logic:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Inclusion of the header file:&lt;/strong&gt; The application includes the model-specific header file of the namespace or the forwarding header &lt;code&gt;ara/phm/phm_fwd.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;) to gain access to the typed enumeration &lt;code&gt;{&amp;lt;phmssi-sn&amp;gt;}&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Identification of checkpoints:&lt;/strong&gt; Significant milestones in the control flow are defined within the application architecture, such as the completion of an initialization phase, the arrival of cyclic sensor data, or reaching defined program branches. Each of these points corresponds to a symbolic enumerator &lt;code&gt;{&amp;lt;symbol-phm-checkpoint&amp;gt;}&lt;/code&gt; initialized with the modeled value (&lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Signaling to the monitoring interface:&lt;/strong&gt; Interpretation: At the corresponding control flow location, the application logic presumably passes the typed enumerator value to a method of the instance of &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;) to report reaching the checkpoint to Platform Health Management.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Evaluation by the module:&lt;/strong&gt; Platform Health Management processes the reported checkpoint within the configured monitoring mechanisms (for example, alive, deadline, or logical supervision).&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-Defining it as &lt;code&gt;enum class&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;) ensures that inappropriate integer values or checkpoints of other supervised entities cannot be passed accidentally, preventing misallocations already at compile time.
-&lt;/p&gt;
-&lt;!-- annahmen: 1) Interpretation: Da es sich bei den Mitgliedern um C++-Aufzählungstypen handelt, besitzen sie keinen dynamischen Lebenszyklus und unterliegen keinen Freispeicheroperationen oder Initialisierungsphasen. – Begründung: SWS_PHM_00424 spezifiziert ein enum class mit Basistyp std::uint32_t ohne dynamische Ressourcenbindung. 2) Interpretation: Die Enumerator-Werte dürften an eine Methode des zugehörigen ara::phm::PhmSupervisedEntityInterface übergeben werden, um das Erreichen eines Kontrollpunkts zu melden. – Begründung: SWS_PHM_00424 ordnet die Checkpoints diesem Interface zu, spezifiziert im Payload-Auszug aber nicht die genauen Schnittstellenmethoden. --&gt;
-&lt;p class="ai-note"&gt;This guide is based exclusively on the specification requirements from R25-11.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Definiert typsichere Checkpoint-Enumerationen für die Funktionsüberwachung über das Platform Health Management.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Dieser Namespace stellt im Platform Health Management stark typisierte Enumerationen für Checkpoints überwachter Entitäten bereit &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;. Jede überwachte Entität erhält eine eigene Scoped Enumeration mit dem Basistyp &lt;code&gt;std::uint32_t&lt;/code&gt;, deren deklarierte Enumeratoren als Kontrollpunkte an die Schnittstelle &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt; gemeldet werden &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt;. Durch die statische Bereitstellung im typsicheren Namensraum wird die Verwechslung von Kontrollpunkten verschiedener Entitäten zur Compile-Zeit zuverlässig verhindert.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der C++-Namespace &lt;code&gt;namespace ara::phm::supervised_entities::{ &amp;lt;hierarchical-namespace-list-lower-skeleton&amp;gt;}&lt;/code&gt; dient innerhalb des Platform Health Managements (PHM) der AUTOSAR Adaptive Platform als dedizierter Bereich für typsichere Kontrollpunkte (Checkpoints) überwachter Funktionseinheiten (Supervised Entities). Gemäß &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt; enthält dieser Namensraum Scoped Enumerations des Formats &lt;code&gt;enum class {&amp;lt;phmssi-sn&amp;gt;} : std::uint32_t&lt;/code&gt;, welche die diskreten Checkpoints für die Schnittstelle &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt; definieren. Für jedes konfigurierte Element der Kontrollpunktliste existiert eine eindeutige C++-Enumerator-Deklaration &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt;. Das Zusammenspiel bindet drei funktionale Kernkomponenten zusammen: die überwachte Anwendungssoftware (Supervised Entity), die durch den Namespace modellierten typisierten Checkpoints sowie die Plattform-Schnittstelle &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt;, über die Überwachungsereignisse an den PHM-Dienst weitergereicht werden.&lt;/p&gt;
+
+&lt;div class="diagram" id="diag-context"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 291.82 232.80" style="max-width:389px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
+&lt;!-- app --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;app&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M178.87,-204C178.87,-204 108.35,-204 108.35,-204 102.35,-204 96.35,-198 96.35,-192 96.35,-192 96.35,-180 96.35,-180 96.35,-174 102.35,-168 108.35,-168 108.35,-168 178.87,-168 178.87,-168 184.87,-168 190.87,-174 190.87,-180 190.87,-180 190.87,-192 190.87,-192 190.87,-198 184.87,-204 178.87,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="143.61" y="-189.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Supervised Entity&lt;/text&gt;
+&lt;text text-anchor="middle" x="143.61" y="-176.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Anwendung)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- ns --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;ns&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M155.21,-120C155.21,-120 12,-120 12,-120 6,-120 0,-114 0,-108 0,-108 0,-96 0,-96 0,-90 6,-84 12,-84 12,-84 155.21,-84 155.21,-84 161.21,-84 167.21,-90 167.21,-96 167.21,-96 167.21,-108 167.21,-108 167.21,-114 161.21,-120 155.21,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="83.61" y="-105.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Generierte Checkpoints&lt;/text&gt;
+&lt;text text-anchor="middle" x="83.61" y="-92.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(&lt;a class="diag-ref" data-ref="modules/phm.html" href="../modules/phm.html"&gt;ara::phm&lt;/a&gt;::supervised_entities::...)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- app&amp;#45;&amp;gt;ns --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;app-&amp;gt;ns&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M130.88,-167.61C122.77,-156.52 112.1,-141.94 102.95,-129.43"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="106.03,-127.71 97.3,-121.71 100.38,-131.85 106.03,-127.71"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="127.2" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- iface --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;iface&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M229.72,-36C229.72,-36 57.49,-36 57.49,-36 51.49,-36 45.49,-30 45.49,-24 45.49,-24 45.49,-12 45.49,-12 45.49,-6 51.49,0 57.49,0 57.49,0 229.72,0 229.72,0 235.72,0 241.72,-6 241.72,-12 241.72,-12 241.72,-24 241.72,-24 241.72,-30 235.72,-36 229.72,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="143.61" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/phm.html" href="../modules/phm.html"&gt;ara::phm&lt;/a&gt;::PhmSupervisedEntityInterface&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- app&amp;#45;&amp;gt;iface --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;app-&amp;gt;iface&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M156.19,-167.54C172.98,-141.94 198.72,-93.04 181.61,-54 180.18,-50.74 178.27,-47.64 176.08,-44.75"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="178.75,-42.48 169.43,-37.42 173.56,-47.18 178.75,-42.48"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="225.12" y="-99" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;meldet Checkpoint&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- ns&amp;#45;&amp;gt;iface --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;ns-&amp;gt;iface&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M96.33,-83.61C104.44,-72.52 115.12,-57.94 124.27,-45.43"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="126.84,-47.85 129.92,-37.71 121.19,-43.71 126.84,-47.85"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="147.6" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;definiert Werte&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel zwischen überwachter Anwendungssoftware, typisierter Checkpoint-Enumeration und Plattform-Schnittstelle. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Typen und Konstanten innerhalb des Namensraums besitzen statischen Compile-Time-Charakter. Sie unterliegen keinem dynamischen Laufzeit-Lebenszyklus durch Allokation oder Freigabe auf dem Heap, sondern werden als typisierte C++11 Scoped Enumerations mit dem Basistyp &lt;code&gt;std::uint32_t&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;. Interpretation: Die Definitionen werden typischerweise während des Erstellungsprozesses aus der AUTOSAR-Dienstbeschreibung automatisiert generiert, da Pfade und Bezeichner von den Modellparametern der Schnittstelle abhängen. Für die Inklusion stellt der Standard pro überwachter Einheit eine eigene Header-Datei unter &lt;code&gt;#include "ara/phm/supervised_entities/{ &amp;lt;si-namespace-derived-directory-path-lower&amp;gt;}/{&amp;lt;phmssi-sn&amp;gt;}.h"&lt;/code&gt; zur Verfügung, während allgemeine Typdeklarationen über den Forwarding-Header &lt;code&gt;#include "ara/phm/phm_fwd.h"&lt;/code&gt; vorwärtsdeklariert werden können &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;. Die Enumerator-Konstanten stehen der Anwendung somit während der gesamten Prozesslebensdauer unveränderlich zur Verfügung &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad für Softwarekomponenten, die als Supervised Entity agieren, gliedert sich in drei aufeinander aufbauende Schritte:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Header-Einbindung:&lt;/strong&gt; Die Anwendung bindet den generierten Header der überwachten Einheit über den Dateipfad &lt;code&gt;ara/phm/supervised_entities/{ &amp;lt;si-namespace-derived-directory-path-lower&amp;gt;}/{&amp;lt;phmssi-sn&amp;gt;}.h&lt;/code&gt; oder die zentrale Weiterleitung &lt;code&gt;ara/phm/phm_fwd.h&lt;/code&gt; ein &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Schnittstelleninitialisierung:&lt;/strong&gt; Die Anwendung instanziiert bzw. bindet die Schnittstelle &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt;, für welche die Checkpoints der Enumeration deklariert wurden &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Checkpoint-Signalisierung:&lt;/strong&gt; Beim Durchlaufen relevanter Kontrollstellen im Algorithmus wählt die Anwendung den zugehörigen Enumerator &lt;code&gt;{&amp;lt;symbol-phm-checkpoint&amp;gt;}&lt;/code&gt; aus dem Namespace aus &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt; und meldet diesen an die Instanz von &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Durch die Bindung an den Basistyp &lt;code&gt;std::uint32_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt; und die explizite Wertzuweisung jedes Kontrollpunkts &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt; wird eine typsichere und verwechslungsfreie Identifikation der jeweiligen Programmschritte zur Laufzeit garantiert.&lt;/p&gt;
+
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Fehlerhafte Nutzungen dieses Namensraums resultieren vor allem aus modellbezogenen und typbezogenen Fehlkonfigurationen. Da es sich um eine &lt;code&gt;enum class&lt;/code&gt; handelt &lt;a class="spec-record-ref" data-req="SWS_PHM_00424" href="../spec/record.html?id=SWS_PHM_00424"&gt;[SWS_PHM_00424]&lt;/a&gt;, verhindert das C++-Typsystem implizite Typkonvertierungen; die Verwendung fehlerhafter Datentypen oder Enumeratoren fremder Supervised Entities wird somit bereits zur Übersetzungszeit abgefangen. Zu Laufzeitfehlern kann es führen, wenn die Konfiguration in der Modellbeschreibung nicht exakt mit der Enumerator-Liste übereinstimmt: Gemäß &lt;a class="spec-record-ref" data-req="SWS_PHM_00425" href="../spec/record.html?id=SWS_PHM_00425"&gt;[SWS_PHM_00425]&lt;/a&gt; muss für jeden Checkpoint ein entsprechender Enumerator deklariert sein. Interpretation: Sollte eine Anwendung durch unzulässige Typumwandlung oder veraltete Header-Dateien einen nicht im Modell konfigurierten &lt;code&gt;std::uint32_t&lt;/code&gt;-Wert an &lt;code&gt;ara::phm::PhmSupervisedEntityInterface&lt;/code&gt; übergeben, dürfte der PHM-Dienst diesen Checkpoint nicht zuordnen können und dies als Überwachungsverletzung werten.&lt;/p&gt;
+&lt;!-- annahmen: 1) Generierung aus Modellen – Begründung: Platzhalterstruktur im Header-Pfad und Symbolnamen ({&lt;phmssi-sn&gt;}, {&lt;si-namespace-derived-directory-path-lower&gt;}) deutet auf Generator-Artefakte hin; 2) Fehlverhalten bei ungültigen Checkpoint-Werten – Begründung: Die Enumeration definiert den vollständigen gültigen Wertebereich für die Schnittstelle [SWS_PHM_00424], sodass unbekannte Werte vom Dienst nicht zugeordnet werden können. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationen der AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -289,9 +350,9 @@ Defining it as &lt;code&gt;enum class&lt;/code&gt; (&lt;a class="spec-record-ref
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>6e9a513cb416…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>b0c83abdbab1…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -326,8 +387,8 @@ Defining it as &lt;code&gt;enum class&lt;/code&gt; (&lt;a class="spec-record-ref
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">11</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -364,7 +425,7 @@ Defining it as &lt;code&gt;enum class&lt;/code&gt; (&lt;a class="spec-record-ref
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 10 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -427,4 +488,4 @@ Defining it as &lt;code&gt;enum class&lt;/code&gt; (&lt;a class="spec-record-ref
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PHM_00424","k":"requirement","d":"AUTOSAR Specification","t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PHM_00424]."}],"inbound":[{"i":"SWS_PHM_00425","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PHM_00425].","n":"SWS_PHM_00425"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/58ec4d15f159cba5.json?v=3c1ed575" data-total="10" data-new="10" data-figures="4" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PHM_00424","k":"requirement","d":"AUTOSAR Specification","t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PHM_00424]."}],"inbound":[{"i":"SWS_PHM_00425","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PHM_00425].","n":"SWS_PHM_00425"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/58ec4d15f159cba5.json?v=b3b76d50" data-total="2" data-new="2" data-figures="2" data-used="0"></script></dialog>

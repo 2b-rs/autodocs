@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_CanTrcv_00217" class="dossier-modal dossier-workbench" data-dossier-sha="829402a613826e54" aria-labelledby="dossier-modal-SWS_CanTrcv_00217-title">
+<dialog id="dossier-modal-SWS_CanTrcv_00217" class="dossier-modal dossier-workbench" data-dossier-sha="9624f7e69fc055a2" aria-labelledby="dossier-modal-SWS_CanTrcv_00217-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_CanTrcv_00217-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_CanTrcv_00217)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,507 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,962 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'CanTrcv_ReadTrcvSilenceFlag'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,21 +202,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="cea8fdd961e41e18f9c0ccc360a1ba1db9fdbb328214fc433b6b23a16487d108" data-trace-output="829402a613826e5403270c1f170a7170ee81bd18b47a58678fd29745d6b7cd70" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="be15c667bc302b71d304c62d3dcc5f71422fa33c1e55f664397a8eea659cf977" data-trace-output="9624f7e69fc055a257a17de1ab0a09c7fa45424c9a8fcb4623045c7f08b8c6ac" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liest den aktuellen Status des Silence-Flags synchron aus der Hardware des angegebenen CAN-Transceivers aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous function &lt;code&gt;CanTrcv_ReadTrcvSilenceFlag&lt;/code&gt; reads the status of the silence flag directly from the transceiver hardware &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;. It expects the identifier of the CAN transceiver as input parameter &lt;code&gt;Transceiver&lt;/code&gt; and returns the read status via pointer parameter &lt;code&gt;FlagState&lt;/code&gt; of type &lt;code&gt;CanTrcv_TrcvFlagStateType*&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;. The return value is of type &lt;code&gt;Std_ReturnType&lt;/code&gt;: If the status was determined successfully, the call returns &lt;code&gt;E_OK&lt;/code&gt;, otherwise &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;. The function declaration is available via &lt;code&gt;CanTrcv.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und nicht reentrante Funktion &lt;code&gt;CanTrcv_ReadTrcvSilenceFlag&lt;/code&gt; (Service-ID &lt;code&gt;0x0d&lt;/code&gt;) dient dem Auslesen des Silence-Flag-Status direkt aus der CAN-Transceiver-Hardware &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;. Sie wird über den Header &lt;code&gt;CanTrcv.h&lt;/code&gt; bereitgestellt und darf aufgrund der fehlenden Reentranz nicht nebenläufig ausgeführt werden &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Error handling&lt;/h4&gt;
-&lt;p&gt;If development error detection (DET) is active for module &lt;code&gt;CanTrcv&lt;/code&gt; and the function is called with the invalid pointer &lt;code&gt;FlagState = NULL&lt;/code&gt;, &lt;code&gt;CanTrcv_ReadTrcvSilenceFlag&lt;/code&gt; reports development error &lt;code&gt;CANTRCV_E_PARAM_POINTER&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00203" href="../../spec/record.html?id=SWS_CanTrcv_00203"&gt;[SWS_CanTrcv_00203]&lt;/a&gt;. If DET is disabled, &lt;code&gt;E_NOT_OK&lt;/code&gt; is returned in this case &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00203" href="../../spec/record.html?id=SWS_CanTrcv_00203"&gt;[SWS_CanTrcv_00203]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;Transceiver&lt;/code&gt;: Eingabeparameter (&lt;code&gt;uint8&lt;/code&gt;) zur Adressierung der jeweiligen Transceiver-Instanz über ihre Kennung &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;FlagState&lt;/code&gt;: Ausgabeparameter als Zeiger auf &lt;code&gt;CanTrcv_TrcvFlagStateType&lt;/code&gt;, über den der ausgelesene Status des Silence-Flags zurückgeliefert wird &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Rückgabewert (&lt;code&gt;Std_ReturnType&lt;/code&gt;): Gibt &lt;code&gt;E_OK&lt;/code&gt; zurück, falls der Hardware-Zustand des Silence-Flags erfolgreich gelesen werden konnte, andernfalls &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;h4&gt;Concurrency and Constraints&lt;/h4&gt;
-&lt;p&gt;The API is specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;. An essential precondition is hardware support for partial networking: The function as well as the configuration container &lt;code&gt;CanTrcvPartialNetwork&lt;/code&gt; are present exclusively if parameter &lt;code&gt;CanTrcvHwPnSupport = TRUE&lt;/code&gt; is configured &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00175" href="../../spec/record.html?id=SWS_CanTrcv_00175"&gt;[SWS_CanTrcv_00175]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Wird der Funktion für den Ausgabeparameter ein Null-Zeiger übergeben (&lt;code&gt;FlagState == NULL&lt;/code&gt;), hängt die Fehlerbehandlung von der Entwicklungskontrolle ab: Bei aktiviertem DET meldet der CAN-Transceiver-Treiber den Entwicklungsfehler &lt;code&gt;CANTRCV_E_PARAM_POINTER&lt;/code&gt;; ist DET deaktiviert, wird der Aufruf unmittelbar mit &lt;code&gt;E_NOT_OK&lt;/code&gt; abgebrochen &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00203" href="../../spec/record.html?id=SWS_CanTrcv_00203"&gt;[SWS_CanTrcv_00203]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Interaction&lt;/h4&gt;
-&lt;p&gt;The interface is part of the functional scope for selective wake-up. It directly shares its configuration condition &lt;code&gt;CanTrcvHwPnSupport = TRUE&lt;/code&gt; with related partial networking APIs such as &lt;code&gt;CanTrcv_GetTrcvSystemData&lt;/code&gt;, &lt;code&gt;CanTrcv_ClearTrcvWufFlag&lt;/code&gt;, &lt;code&gt;CanTrcv_ReadTrcvTimeoutFlag&lt;/code&gt;, and &lt;code&gt;CanTrcv_ClearTrcvTimeoutFlag&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00175" href="../../spec/record.html?id=SWS_CanTrcv_00175"&gt;[SWS_CanTrcv_00175]&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification data from AUTOSAR Classic R20-11.&lt;/p&gt;
+  &lt;h4&gt;Konfiguration und Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Die Funktion steht im Kontext des selektiven Weckens (Selective Wakeup). Der zugehörige Konfigurationscontainer &lt;code&gt;CanTrcvPartialNetwork&lt;/code&gt; sowie die Schnittstelle &lt;code&gt;CanTrcv_ReadTrcvSilenceFlag&lt;/code&gt; sind nur dann im Treiber verfügbar, wenn die Hardware-Unterstützung für Partial Networking über &lt;code&gt;CanTrcvHwPnSupport = TRUE&lt;/code&gt; konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00175" href="../../spec/record.html?id=SWS_CanTrcv_00175"&gt;[SWS_CanTrcv_00175]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00217" href="../../spec/record.html?id=SWS_CanTrcv_00217"&gt;[SWS_CanTrcv_00217]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,7 +260,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>cea8fdd961e4…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>be15c667bc30…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -376,4 +398,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CanTrcv_00217","k":"function","d":"AUTOSAR","t":"","n":"CanTrcv_ReadTrcvSilenceFlag"}],"inbound":[{"i":"SWS_CanTrcv_00203","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CanTrcv_00203].","n":"SWS_CanTrcv_00203"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/2dd68215288a8914.json?v=6a4456df" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CanTrcv_00217","k":"function","d":"AUTOSAR","t":"","n":"CanTrcv_ReadTrcvSilenceFlag"}],"inbound":[{"i":"SWS_CanTrcv_00203","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CanTrcv_00203].","n":"SWS_CanTrcv_00203"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/2dd68215288a8914.json?v=657f98af" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

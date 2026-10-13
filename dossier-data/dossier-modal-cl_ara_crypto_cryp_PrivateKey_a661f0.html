@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_crypto_cryp_PrivateKey_a661f0" class="dossier-modal dossier-workbench" data-dossier-sha="fad2f08d7543cd62" aria-labelledby="dossier-modal-cl_ara_crypto_cryp_PrivateKey_a661f0-title">
+<dialog id="dossier-modal-cl_ara_crypto_cryp_PrivateKey_a661f0" class="dossier-modal dossier-workbench" data-dossier-sha="0052a6da352158fd" aria-labelledby="dossier-modal-cl_ara_crypto_cryp_PrivateKey_a661f0-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_crypto_cryp_PrivateKey_a661f0-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_crypto_cryp_PrivateKey_a661f0)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,862 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,384 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::crypto::cryp::PrivateKey' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_crypto_cryp_PrivateKey_a661f0",
@@ -212,24 +231,103 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e613f477863e60eb0746d3f13aef414360ff0688a40f4e4f8f9d8858eb65bcd0" data-trace-output="fad2f08d7543cd622deaf1ec298b19df4908dfb76aba8b337cab2fead2e8d62e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="cbfbff2bb90c96944d2111561130fa8059a7d0ce164c89dffad98471e172e890" data-trace-output="0052a6da352158fd628c0ab137953d47c4376ba5c7ecbe08231a508be83cee12" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt asymmetrische private Schlüssel und stellt den korrespondierenden öffentlichen Schlüssel bereit." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Interface &lt;code&gt;ara::crypto::cryp::PrivateKey&lt;/code&gt; functions in the AUTOSAR Adaptive Platform as a generalized interface for asymmetric private keys (&lt;em&gt;Generalized Asymmetric Private Key interface&lt;/em&gt;). As a specialization of base interface &lt;code&gt;ara::crypto::cryp::CryptoObject&lt;/code&gt;, it encapsulates the sensitive key material of private cryptographic keys used in asymmetric cryptographic algorithms such as digital signatures, key exchange protocols, or asymmetric decryption. Essential interaction partners include the corresponding public key representation &lt;code&gt;ara::crypto::cryp::PublicKey&lt;/code&gt;, which can be derived via the interface &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. On the application side, &lt;code&gt;PrivateKey&lt;/code&gt; acts as a protected cryptographic object whose actual realization remains hidden behind the abstract interface definition in order to reliably ensure the confidentiality of the private key material within the platform.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt asymmetrische private Schlüssel und stellt den korrespondierenden öffentlichen Schlüssel bereit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Schnittstelle &lt;code&gt;ara::crypto::cryp::PrivateKey&lt;/code&gt; definiert das allgemeine Interface für asymmetrische private Schlüssel in AUTOSAR Adaptive und wird primär über den Shared-Pointer-Alias &lt;code&gt;PrivateKey::Sptr&lt;/code&gt; verwaltet &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501"&gt;[SWS_CRYPT_22501]&lt;/a&gt;. Ihre zentrale Funktion &lt;code&gt;GetPublicKey()&lt;/code&gt; ermöglicht es, den zugehörigen öffentlichen Schlüssel als &lt;code&gt;PublicKey::Sptr&lt;/code&gt; abzurufen, um ihn für kryptografische Partneroperationen bereitzustellen &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. Dieser Abruf ist threadsicher sowie ausnahmesicher ohne standardisierte Fehlercodes spezifiziert, wobei eventuelle Fehler implementationsspezifisch über den Rückgabetyp &lt;code&gt;ara::core::Result&lt;/code&gt; signalisiert werden dürften (Interpretation).&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle &lt;code&gt;ara::crypto::cryp::PrivateKey&lt;/code&gt; fungiert in der AUTOSAR Adaptive Platform als generalisiertes Interface für asymmetrische private Schlüssel innerhalb des Moduls &lt;code&gt;crypto&lt;/code&gt;. Sie ist in der Header-Datei &lt;code&gt;ara/crypto/cryp/cryobj/private_key.h&lt;/code&gt; deklariert und leitet sich direkt von der Basisschnittstelle &lt;code&gt;CryptoObject&lt;/code&gt; ab. Als Kernkomponente des asymmetrischen Kryptografiesystems kapselt &lt;code&gt;PrivateKey&lt;/code&gt; das vertrauliche Schlüsselmaterial, welches für kryptografische Operationen wie die Erzeugung digitaler Signaturen oder asymmetrische Entschlüsselungsverfahren benötigt wird.&lt;/p&gt;
+&lt;p&gt;Zu den primären Interaktionspartnern gehören neben der Basisklasse &lt;code&gt;CryptoObject&lt;/code&gt; insbesondere die korrespondierende öffentliche Schlüsselschnittstelle &lt;code&gt;PublicKey&lt;/code&gt; sowie konsumierende Krypto-Dienste und Anwendungsroutinen. Während der private Schlüssel stets geheim zu halten ist, ermöglicht die Schnittstelle über die Elementfunktion &lt;code&gt;GetPublicKey()&lt;/code&gt; die direkte Bereitstellung des zugehörigen öffentlichen Schlüssels &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. Auf diese Weise wird eine feste typbezogene Beziehung zwischen dem privaten Schlüssel und seinem mathematischen Gegenstück realisiert.&lt;/p&gt;
+&lt;div class="diagram" id="diag-privatekey-context"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 285.18 232.80" style="max-width:380px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
+&lt;title&gt;PrivateKeyContext&lt;/title&gt;
+&lt;!-- Anwendung --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Anwendung&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M176.82,-204C176.82,-204 131.05,-204 131.05,-204 125.05,-204 119.05,-198 119.05,-192 119.05,-192 119.05,-180 119.05,-180 119.05,-174 125.05,-168 131.05,-168 131.05,-168 176.82,-168 176.82,-168 182.82,-168 188.82,-174 188.82,-180 188.82,-180 188.82,-192 188.82,-192 188.82,-198 182.82,-204 176.82,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="153.94" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Anwendung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PrivateKey --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;PrivateKey&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M114.68,-120C114.68,-120 73.2,-120 73.2,-120 67.2,-120 61.2,-114 61.2,-108 61.2,-108 61.2,-96 61.2,-96 61.2,-90 67.2,-84 73.2,-84 73.2,-84 114.68,-84 114.68,-84 120.68,-84 126.68,-90 126.68,-96 126.68,-96 126.68,-108 126.68,-108 126.68,-114 120.68,-120 114.68,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="93.94" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html" href="../classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html"&gt;PrivateKey&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;PrivateKey --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;PrivateKey&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M141.21,-167.61C133.1,-156.52 122.43,-141.94 113.28,-129.43"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="116.36,-127.71 107.63,-121.71 110.71,-131.85 116.36,-127.71"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="147.11" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt Sptr&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PublicKey --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;PublicKey&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M188.16,-36C188.16,-36 149.72,-36 149.72,-36 143.72,-36 137.72,-30 137.72,-24 137.72,-24 137.72,-12 137.72,-12 137.72,-6 143.72,0 149.72,0 149.72,0 188.16,0 188.16,0 194.16,0 200.16,-6 200.16,-12 200.16,-12 200.16,-24 200.16,-24 200.16,-30 194.16,-36 188.16,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="168.94" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PublicKey_11ccb6.html" href="../classes/cl_ara_crypto_cryp_PublicKey_11ccb6.html"&gt;PublicKey&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;PublicKey --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;PublicKey&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M162.94,-167.87C174.21,-145.28 192.78,-103.94 198.94,-66 199.79,-60.74 200.79,-59 198.94,-54 197.86,-51.08 196.41,-48.23 194.73,-45.51"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="197.65,-43.56 188.89,-37.6 192.02,-47.72 197.65,-43.56"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="225.7" y="-99" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;empfaengt Sptr&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- CryptoObject --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;CryptoObject&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M63.88,-36C63.88,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 63.88,0 63.88,0 69.88,0 75.88,-6 75.88,-12 75.88,-12 75.88,-24 75.88,-24 75.88,-30 69.88,-36 63.88,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="37.94" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html" href="../classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html"&gt;CryptoObject&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PrivateKey&amp;#45;&amp;gt;CryptoObject --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;PrivateKey-&amp;gt;CryptoObject&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M60.82,-87.14C52.18,-81.85 43.89,-74.88 38.89,-66 35.74,-60.4 34.44,-53.8 34.15,-47.34"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="37.63,-47.89 34.47,-37.78 30.63,-47.66 37.63,-47.89"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="55.42" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erbt von&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PrivateKey&amp;#45;&amp;gt;PublicKey --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;PrivateKey-&amp;gt;PublicKey&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M89.94,-83.64C88.74,-74.17 88.97,-62.65 94.53,-54 101.88,-42.58 114.05,-34.81 126.43,-29.56"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="127.52,-32.89 135.69,-26.15 125.1,-26.33 127.52,-32.89"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="146.74" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;liefert via &lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html#SWS_CRYPT_22511" href="../classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html#SWS_CRYPT_22511"&gt;GetPublicKey&lt;/a&gt;()&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Einbettung von PrivateKey im kryptografischen Objektmodell und Beziehung zum korrespondierenden PublicKey. Quellen: &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501"&gt;[SWS_CRYPT_22501]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;For managing and controlling the lifetime of instances, the interface defines type alias &lt;code&gt;ara::crypto::cryp::PrivateKey::Sptr&lt;/code&gt; as &lt;code&gt;std::shared_ptr&amp;lt;PrivateKey&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501"&gt;[SWS_CRYPT_22501]&lt;/a&gt;. The use of a shared pointer establishes a shared ownership model (&lt;em&gt;shared ownership&lt;/em&gt;), whereby the lifetime of key objects can be managed flexibly and securely across multiple software components. Since &lt;code&gt;PrivateKey&lt;/code&gt; is a pure virtual interface, the concrete creation and initialization of instances is likely to occur typically via specialized creation methods or key storage mechanisms of the cryptography architecture. Destruction of instances occurs deterministically via reference counting of the smart pointer as soon as the last owner releases its reference.&lt;/p&gt;
-&lt;p&gt;Regarding concurrency, the central query method &lt;code&gt;GetPublicKey()&lt;/code&gt; is explicitly specified as thread-safe (&lt;em&gt;thread-safe&lt;/em&gt;) &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. This means that multiple concurrent execution threads can operate in parallel on the same instance of &lt;code&gt;PrivateKey&lt;/code&gt; and retrieve the associated public key without requiring application-side synchronization mechanisms or mutex locks. In addition, the interface guarantees full exception safety (&lt;em&gt;exception safe&lt;/em&gt;) for this access and is declared with specifier &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;, thereby supporting runtime stability in safety-critical contexts.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Verwaltung und Übergabe von Instanzen der Schnittstelle &lt;code&gt;PrivateKey&lt;/code&gt; erfolgt über den typisierten Smart-Pointer &lt;code&gt;PrivateKey::Sptr&lt;/code&gt;, der als Typ-Alias für &lt;code&gt;std::shared_ptr&amp;lt;PrivateKey&amp;gt;&lt;/code&gt; definiert ist &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501"&gt;[SWS_CRYPT_22501]&lt;/a&gt;. Dieser Shared-Pointer gewährleistet eine geteilte Eigentümerschaft und ein automatisches Ressourcenmanagement über Referenzzählung, sodass das geschützte Schlüsselmaterial freigegeben wird, sobald die letzte Referenz erlischt.&lt;/p&gt;
+&lt;p&gt;Da &lt;code&gt;PrivateKey&lt;/code&gt; eine abstrakte Schnittstelle mit rein virtuellen Methoden wie &lt;code&gt;GetPublicKey()&lt;/code&gt; darstellt &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;, können Anwendungen die Klasse nicht direkt instanziieren. Die Erzeugung und Bereitstellung konkreter Instanzen von &lt;code&gt;PrivateKey::Sptr&lt;/code&gt; dürfte vermutlich über spezialisierte Fabriken, Schlüsselverwaltungskomponenten oder Krypto-Provider des Adaptive-Systems erfolgen (Interpretation). Das Interface selbst definiert keine diskreten internen Zustände oder Zustandsübergänge.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit spezifiziert die Schnittstelle für die zentrale Elementfunktion &lt;code&gt;GetPublicKey()&lt;/code&gt; explizit Thread-Sicherheit (&lt;code&gt;thread-safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. Dies gestattet mehreren Ausführungssträngen den nebenläufigen, synchronisationsfreien Lesezugriff auf dieselbe Schlüsselinstanz zur Gewinnung des korrespondierenden öffentlichen Schlüssels.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;A typical usage path begins as soon as an application possesses a valid pointer of type &lt;code&gt;ara::crypto::cryp::PrivateKey::Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501"&gt;[SWS_CRYPT_22501]&lt;/a&gt;. In asymmetric cryptosystems, it is often necessary to extract the matching public key, for example to create certificates, configure verification contexts, or distribute the public key to communication partners. For this purpose, the interface provides the pure virtual method &lt;code&gt;GetPublicKey()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;The caller calls &lt;code&gt;GetPublicKey()&lt;/code&gt; on the const instance. The method determines the associated public key and returns it wrapped in a &lt;code&gt;ara::core::Result&amp;lt;PublicKey::Sptr&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. The caller then checks the &lt;code&gt;Result&lt;/code&gt; object for success. In case of success, the result contains a smart pointer &lt;code&gt;PublicKey::Sptr&lt;/code&gt; representing the corresponding public key &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. This pointer can subsequently be passed independently to asymmetric verification or encryption routines, while the private key remains protected.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;PrivateKey&lt;/code&gt; umfasst den Empfang des privaten Schlüssels und die anschließende Extraktion des korrespondierenden öffentlichen Schlüssels für Validierungs-, Registrierungs- oder Kommunikationszwecke:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Schlüsselbezug:&lt;/strong&gt; Die konsumierende Softwarekomponente erhält eine gültige Instanz eines asymmetrischen privaten Schlüssels in Form eines &lt;code&gt;PrivateKey::Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501"&gt;[SWS_CRYPT_22501]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Abruf des Partnerschlüssels:&lt;/strong&gt; Wenn für einen nachgelagerten Arbeitsablauf der korrespondierende öffentliche Schlüssel benötigt wird, ruft die Komponente die Elementfunktion &lt;code&gt;GetPublicKey()&lt;/code&gt; auf der Instanz auf &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ergebnisverarbeitung:&lt;/strong&gt; Der Aufruf liefert ein &lt;code&gt;ara::core::Result&amp;lt;PublicKey::Sptr&amp;gt;&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. Die Anwendung prüft das Ergebnisobjekt auf Erfolg und entpackt bei erfolgreicher Ausführung den Zeiger &lt;code&gt;PublicKey::Sptr&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Weiterverwendung:&lt;/strong&gt; Der gewonnene öffentliche Schlüssel kann anschließend an externe Kommunikationspartner übermittelt oder lokalen Verifikationsroutinen übergeben werden. Die Ableitung des öffentlichen Schlüssels dürfte intern vermutlich direkt aus den mathematischen Schlüsselparametern des privaten Schlüssels erfolgen (Interpretation).&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Method &lt;code&gt;GetPublicKey()&lt;/code&gt; is declared as &lt;code&gt;noexcept&lt;/code&gt; and follows the functional error handling approach of the Adaptive Platform via &lt;code&gt;ara::core::Result&lt;/code&gt; instead of C++ exceptions &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. However, the specification specifies that no standardized error codes are defined for this call (&lt;em&gt;This function does not specify any standardized errors&lt;/em&gt;) &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Interpretation: Since the return type is nonetheless &lt;code&gt;ara::core::Result&lt;/code&gt;, concrete implementations are likely to use this mechanism to signal unexpected runtime issues—such as memory bottlenecks during the allocation of the new &lt;code&gt;PublicKey&lt;/code&gt; object or internal hardware errors of an underlying security module—via implementation-specific error codes. A precondition for a successful call is a properly initialized and consistent &lt;code&gt;PrivateKey&lt;/code&gt; instance. If the derivation fails, the &lt;code&gt;Result&lt;/code&gt; returns the corresponding error state; otherwise, the contained &lt;code&gt;PublicKey::Sptr&lt;/code&gt; object is valid.&lt;/p&gt;
-&lt;!-- annahmen: 1) Instanziierung: Da PrivateKey rein virtuell ist, dürfte die Erzeugung über kryptografische Provider oder Schlüsselspeicher erfolgen – Begründung: Abstrakte Schnittstelle ohne Konstruktoren im Payload; 2) Fehlerbehandlung: Da keine standardisierten Fehler definiert sind, GetPublicKey aber Result zurückgibt, dürften Implementierungen plattformspezifische Fehler (z. B. Allokationsfehler) über das Result signalisieren – Begründung: Widerspruchsfreie Nutzung des Result-Musters bei fehlender SWS-Fehlerliste; 3) PublicKey-Nutzung: Der resultierende PublicKey::Sptr dürfte eigenständig in asymmetrischen Routinen verwendbar sein – Begründung: Fachliche Semantik asymmetrischer Schlüsselpaare. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated by an AI curation assistant based on the AUTOSAR Adaptive Platform R25-11 specification.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Für eine fehlerfreie Integration sind die Fehlereigenschaften und Randbedingungen von &lt;code&gt;GetPublicKey()&lt;/code&gt; maßgeblich:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Standardisierte Fehler:&lt;/strong&gt; Gemäß Spezifikation definiert die Funktion &lt;code&gt;GetPublicKey()&lt;/code&gt; keine standardisierten Fehlercodes &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlerkanal:&lt;/strong&gt; Obwohl keine standardisierten Fehler festgelegt sind, transportiert der Rückgabetyp &lt;code&gt;ara::core::Result&lt;/code&gt; potentielle Fehlschläge. Falls bei der internen Schlüsselableitung oder Objekterzeugung ein Fehler auftritt, dürfte das Ergebnisobjekt vermutlich implementationsspezifische Fehlercodes der zugrunde liegenden Krypto-Treiber enthalten (Interpretation).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ausnahmesicherheit:&lt;/strong&gt; Die Funktion ist explizit als ausnahmesicher (&lt;code&gt;exception safe&lt;/code&gt;) eingestuft und mit dem Bezeichner &lt;code&gt;noexcept&lt;/code&gt; versehen &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;. Aufrufer müssen daher keine C++-Ausnahmen abfangen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Vor- und Nachbedingungen:&lt;/strong&gt; Vorbedingung für den erfolgreichen Aufruf ist eine valide, nicht freigegebene &lt;code&gt;PrivateKey&lt;/code&gt;-Instanz. Als Nachbedingung garantiert die Schnittstelle im Erfolgsfall die Rückgabe eines &lt;code&gt;PublicKey::Sptr&lt;/code&gt;, der mathematisch exakt zum privaten Schlüssel korrespondiert &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511"&gt;[SWS_CRYPT_22511]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- annahmen: 1) Die Erzeugung konkreter Instanzen von PrivateKey dürfte über Krypto-Provider oder spezialisierte Fabriken erfolgen. – Begründung: PrivateKey ist eine abstrakte Schnittstelle mit rein virtuellen Methoden, deren Instanziierung im Payload nicht über öffentliche Konstruktoren abgebildet wird. 2) Der öffentliche Schlüssel dürfte bei GetPublicKey() intern aus den mathematischen Parametern des privaten Schlüssels abgeleitet werden. – Begründung: SWS_CRYPT_22511 fordert die Rückgabe des korrespondierenden öffentlichen Schlüssels als PublicKey::Sptr, spezifiziert jedoch nicht den internen Berechnungs- oder Cache-Mechanismus. 3) Der Rückgabetyp ara::core::Result dürfte für implementationsspezifische Fehler der zugrunde liegenden Treiber vorgesehen sein. – Begründung: SWS_CRYPT_22511 schließt standardisierte Fehler aus, verwendet aber dennoch ara::core::Result als Rückgabetyp. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde von einer KI auf Basis der Spezifikation von AUTOSAR Adaptive R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -271,9 +369,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e613f477863e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>cbfbff2bb90c…</code></div>
               <div><strong>Konstituierende Records:</strong> 2</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -308,8 +406,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -346,7 +444,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 10 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -409,4 +507,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_22511","k":"function","d":"CRYPTO","t":"function GetPublicKey [SWS_CRYPT_22511] Upstream: RS_CRYPTO_02108 , RS_CRYPTO_02115 virtual ara::core::Result \u003c PublicKey :: Sptr > GetPublicKey () const noexcept=0; The interface shall return the public key correspondent to this private key. Header-Datei #include \"ara/crypto/cryp/cryobj/private_key.h\" class mono Scope class ara::crypto::cryp::PrivateKey class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c PublicKey:: Sptr > td A result containing a shared pointer to the public key correspondent to this private key Fehler th Fehlercode th Beschreibung td This function does not specify any standardized errors.","n":"GetPublicKey"},{"i":"SWS_CRYPT_22501","k":"type","d":"CRYPTO","t":"type alias Sptr [SWS_CRYPT_22501] Upstream: RS_CRYPTO_02306 using Sptr = std::shared_ptr \u003c PrivateKey >; shared smart pointer of the interface. Header-Datei #include \"ara/crypto/cryp/cryobj/private_key.h\" class mono Scope class ara::crypto::cryp::PrivateKey class mono Symbol Sptr class mono","n":"alias"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/2b529d0b899df957.json?v=a838ead6" data-total="10" data-new="10" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_22511","k":"function","d":"CRYPTO","t":"function GetPublicKey [SWS_CRYPT_22511] Upstream: RS_CRYPTO_02108 , RS_CRYPTO_02115 virtual ara::core::Result \u003c PublicKey :: Sptr > GetPublicKey () const noexcept=0; The interface shall return the public key correspondent to this private key. Header-Datei #include \"ara/crypto/cryp/cryobj/private_key.h\" class mono Scope class ara::crypto::cryp::PrivateKey class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td ara::core::Result \u003c PublicKey:: Sptr > td A result containing a shared pointer to the public key correspondent to this private key Fehler th Fehlercode th Beschreibung td This function does not specify any standardized errors.","n":"GetPublicKey"},{"i":"SWS_CRYPT_22501","k":"type","d":"CRYPTO","t":"type alias Sptr [SWS_CRYPT_22501] Upstream: RS_CRYPTO_02306 using Sptr = std::shared_ptr \u003c PrivateKey >; shared smart pointer of the interface. Header-Datei #include \"ara/crypto/cryp/cryobj/private_key.h\" class mono Scope class ara::crypto::cryp::PrivateKey class mono Symbol Sptr class mono","n":"alias"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/2b529d0b899df957.json?v=be0301bb" data-total="2" data-new="2" data-figures="2" data-used="0"></script></dialog>

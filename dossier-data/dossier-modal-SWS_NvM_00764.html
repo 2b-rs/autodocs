@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_NvM_00764" class="dossier-modal dossier-workbench" data-dossier-sha="c0064a218a04cb23" aria-labelledby="dossier-modal-SWS_NvM_00764-title">
+<dialog id="dossier-modal-SWS_NvM_00764" class="dossier-modal dossier-workbench" data-dossier-sha="80b4e9bb813381b3" aria-labelledby="dossier-modal-SWS_NvM_00764-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_NvM_00764-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_NvM_00764)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,719 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,174 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'NvM_ReadPRAMBlock'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -240,21 +258,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="65661ed430c9c938e9954dece0ac8754bc0eaff88705b8ec0f0ba1bc8f4636e7" data-trace-output="c0064a218a04cb23be0d77f719cd7a83d9771dba7c3b6bc5ee3d86f004f75bbb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="657ec2501bdc315a7c80f05ccc033851e9f6bcffe6dc134ae7836caf6d71144d" data-trace-output="80b4e9bb813381b33a205162780507eb0d95e20d4b7c3813686c79277da62066" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert das asynchrone Laden von Daten eines nichtflüchtigen Blocks in den zugehörigen permanenten RAM-Block an." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-&lt;p&gt;The function &lt;a class="spec-record-ref" data-req="SWS_NvM_00764" href="../../spec/record.html?id=SWS_NvM_00764"&gt;[SWS_NvM_00764]&lt;/a&gt; is used to copy data from an NV block to the associated permanent RAM block. It is specified as reentrant and asynchronous. Upon invocation, the function accepts parameter &lt;code&gt;BlockId&lt;/code&gt;, enqueues the read request into the internal job queue, and returns immediately &lt;a class="spec-record-ref" data-req="SWS_NvM_00766" href="../../spec/record.html?id=SWS_NvM_00766"&gt;[SWS_NvM_00766]&lt;/a&gt;. As return value, &lt;code&gt;E_OK&lt;/code&gt; reports successful acceptance of the read job, whereas &lt;code&gt;E_NOT_OK&lt;/code&gt; indicates rejection &lt;a class="spec-record-ref" data-req="SWS_NvM_00764" href="../../spec/record.html?id=SWS_NvM_00764"&gt;[SWS_NvM_00764]&lt;/a&gt;. The function is available in API configuration classes 2 and 3 &lt;a class="spec-record-ref" data-req="SWS_NvM_00561" href="../../spec/record.html?id=SWS_NvM_00561"&gt;[SWS_NvM_00561]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_NvM_00560" href="../../spec/record.html?id=SWS_NvM_00560"&gt;[SWS_NvM_00560]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die asynchrone und reentrante Funktion &lt;a class="spec-record-ref" data-req="SWS_NvM_00764" href="../../spec/record.html?id=SWS_NvM_00764"&gt;[SWS_NvM_00764]&lt;/a&gt; dient dem Kopieren von Daten eines NV-Blocks in den zugeordneten permanenten RAM-Block. Der Aufruf übernimmt die &lt;code&gt;BlockId&lt;/code&gt;, reiht die Leseanforderung in die interne Auftragswarteschlange ein und kehrt umgehend zurück &lt;a class="spec-record-ref" data-req="SWS_NvM_00766" href="../../spec/record.html?id=SWS_NvM_00766"&gt;[SWS_NvM_00766]&lt;/a&gt;. Der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; bestätigt die Annahme des Auftrags, während &lt;code&gt;E_NOT_OK&lt;/code&gt; eine Ablehnung signalisiert &lt;a class="spec-record-ref" data-req="SWS_NvM_00764" href="../../spec/record.html?id=SWS_NvM_00764"&gt;[SWS_NvM_00764]&lt;/a&gt;. Die Funktion gehört zum Funktionsumfang der API-Konfigurationsklassen 2 und 3 &lt;a class="spec-record-ref" data-req="SWS_NvM_00560" href="../../spec/record.html?id=SWS_NvM_00560"&gt;[SWS_NvM_00560]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_NvM_00561" href="../../spec/record.html?id=SWS_NvM_00561"&gt;[SWS_NvM_00561]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Job Processing and Synchronization&lt;/h4&gt;
-&lt;p&gt;The asynchronous background job reads the data of the NV block into the permanent RAM block &lt;a class="spec-record-ref" data-req="SWS_NvM_00765" href="../../spec/record.html?id=SWS_NvM_00765"&gt;[SWS_NvM_00765]&lt;/a&gt;. After a successful copy operation, the request result is set to &lt;code&gt;NVM_REQ_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_NvM_00775" href="../../spec/record.html?id=SWS_NvM_00775"&gt;[SWS_NvM_00775]&lt;/a&gt;. The permanent RAM block is invalidated immediately upon successful queue acceptance or with the start of job processing; however, if a synchronization callback (&lt;code&gt;NvMReadRamBlockFromNvCallback&lt;/code&gt;) is configured, this invalidation occurs only immediately prior to its call &lt;a class="spec-record-ref" data-req="SWS_NvM_00767" href="../../spec/record.html?id=SWS_NvM_00767"&gt;[SWS_NvM_00767]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_NvM_00706" href="../../spec/record.html?id=SWS_NvM_00706"&gt;[SWS_NvM_00706]&lt;/a&gt;. If the block lock was previously activated using &lt;code&gt;NvM_SetBlockLockStatus&lt;/code&gt;, it is guaranteed that the block is loaded from NV memory &lt;a class="spec-record-ref" data-req="SWS_NvM_00752" href="../../spec/record.html?id=SWS_NvM_00752"&gt;[SWS_NvM_00752]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Ablauf und Synchronisation&lt;/h4&gt;
+&lt;p&gt;Mit erfolgreicher Einreihung des Auftrags oder Beginn der Verarbeitung wird der permanente RAM-Block unverzüglich invalidiert &lt;a class="spec-record-ref" data-req="SWS_NvM_00767" href="../../spec/record.html?id=SWS_NvM_00767"&gt;[SWS_NvM_00767]&lt;/a&gt;. Ist für den Block eine explizite Synchronisation eingerichtet, darf die Anwendung den RAM-Block bis zum Eintreffen der Synchronisationsroutine verändern; die Invalidierung erfolgt in diesem Fall direkt vor dem Aufruf von &lt;code&gt;NvMReadRamBlockFromNvCallback&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_NvM_00706" href="../../spec/record.html?id=SWS_NvM_00706"&gt;[SWS_NvM_00706]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_NvM_00767" href="../../spec/record.html?id=SWS_NvM_00767"&gt;[SWS_NvM_00767]&lt;/a&gt;. Wurden die NV-Daten fehlerfrei in das RAM übertragen, schließt der Auftrag mit dem Status &lt;code&gt;NVM_REQ_OK&lt;/code&gt; ab &lt;a class="spec-record-ref" data-req="SWS_NvM_00765" href="../../spec/record.html?id=SWS_NvM_00765"&gt;[SWS_NvM_00765]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_NvM_00775" href="../../spec/record.html?id=SWS_NvM_00775"&gt;[SWS_NvM_00775]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Block Types and Error Handling&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Redundant blocks:&lt;/strong&gt; If the block is of type &lt;code&gt;NVM_BLOCK_REDUNDANT&lt;/code&gt; and reading the first NV block fails, the job automatically starts a read attempt on the second NV block &lt;a class="spec-record-ref" data-req="SWS_NvM_00768" href="../../spec/record.html?id=SWS_NvM_00768"&gt;[SWS_NvM_00768]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Dataset blocks:&lt;/strong&gt; For blocks of type &lt;code&gt;NVM_BLOCK_DATASET&lt;/code&gt;, the copy operation to the RAM block is skipped if the NV block addressed via the dataset index is inconsistent &lt;a class="spec-record-ref" data-req="SWS_NvM_00771" href="../../spec/record.html?id=SWS_NvM_00771"&gt;[SWS_NvM_00771]&lt;/a&gt;. If the index refers to a ROM block, its data is copied and the result is set to &lt;code&gt;NVM_REQ_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_NvM_00772" href="../../spec/record.html?id=SWS_NvM_00772"&gt;[SWS_NvM_00772]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Implicit restoration:&lt;/strong&gt; If configured default values are successfully copied to RAM, the block is considered valid and changed &lt;a class="spec-record-ref" data-req="SWS_NvM_00774" href="../../spec/record.html?id=SWS_NvM_00774"&gt;[SWS_NvM_00774]&lt;/a&gt;. This implicit restoration takes effect in case of invalid RAM contents and read errors &lt;a class="spec-record-ref" data-req="SWS_NvM_00575" href="../../spec/record.html?id=SWS_NvM_00575"&gt;[SWS_NvM_00575]&lt;/a&gt;, but does not apply without configured default data &lt;a class="spec-record-ref" data-req="SWS_NvM_00572" href="../../spec/record.html?id=SWS_NvM_00572"&gt;[SWS_NvM_00572]&lt;/a&gt; or upon successful read access to the NV medium &lt;a class="spec-record-ref" data-req="SWS_NvM_00574" href="../../spec/record.html?id=SWS_NvM_00574"&gt;[SWS_NvM_00574]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Redundanz&lt;/h4&gt;
+&lt;p&gt;Bei Blöcken vom Typ &lt;code&gt;NVM_BLOCK_REDUNDANT&lt;/code&gt; startet der Auftrag automatisch einen Leseversuch auf dem zweiten Block, sofern der erste Leseversuch fehlschlägt &lt;a class="spec-record-ref" data-req="SWS_NvM_00768" href="../../spec/record.html?id=SWS_NvM_00768"&gt;[SWS_NvM_00768]&lt;/a&gt;. Bei Datasets (&lt;code&gt;NVM_BLOCK_DATASET&lt;/code&gt;) wird das Kopieren unterbunden, falls der über den Index gewählte NV-Block inkonsistent ist &lt;a class="spec-record-ref" data-req="SWS_NvM_00771" href="../../spec/record.html?id=SWS_NvM_00771"&gt;[SWS_NvM_00771]&lt;/a&gt;; verweist der Index auf ROM-Daten, werden diese geladen und das Ergebnis auf &lt;code&gt;NVM_REQ_OK&lt;/code&gt; gesetzt &lt;a class="spec-record-ref" data-req="SWS_NvM_00772" href="../../spec/record.html?id=SWS_NvM_00772"&gt;[SWS_NvM_00772]&lt;/a&gt;. Sind Standarddaten konfiguriert und der NV-Block bei ungültigem RAM-Zustand nicht lesbar, erfolgt eine implizite Wiederherstellung &lt;a class="spec-record-ref" data-req="SWS_NvM_00575" href="../../spec/record.html?id=SWS_NvM_00575"&gt;[SWS_NvM_00575]&lt;/a&gt;, die den RAM-Block als gültig sowie geändert einstuft &lt;a class="spec-record-ref" data-req="SWS_NvM_00774" href="../../spec/record.html?id=SWS_NvM_00774"&gt;[SWS_NvM_00774]&lt;/a&gt;; ohne konfigurierte Vorgabewerte unterbleibt die Wiederherstellung &lt;a class="spec-record-ref" data-req="SWS_NvM_00572" href="../../spec/record.html?id=SWS_NvM_00572"&gt;[SWS_NvM_00572]&lt;/a&gt;. War zuvor &lt;code&gt;NvM_SetBlockLockStatus&lt;/code&gt; aktiv, wird das Nachladen aus dem NV-Speicher erzwungen &lt;a class="spec-record-ref" data-req="SWS_NvM_00752" href="../../spec/record.html?id=SWS_NvM_00752"&gt;[SWS_NvM_00752]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis des Spezifikationsstands AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -294,7 +310,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>65661ed430c9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>657ec2501bdc…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(12 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 12 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -432,4 +448,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_NvM_00764","k":"function","d":"AUTOSAR","t":"","n":"NvM_ReadPRAMBlock"}],"inbound":[{"i":"SWS_NvM_00766","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_NvM_00766].","n":"SWS_NvM_00766"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/991a8945c31b9ce7.json?v=69f91d50" data-total="12" data-new="12" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_NvM_00764","k":"function","d":"AUTOSAR","t":"","n":"NvM_ReadPRAMBlock"}],"inbound":[{"i":"SWS_NvM_00766","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_NvM_00766].","n":"SWS_NvM_00766"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/991a8945c31b9ce7.json?v=d8940bef" data-total="12" data-new="12" data-figures="0" data-used="0"></script></dialog>

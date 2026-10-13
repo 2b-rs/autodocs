@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00047" class="dossier-modal dossier-workbench" data-dossier-sha="0ae75c053a183fdb" aria-labelledby="dossier-modal-SWS_KeyM_00047-title">
+<dialog id="dossier-modal-SWS_KeyM_00047" class="dossier-modal dossier-workbench" data-dossier-sha="b438271691b6f859" aria-labelledby="dossier-modal-SWS_KeyM_00047-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00047-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00047)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,255 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,710 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_Deinit'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,25 +198,16 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9a18ff4ee970779dbfd0c06ec2937001b734a3f8ad36d31ba5b741e6567bfd41" data-trace-output="0ae75c053a183fdbdbcb5f7c232c28db61920a53bab42b5b4f31f3f53ab6751b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="89101654eb5c2b8cca2aeddde1b35afb9da99ceebd93f93ed4813faf6342788a" data-trace-output="b438271691b6f85986ff171bf8c0857e58e14fb2ffed152548b636f1e319215f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Setzt das Modul Key Manager synchron in den uninitialisierten Zustand zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The function &lt;code&gt;KeyM_Deinit&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00047" href="../../spec/record.html?id=SWS_KeyM_00047"&gt;[SWS_KeyM_00047]&lt;/a&gt;) resets the key management module to the uninitialized state. It has the service ID &lt;code&gt;0x02&lt;/code&gt; and is made available via the header &lt;code&gt;KeyM.h&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Call context and parameters:&lt;/strong&gt; The function has the signature &lt;code&gt;void KeyM_Deinit (void);&lt;/code&gt;. It expects no input parameters (neither &lt;em&gt;in&lt;/em&gt;, &lt;em&gt;inout&lt;/em&gt; nor &lt;em&gt;out&lt;/em&gt;) and returns no return value.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Synchronicity:&lt;/strong&gt; Execution is synchronous (&lt;code&gt;Synchronous&lt;/code&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Concurrency:&lt;/strong&gt; The function is specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) and therefore must not be executed concurrently or preemptively.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Interaction and Error Handling&lt;/h4&gt;
-  &lt;p&gt;Calling &lt;code&gt;KeyM_Deinit&lt;/code&gt; transitions the module into the state prior to initialization. This entails the following interactions in the overall system:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;If development error detection is active, the Key Manager checks according to &lt;a class="spec-record-ref" data-req="SWS_KeyM_00144" href="../../spec/record.html?id=SWS_KeyM_00144"&gt;[SWS_KeyM_00144]&lt;/a&gt; on each function call whether the module has been initialized with &lt;code&gt;KeyM_Init()&lt;/code&gt; and not yet deinitialized via &lt;code&gt;KeyM_Deinit()&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;If a function of the Key Manager is called after execution of &lt;code&gt;KeyM_Deinit&lt;/code&gt; without prior re-initialization, the development error &lt;code&gt;KEYM_E_UNINIT&lt;/code&gt; is reported (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00144" href="../../spec/record.html?id=SWS_KeyM_00144"&gt;[SWS_KeyM_00144]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;This usage note is based on the AUTOSAR CP R20-11 specification.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;KeyM_Deinit&lt;/code&gt; dient dazu, das Modul Key Manager wieder in den uninitialisierten Zustand zurückzusetzen (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00047" href="../../spec/record.html?id=SWS_KeyM_00047"&gt;[SWS_KeyM_00047]&lt;/a&gt;).&lt;/p&gt;
+  &lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;Der Aufruf von &lt;code&gt;KeyM_Deinit&lt;/code&gt; erfolgt synchron und ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert. Die Funktion besitzt die Service-ID &lt;code&gt;0x02&lt;/code&gt;, akzeptiert keine Parameter und liefert keinen Rückgabewert zurück (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00047" href="../../spec/record.html?id=SWS_KeyM_00047"&gt;[SWS_KeyM_00047]&lt;/a&gt;).&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Durch die Nicht-Reentranz darf &lt;code&gt;KeyM_Deinit&lt;/code&gt; nicht nebenläufig zu sich selbst oder im Widerspruch zu laufenden Operationen aufgerufen werden. Nach Ausführung dieser Deinitialisierung befindet sich das Modul im uninitialisierten Zustand. Wenn Development-Fehler aktiviert sind, prüft der Key Manager bei jedem nachfolgenden Funktionsaufruf, ob das Modul zuvor über &lt;code&gt;KeyM_Init()&lt;/code&gt; initialisiert und noch nicht mittels &lt;code&gt;KeyM_Deinit()&lt;/code&gt; deinitialisiert wurde; andernfalls wird der Entwicklungsfehler &lt;code&gt;KEYM_E_UNINIT&lt;/code&gt; gemeldet (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00144" href="../../spec/record.html?id=SWS_KeyM_00144"&gt;[SWS_KeyM_00144]&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,7 +247,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9a18ff4ee970…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>89101654eb5c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -376,4 +385,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00047","k":"function","d":"AUTOSAR","t":"","n":"KeyM_Deinit"}],"inbound":[{"i":"SWS_KeyM_00144","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_KeyM_00144].","n":"SWS_KeyM_00144"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/54e60a86a26eadd4.json?v=8df3b975" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00047","k":"function","d":"AUTOSAR","t":"","n":"KeyM_Deinit"}],"inbound":[{"i":"SWS_KeyM_00144","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_KeyM_00144].","n":"SWS_KeyM_00144"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/54e60a86a26eadd4.json?v=3160d96d" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

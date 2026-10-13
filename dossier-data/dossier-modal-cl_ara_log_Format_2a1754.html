@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_log_Format_2a1754" class="dossier-modal dossier-workbench" data-dossier-sha="61a75bac515b06c3" aria-labelledby="dossier-modal-cl_ara_log_Format_2a1754-title">
+<dialog id="dossier-modal-cl_ara_log_Format_2a1754" class="dossier-modal dossier-workbench" data-dossier-sha="c85633471bf36a55" aria-labelledby="dossier-modal-cl_ara_log_Format_2a1754-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_log_Format_2a1754-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_log_Format_2a1754)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,919 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,441 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::log::Format' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_log_Format_2a1754",
@@ -212,46 +231,173 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="8c7185f0f26f6140e64e9e285ea1c8e07403bdb8ce30af9f53d0ac43097276ef" data-trace-output="61a75bac515b06c36e715c39b7afb7023f9f6ee3220835f0b6241aacedf58acc" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="ae5714d3cea4c9624e549a7c3542a2f4ca855f030709fede132d465069d0baef" data-trace-output="c85633471bf36a557135a17e149cb7331f6e697d22f30e9bee77bc58f3a2a278" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Formatierungshinweis zur Steuerung von Darstellungsformat und Genauigkeit bei der Ausgabe von Log-Werten." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The data structure &lt;code&gt;ara::log::Format&lt;/code&gt; serves within the logging system of the AUTOSAR Adaptive Platform as a formatting hint for data output. Declared as a &lt;code&gt;struct Format final&lt;/code&gt; in the header file &lt;code&gt;#include "ara/log/logger.h"&lt;/code&gt;, it encapsulates control data for text and number representation. Instead of a free formatting string, it structures two fundamental parameters:&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als Formatierungshinweis zur Steuerung von Darstellungsformat und Genauigkeit bei der Ausgabe von Log-Werten.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::log::Format&lt;/code&gt; dient als Formatierungshinweis im Logging-System und bündelt den Formatspezifizierer &lt;code&gt;fmt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;) mit der Genauigkeitsangabe &lt;code&gt;precision&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;). Instanzen sollten bevorzugt über bereitgestellte Hilfsfunktionen erzeugt werden, wobei die Auswertung von &lt;code&gt;precision&lt;/code&gt; je nach Formattyp zwischen Mindeststellenanzahl bei Ganzzahlen und Nachkommastellen bei Gleitkommazahlen unterscheidet. Bei ganzzahligen Typen wird eine Genauigkeit von null wie eins behandelt, während das Feld unter &lt;code&gt;Fmt::kDefault&lt;/code&gt; vollständig ignoriert wird.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Datenstruktur &lt;code&gt;ara::log::Format&lt;/code&gt; dient im Logging-Framework der AUTOSAR Adaptive Platform als Formatierungshinweis zur Ausgabe formatierter Werte. Sie bündelt hierzu zwei zentrale Eigenschaften: die Formatangabe &lt;code&gt;fmt&lt;/code&gt; vom Aufzählungstyp &lt;code&gt;Fmt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;) sowie die zugehörige Genauigkeit &lt;code&gt;precision&lt;/code&gt; als &lt;code&gt;std::uint16_t&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;). Interaktionspartner sind die Ausgabekomponenten und Formatierungsströme des Logging-Moduls sowie die Anwendungslogik, die Log-Meldungen mit formatierter Textausgabe erzeugt. Interpretation: Die in der Spezifikation erwähnten Hilfsfunktionen zur Instanziierung dürften direkt im Modul &lt;code&gt;ara::log&lt;/code&gt; angesiedelt sein, um standardisierte Formatierungen bereitzustellen.&lt;/p&gt;
+
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als finale Datenstruktur (&lt;code&gt;struct Format final&lt;/code&gt;) besitzt &lt;code&gt;ara::log::Format&lt;/code&gt; keinen internen Zustandsautomaten und keine komplexen Phasenübergänge. Obwohl die Attribute als öffentliche Variablen deklariert sind (&lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;), fordert die Spezifikation ausdrücklich, Instanzen nicht manuell anzulegen, sondern stattdessen die bereitgestellten Hilfsfunktionen zu verwenden. Exemplare sind typischerweise kurzlebige Wertobjekte, die per Kopie oder Referenz an Log-Streams übergeben werden. Interpretation: Da die Struktur keine interne Synchronisation aufweist, dürften Kopien und gleichzeitige Lesezugriffe über Thread-Grenzen hinweg threadsicher sein, während veränderliche Zugriffe extern synchronisiert werden müssen.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Die typische Verwendung umfasst die Festlegung des Formatspezifizierers &lt;code&gt;fmt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;) und die Angabe der gewünschten Genauigkeit &lt;code&gt;precision&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;). Die Auswertung von &lt;code&gt;precision&lt;/code&gt; richtet sich nach dem gewählten Typ in &lt;code&gt;fmt&lt;/code&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;fmt&lt;/code&gt;: The format specifier of type &lt;code&gt;Fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;, which defines the display form such as integer formats, floating-point formats, or default formats.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;precision&lt;/code&gt;: A value of type &lt;code&gt;std::uint16_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; whose semantic evaluation is coupled to the selected type in &lt;code&gt;fmt&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ganzzahlige Typen:&lt;/strong&gt; Für &lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt; und &lt;code&gt;Fmt::kBin&lt;/code&gt; bezeichnet &lt;code&gt;precision&lt;/code&gt; die Mindestanzahl an auszugebenden Ziffern, analog zur Formatierung über &lt;code&gt;std::printf("%.7d")&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Gleitkommatypen mit Festkomma- und Exponentialdarstellung:&lt;/strong&gt; Bei &lt;code&gt;Fmt::kDecFloat&lt;/code&gt;, &lt;code&gt;Fmt::kEngFloat&lt;/code&gt; und &lt;code&gt;Fmt::kHexFloat&lt;/code&gt; legt &lt;code&gt;precision&lt;/code&gt; die exakte Anzahl der Nachkommastellen fest.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Automatische Gleitkommadarstellung:&lt;/strong&gt; Unter &lt;code&gt;Fmt::kAutoFloat&lt;/code&gt; definiert &lt;code&gt;precision&lt;/code&gt; die Anzahl der signifikanten Stellen nach den Regeln des Formatspezifizierers &lt;code&gt;%g&lt;/code&gt; in &lt;code&gt;std::printf&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Standardformatierung:&lt;/strong&gt; Wenn &lt;code&gt;fmt&lt;/code&gt; den Wert &lt;code&gt;Fmt::kDefault&lt;/code&gt; führt, wird die Angabe in &lt;code&gt;precision&lt;/code&gt; ignoriert und eine implementierungsabhängige Formatierung angewandt.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;In the module &lt;code&gt;log&lt;/code&gt;, the structure interacts as an intermediary element between the application logic, associated helper functions for object creation, and the logging infrastructure. It transports formatting specifications directly to the output channels without managing its own system resources or dynamic buffers.&lt;/p&gt;
+&lt;div class="diagram" id="diag-format-auswertung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 820.97 402.80" style="max-width:1095px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 388.4)"&gt;
+&lt;title&gt;FormatAuswertung&lt;/title&gt;
+&lt;!-- start --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;start&lt;/title&gt;
+&lt;ellipse fill="#ffffff" stroke="#01696f" stroke-width="1.2" cx="416.4" cy="-356" rx="65.09" ry="18"&gt;&lt;/ellipse&gt;
+&lt;text text-anchor="middle" x="416.4" y="-352.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_log_Format_2a1754.html" href="../classes/cl_ara_log_Format_2a1754.html"&gt;Format&lt;/a&gt;-Auswertung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- check_fmt --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;check_fmt&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M404.61,-298.75C404.61,-298.75 333.76,-285.25 333.76,-285.25 327.86,-284.12 327.86,-281.88 333.76,-280.75 333.76,-280.75 404.61,-267.25 404.61,-267.25 410.51,-266.12 422.29,-266.12 428.19,-267.25 428.19,-267.25 499.04,-280.75 499.04,-280.75 504.93,-281.88 504.93,-284.12 499.04,-285.25 499.04,-285.25 428.19,-298.75 428.19,-298.75 422.29,-299.88 410.51,-299.88 404.61,-298.75"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="416.4" y="-279.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Welcher Typ in fmt?&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- start&amp;#45;&amp;gt;check_fmt --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;start-&amp;gt;check_fmt&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M416.4,-337.81C416.4,-330.23 416.4,-321.1 416.4,-312.54"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="419.9,-312.69 416.4,-302.69 412.9,-312.69 419.9,-312.69"&gt;&lt;/polygon&gt;
+&lt;/g&gt;
+&lt;!-- integral --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;integral&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M159.74,-214.16C159.74,-214.16 109.03,-201.84 109.03,-201.84 103.2,-200.42 103.2,-197.58 109.03,-196.16 109.03,-196.16 159.74,-183.84 159.74,-183.84 165.57,-182.42 177.23,-182.42 183.06,-183.84 183.06,-183.84 233.76,-196.16 233.76,-196.16 239.59,-197.58 239.59,-200.42 233.76,-201.84 233.76,-201.84 183.06,-214.16 183.06,-214.16 177.23,-215.58 165.57,-215.58 159.74,-214.16"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="171.4" y="-195.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;precision == 0?&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- check_fmt&amp;#45;&amp;gt;integral --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;check_fmt-&amp;gt;integral&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M353.35,-276.64C317.69,-271.95 272.94,-263.21 235.75,-247 221.09,-240.61 206.54,-230.4 195,-221.13"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="197.27,-218.47 187.35,-214.74 192.78,-223.84 197.27,-218.47"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="284.08" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;kDec, kOct, kHex, kBin&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- float_fixed --&gt;
+&lt;g id="node6" class="node"&gt;
+&lt;title&gt;float_fixed&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M437.51,-217C437.51,-217 275.28,-217 275.28,-217 269.28,-217 263.28,-211 263.28,-205 263.28,-205 263.28,-193 263.28,-193 263.28,-187 269.28,-181 275.28,-181 275.28,-181 437.51,-181 437.51,-181 443.51,-181 449.51,-187 449.51,-193 449.51,-193 449.51,-205 449.51,-205 449.51,-211 443.51,-217 437.51,-217"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="356.4" y="-195.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Exakte Nachkommastellen = precision&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- check_fmt&amp;#45;&amp;gt;float_fixed --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;check_fmt-&amp;gt;float_fixed&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M374.04,-272.67C360.46,-267.46 346.87,-259.41 338.86,-247 335.02,-241.05 335.39,-234.13 337.68,-227.46"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="340.64,-229.39 341.82,-218.87 334.33,-226.36 340.64,-229.39"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="406.63" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;kDecFloat, kEngFloat, kHexFloat&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- float_auto --&gt;
+&lt;g id="node7" class="node"&gt;
+&lt;title&gt;float_auto&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M571.35,-163C571.35,-163 383.45,-163 383.45,-163 377.45,-163 371.45,-157 371.45,-151 371.45,-151 371.45,-139 371.45,-139 371.45,-133 377.45,-127 383.45,-127 383.45,-127 571.35,-127 571.35,-127 577.35,-127 583.35,-133 583.35,-139 583.35,-139 583.35,-151 583.35,-151 583.35,-157 577.35,-163 571.35,-163"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="477.4" y="-141.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Signifikante Stellen = precision (analog %g)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- check_fmt&amp;#45;&amp;gt;float_auto --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;check_fmt-&amp;gt;float_auto&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M447.54,-270.49C457.91,-265.02 468.35,-257.36 474.4,-247 487.11,-225.25 486.5,-196.12 483.52,-174.73"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="487.01,-174.37 481.91,-165.09 480.11,-175.53 487.01,-174.37"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="502.11" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;kAutoFloat&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- default_fmt --&gt;
+&lt;g id="node8" class="node"&gt;
+&lt;title&gt;default_fmt&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M780.17,-163C780.17,-163 600.63,-163 600.63,-163 594.63,-163 588.63,-157 588.63,-151 588.63,-151 588.63,-139 588.63,-139 588.63,-133 594.63,-127 600.63,-127 600.63,-127 780.17,-127 780.17,-127 786.17,-127 792.17,-133 792.17,-139 792.17,-139 792.17,-151 792.17,-151 792.17,-157 786.17,-163 780.17,-163"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="690.4" y="-141.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;precision ignoriert (Standardformatierung)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- check_fmt&amp;#45;&amp;gt;default_fmt --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;check_fmt-&amp;gt;default_fmt&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M456.45,-272.16C478.23,-266.14 505.35,-257.58 528.4,-247 575.63,-225.33 625.77,-192.32 657.54,-169.99"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="659.3,-173.03 665.43,-164.39 655.25,-167.32 659.3,-173.03"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="569.17" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;kDefault&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- integral_min --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;integral_min&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M160.8,-109C160.8,-109 12,-109 12,-109 6,-109 0,-103 0,-97 0,-97 0,-85 0,-85 0,-79 6,-73 12,-73 12,-73 160.8,-73 160.8,-73 166.8,-73 172.8,-79 172.8,-85 172.8,-85 172.8,-97 172.8,-97 172.8,-103 166.8,-109 160.8,-109"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="86.4" y="-87.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Minimale Stellenanzahl = precision&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- integral&amp;#45;&amp;gt;integral_min --&gt;
+&lt;g id="edge7" class="edge"&gt;
+&lt;title&gt;integral-&amp;gt;integral_min&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M159.94,-183.7C146.5,-166.94 123.95,-138.83 107.36,-118.14"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="110.24,-116.13 101.25,-110.52 104.78,-120.51 110.24,-116.13"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="150.09" y="-142" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nein&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- integral_one --&gt;
+&lt;g id="node5" class="node"&gt;
+&lt;title&gt;integral_one&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M316.39,-109C316.39,-109 202.41,-109 202.41,-109 196.41,-109 190.41,-103 190.41,-97 190.41,-97 190.41,-85 190.41,-85 190.41,-79 196.41,-73 202.41,-73 202.41,-73 316.39,-73 316.39,-73 322.39,-73 328.39,-79 328.39,-85 328.39,-85 328.39,-97 328.39,-97 328.39,-103 322.39,-109 316.39,-109"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="259.4" y="-87.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Minimale Stellenanzahl = 1&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- integral&amp;#45;&amp;gt;integral_one --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;integral-&amp;gt;integral_one&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M183.27,-183.7C197.18,-166.94 220.52,-138.83 237.7,-118.14"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="240.34,-120.43 244.04,-110.51 234.96,-115.96 240.34,-120.43"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="232.03" y="-142" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;ja&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- end --&gt;
+&lt;g id="node9" class="node"&gt;
+&lt;title&gt;end&lt;/title&gt;
+&lt;ellipse fill="#ffffff" stroke="#01696f" stroke-width="1.2" cx="356.4" cy="-18" rx="81.14" ry="18"&gt;&lt;/ellipse&gt;
+&lt;text text-anchor="middle" x="356.4" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Formatierung angewendet&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- integral_min&amp;#45;&amp;gt;end --&gt;
+&lt;g id="edge9" class="edge"&gt;
+&lt;title&gt;integral_min-&amp;gt;end&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M152.79,-72.54C195.99,-61.18 251.95,-46.47 294.26,-35.34"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="295.15,-38.73 303.93,-32.8 293.37,-31.96 295.15,-38.73"&gt;&lt;/polygon&gt;
+&lt;/g&gt;
+&lt;!-- integral_one&amp;#45;&amp;gt;end --&gt;
+&lt;g id="edge8" class="edge"&gt;
+&lt;title&gt;integral_one-&amp;gt;end&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M282.88,-72.81C295.45,-63.61 311.12,-52.15 324.75,-42.17"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="326.46,-45.25 332.46,-36.52 322.32,-39.61 326.46,-45.25"&gt;&lt;/polygon&gt;
+&lt;/g&gt;
+&lt;!-- float_fixed&amp;#45;&amp;gt;end --&gt;
+&lt;g id="edge10" class="edge"&gt;
+&lt;title&gt;float_fixed-&amp;gt;end&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M356.4,-180.51C356.4,-149.69 356.4,-85.41 356.4,-47.9"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="359.9,-47.96 356.4,-37.96 352.9,-47.96 359.9,-47.96"&gt;&lt;/polygon&gt;
+&lt;/g&gt;
+&lt;!-- float_auto&amp;#45;&amp;gt;end --&gt;
+&lt;g id="edge11" class="edge"&gt;
+&lt;title&gt;float_auto-&amp;gt;end&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M460.57,-126.62C439.78,-105.14 404.24,-68.43 380.54,-43.94"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="383.32,-41.78 373.85,-37.03 378.29,-46.65 383.32,-41.78"&gt;&lt;/polygon&gt;
+&lt;/g&gt;
+&lt;!-- default_fmt&amp;#45;&amp;gt;end --&gt;
+&lt;g id="edge12" class="edge"&gt;
+&lt;title&gt;default_fmt-&amp;gt;end&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M643.96,-126.62C581.77,-103.35 471.83,-62.2 407.4,-38.09"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="408.85,-34.89 398.26,-34.67 406.4,-41.45 408.85,-34.89"&gt;&lt;/polygon&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Aktivitätsdiagramm: Verzweigungslogik zur Auswertung von precision abhängig von fmt. Quellen: &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle of &lt;code&gt;ara::log::Format&lt;/code&gt; corresponds to that of a lightweight value object. For instantiation, the specification formulates an explicit guideline: Dedicated helper functions exist for creating specific variants of this structure. Developers should not create instances manually, but always use these helper functions.&lt;/p&gt;
-&lt;p&gt;Because the type is declared as a &lt;code&gt;final&lt;/code&gt; and consists exclusively of two simple data elements, &lt;code&gt;Format&lt;/code&gt; has no dynamically allocated resources and requires no complex destruction or cleanup logic. Instances can be instantiated efficiently on the stack or passed directly as temporary values to interfaces.&lt;/p&gt;
-&lt;p&gt;With respect to concurrency, &lt;code&gt;ara::log::Format&lt;/code&gt; contains no internal protection mechanisms or mutex locks. However, since instances are typically created short-lived and passed as a value copy to log calls (interpretation: pure pass-by-value without shared state), usage in multithreaded environments behaves safely as long as the same instance is not modified concurrently by multiple threads without external synchronization.&lt;/p&gt;
-
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;Typical use of &lt;code&gt;ara::log::Format&lt;/code&gt; follows a standardized pattern of selecting the representation type, creation via helper functions, and passing to the log output:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Formatting selection:&lt;/strong&gt; Determination of the target format for the value to be output. Available options include integer bases (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;), floating-point representations (&lt;code&gt;Fmt::kDecFloat&lt;/code&gt;, &lt;code&gt;Fmt::kEngFloat&lt;/code&gt;, &lt;code&gt;Fmt::kHexFloat&lt;/code&gt;, &lt;code&gt;Fmt::kAutoFloat&lt;/code&gt;), and the default formatting &lt;code&gt;Fmt::kDefault&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Creation via helper function:&lt;/strong&gt; Invocation of the helper function intended for the use case, which returns a correspondingly initialized &lt;code&gt;Format&lt;/code&gt; object with &lt;code&gt;fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt; and &lt;code&gt;precision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; set.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Handover to the log channel:&lt;/strong&gt; The generated object is passed on to the logging stream (presumably via streaming operators or argument lists of the logger), whereby the formatting rules are applied to the subsequent datum.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The interpretation of the field &lt;code&gt;precision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt; depends directly on &lt;code&gt;fmt&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Integer types (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;):&lt;/strong&gt; &lt;code&gt;precision&lt;/code&gt; defines the minimum number of digits that must be output, comparable to the specifier &lt;code&gt;std::printf("%.7d")&lt;/code&gt;. Shorter numerical values are padded with leading zeros.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Floating-point types with fixed precision (&lt;code&gt;Fmt::kDecFloat&lt;/code&gt;, &lt;code&gt;Fmt::kEngFloat&lt;/code&gt;, &lt;code&gt;Fmt::kHexFloat&lt;/code&gt;):&lt;/strong&gt; &lt;code&gt;precision&lt;/code&gt; determines the exact number of digits displayed after the decimal point.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Automatic floating-point representation (&lt;code&gt;Fmt::kAutoFloat&lt;/code&gt;):&lt;/strong&gt; &lt;code&gt;precision&lt;/code&gt; designates the number of significant digits according to the standardized formatting rules of &lt;code&gt;std::printf("%g")&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Default formatting (&lt;code&gt;Fmt::kDefault&lt;/code&gt;):&lt;/strong&gt; With this specifier, field &lt;code&gt;precision&lt;/code&gt; is completely ignored; instead, implementation-defined formatting is used.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;As a compact data structure, &lt;code&gt;ara::log::Format&lt;/code&gt; does not throw exceptions and does not return error codes. However, for edge cases, the specification defines a clear, fault-tolerant behavior:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Precision zero for integer values:&lt;/strong&gt; If a value of &lt;code&gt;precision = 0&lt;/code&gt; is passed for integer types (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;), this is not rejected as an invalid parameter, but handled identically to &lt;code&gt;precision = 1&lt;/code&gt;. This prevents accidental suppression of digit output for zero values.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Precision specifications with &lt;code&gt;Fmt::kDefault&lt;/code&gt;:&lt;/strong&gt; Any value in &lt;code&gt;precision&lt;/code&gt; with &lt;code&gt;Fmt::kDefault&lt;/code&gt; set does not produce an error state, because the field is ignored by definition in this mode.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Value range overflows:&lt;/strong&gt; The value range for &lt;code&gt;precision&lt;/code&gt; is strictly limited to the range 0 to 65535 by type &lt;code&gt;std::uint16_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;. Negative values are ruled out by type, thereby preventing sign errors at the interface level.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;!-- annahmen: 1) Format wird im Logging-Ablauf vermutlich als kurzlebiges Wertobjekt per Kopie oder Referenz an Protokollierungsströme übergeben. – Begründung: Format ist als reines Daten-Struct final ohne Ressourcenverwaltung deklariert und dient als Formatierungshinweis. 2) Die erwähnten Hilfsfunktionen dürften im Namensraum ara::log bereitgestellt werden. – Begründung: Format ist in ara/log/logger.h verortet und verweist zur Objekterzeugung auf begleitende Helferfunktionen. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive Platform specifications in release R25-11 for the log module. According to the specification, instances of &lt;code&gt;ara::log::Format&lt;/code&gt; should preferably be created via the associated helper functions.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Struktur definiert keine Fehlercodes oder Ausnahmen; Grenzfälle werden stattdessen fehlertolerant und deterministisch behandelt. Bei ganzzahligen Formatbezeichnern (&lt;code&gt;Fmt::kDec&lt;/code&gt;, &lt;code&gt;Fmt::kOct&lt;/code&gt;, &lt;code&gt;Fmt::kHex&lt;/code&gt;, &lt;code&gt;Fmt::kBin&lt;/code&gt;) wird ein Wert von &lt;code&gt;precision = 0&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00226" href="../spec/record.html?id=SWS_LOG_00226"&gt;[SWS_LOG_00226]&lt;/a&gt;) semantisch identisch zu einem Wert von &lt;code&gt;1&lt;/code&gt; ausgewertet, um Leerausgaben zu verhindern. Wird &lt;code&gt;fmt&lt;/code&gt; auf &lt;code&gt;Fmt::kDefault&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LOG_00225" href="../spec/record.html?id=SWS_LOG_00225"&gt;[SWS_LOG_00225]&lt;/a&gt;) gesetzt, führt ein gesetzter Wert in &lt;code&gt;precision&lt;/code&gt; nicht zu einem Fehlerzustand, sondern wird stillschweigend verworfen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Hilfsfunktionen zur Erstellung dürften im Namensraum ara::log bereitgestellt werden – Begründung: Der Payload erwähnt Hilfsfunktionen zur Instanziierung, nennt aber keine konkreten Signaturen. 2) Instanzen dürften nebenläufig threadsicher als Wert kopiert werden – Begründung: Format ist eine finale Datenstruktur ohne Synchronisationsmechanismen oder internen Zustand. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Vorgaben der Spezifikation für das Logging-Modul der AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -293,9 +439,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8c7185f0f26f…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ae5714d3cea4…</code></div>
               <div><strong>Konstituierende Records:</strong> 2</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -330,8 +476,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -368,7 +514,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -431,4 +577,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LOG_00225","k":"variable","d":"LOG","t":"variable fmt [SWS_LOG_00225] Upstream: RS_LT_00046 Fmt fmt; the format specifier Header-Datei #include \"ara/log/logger.h\" class mono Scope struct ara::log::Format class mono Symbol fmt class mono Typ Fmt class mono","n":"fmt"},{"i":"SWS_LOG_00226","k":"variable","d":"LOG","t":"variable precision [SWS_LOG_00226] Upstream: RS_LT_00046 std::uint16_t precision; the precision to use Header-Datei #include \"ara/log/logger.h\" class mono Scope struct ara::log::Format class mono Symbol precision class mono Typ std::uint16_t class mono","n":"precision"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/0d61c2a42078d59f.json?v=25cc923c" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LOG_00225","k":"variable","d":"LOG","t":"variable fmt [SWS_LOG_00225] Upstream: RS_LT_00046 Fmt fmt; the format specifier Header-Datei #include \"ara/log/logger.h\" class mono Scope struct ara::log::Format class mono Symbol fmt class mono Typ Fmt class mono","n":"fmt"},{"i":"SWS_LOG_00226","k":"variable","d":"LOG","t":"variable precision [SWS_LOG_00226] Upstream: RS_LT_00046 std::uint16_t precision; the precision to use Header-Datei #include \"ara/log/logger.h\" class mono Scope struct ara::log::Format class mono Symbol precision class mono Typ std::uint16_t class mono","n":"precision"}],"inbound":[]}</script></dialog>

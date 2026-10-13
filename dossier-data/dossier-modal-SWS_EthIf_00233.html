@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_00233" class="dossier-modal dossier-workbench" data-dossier-sha="fb2c9b73fde40573" aria-labelledby="dossier-modal-SWS_EthIf_00233-title">
+<dialog id="dossier-modal-SWS_EthIf_00233" class="dossier-modal dossier-workbench" data-dossier-sha="d584114437b46f3d" aria-labelledby="dossier-modal-SWS_EthIf_00233-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_00233-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_00233)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,556 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,011 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SetTransceiverWakeupMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,34 +202,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="4b610717d4e2ac1961dcae53aa8033598f2f482346c58a5a92b52f564deddac0" data-trace-output="fb2c9b73fde40573e86f6823466389dc1f3fcc01ccc6beeabaaad80f4096d866" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d9ee9c3c6e19288b475d1770027339650eda267bb0531c3d468fb965e88ca413" data-trace-output="d584114437b46f3d1c7c98e5d9d941eb72aefaaca71c6f35e4df759116ddcd24" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Schaltet den Wake-up-Modus eines Transceivers um oder löscht dessen Aufweckgrund." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous function &lt;code&gt;EthIf_SetTransceiverWakeupMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;) serves to activate or deactivate the wake-up mode or to clear the wake-up reason of an indexed Ethernet transceiver. The service is marked as obsolete in the specification (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;).&lt;/p&gt;
-&lt;p&gt;The parameters of the function comprise (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und nicht reentrante Funktion &lt;code&gt;EthIf_SetTransceiverWakeupMode&lt;/code&gt; (Service-ID &lt;code&gt;0x2e&lt;/code&gt;) dient dazu, den Wake-up-Modus eines über &lt;code&gt;TrcvIdx&lt;/code&gt; adressierten Transceivers im Ethernet Interface zu setzen oder dessen Wake-up-Grund zurückzusetzen &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;. Die Funktion ist in der Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; deklariert und im Release AUTOSAR CP R20-11 als veraltet (&lt;code&gt;obsolete&lt;/code&gt;) gekennzeichnet &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Steuerung erfolgt über den Übergabeparameter &lt;code&gt;TrcvWakeupMode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;TrcvIdx&lt;/code&gt;: Index of the transceiver in the context of the Ethernet Interface.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;TrcvWakeupMode&lt;/code&gt;: Requested wake-up mode:
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;ETHTRCV_WUM_DISABLE&lt;/code&gt;: Deactivates wake-up of the transceiver.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;ETHTRCV_WUM_ENABLE&lt;/code&gt;: Activates wake-up of the transceiver.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;ETHTRCV_WUM_CLEAR&lt;/code&gt;: Clears the wake-up reason of the transceiver.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ETHTRCV_WUM_ENABLE&lt;/code&gt;: Aktiviert das Aufwecken des Transceivers &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;. Befindet sich der zugeordnete Treiber &lt;code&gt;EthIfTransceiverIdx&lt;/code&gt; aktuell im Zustand &lt;code&gt;ETHTRCV_WUM_DISABLE&lt;/code&gt;, wird der Aufruf an &lt;code&gt;EthTrcv_SetTransceiverWakeupMode&lt;/code&gt; weitergeleitet &lt;a class="spec-record-ref" data-req="SWS_EthIf_00234" href="../../spec/record.html?id=SWS_EthIf_00234"&gt;[SWS_EthIf_00234]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ETHTRCV_WUM_DISABLE&lt;/code&gt;: Deaktiviert das Aufwecken des Transceivers &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;. Sofern der aktuelle Zustand des Treibers &lt;code&gt;ETHTRCV_WUM_ENABLE&lt;/code&gt; ist, leitet die Funktion den Aufruf an &lt;code&gt;EthTrcv_SetTransceiverWakeupMode&lt;/code&gt; weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00268" href="../../spec/record.html?id=SWS_EthIf_00268"&gt;[SWS_EthIf_00268]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ETHTRCV_WUM_CLEAR&lt;/code&gt;: Löscht den Wake-up-Grund des indexierten Transceivers &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt;, the function returns &lt;code&gt;E_OK&lt;/code&gt; upon successful execution, or &lt;code&gt;E_NOT_OK&lt;/code&gt; if the wake-up mode could not be changed or the wake-up reason could not be cleared (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Interaction and Forwarding&lt;/h4&gt;
-&lt;p&gt;The function delegates state changes to the driver of the respective transceiver:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;If the mode &lt;code&gt;ETHTRCV_WUM_ENABLE&lt;/code&gt; is requested and the current state of the transceiver driver is &lt;code&gt;ETHTRCV_WUM_DISABLE&lt;/code&gt;, &lt;code&gt;EthIf_SetTransceiverWakeupMode&lt;/code&gt; forwards the call to &lt;code&gt;EthTrcv_SetTransceiverWakeupMode&lt;/code&gt; of the associated Ethernet transceiver driver (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00234" href="../../spec/record.html?id=SWS_EthIf_00234"&gt;[SWS_EthIf_00234]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;If the mode &lt;code&gt;ETHTRCV_WUM_DISABLE&lt;/code&gt; is requested and the current state of the transceiver driver is &lt;code&gt;ETHTRCV_WUM_ENABLE&lt;/code&gt;, the call is likewise forwarded to &lt;code&gt;EthTrcv_SetTransceiverWakeupMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00268" href="../../spec/record.html?id=SWS_EthIf_00268"&gt;[SWS_EthIf_00268]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;The call of &lt;code&gt;EthIf_SetTransceiverWakeupMode&lt;/code&gt; is synchronous and defined as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;p&gt;Als Rückgabewert liefert der Aufruf &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ausführung oder &lt;code&gt;E_NOT_OK&lt;/code&gt;, wenn der Wake-up-Modus nicht geändert bzw. der Wake-up-Grund nicht gelöscht werden konnte &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;. Da die Schnittstelle als nicht reentrant definiert ist, sind nebenläufige Aufrufe unzulässig &lt;a class="spec-record-ref" data-req="SWS_EthIf_00233" href="../../spec/record.html?id=SWS_EthIf_00233"&gt;[SWS_EthIf_00233]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -251,7 +254,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>4b610717d4e2…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d9ee9c3c6e19…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

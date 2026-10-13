@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91069" class="dossier-modal dossier-workbench" data-dossier-sha="d784291903a869a0" aria-labelledby="dossier-modal-SWS_Dcm_91069-title">
+<dialog id="dossier-modal-SWS_Dcm_91069" class="dossier-modal dossier-workbench" data-dossier-sha="2306a7b227538a58" aria-labelledby="dossier-modal-SWS_Dcm_91069-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91069-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91069)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,500 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,954 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_SetDeauthenticatedRole'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,25 +206,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="7b81c193285493a9486569d8c33fff1959d2538c6ee4936ca1d4f264bbea4966" data-trace-output="d784291903a869a00e37b0afdba02d35bb1dbf78aacc7ffefba384360d01a661" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="948c170851fe74b85b538836673e26f0e18817f3dc2d475fb07b97f5fb3cad18" data-trace-output="2306a7b227538a58b6574803cec42ddde1494f331b198e9a9ef6859201d6c5c6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Weist einer Verbindung eine Rolle im deauthentifizierten Zustand zu, die bis zur Authentifizierung gültig bleibt." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
-  &lt;p&gt;Die synchrone und reentrante Service-Funktion &lt;code&gt;Dcm_SetDeauthenticatedRole&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;) weist einer Diagnoseverbindung eine neue Rolle für den deauthentifizierten Zustand (&lt;code&gt;deauthenticated state&lt;/code&gt;) zu. Die Schnittstelle wird über den Header &lt;code&gt;Dcm.h&lt;/code&gt; bereitgestellt.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;
+    Die Funktion &lt;code&gt;Dcm_SetDeauthenticatedRole&lt;/code&gt; wird synchron und reentrant ausgeführt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;). Sie ermöglicht es einer Softwarekomponente, für eine durch &lt;code&gt;connectionId&lt;/code&gt; identifizierte Verbindung eine neue Rolle &lt;code&gt;deauthenticatedRole&lt;/code&gt; vom Typ &lt;code&gt;Dcm_AuthenticationRoleType&lt;/code&gt; für den deauthentifizierten Zustand zuzuweisen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01486" href="../../spec/record.html?id=SWS_Dcm_01486"&gt;[SWS_Dcm_01486]&lt;/a&gt;). Als Rückgabewert wird ausnahmslos &lt;code&gt;E_OK&lt;/code&gt; geliefert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;).
+  &lt;/p&gt;
+  &lt;h4&gt;Zustandsbedingungen und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;
+    Ein Aufruf wird vom DCM ausschließlich verarbeitet, wenn sich die Verbindung im deauthentifizierten Zustand (&lt;em&gt;deauthenticated state&lt;/em&gt;) befindet (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01487" href="../../spec/record.html?id=SWS_Dcm_01487"&gt;[SWS_Dcm_01487]&lt;/a&gt;). Da die Signatur keine alternativen Fehlerwerte vorsieht und stets &lt;code&gt;E_OK&lt;/code&gt; zurückgibt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;), dürfte ein Aufruf außerhalb dieses Zustands vermutlich ohne Fehlermeldung verworfen werden. Spezifische DET- oder DEM-Ereignisse sind in der Spezifikation nicht definiert.
+  &lt;/p&gt;
+  &lt;h4&gt;Gültigkeitsdauer und Lebenszyklus&lt;/h4&gt;
+  &lt;p&gt;
+    Wird die Rolle für den deauthentifizierten Zustand erfolgreich übernommen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01486" href="../../spec/record.html?id=SWS_Dcm_01486"&gt;[SWS_Dcm_01486]&lt;/a&gt;), bleibt diese Zuweisung temporär bestehen:
+  &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;connectionId&lt;/code&gt;: Eindeutige Kennung der Diagnoseverbindung, für welche die Rolle gesetzt werden soll.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;deauthenticatedRole&lt;/code&gt;: Zuzuweisende Rolle vom Typ &lt;code&gt;Dcm_AuthenticationRoleType&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;Rückgabewert: Liefert stets &lt;code&gt;E_OK&lt;/code&gt; zurück (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;). Spezifische Fehlerwerte, DET- oder DEM-Meldungen sind in der Spezifikation nicht definiert.&lt;/li&gt;
+    &lt;li&gt;Die gesetzte Rolle wird verworfen, sobald die Verbindung in den authentifizierten Zustand (&lt;em&gt;authenticated state&lt;/em&gt;) wechselt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01488" href="../../spec/record.html?id=SWS_Dcm_01488"&gt;[SWS_Dcm_01488]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Die Gültigkeit endet spätestens bei einem Reset des Steuergeräts (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Zustandsbedingungen und Lebensdauer&lt;/h4&gt;
-  &lt;p&gt;Für den Aufruf und die Gültigkeit der Rolle gelten definierte Bedingungen:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Aufrufbedingung:&lt;/strong&gt; Das DCM verarbeitet den Aufruf von &lt;code&gt;Dcm_SetDeauthenticatedRole&lt;/code&gt; ausschließlich dann, wenn sich die betreffende Verbindung bereits im Zustand &lt;code&gt;deauthenticated state&lt;/code&gt; befindet (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01487" href="../../spec/record.html?id=SWS_Dcm_01487"&gt;[SWS_Dcm_01487]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Rollenübernahme:&lt;/strong&gt; Befindet sich die Verbindung in diesem Zustand, übernimmt das DCM die übergebene Rolle als neue Rolle für den deauthentifizierten Zustand dieser Verbindung (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01486" href="../../spec/record.html?id=SWS_Dcm_01486"&gt;[SWS_Dcm_01486]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Gültigkeitsdauer:&lt;/strong&gt; Die konfigurierte Rolle bleibt gültig, bis die Verbindung in den authentifizierten Zustand übergeht oder ein ECU-Reset erfolgt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91069" href="../../spec/record.html?id=SWS_Dcm_91069"&gt;[SWS_Dcm_91069]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Rücksetzung:&lt;/strong&gt; Führt die Verbindung einen Zustandsübergang in den &lt;code&gt;authenticated state&lt;/code&gt; aus, wird die durch die SWC gesetzte Rolle verworfen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01488" href="../../spec/record.html?id=SWS_Dcm_01488"&gt;[SWS_Dcm_01488]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 erstellt.&lt;/p&gt;
+&lt;!-- annahmen: 1) Da stets E_OK zurückgegeben wird, dürfte ein Aufruf außerhalb des deauthentifizierten Zustands ohne Fehlerrückmeldung verworfen werden. – Begründung: SWS_Dcm_91069 spezifiziert ausschließlich E_OK als Rückgabewert, während SWS_Dcm_01487 die Verarbeitung an den deauthentifizierten Zustand knüpft. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -246,7 +267,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>7b81c1932854…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>948c170851fe…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -384,4 +405,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91069","k":"function","d":"AUTOSAR","t":"","n":"Dcm_SetDeauthenticatedRole"}],"inbound":[{"i":"SWS_Dcm_01487","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_01487].","n":"SWS_Dcm_01487"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/95e1a996b17b005b.json?v=f1548507" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91069","k":"function","d":"AUTOSAR","t":"","n":"Dcm_SetDeauthenticatedRole"}],"inbound":[{"i":"SWS_Dcm_01486","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_01486].","n":"SWS_Dcm_01486"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/95e1a996b17b005b.json?v=a609d266" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>

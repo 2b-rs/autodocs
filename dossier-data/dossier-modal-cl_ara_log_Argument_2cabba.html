@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_log_Argument_2cabba" class="dossier-modal dossier-workbench" data-dossier-sha="697a2e4a9edf1ee2" aria-labelledby="dossier-modal-cl_ara_log_Argument_2cabba-title">
+<dialog id="dossier-modal-cl_ara_log_Argument_2cabba" class="dossier-modal dossier-workbench" data-dossier-sha="997f30b8f1a04151" aria-labelledby="dossier-modal-cl_ara_log_Argument_2cabba-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_log_Argument_2cabba-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_log_Argument_2cabba)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,583 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,105 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::log::Argument' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_log_Argument_2cabba",
@@ -203,28 +222,36 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1f76ee841fd99ee0717c6e001f2e0faa3ba87af42e73804434d337537c9ca0f6" data-trace-output="697a2e4a9edf1ee25a86b3fe87abe806bd82fbc25ce874c2d4e73440bcad9184" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="c1790b7e43da1df440b95d138dac04991323bc0ca9d124aed02195cb5b2f9a8c" data-trace-output="997f30b8f1a04151ff462a458dd30d17582b78b2bf654b579298126f7fdd3fab" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt typisierte Nutzdaten und deren Attribute für die Übergabe an das adaptive Protokollierungssystem." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The template class &lt;code&gt;ara::log::Argument&lt;/code&gt; is part of the module &lt;code&gt;log&lt;/code&gt; within the Adaptive Platform of AUTOSAR for release R25-11. According to the specification, it acts as a wrapper type for holding a payload argument (&lt;em&gt;payload argument&lt;/em&gt;) together with its associated attributes. The declaration uses the syntax &lt;code&gt;template &amp;lt;typename T&amp;gt; class Argument final&lt;/code&gt; as a generic class template protected against further inheritance by the identifier &lt;code&gt;final&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;A key characteristic of &lt;code&gt;ara::log::Argument&lt;/code&gt; is that the concrete structure of this class is explicitly classified as implementation-defined (&lt;em&gt;implementation-defined&lt;/em&gt;). The specification defines no standardized member functions, data members, or fixed constructors for the type in the specified model. Interpretation: Since the class is responsible for encapsulating payload data and attributes, it likely serves as a structuring link in the logging context that is used by the platform's logging interfaces to prepare individual arguments of type &lt;code&gt;T&lt;/code&gt; together with their metadata for logging.&lt;/p&gt;
-&lt;p&gt;The primary interaction partners are the internal processing routines of the logging framework, which process logged data values and forward them to output channels. Since the concrete structure is vendor- and platform-dependent, application components do not interact with &lt;code&gt;ara::log::Argument&lt;/code&gt; via predefined specification methods, but rather via the passing mechanisms provided by the respective platform stack.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt typisierte Nutzdaten und deren Attribute für die Übergabe an das adaptive Protokollierungssystem.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Template-Klasse &lt;code&gt;ara::log::Argument&lt;/code&gt; dient innerhalb des Moduls &lt;code&gt;log&lt;/code&gt; als Kapselungstyp für ein Nutzdatenargument und dessen Attribute. Als generischer Datenträger nimmt die Struktur ein Argument vom Typ &lt;code&gt;T&lt;/code&gt; auf und dürfte den typsicheren Transport an Logging-Senken ermöglichen. Der konkrete Aufbau und die internen Member der Klasse sind herstellerspezifisch definiert, weshalb sich portabler Anwendungscode nicht auf spezifische Datenstrukturen stützen sollte. Durch die Kennzeichnung als &lt;code&gt;final&lt;/code&gt; wird eine Ableitung unterbunden, was eine kompakte und unveränderliche Wertsemantik unterstützen dürfte.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::log::Argument&lt;/code&gt; bildet im Logging-Modul der AUTOSAR Adaptive Platform einen generischen Wrapper-Typ, der für die Aufnahme und Kapselung eines Nutzdatenarguments (Payload Argument) zusammen mit seinen spezifischen Attributen zuständig ist. Gemäß der Klassensyntax ist sie als Template mit dem Typparameter &lt;code&gt;T&lt;/code&gt; realisiert. Dies dient vermutlich dazu, Nutzdaten beliebiger primitiver oder komplexer Datentypen aufzunehmen, ohne dass die Logging-Infrastruktur für jeden Typ separate Schnittstellen bereitstellen muss.&lt;/p&gt;
+&lt;p&gt;Als Interaktionspartner fungieren einerseits anwendungsseitige Komponenten, die Laufzeitinformationen protokollieren möchten, und andererseits die internen Protokollierungsmechanismen des Moduls &lt;code&gt;log&lt;/code&gt;. In verteilten und diagnosefähigen automobilen Systemen erfordert das Logging häufig nicht nur die reine Ausgabe eines nackten Werts, sondern auch die Verknüpfung des Werts mit Attributen. Die Klasse &lt;code&gt;ara::log::Argument&lt;/code&gt; übernimmt hierbei die Aufgabe, das Datum und seine beschreibenden Merkmale in einer logischen Einheit zusammenzufassen.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle of an instance of &lt;code&gt;ara::log::Argument&lt;/code&gt; is tied to the instantiation of the template with a concrete data type &lt;code&gt;T&lt;/code&gt; and to the execution of the respective logging operation. Its declaration as &lt;code&gt;final&lt;/code&gt; prevents derivation, so instances cannot be used as a base class for extended argument structures.&lt;/p&gt;
-&lt;p&gt;Due to the implementation-defined structure, creation follows the requirements of the respective platform implementation. Presumably, instances of &lt;code&gt;ara::log::Argument&lt;/code&gt; are primarily created as short-lived temporary objects on the stack when a logging expression is evaluated, holding the payload either directly as a copy or via a reference, matching the attributes of type &lt;code&gt;T&lt;/code&gt;. As soon as the processing of the logging call is completed or the surrounding construct leaves scope, the lifetime of the wrapper object ends and occupied resources are released.&lt;/p&gt;
-&lt;p&gt;Regarding concurrency and states, the specification defines no shared global state structures. Each object encapsulates an individual value along with attributes within the respective execution context. Because no explicit synchronization mechanisms are specified, simultaneous unprotected access by multiple threads to the same instance is not intended; usage regularly remains in the calling control flow of the logging statement.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Deklaration der Klasse als &lt;code&gt;template &amp;lt;typename T&amp;gt; class Argument final&lt;/code&gt; legt fest, dass &lt;code&gt;ara::log::Argument&lt;/code&gt; nicht als Basisklasse für weitere Spezialisierungen genutzt werden kann. Durch das Schlüsselwort &lt;code&gt;final&lt;/code&gt; dürfte eine Ableitung gezielt unterbunden werden, um eine kompakte Wertsemantik sicherzustellen und potenzielle Fehlerquellen wie Objekt-Slicing bei der Argumentweitergabe auszuschließen.&lt;/p&gt;
+&lt;p&gt;Der Aufbau der Klasse ist laut AUTOSAR-Spezifikation herstellerspezifisch (&lt;code&gt;implementation-defined&lt;/code&gt;). Daher obliegt die interne Realisierung von Speicherung, Konstruktoren und Attributfeldern dem jeweiligen Plattformanbieter. Anwendungsentwickler sollten sich darauf einstellen, dass die interne Repräsentation der Attribute und Datenfelder herstellerspezifisch variieren dürfte und daher kein direkter Zugriff auf interne Member oder ein festes Speicherlayout angenommen werden darf.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Besitzverhältnisse und Lebensdauer werden Instanzen von &lt;code&gt;ara::log::Argument&lt;/code&gt; in der Regel kurzlebig erzeugt. Sie entstehen im Kontext einer anstehenden Protokollierungsoperation, übergeben das Nutzdatenargument an die entsprechenden Logging-Streams oder -Puffer und werden nach Abschluss des Schreibvorgangs wieder freigegeben. In Bezug auf die Nebenläufigkeit bedeutet der herstellerdefinierte Aufbau, dass der nebenläufige Zugriff auf dieselbe Instanz ohne externe Synchronisation vermieden werden sollte. Es empfiehlt sich, Argument-Instanzen lokal im jeweiligen Ausführungsthread zu instanziieren und zu verarbeiten.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;Since the specification declares the structure as implementation-defined and does not prescribe standardized member functions, the exact call sequence depends on the respective platform driver. The basic processing sequence for using the generic wrapper is typically structured as follows:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der konzeptionelle Nutzungspfad von &lt;code&gt;ara::log::Argument&lt;/code&gt; gliedert sich in die Phasen der Kapselung, Weiterleitung und Verarbeitung:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Provision of the payload value:&lt;/strong&gt; A source context identifies a concrete data value of type &lt;code&gt;T&lt;/code&gt; to be captured in the logging module.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Encapsulation in the wrapper type:&lt;/strong&gt; The value is encapsulated as an instance of &lt;code&gt;ara::log::Argument&amp;lt;T&amp;gt;&lt;/code&gt;, associating it with the required attributes for logging.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Passing to the logging subsystem:&lt;/strong&gt; The wrapper object is passed to the processing routines of module &lt;code&gt;log&lt;/code&gt;, which evaluate the attributes and convert the payload into the target format.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Erzeugung und Kapselung:&lt;/strong&gt; Ein Nutzdatenwert vom Typ &lt;code&gt;T&lt;/code&gt; wird zusammen mit den zugehörigen Attributen in einer Instanz von &lt;code&gt;ara::log::Argument&amp;lt;T&amp;gt;&lt;/code&gt; gekapselt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Übergabe an das Logging-System:&lt;/strong&gt; Das gekapselte Argument wird an die Schnittstellen des Moduls &lt;code&gt;log&lt;/code&gt; übergeben, beispielsweise über Streaming-Operatoren oder Logging-Funktionen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Verarbeitung und Formatierung:&lt;/strong&gt; Das Logging-Framework wertet den gekapselten Nutzdatenwert sowie dessen Attribute aus, formatiert die Ausgabe gemäß der konfigurierten Senke (z. B. Konsole, DLT-Backend oder persistenter Speicher) und serialisiert die Daten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Zerstörung:&lt;/strong&gt; Mit Beendigung des Log-Statements endet der Lebenszyklus des temporären Argumentobjekts automatisch durch Verlassen des Gültigkeitsbereichs.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Interpretation: The actual forwarding and formatting is likely handled via platform-specific helper functions or operators responsible for integrating &lt;code&gt;ara::log::Argument&lt;/code&gt; into the output stream of module &lt;code&gt;log&lt;/code&gt;. Since the specification formulates no explicit preconditions or postconditions for this process, compliance with type- and memory-specific requirements rests with the respective implementation.&lt;/p&gt;
-&lt;!-- annahmen: 1) Da die Klasse als Wrapper für Nutzlast-Werte mit Attributen beschrieben wird, dürfte sie als Bindeglied dienen, das von Logging-Operationen zur Kapselung herangezogen wird – Begründung: Der Payload beschreibt die Klasse lediglich als Wrapper-Typ ohne Nennung von Aufrufern. 2) Vermutlich werden Instanzen als kurzlebige Objekte auf dem Stack erstellt und halten die Nutzlast als Kopie oder Referenz – Begründung: Der Aufbau ist laut Payload implementation-defined. 3) Die Weiterleitung und Formatierung im Logging-Fluss dürfte über plattformspezifische Hilfsfunktionen oder Operatoren erfolgen – Begründung: Die Spezifikation definiert im Payload keine öffentlichen Methoden. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive R25-11 specification and was generated automatically.&lt;/p&gt;
+&lt;p&gt;Durch diesen standardisierten Ablauf stellt die Klasse sicher, dass Nutzdatenattribute konsistent mit dem Nutzdatenwert transportiert werden, ohne dass Anwendungscode proprietäre Pufferkonstrukte verwalten muss.&lt;/p&gt;
+&lt;!-- annahmen: 1) Als Template-Klasse mit dem Typparameter T dient ara::log::Argument vermutlich der generischen Übergabe beliebiger Nutzdatentypen an Logging-Schnittstellen – Begründung: template &lt;typename T&gt; und Beschreibung als Wrapper für Payload-Argumente im Payload. 2) Die Kennzeichnung als final dürfte der Gewährleistung einer sauberen Wertsemantik und Vermeidung von Objekt-Slicing dienen – Begründung: class Argument final in der Syntaxdefinition. 3) Die interne Repräsentation von Attributen und Datenfeldern dürfte herstellerspezifisch variieren – Begründung: Festlegung als implementation-defined im Payload. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Er basiert auf den formalen Spezifikationsdaten von AUTOSAR R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -266,7 +293,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1f76ee841fd9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c1790b7e43da…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

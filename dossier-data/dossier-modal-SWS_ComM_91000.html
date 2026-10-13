@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_ComM_91000" class="dossier-modal dossier-workbench" data-dossier-sha="02b5f5a767ec0b24" aria-labelledby="dossier-modal-SWS_ComM_91000-title">
+<dialog id="dossier-modal-SWS_ComM_91000" class="dossier-modal dossier-workbench" data-dossier-sha="b425eb945ca22e7b" aria-labelledby="dossier-modal-SWS_ComM_91000-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_ComM_91000-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_ComM_91000)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,397 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,852 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'ComM_BusSM_BusSleepMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,30 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="1063a23d77c11410f97083e7280dd874b0319c9d90af92100f28a2cf71dcf306" data-trace-output="02b5f5a767ec0b246594d513fec1bfb58614c353bffdc9b64d854bc67c3fc28f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="15e9f20a51a1cdc4e5f37744e9be51d0ee34e6fd5c6ccba405021af55aa25524" data-trace-output="b425eb945ca22e7be19587a95f95bed3705c282f6fcc2cc9964a43f7e21a1b14" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet dem Communication Manager synchron das Erreichen des Bus-Sleep-Zustands für Slave-Kommunikationskanäle." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;ComM_BusSM_BusSleepMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;) serves as a synchronous notification from the respectively responsible Bus State Manager (BusSM) to the Communication Manager (ComM) that the actual bus mode has reached the &lt;em&gt;Bus-Sleep&lt;/em&gt; state. The call is provided via the header &lt;code&gt;ComM.h&lt;/code&gt; and returns no value (&lt;code&gt;void&lt;/code&gt;). The only input parameter is &lt;code&gt;Channel&lt;/code&gt; of type &lt;code&gt;NetworkHandleType&lt;/code&gt; for uniquely identifying the affected communication channel.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die synchrone Service-Funktion &lt;code&gt;ComM_BusSM_BusSleepMode&lt;/code&gt; dient dem zuständigen Bus State Manager (BusSM) als Benachrichtigung an den Communication Manager (ComM), dass der tatsächliche Busmodus eines Kommunikationskanals in den Zustand Bus-Sleep gewechselt ist &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;. Die Identifikation des betroffenen Kanals erfolgt über den Eingangsparameter &lt;code&gt;Channel&lt;/code&gt; vom Typ &lt;code&gt;NetworkHandleType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;. Die Funktion deklariert weder Ausgabeparameter noch einen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Constraints and Channel Configuration&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;, this call must not be made for arbitrary channels, but is specifically restricted to ComM channels with the following values for &lt;code&gt;ComMNmVariant&lt;/code&gt;:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;LIN slaves:&lt;/strong&gt; Channels with the configuration &lt;code&gt;ComMNmVariant = SLAVE_ACTIVE&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Ethernet channels:&lt;/strong&gt; Channels with OA-TC10-compliant Ethernet hardware acting as passive communication slaves (configuration &lt;code&gt;ComMNmVariant = SLAVE_PASSIVE&lt;/code&gt; in combination with enabled parameter &lt;code&gt;EthTrcvActAsSlavePassiveEnabled&lt;/code&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Konfigurationsabhängige Gültigkeit&lt;/h4&gt;
+&lt;p&gt;Der Aufruf ist nicht universell zulässig, sondern explizit auf ComM-Kanäle beschränkt, deren Parameter &lt;code&gt;ComMNmVariant&lt;/code&gt; auf &lt;code&gt;SLAVE_ACTIVE&lt;/code&gt; oder &lt;code&gt;SLAVE_PASSIVE&lt;/code&gt; gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;. Die Spezifikation nennt hierfür zwei typische Einsatzszenarien:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;LIN-Slaves mit der Konfiguration &lt;code&gt;ComMNmVariant = SLAVE_ACTIVE&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ethernet-Kanäle mit Hardware nach OPEN Alliance TC10, die als passive Kommunikations-Slaves betrieben werden, wobei &lt;code&gt;ComMNmVariant = SLAVE_PASSIVE&lt;/code&gt; und der Parameter &lt;code&gt;EthTrcvActAsSlavePassiveEnabled&lt;/code&gt; auf &lt;code&gt;TRUE&lt;/code&gt; festgelegt ist &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Error Handling&lt;/h4&gt;
-  &lt;p&gt;
-    According to specification &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;, the function is declared as reentrant. Specific error codes, return values, or DET/DEM messages are not defined in the payload; calling instances must therefore ensure that the passed channel identifier is valid and that the channel has the required slave variant.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    This note was automatically generated by an AI assistant based on the AUTOSAR specification R20-11.
-  &lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Integration&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle besitzt die Service-ID &lt;code&gt;0x34&lt;/code&gt;, ist über die Header-Datei &lt;code&gt;ComM.h&lt;/code&gt; deklariert und als reentrant eingestuft &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;. Spezifische Fehlercodes oder ein gesondertes Verhalten im Fehlerfall sind in der Funktionsdefinition nicht ausgewiesen &lt;a class="spec-record-ref" data-req="SWS_ComM_91000" href="../../spec/record.html?id=SWS_ComM_91000"&gt;[SWS_ComM_91000]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1063a23d77c1…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>15e9f20a51a1…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -275,8 +286,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -313,7 +324,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 8 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -376,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_91000","k":"function","d":"AUTOSAR","t":"","n":"ComM_BusSM_BusSleepMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/019938d4e789c150.json?v=3cd71bdb" data-total="8" data-new="8" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_91000","k":"function","d":"AUTOSAR","t":"","n":"ComM_BusSM_BusSleepMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/019938d4e789c150.json?v=8a031bd3" data-total="7" data-new="7" data-figures="0" data-used="0"></script></dialog>

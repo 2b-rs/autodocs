@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_std_hash_ara_core_String_71fe0f" class="dossier-modal dossier-workbench" data-dossier-sha="a9f9aa1e9e3e026d" aria-labelledby="dossier-modal-cl_std_hash_ara_core_String_71fe0f-title">
+<dialog id="dossier-modal-cl_std_hash_ara_core_String_71fe0f" class="dossier-modal dossier-workbench" data-dossier-sha="52e15e0a7e1fbb68" aria-labelledby="dossier-modal-cl_std_hash_ara_core_String_71fe0f-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_std_hash_ara_core_String_71fe0f-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_std_hash_ara_core_String_71fe0f)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,586 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,109 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'std::hash&lt; ara::core::String &gt;' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_std_hash_ara_core_String_71fe0f",
@@ -203,58 +222,36 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="266ba2cf54aa896dcbafbc7c353ac2f51ea55b778ce36c3d20d9a0295b5b9b37" data-trace-output="a9f9aa1e9e3e026d2f3f947a108cd02492ef2382e34db3879abacda87d02787d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="b58a874652a7bf06a51737f2e91d4126a41648c10cf9da43a2add2a87d2e5232" data-trace-output="52e15e0a7e1fbb6886945766ca1c067d3a5bbfc2097439090ebc58a1fec7dd3d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die Berechnung von Hashwerten für ara::core::String zur Verwendung in Hash-basierten Datenstrukturen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-The template specialization &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; provides the functional connection of the AUTOSAR Adaptive data type &lt;code&gt;ara::core::String&lt;/code&gt; to the hashing framework of the C++ standard library. Within the &lt;strong&gt;core&lt;/strong&gt; module in release &lt;strong&gt;R25-11&lt;/strong&gt; of the Adaptive Platform, this structure takes on the role of a standardized function object. According to the type definition, the specialization is declared as &lt;code&gt;final&lt;/code&gt;, preventing further derivation.
-&lt;/p&gt;
-&lt;p&gt;
-The primary purpose is to provide a deterministic mapping of strings to integer hash values of type &lt;code&gt;std::size_t&lt;/code&gt;. This makes &lt;code&gt;ara::core::String&lt;/code&gt; directly usable as a key type in unordered associative containers of the standard library such as &lt;code&gt;std::unordered_map&lt;/code&gt; and &lt;code&gt;std::unordered_set&lt;/code&gt;, without requiring application developers to implement custom hash functors. Essentially three components participate in the interaction:
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die Berechnung von Hashwerten für ara::core::String zur Verwendung in Hash-basierten Datenstrukturen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt; ara::core::String &amp;gt;&lt;/code&gt; dient der Berechnung ganzzahliger Hashwerte für Instanzen von &lt;code&gt;ara::core::String&lt;/code&gt; im Modul &lt;code&gt;core&lt;/code&gt;. Sie ermöglicht die nahtlose Einbindung des Adaptive-Stringtyps in ungesortete Standardcontainer. Als zustandsloses, als &lt;code&gt;final&lt;/code&gt; deklariertes Funktionsobjekt besitzt sie keinen komplexen Lebenszyklus und setzt für die deterministische Auswertung lediglich eine gültige Zeichenkette voraus.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;std::hash&amp;lt; ara::core::String &amp;gt;&lt;/code&gt; stellt eine Template-Spezialisierung der standardisierten C++-Funktionsklasse &lt;code&gt;std::hash&lt;/code&gt; für den Typ &lt;code&gt;ara::core::String&lt;/code&gt; innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der Adaptive Platform dar. Gemäß der allgemeinen Architektur von C++-Standardbibliotheken dient sie als Hash-Funktionsobjekt, das Zeichenketteninstanzen auf ganzzahlige Hashwerte abbildet. Typische Interaktionspartner sind assoziative Standardcontainer wie ungesortete Mengen oder Abbildungen, welche zur schnellen Indexierung und Verteilung von Elementen auf standardisierte Hash-Schnittstellen zurückgreifen. Die Deklaration ist als &lt;code&gt;final&lt;/code&gt; spezifiziert, sodass eine weitere Ableitung von dieser Spezialisierung ausgeschlossen ist.&lt;/p&gt;
+&lt;p&gt;Interpretation: Da im vorliegenden Spezifikationsauszug keine expliziten Anforderungen oder Dokumentstellen hinterlegt sind, dürfte sich die Rolle der Spezialisierung nahtlos in die herkömmliche Standardbibliothekssemantik von &lt;code&gt;std::hash&lt;/code&gt; einfügen und primär der Interoperabilität zwischen &lt;code&gt;ara::core::String&lt;/code&gt; und Hash-basierten Datenstrukturen dienen.&lt;/p&gt;
+
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als zustandsloses Funktionsobjekt unterliegt &lt;code&gt;std::hash&amp;lt; ara::core::String &amp;gt;&lt;/code&gt; keinen komplexen Lebenszyklusphasen oder dynamischen Zustandsübergängen. Exemplare der Struktur können bei Bedarf instanziiert oder als temporäre Funktionsobjekte erzeugt und unmittelbar nach der Berechnung wieder zerstört werden. Es bestehen keine persistenten Besitzverhältnisse an den übergebenen Zeichenketten. Da die Struktur zustandslos ist, dürfte der Aufruf des Funktionsoperators für konstante Instanzen von &lt;code&gt;ara::core::String&lt;/code&gt; inhärent nebenläufigkeitssicher und threadsicher sein, solange der zugrunde liegende String während der Hash-Berechnung nicht konkurrierend modifiziert wird.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der reguläre Einsatz von &lt;code&gt;std::hash&amp;lt; ara::core::String &amp;gt;&lt;/code&gt; erfolgt entweder implizit über assoziative Container oder durch explizite Instanziierung zur Hashwert-Ermittlung einer Zeichenkette:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Calling containers or algorithms:&lt;/strong&gt; Associative data structures that manage keys and request a hash value to assign internal buckets.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;The specialization &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;:&lt;/strong&gt; The actual function object that provides the call operator for the key type.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;The input type &lt;code&gt;ara::core::String&lt;/code&gt;:&lt;/strong&gt; The string to be analyzed, whose content serves as input data for the computation.&lt;/li&gt;
+  &lt;li&gt;Erzeugung oder Referenzierung einer gültigen Instanz von &lt;code&gt;ara::core::String&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Instanziierung des Funktionsobjekts &lt;code&gt;std::hash&amp;lt; ara::core::String &amp;gt;&lt;/code&gt; oder implizite Verwendung als Standard-Hash-Parameter in ungesorteten Standardcontainern.&lt;/li&gt;
+  &lt;li&gt;Ausführung des Aufrufoperators unter Übergabe der Zeichenkette zur Rückgabe des berechneten Hashwerts.&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;Interpretation: Der Ablauf folgt dabei vermutlich dem gewohnten Muster für C++-Funktionsobjekte ohne zusätzliche Konfigurations- oder Initialisierungsschritte.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-The function object possesses no mutable state and no resources of its own. Interpretation: Instantiating &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; requires no dynamic memory allocation and has no internal state, so instances can be copied, assigned, or created as temporary values at will.
-&lt;/p&gt;
-&lt;p&gt;
-In practical application, creation is usually performed implicitly by the enclosing container during its construction. The functor can also be instantiated on demand as a transient temporary function object for individual hash computations and destroyed immediately after the call is executed. Because no dynamic operating resources are allocated, the destruction process is trivial and resource-efficient.
-&lt;/p&gt;
-&lt;p&gt;
-Regarding concurrency and thread safety, the specialization behaves uncritically: Because the functor is stateless, multiple threads can call the same functor or separate instances concurrently. The only precondition for concurrent calls is that the instance of &lt;code&gt;ara::core::String&lt;/code&gt; passed as an argument is not modified concurrently by another execution path during read access by the hashing process.
-&lt;/p&gt;
-
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-Use of &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; typically occurs transparently via standard containers. A typical flow is as follows:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Container declaration:&lt;/strong&gt; A developer defines a hash table, for example &lt;code&gt;std::unordered_map&amp;lt;ara::core::String, ValueType&amp;gt;&lt;/code&gt;. Through argument-dependent lookup and template matching, the C++ type system automatically binds the specialization &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; as the hash template argument.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Key passing:&lt;/strong&gt; When adding, looking up, or removing entries, the application logic passes an instance of &lt;code&gt;ara::core::String&lt;/code&gt; to the methods of the container.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Computation of the hash value:&lt;/strong&gt; The container applies the functor's call operator to the key. The hash algorithm used is presumably an implementation that guarantees consistent hash values throughout the lifetime of a process, with the exact hash distribution likely being implementation-defined.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bucket indexing:&lt;/strong&gt; The container uses the returned integer value to determine the internal storage bucket and subsequently performs equality checks via &lt;code&gt;operator==&lt;/code&gt; if necessary.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-In addition to automated integration into containers, the specialization can also be called directly for manual computation of hash values, for example to distribute strings across worker threads or to precompute identifiers in application-specific caches.
-&lt;/p&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-When executing &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt;, the preconditions and error aspects are aligned with the general specifications for hash functions in the C++ standard:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Validity of input:&lt;/strong&gt; A precondition for every call is a valid, initialized &lt;code&gt;ara::core::String&lt;/code&gt; object. Passing an invalid reference or an object with corrupted memory leads to undefined behavior.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Consistency guarantee:&lt;/strong&gt; For two strings that have the same content according to their equality operator, the computed hash value must be identical within the same program execution. A violation of this property would lead to unfindable keys in containers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Exception behavior:&lt;/strong&gt; The call operator is likely declared as &lt;code&gt;noexcept&lt;/code&gt;, analogous to the requirements of the C++ standard library for standard hash functions, since traversing existing strings does not produce triggering error conditions.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Handling collisions:&lt;/strong&gt; An identical hash return for different strings does not constitute an error condition of the functor. Associative containers resolve such collisions independently through fallback strategies. No error types such as &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; are returned.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- annahmen: 1) Zustandslosigkeit und allokationsfreie Erzeugung – Begründung: Der Payload beschreibt die Spezialisierung als leere Funktionsstruktur (struct hash final), was bei Standard-Hash-Funktoren üblich ist. 2) Konsistenz und implementationsdefinierte Streuung des Hash-Algorithmus – Begründung: Der konkrete Hashing-Algorithmus ist im Payload nicht spezifiziert, folgt aber den allgemeinen Invarianten von std::hash. 3) noexcept-Garantie des Aufrufoperators – Begründung: Standardkonforme Spezialisierungen von std::hash garantieren Ausnahmefreiheit beim Hashen von Zeichenketten. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specification data of AUTOSAR Adaptive Platform Release R25-11 for the core module.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Berechnung des Hashwerts setzt voraus, dass die übergebene Zeichenketteninstanz &lt;code&gt;ara::core::String&lt;/code&gt; gültig ist. Fehlerzustände oder spezifische Fehlercodes im Sinne von &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; sind für diese Spezialisierung im Payload nicht ausgewiesen. Ausgehend von Standardanforderungen an Hashfunktionen ist davon auszugehen, dass die Berechnung deterministisch erfolgt und regulär keine Ausnahmen wirft, sofern der Zugriff auf den Speicherbereich des Strings garantiert ist.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Spezialisierung verhält sich konform zu den allgemeinen Anforderungen an std::hash aus der C++-Standardbibliothek – Begründung: Der Payload beschreibt die Klasse explizit als Spezialisierung von std::hash für ara::core::String ohne abweichende Anforderungen. 2) Der Aufrufoperator ist threadsicher und zustandslos – Begründung: Hash-Funktionsobjekte für elementare Datentypen besitzen üblicherweise keinen veränderlichen Zustand. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den verfügbaren Spezifikationsdaten des Releases R25-11. Alle nicht durch explizite Records belegten Aussagen sind als begründete Interpretationen gekennzeichnet.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -296,7 +293,7 @@ When executing &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&g
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>266ba2cf54aa…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>b58a874652a7…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_CryIf_91009" class="dossier-modal dossier-workbench" data-dossier-sha="24063064f3307f26" aria-labelledby="dossier-modal-SWS_CryIf_91009-title">
+<dialog id="dossier-modal-SWS_CryIf_91009" class="dossier-modal dossier-workbench" data-dossier-sha="273960d8127ea538" aria-labelledby="dossier-modal-SWS_CryIf_91009-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_CryIf_91009-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_CryIf_91009)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,322 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,777 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'CryIf_KeyDerive'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,39 +193,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="21682ff7495c7d739149cc5e2d1625bbdad6ab6853b69f14f2f60eab5a232cb9" data-trace-output="24063064f3307f264591aace008b7633aaaa231fa05f76463fd002e4351ba240" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="e0c725352dab741e7cbc6a9a47d4f699e47a4e4b6fe4ed9e916adbdfdf39d655" data-trace-output="273960d8127ea5381fdcb0c8896fcc427a9a5ecb640f67025766eef09b35d5ac" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Leitet Anforderungen zur synchronen Schlüsselableitung an das konfigurierte Krypto-Treiberobjekt weiter." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous interface &lt;code&gt;CryIf_KeyDerive&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;) forwards the key derivation request to the respectively configured Crypto Driver Object. The function is provided via the header file &lt;code&gt;CryIf.h&lt;/code&gt; and processes two input parameters:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;cryIfKeyId&lt;/code&gt;: Identifier of the source key, which serves as input for the key derivation.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;targetCryIfKeyId&lt;/code&gt;: Identifier of the destination key in which the newly derived key is stored.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;, the service is executed synchronously and is specified as reentrant.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;CryIf_KeyDerive&lt;/code&gt; dient dazu, eine Anforderung zur Schlüsselableitung synchron an das jeweils konfigurierte Crypto Driver Object weiterzuleiten &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;. Die Schnittstelle wird über die Header-Datei &lt;code&gt;CryIf.h&lt;/code&gt; mit der Service-ID &lt;code&gt;0x09&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Beim Aufruf werden zwei Schlüsselbezeichner übergeben &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cryIfKeyId&lt;/code&gt;: Bezeichner des Schlüssels, welcher als Basis für die Ableitung verwendet wird.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;targetCryIfKeyId&lt;/code&gt;: Bezeichner des Schlüssels, in dem der abgeleitete Schlüssel hinterlegt wird.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-  &lt;p&gt;
-    The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; informs the caller about the result of the dispatching or execution:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The key derivation was performed successfully.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The request has failed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: The operation could not be executed because a required element of the source key is uninitialized.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The addressed Crypto Driver Object is in the busy state (feedback &lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: The request fails because the state of the identified key is marked as invalid.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Das Ergebnis der Operation wird über den Rückgabetyp &lt;code&gt;Std_ReturnType&lt;/code&gt; übermittelt &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Anforderung wurde erfolgreich ausgeführt &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Ausführung ist fehlgeschlagen &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Quell-Schlüsselelement ist nicht initialisiert &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Der Schlüsselstatus des referenzierten Schlüssels ist ungültig &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Das unterlagerte Crypto Driver Object hat &lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt; gemeldet &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    Since &lt;code&gt;CryIf_KeyDerive&lt;/code&gt; is designed to be reentrant (&lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;), the function can be called concurrently from multiple contexts. Interpretation: In the event of simultaneous access to identical keys (especially regarding &lt;code&gt;targetCryIfKeyId&lt;/code&gt;), protection against concurrency conflicts is likely required at the driver or caller level.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
-&lt;!-- annahmen: 1) Trotz ausgewiesener Reentrancy der Funktion dürfte ein nebenläufiger Aufruf mit identischer targetCryIfKeyId Synchronisation auf Aufrufer- oder Treiberebene voraussetzen – Begründung: Die Spezifikation kennzeichnet die Schnittstelle als Reentrant, enthält im Payload jedoch keine Angaben zu internem Locking für denselben Zielschlüssel. --&gt;
+&lt;h4&gt;Nebenläufigkeit und Randbedingungen&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle ist als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_CryIf_91009" href="../../spec/record.html?id=SWS_CryIf_91009"&gt;[SWS_CryIf_91009]&lt;/a&gt;. Da der Ablauf synchron erfolgt, dürften Aufrufer die Ausführungszeit des Treibers im jeweiligen Aufrufkontext berücksichtigen müssen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Aufrufer müssen Ausführungszeiten synchroner kryptografischer Treiberoperationen einplanen – Begründung: Die Spezifikation definiert das Verhalten als synchron, gibt jedoch keine maximalen Ausführungszeiten oder Task-Kontexte vor. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert anhand der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -247,7 +258,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>21682ff7495c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e0c725352dab…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -385,4 +396,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CryIf_91009","k":"function","d":"AUTOSAR","t":"","n":"CryIf_KeyDerive"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3e897239828611a0.json?v=4283e2c6" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CryIf_91009","k":"function","d":"AUTOSAR","t":"","n":"CryIf_KeyDerive"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3e897239828611a0.json?v=87251dc9" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

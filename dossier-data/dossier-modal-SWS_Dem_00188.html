@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00188" class="dossier-modal dossier-workbench" data-dossier-sha="ffb513bf9fd77aac" aria-labelledby="dossier-modal-SWS_Dem_00188-title">
+<dialog id="dossier-modal-SWS_Dem_00188" class="dossier-modal dossier-workbench" data-dossier-sha="2c714c73593f4f25" aria-labelledby="dossier-modal-SWS_Dem_00188-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00188-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00188)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,969 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,424 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_PrestoreFreezeFrame'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -196,27 +214,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d10e644e229648cae90a87a0b7b52281b8e545d66cff850abef3307ac9c25c63" data-trace-output="ffb513bf9fd77aac8ce159fa1f3fd1579c610350f2b62e5913675883c0b8bc29" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c489dfc2152d03f4bd484a3412f268a1c2138e9603d342776f2fb72ac927859c" data-trace-output="2c714c73593f4f258e9ef0da767e642c7c611828337b74d0389587b5b3202034" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem synchronen Zwischenspeichern von Freeze-Frame-Daten eines Diagnoseereignisses über die RTE." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die synchrone Service-Funktion &lt;code&gt;Dem_PrestoreFreezeFrame&lt;/code&gt; dient dem Erfassen und Zwischenspeichern von Freeze-Frame-Daten für ein bestimmtes Diagnoseereignis (&lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;). Der Aufruf kann ausschließlich über die RTE erfolgen; daher existiert keine Deklaration in &lt;code&gt;Dem.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;). Das DEM-Modul stellt die Schnittstelle nur dann bereit, wenn die Vorerfassung für mindestens ein Event über den Konfigurationsparameter &lt;code&gt;DemFFPrestorageSupported&lt;/code&gt; aktiviert ist (&lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00334" href="../../spec/record.html?id=SWS_Dem_00334"&gt;[SWS_Dem_00334]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Aufruf und Nebenläufigkeit&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Parameter:&lt;/strong&gt; Der Eingabeparameter &lt;code&gt;EventId&lt;/code&gt; identifiziert das zugehörige Event (&lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Reentranz:&lt;/strong&gt; Die Funktion ist reentrant für unterschiedliche Ereigniskennungen (&lt;code&gt;EventId&lt;/code&gt;), jedoch nicht reentrant für dieselbe &lt;code&gt;EventId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Rückgabewert:&lt;/strong&gt; Bei erfolgreicher Pufferung wird &lt;code&gt;E_OK&lt;/code&gt; zurückgegeben, andernfalls &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Fehlerbehandlung und Einschränkungen&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;Steht kein Speicher mehr für die Vorerfassung zur Verfügung (konfiguriert über &lt;code&gt;DemMaxNumberPrestoredFF&lt;/code&gt;), schlägt der Aufruf fehl und liefert &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00808" href="../../spec/record.html?id=SWS_Dem_00808"&gt;[SWS_Dem_00808]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Wurde das Event als nicht verfügbar (&lt;em&gt;unavailable&lt;/em&gt;) gesetzt, behandelt das DEM-Modul dieses wie ein unkonfiguriertes Ereignis und quittiert den Aufruf mit &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_01108" href="../../spec/record.html?id=SWS_Dem_01108"&gt;[SWS_Dem_01108]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Zusammenspiel bei Multi-Event-Triggering&lt;/h4&gt;
-  &lt;p&gt;Ist &lt;code&gt;DemMultiEventTriggering&lt;/code&gt; konfiguriert und wird &lt;code&gt;Dem_PrestoreFreezeFrame&lt;/code&gt; mit einer Master-Event-ID (&lt;code&gt;DemMultiEventTriggeringMasterEventRef&lt;/code&gt;) aufgerufen, stößt das DEM denselben Aufruf automatisch für jede zugeordnete Slave-Event-ID (&lt;code&gt;DemMultiEventTriggeringSlaveEventRef&lt;/code&gt;) mit identischen Parametern an (&lt;a class="spec-record-ref" data-req="SWS_Dem_01250" href="../../spec/record.html?id=SWS_Dem_01250"&gt;[SWS_Dem_01250]&lt;/a&gt;). Aufrufe mit einer &lt;code&gt;EventId&lt;/code&gt;, die als Slave-Event oder als &lt;code&gt;DemStorageConditionReplacementEventRef&lt;/code&gt; konfiguriert ist, werden vom DEM nicht unterstützt; dieses Verhalten ist undefiniert (&lt;a class="spec-record-ref" data-req="SWS_Dem_01339" href="../../spec/record.html?id=SWS_Dem_01339"&gt;[SWS_Dem_01339]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion dient dem synchronen Erfassen und Zwischenspeichern von Freeze-Frame-Daten für ein spezifisches Diagnoseereignis &lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;. Die Schnittstelle wird ausschließlich über die RTE zur Verfügung gestellt und nicht über &lt;code&gt;Dem.h&lt;/code&gt; exportiert &lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;. Sie existiert im Modul nur dann, wenn für mindestens ein Ereignis die Vorspeicherung konfiguriert ist (&lt;code&gt;DemFFPrestorageSupported&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Dem_00334" href="../../spec/record.html?id=SWS_Dem_00334"&gt;[SWS_Dem_00334]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Rückgabewerte und Fehlerbehandlung:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Das Freeze-Frame wurde erfolgreich zwischengespeichert &lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Zwischenspeicherung schlägt fehl &lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;, insbesondere wenn kein Puffer mehr frei ist (begrenzt durch &lt;code&gt;DemMaxNumberPrestoredFF&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Dem_00808" href="../../spec/record.html?id=SWS_Dem_00808"&gt;[SWS_Dem_00808]&lt;/a&gt; oder das angegebene Ereignis als nicht verfügbar gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_Dem_01108" href="../../spec/record.html?id=SWS_Dem_01108"&gt;[SWS_Dem_01108]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Nebenläufigkeit und Aufrufbedingungen:&lt;/strong&gt; Die Funktion ist für unterschiedliche Ereignis-IDs reentrant, jedoch nicht für dieselbe &lt;code&gt;EventId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00188" href="../../spec/record.html?id=SWS_Dem_00188"&gt;[SWS_Dem_00188]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Zusammenspiel bei Multi-Event-Triggering:&lt;/strong&gt; Wird die Funktion mit einem konfigurierten Master-Ereignis (&lt;code&gt;DemMultiEventTriggeringMasterEventRef&lt;/code&gt;) aufgerufen, löst das DEM automatisch identische Aufrufe für alle zugehörigen Slave-Ereignisse (&lt;code&gt;DemMultiEventTriggeringSlaveEventRef&lt;/code&gt;) aus &lt;a class="spec-record-ref" data-req="SWS_Dem_01250" href="../../spec/record.html?id=SWS_Dem_01250"&gt;[SWS_Dem_01250]&lt;/a&gt;. Direkte Aufrufe mit einer Slave-Ereignis-ID oder mit einem Ersatzereignis für Speicherbedingungen (&lt;code&gt;DemStorageConditionReplacementEventRef&lt;/code&gt;) werden nicht unterstützt und führen zu undefiniertem Verhalten &lt;a class="spec-record-ref" data-req="SWS_Dem_01339" href="../../spec/record.html?id=SWS_Dem_01339"&gt;[SWS_Dem_01339]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: keine --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der Spezifikation AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -256,9 +267,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d10e644e2296…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c489dfc2152d…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 13 <span class="dossier-meta-sub">(13 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 13 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 15 <span class="dossier-meta-sub">(15 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 15 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -293,8 +304,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">15</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">14</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">17</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">16</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -331,7 +342,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 13 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 15 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -394,4 +405,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00188","k":"function","d":"AUTOSAR","t":"","n":"Dem_PrestoreFreezeFrame"}],"inbound":[{"i":"SWS_Dem_00334","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00334].","n":"SWS_Dem_00334"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/27d4928ba905d43f.json?v=09833940" data-total="13" data-new="13" data-figures="3" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00188","k":"function","d":"AUTOSAR","t":"","n":"Dem_PrestoreFreezeFrame"}],"inbound":[{"i":"SWS_Dem_00334","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00334].","n":"SWS_Dem_00334"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/27d4928ba905d43f.json?v=08452960" data-total="15" data-new="15" data-figures="4" data-used="0"></script></dialog>

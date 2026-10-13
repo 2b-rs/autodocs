@@ -1,241 +1,113 @@
 {
  "annahmen": [
-  "1) Enable()/Disable() lösen in R25-11 die R23-11-Aussage ab, dass dynamisches Ein-/Ausschalten der Überwachung nicht unterstützt wird – Begründung: Die R25-11-Requirements SWS_PHM_01130/01380 definieren genau diese Funktion, während die gegenteilige Aussage nur aus einer R23-11-Dokumentstelle stammt.",
-  "2) executionError trägt den im Manifest konfigurierten numerischen Fehlerwert des Prozesses – Begründung: SWS PHM S. 84 beschreibt diesen Wert als Meldung an State Management bei Supervision-Verletzung, der Parametertext auf S. 46 ist im Payload abgeschnitten. Diagramm diag-elementar:",
-  "1) Übergang kFAILED→kEXPIRED bei Überschreiten der Toleranz – Begründung: analog zur belegten Regel kOK→kEXPIRED, die Regel selbst fehlt im Payload.",
-  "2) Übergang kOK→kDEACTIVATED bei Prozessterminierung – Begründung: Stopp der Überwachungen bei Terminierung (S. 31) und Transition (",
-  "7) auf S. 36, deren Ausgangszustand im Payload abgeschnitten ist. Diagramm diag-global:",
-  "1) Übergang kOK→kFAILED – Begründung: Der Zustand kFAILED und der Übergang kFAILED→kSTOPPED sind belegt, die Eingangsregel ist im Payload abgeschnitten."
+  "1) Die konkrete Interprozesskommunikation (IPC) zwischen dem Anwendungs-User-Space und dem PHM-Daemon dürfte betriebssystemspezifisch optimiert sein (z. B. Shared Memory oder UNIX-Domain-Sockets), da die C++-Klasse SupervisedEntity die Details transparent kapselt. – Begründung: Das Schnittstellendesign abstrahiert die Übertragung vollständig im C++-API, während die Architektur PHM als separaten Hintergrundprozess (daemon-based) definiert."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-kontext",
-   "quelle": "anchor_r25_11.diag-kontext.dot"
+   "id": "diag-phm-kontext",
+   "quelle": "anchor_r25_11.diag-phm-kontext.dot"
   },
   {
    "art": "seq",
-   "id": "diag-checkpoint",
-   "quelle": "anchor_r25_11.diag-checkpoint.seq.json"
+   "id": "diag-checkpoint-flow",
+   "quelle": "anchor_r25_11.diag-checkpoint-flow.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-elementary-status",
+   "quelle": "anchor_r25_11.diag-elementary-status.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-global-status",
+   "quelle": "anchor_r25_11.diag-global-status.dot"
   },
   {
    "art": "seq",
-   "id": "diag-start",
-   "quelle": "anchor_r25_11.diag-start.seq.json"
-  },
-  {
-   "art": "dot",
-   "id": "diag-elementar",
-   "quelle": "anchor_r25_11.diag-elementar.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-global",
-   "quelle": "anchor_r25_11.diag-global.dot"
+   "id": "diag-watchdog-loop",
+   "quelle": "anchor_r25_11.diag-watchdog-loop.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-recovery",
-   "quelle": "anchor_r25_11.diag-recovery.seq.json"
-  },
-  {
-   "art": "dot",
-   "id": "diag-kritisch",
-   "quelle": "anchor_r25_11.diag-kritisch.dot"
+   "id": "diag-recovery-flow",
+   "quelle": "anchor_r25_11.diag-recovery-flow.seq.json"
   }
  ],
  "fragment": "content/ai/modules/phm/anchor_r25_11.html",
  "kontext": {
   "ausgelassen": {
-   "budget": [
-    "FIG-42baa8fad7057de0",
-    "FIG-4becd64dd2ee40c8",
-    "FIG-55e7802c3cda3ac4",
-    "FIG-6221c9929f67b2af",
-    "FIG-7a9e4f5a7ae38bd2",
-    "FIG-8f8f1cdef6ef452f",
-    "FIG-e3ac4e87cb71e45d",
-    "FIG-f2b8889be8c7fd24",
-    "FIG-fde94601d5d0c1c2",
-    "FIG-fe509631d34ba792",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_10_7",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_10_9_MANIFESTSPECIFICATION",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_12_10",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_12_16",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_14_2",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_4_29",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_5",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_9_71",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_9_72",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_9_79",
-    "SNIP_CLASSIC_CAN_FIGURE_Figure_9_12_MANIFESTSPECIFICATION",
-    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_9_67",
-    "SNIP_Com_AUTOSAR_AP_SWS_C_P262_373",
-    "SNIP_sm_AUTOSAR_AP_SWS_S_P28_050"
-   ],
+   "budget": [],
    "dublette": {
-    "SNIP_ADAPTIVE_CAN_FIGURE_Figure_9_12": "SNIP_CLASSIC_CAN_FIGURE_Figure_9_12_MANIFESTSPECIFICATION",
-    "SNIP_ADAPTIVE_COM_FIGURE_Figure_7_1_PLATFORMHEALTHMANAGEMENT": "SNIP_CLASSIC_COM_FIGURE_Figure_7_1_PLATFORMHEALTHMANAGEMENT",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_42": "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_3_42",
-    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_9_65": "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_9_65"
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_9_65": "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_9_65",
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_9_67": "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_9_67"
    },
-   "inhaltsverzeichnis": [
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P5_05",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P6_06",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P7_07",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P92_196"
-   ],
+   "inhaltsverzeichnis": [],
    "ohne_inhalt": [
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_14_3",
     "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_6_PLATFORMHEALTHMANAGEMENT",
-    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_7_PLATFORMHEALTHMANAGEMENT",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P16_18",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_25",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_26",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_27",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_28",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_29",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_30",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_31",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_32",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_33",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_34",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P18_35",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_36",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_37",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_38",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_39",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_41",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_43",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P19_45",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_46",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_47",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_48",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_50",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_53",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_54",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P20_56",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P21_57",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P21_59",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P2_02",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P3_03",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P45_89",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P57_102",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P57_103",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P57_104",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P58_105",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P58_106",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P59_108",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P60_111",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P60_113",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P61_115",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P61_117",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P61_119",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P62_120",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P62_122",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P62_123",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P62_124",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P63_127",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P65_131",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P65_132",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P66_134",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P66_135",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P67_137",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P68_140",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P68_142",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P69_145",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P69_147",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P69_149",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P70_151",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P70_152",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P70_153",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P70_155",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P71_157",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P71_159",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P71_160",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P72_161",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P72_162",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P73_165",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P73_166",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P74_168",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P74_169",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P74_172",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P77_179",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P82_184",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P83_185",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P86_190",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P88_192",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P93_197",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P94_198",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P95_199",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P96_202",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P97_203",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P98_204",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_205",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_206",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_210",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_211",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_212",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_213",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_214",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_217",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_218",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_219",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_220",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P99_221"
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_7_PLATFORMHEALTHMANAGEMENT"
    ],
-   "ohne_text": [
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P10_10",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P1_01",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P24_62",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P34_75",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P45_88",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P80_182",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P81_183",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P84_186",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P85_188",
-    "SNIP_phm_AUTOSAR_AP_SWS_P_P87_191"
-   ]
+   "ohne_text": []
   },
-  "im_prompt": 207,
-  "im_prompt_schaubilder": 89,
-  "kandidaten": 346,
+  "im_prompt": 58,
+  "im_prompt_schaubilder": 58,
+  "kandidaten": 63,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "03640dd00146eff1b66c75c833debdf9ab57a71cf50078b0a9c47a9a98a21442",
- "output_store": "ai/store/outputs/03/03640dd00146eff1b66c75c833debdf9ab57a71cf50078b0a9c47a9a98a21442.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-phm-kontext",
+   "diag-recovery-flow"
+  ],
+  "oneliner_chars": 116,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 70,
+   "3": 258,
+   "4": 1595
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip FIG-3e1fce042c451801: AUTOSAR_TPS_ManifestSpecification S. 141 nicht im Anker R25-11 (Snippet-Releases: R20-11, R21-11, R22-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-cb1f8a1d25f0001b: AUTOSAR_FO_ASWS_HealthMonitoring S. 22 nicht im Anker R25-11 (Snippet-Releases: R21-11, R22-11, R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_4_PLATFORMHEALTHMANAGEMENT: SWS_PlatformHealthManagement S. 31 nicht im Anker R25-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_4_PLATFORMHEALTHMANAGEMENT: SWS_PlatformHealthManagement S. 31 nicht im Anker R25-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-ca0fec50dc939ced: AUTOSAR_AP_SWS_StateManagement S. 28 nicht im Anker R25-11 (Snippet-Releases: R18-10, R19-03, R19-11, R20-11, R21-11, R22-11, R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-acee7ed1f8d50512: AUTOSAR_AP_EXP_SWArchitecture S. 169 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-cb1f8a1d25f0001b: AUTOSAR_FO_ASWS_HealthMonitoring S. 22 nicht im Anker R25-11 (Snippet-Releases: R21-11, R22-11, R23-11, R24-11) (INV-QL-09)"
+ ],
+ "output_sha256": "b7f85885845c9f3670b18bf81d7b92c7781bce1263e21a47f89a468054df52f1",
+ "output_store": "ai/store/outputs/b7/b7f85885845c9f3670b18bf81d7b92c7781bce1263e21a47f89a468054df52f1.html",
  "params": {
   "module": "phm",
   "platform": "adaptive",
   "release": "R25-11"
  },
  "profile": {
-  "effort": "high",
+  "effort": "medium",
   "extra": {
-   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
-   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
-   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
-   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
-   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
-   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
+   "client": "agy 1.2.17",
+   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
+   "tools": "angeboten, Nutzung führt zum Verwerfen"
   },
-  "max_output_tokens": 64000,
-  "model": "claude-opus-5-5",
-  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
-  "provider": "anthropic",
-  "route": "claude-cli-print",
+  "max_output_tokens": null,
+  "model": "gemini-3.8-flash-medium",
+  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
+  "provider": "google",
+  "route": "agy-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
+  "system_instruction_mode": null,
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "3b7c24d2c01659227ddf0535e8b8078db61f3c18c886458bb1b2b87049daf0d3",
- "prompt_store": "ai/store/prompts/3b/3b7c24d2c01659227ddf0535e8b8078db61f3c18c886458bb1b2b87049daf0d3.txt",
- "recipe": "module-guide@2",
+ "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
+ "prompt_hash": "52f03afd8857d5b23d043891ca9372801fadd1e8068a5e3d17312ea2d125a3a5",
+ "prompt_store": "ai/store/prompts/52/52f03afd8857d5b23d043891ca9372801fadd1e8068a5e3d17312ea2d125a3a5.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -247,65 +119,19 @@
  },
  "runs": [
   {
-   "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.325728,
-   "cost_usd_reported": 1.325728,
-   "created_at": "2026-10-09T07:49:27Z",
-   "duration_api_seconds": 302.206,
-   "duration_seconds": 302.47,
-   "effort": "high",
-   "lint_warnings": [],
-   "model": "claude-opus-5-5",
-   "model_usage": {
-    "claude-opus-5-5": {
-     "cacheCreationInputTokens": 0,
-     "cacheReadInputTokens": 0,
-     "canonicalModel": "claude-opus-5-5",
-     "contextWindow": 1000000,
-     "costBasis": "list",
-     "costUSD": 1.325728,
-     "inputTokens": 134832,
-     "maxOutputTokens": 128000,
-     "outputTokens": 39320,
-     "provider": "firstParty",
-     "thinkingTokens": 17951,
-     "webSearchRequests": 0
-    }
-   },
-   "route": "claude-cli-print",
-   "run_id": "014f5d79-9374-4c9e-9b6b-b77a10268686",
-   "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/014f5d79-9374-4c9e-9b6b-b77a10268686.json",
+   "created_at": "2026-10-13T03:43:45Z",
+   "duration_seconds": 103.474614055,
+   "prompt_transport": "stdin stream-json",
+   "route": "agy-cli-print",
+   "run_id": "b5296c4d-78e0-4409-a197-78aca7fe6295",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/b5296c4d-78e0-4409-a197-78aca7fe6295.jsonl",
    "usage": {
-    "cache_creation": {
-     "ephemeral_1h_input_tokens": 0,
-     "ephemeral_5m_input_tokens": 0
-    },
-    "cache_creation_input_tokens": 0,
-    "cache_read_input_tokens": 0,
-    "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 134832,
-    "output_tokens": 39320,
-    "output_tokens_details": {
-     "thinking_tokens": 17951
-    },
-    "server_tool_use": {
-     "web_fetch_requests": 0,
-     "web_search_requests": 0
-    },
-    "service_tier": "standard",
-    "speed": "standard"
-   },
-   "usage_normalized": {
-    "cache_write": 0,
-    "cached": 0,
-    "input_uncached": 134832,
-    "output": 39320,
-    "thinking": 17951
-   },
-   "wall_seconds": 306.029
+    "cache_read_tokens": 0,
+    "input_tokens": 47964,
+    "output_tokens": 28854,
+    "thinking_tokens": 16109,
+    "total_tokens": 76818
+   }
   }
  ],
  "schema": "ai-trace@2",

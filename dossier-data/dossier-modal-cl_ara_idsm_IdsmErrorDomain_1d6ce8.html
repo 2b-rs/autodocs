@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_idsm_IdsmErrorDomain_1d6ce8" class="dossier-modal dossier-workbench" data-dossier-sha="3f75a4adf9a20b4a" aria-labelledby="dossier-modal-cl_ara_idsm_IdsmErrorDomain_1d6ce8-title">
+<dialog id="dossier-modal-cl_ara_idsm_IdsmErrorDomain_1d6ce8" class="dossier-modal dossier-workbench" data-dossier-sha="9ab6d5a895193340" aria-labelledby="dossier-modal-cl_ara_idsm_IdsmErrorDomain_1d6ce8-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_idsm_IdsmErrorDomain_1d6ce8-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_idsm_IdsmErrorDomain_1d6ce8)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,055 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,577 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::idsm::IdsmErrorDomain' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_idsm_IdsmErrorDomain_1d6ce8",
@@ -232,33 +251,121 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e9fda1d11ec10bcb46d90ebe9d507179fcba5abef29ccdff417a15faa6c242be" data-trace-output="3f75a4adf9a20b4a170423a44b5dfadb76274b52b0eec0221a6b91527d1f4795" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="5ad009b86550267e8e13c37a16c03b84fa2ba33c8216779736b670b8e75881cd" data-trace-output="9ab6d5a895193340aebb8a38d2cd745af187c7fc4f942f35ae6692d5a440c81a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Fehlerdomäne des Intrusion Detection System Managers zur Zuordnung von Fehlercodes und Ausnahmen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10706" href="../spec/record.html?id=SWS_AIDSM_10706"&gt;[SWS_AIDSM_10706]&lt;/a&gt;, the class &lt;code&gt;ara::idsm::IdsmErrorDomain&lt;/code&gt; acts as the central error domain for the Intrusion Detection System Manager (IdsM) module within the AUTOSAR Adaptive Platform. As a derivation of the base class &lt;code&gt;ara::core::ErrorDomain&lt;/code&gt; declared as &lt;code&gt;final&lt;/code&gt;, it integrates module-specific error states into the platform's general error handling model. To map the error causes, the class defines via &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10707" href="../spec/record.html?id=SWS_AIDSM_10707"&gt;[SWS_AIDSM_10707]&lt;/a&gt; the type alias &lt;code&gt;Errc&lt;/code&gt; for the enumeration &lt;code&gt;IdsmErrc&lt;/code&gt;. Via &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10708" href="../spec/record.html?id=SWS_AIDSM_10708"&gt;[SWS_AIDSM_10708]&lt;/a&gt;, the alias &lt;code&gt;Exception&lt;/code&gt; also references the module-specific exception class &lt;code&gt;IdsmException&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In the context of the platform architecture, &lt;code&gt;IdsmErrorDomain&lt;/code&gt; acts as a link between the discrete IdsM error codes and the generic error type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;. This enables other layers and software components to uniquely assign IdsM errors to the IdsM domain, resolve them textually, or process them in a typed manner.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Definiert die Fehlerdomäne des Intrusion Detection System Managers zur Zuordnung von Fehlercodes und Ausnahmen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse bindet das Intrusion Detection System Manager Modul an das Fehlerbehandlungssystem der AUTOSAR Adaptive Platform an und definiert domänenspezifische Fehlercodes sowie Exceptions &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10706" href="../spec/record.html?id=SWS_AIDSM_10706"&gt;[SWS_AIDSM_10706]&lt;/a&gt;. Zu ihren Hauptaufgaben gehören die Identifikation der Domäne, die Bereitstellung lesbarer Fehlermeldungen zu Fehlercodes sowie die Überführung von Fehlern in typisierte Ausnahmen über &lt;code&gt;ThrowAsException&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;. Da der Standardkonstruktor gelöscht ist, erfolgt der Zugriff vermutlich über eine globale Instanz, deren Methodenaufrufe vollständig threadsicher spezifiziert sind.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::idsm::IdsmErrorDomain&lt;/code&gt; fungiert innerhalb der AUTOSAR Adaptive Platform im Modul &lt;code&gt;idsm&lt;/code&gt; als zentrale Fehlerdomäne zur Identifikation und Klassifikation systemspezifischer Fehlerzustände des Intrusion Detection System Managers &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10706" href="../spec/record.html?id=SWS_AIDSM_10706"&gt;[SWS_AIDSM_10706]&lt;/a&gt;. Als finale Spezialisierung der Basisklasse &lt;code&gt;ara::core::ErrorDomain&lt;/code&gt; integriert sie das IdsM-Subsystem nahtlos in das einheitliche Fehlerbehandlungsmodell der Adaptive Platform &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10706" href="../spec/record.html?id=SWS_AIDSM_10706"&gt;[SWS_AIDSM_10706]&lt;/a&gt;. Definiert wird die Klasse im Header &lt;code&gt;ara/idsm/idsm_error_domain.h&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Innerhalb der Fehlerarchitektur verknüpft die Klasse relevante Typdefinitionen für die IdsM-Fehlerbehandlung: Über den Typalias &lt;code&gt;Errc&lt;/code&gt; referenziert sie die bereichsspezifische Fehlercode-Enumeration &lt;code&gt;IdsmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10707" href="../spec/record.html?id=SWS_AIDSM_10707"&gt;[SWS_AIDSM_10707]&lt;/a&gt;, während der Typalias &lt;code&gt;Exception&lt;/code&gt; an die modulspezifische Ausnahmeklasse &lt;code&gt;IdsmException&lt;/code&gt; gebunden ist &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10708" href="../spec/record.html?id=SWS_AIDSM_10708"&gt;[SWS_AIDSM_10708]&lt;/a&gt;. Zudem stellt sie über die überschriebene Methode &lt;code&gt;Name()&lt;/code&gt; einen eindeutigen Bezeichner der Domäne für Diagnose- und Protokollierungszwecke bereit &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-idsm-error-domain-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 493.35 232.80" style="max-width:658px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
+&lt;title&gt;IdsmErrorDomainContext&lt;/title&gt;
+&lt;!-- idsm_client --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;idsm_client&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M196.94,-204C196.94,-204 124.28,-204 124.28,-204 118.28,-204 112.28,-198 112.28,-192 112.28,-192 112.28,-180 112.28,-180 112.28,-174 118.28,-168 124.28,-168 124.28,-168 196.94,-168 196.94,-168 202.94,-168 208.94,-174 208.94,-180 208.94,-180 208.94,-192 208.94,-192 208.94,-198 202.94,-204 196.94,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="160.61" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;IdsM-Anwendung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_error_domain --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;idsm_error_domain&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M287.46,-120C287.46,-120 167.77,-120 167.77,-120 161.77,-120 155.77,-114 155.77,-108 155.77,-108 155.77,-96 155.77,-96 155.77,-90 161.77,-84 167.77,-84 167.77,-84 287.46,-84 287.46,-84 293.46,-84 299.46,-90 299.46,-96 299.46,-96 299.46,-108 299.46,-108 299.46,-114 293.46,-120 287.46,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="227.61" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_idsm_IdsmErrorDomain_1d6ce8.html" href="../classes/cl_ara_idsm_IdsmErrorDomain_1d6ce8.html"&gt;ara::idsm::IdsmErrorDomain&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_client&amp;#45;&amp;gt;idsm_error_domain --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;idsm_client-&amp;gt;idsm_error_domain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M156.87,-167.73C155.77,-158.28 156.05,-146.76 161.43,-138 163.85,-134.06 166.87,-130.54 170.28,-127.4"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="172.34,-130.24 178.13,-121.37 168.07,-124.69 172.34,-130.24"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="217.52" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;fragt Name und Message ab&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- core_domain --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;core_domain&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M107.23,-36C107.23,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 107.23,0 107.23,0 113.23,0 119.23,-6 119.23,-12 119.23,-12 119.23,-24 119.23,-24 119.23,-30 113.23,-36 107.23,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="59.61" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorDomain_a538fe.html" href="../classes/cl_ara_core_ErrorDomain_a538fe.html"&gt;ara::core::ErrorDomain&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_error_domain&amp;#45;&amp;gt;core_domain --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;idsm_error_domain-&amp;gt;core_domain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M188.24,-83.58C176.1,-78.08 162.73,-71.9 150.57,-66 134.71,-58.31 117.5,-49.53 102.36,-41.65"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="104.21,-38.67 93.72,-37.14 100.97,-44.88 104.21,-38.67"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="167.09" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erbt von&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_errc --&gt;
+&lt;g id="node5" class="node"&gt;
+&lt;title&gt;idsm_errc&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M229.6,-36C229.6,-36 149.63,-36 149.63,-36 143.63,-36 137.63,-30 137.63,-24 137.63,-24 137.63,-12 137.63,-12 137.63,-6 143.63,0 149.63,0 149.63,0 229.6,0 229.6,0 235.6,0 241.6,-6 241.6,-12 241.6,-12 241.6,-24 241.6,-24 241.6,-30 235.6,-36 229.6,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="189.61" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_idsm_ara_idsm_c9e8a2.html#SWS_AIDSM_10204" href="../namespaces/ns_idsm_ara_idsm_c9e8a2.html#SWS_AIDSM_10204"&gt;ara::idsm::IdsmErrc&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_error_domain&amp;#45;&amp;gt;idsm_errc --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;idsm_error_domain-&amp;gt;idsm_errc&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M203.95,-83.6C198.77,-78.54 193.97,-72.58 191.03,-66 188.53,-60.36 187.37,-53.96 187,-47.73"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="190.5,-47.91 187.06,-37.89 183.5,-47.87 190.5,-47.91"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="217.82" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;definiert Errc&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_exception --&gt;
+&lt;g id="node6" class="node"&gt;
+&lt;title&gt;idsm_exception&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M398.43,-36C398.43,-36 292.79,-36 292.79,-36 286.79,-36 280.79,-30 280.79,-24 280.79,-24 280.79,-12 280.79,-12 280.79,-6 286.79,0 292.79,0 292.79,0 398.43,0 398.43,0 404.43,0 410.43,-6 410.43,-12 410.43,-12 410.43,-24 410.43,-24 410.43,-30 404.43,-36 398.43,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="345.61" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_idsm_IdsmException_9a51e2.html" href="../classes/cl_ara_idsm_IdsmException_9a51e2.html"&gt;ara::idsm::IdsmException&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_error_domain&amp;#45;&amp;gt;idsm_exception --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;idsm_error_domain-&amp;gt;idsm_exception&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M239.42,-83.68C246.7,-73.99 256.72,-62.24 267.7,-54 273.84,-49.4 280.68,-45.23 287.68,-41.5"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="289.12,-44.69 296.51,-37.1 286,-38.43 289.12,-44.69"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="306.16" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;definiert Exception&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- idsm_error_domain&amp;#45;&amp;gt;idsm_exception --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;idsm_error_domain-&amp;gt;idsm_exception&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M299.87,-94.21C317.13,-89.01 333.7,-80.34 344.61,-66 348.57,-60.8 350.15,-54.27 350.45,-47.73"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="353.96,-47.73 349.95,-37.93 346.97,-48.1 353.96,-47.73"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="407.06" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;wirft bei &lt;a class="diag-ref" data-ref="classes/cl_ara_idsm_IdsmErrorDomain_1d6ce8.html#SWS_AIDSM_10712" href="../classes/cl_ara_idsm_IdsmErrorDomain_1d6ce8.html#SWS_AIDSM_10712"&gt;ThrowAsException&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- error_code --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;error_code&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M337.12,-204C337.12,-204 254.11,-204 254.11,-204 248.11,-204 242.11,-198 242.11,-192 242.11,-192 242.11,-180 242.11,-180 242.11,-174 248.11,-168 254.11,-168 254.11,-168 337.12,-168 337.12,-168 343.12,-168 349.12,-174 349.12,-180 349.12,-180 349.12,-192 349.12,-192 349.12,-198 343.12,-204 337.12,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="295.61" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorCode_538b08.html" href="../classes/cl_ara_core_ErrorCode_538b08.html"&gt;ara::core::ErrorCode&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- error_code&amp;#45;&amp;gt;idsm_error_domain --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;error_code-&amp;gt;idsm_error_domain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M289.87,-167.78C286.18,-158.36 280.74,-146.83 273.61,-138 270.64,-134.31 267.19,-130.79 263.55,-127.5"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="266.05,-125.03 256.12,-121.35 261.59,-130.42 266.05,-125.03"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="304.5" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;referenziert&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Einordnung der IdsmErrorDomain zwischen Basisklasse, Fehlercodes und Ausnahmen. Quellen: &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10706" href="../spec/record.html?id=SWS_AIDSM_10706"&gt;[SWS_AIDSM_10706]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10707" href="../spec/record.html?id=SWS_AIDSM_10707"&gt;[SWS_AIDSM_10707]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10708" href="../spec/record.html?id=SWS_AIDSM_10708"&gt;[SWS_AIDSM_10708]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The life cycle of &lt;code&gt;IdsmErrorDomain&lt;/code&gt; follows the principles of platform-wide error domains. The default constructor of the class is explicitly deleted according to &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10709" href="../spec/record.html?id=SWS_AIDSM_10709"&gt;[SWS_AIDSM_10709]&lt;/a&gt; (&lt;code&gt;IdsmErrorDomain() = delete;&lt;/code&gt;), which precludes direct instantiation by users. Interpretation: The domain instance is likely typically provided as a global singleton by the platform or runtime environment.&lt;/p&gt;
-&lt;p&gt;It follows from this creation pattern that application developers do not perform any life cycle or ownership management for instances of this class. The validity of the domain presumably extends over the entire runtime of the process. For concurrent operation, all provided member functions—&lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;), &lt;code&gt;Message()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10711" href="../spec/record.html?id=SWS_AIDSM_10711"&gt;[SWS_AIDSM_10711]&lt;/a&gt;), and &lt;code&gt;ThrowAsException()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;)—are explicitly specified as thread-safe (&lt;code&gt;thread-safe&lt;/code&gt;). They can thus be called without restriction from multiple parallel threads.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Erzeugung von Instanzen der &lt;code&gt;IdsmErrorDomain&lt;/code&gt; unterliegt strengen Einschränkungen. Der Standardkonstruktor ist explizit gelöscht (&lt;code&gt;IdsmErrorDomain() = delete;&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10709" href="../spec/record.html?id=SWS_AIDSM_10709"&gt;[SWS_AIDSM_10709]&lt;/a&gt;. Aufrufende Komponenten und Anwendungen können die Klasse daher nicht über eine gewöhnliche Objekterzeugung instanziieren. Die Bereitstellung der Domäneninstanz dürfte in der Praxis vermutlich über eine statische Zugriffsfunktion des Moduls als langlebiges Singleton erfolgen, wie es für Fehlerdomänen in der AUTOSAR Adaptive Platform üblich ist.&lt;/p&gt;
+&lt;p&gt;Als rein funktionale Fehlerdomäne besitzt die Klasse keine veränderlichen internen Zustände und durchläuft keine komplexen Lebenszyklusphasen oder Zustandsübergänge. Hinsichtlich der Nebenläufigkeit sind sämtliche bereitgestellten Methodenaufrufe (&lt;code&gt;Name()&lt;/code&gt;, &lt;code&gt;Message()&lt;/code&gt; sowie &lt;code&gt;ThrowAsException()&lt;/code&gt;) explizit als thread-safe spezifiziert &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10711" href="../spec/record.html?id=SWS_AIDSM_10711"&gt;[SWS_AIDSM_10711]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;. Instanzen der Fehlerdomäne können somit ohne zusätzliche externe Synchronisationsmechanismen parallel von mehreren Threads des Systems sicher genutzt werden.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;Applications usually do not come into contact with &lt;code&gt;IdsmErrorDomain&lt;/code&gt; through direct instance creation, but rather via the error abstractions of the Adaptive Platform. A typical usage path comprises the following steps:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Im praktischen Einsatz dient die Klasse der Übersetzung und Vermittlung von IdsM-Fehlern innerhalb des Softwaresystems über die folgenden typischen Schritte:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Domain name resolution:&lt;/strong&gt; For identification or diagnostic purposes, &lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;) returns the static identifier of the error domain as a pointer-based string (&lt;code&gt;const char*&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Determination of error descriptions:&lt;/strong&gt; If an IdsM operation was completed with an error code, the associated textual error message is queried via &lt;code&gt;Message()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10711" href="../spec/record.html?id=SWS_AIDSM_10711"&gt;[SWS_AIDSM_10711]&lt;/a&gt;) by specifying the specific error value (&lt;code&gt;CodeType&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Conversion to exceptions:&lt;/strong&gt; If the error handling strategy provides for exception handling, &lt;code&gt;ThrowAsException()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;) is executed passing the affected &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;. In doing so, the &lt;code&gt;IdsmException&lt;/code&gt; bound to the alias &lt;code&gt;Exception&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10708" href="../spec/record.html?id=SWS_AIDSM_10708"&gt;[SWS_AIDSM_10708]&lt;/a&gt;) is thrown.&lt;/li&gt;
+&lt;li&gt;Identifikation und Diagnose: Über die Methode &lt;code&gt;Name()&lt;/code&gt; kann der Bezeichner der Fehlerdomäne abgefragt werden, um festzustellen, ob ein vorliegender Fehler aus dem IdsM-Modul stammt &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Textuelle Fehlermeldung: Bei Vorliegen eines spezifischen Fehlercodes aus &lt;code&gt;IdsmErrc&lt;/code&gt; (alias &lt;code&gt;Errc&lt;/code&gt;) liefert der Aufruf von &lt;code&gt;Message(errorCode)&lt;/code&gt; eine lesbare Beschreibung der Fehlerursache als Zeichenkette zurück &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10707" href="../spec/record.html?id=SWS_AIDSM_10707"&gt;[SWS_AIDSM_10707]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10711" href="../spec/record.html?id=SWS_AIDSM_10711"&gt;[SWS_AIDSM_10711]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ausnahmeauslösung: Benötigt eine Aufrufhierarchie eine Ausnahme statt einer wertbasierten Fehlerbehandlung, wandelt die Methode &lt;code&gt;ThrowAsException(errorCode)&lt;/code&gt; einen Fehlercode direkt in die entsprechende Ausnahme um &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;Durch diesen Nutzungspfad unterstützt die Domäne sowohl wertbasierte Fehlerprüfungen über &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; als auch klassische ausnahmebasierte Kontrollflüsse im Fehlerfall.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;The class &lt;code&gt;IdsmErrorDomain&lt;/code&gt; controls the error representation of the IdsM module. Specific exception and validity conditions are defined for interactions with its interfaces:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Exception safety during queries:&lt;/strong&gt; The methods &lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;) and &lt;code&gt;Message()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10711" href="../spec/record.html?id=SWS_AIDSM_10711"&gt;[SWS_AIDSM_10711]&lt;/a&gt;) have the specification &lt;code&gt;noexcept&lt;/code&gt;. Under no circumstances do they throw C++ exceptions, and can thus be used safely during cleanup work and logging.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Targeted throwing of exceptions:&lt;/strong&gt; In contrast to the query methods, &lt;code&gt;ThrowAsException()&lt;/code&gt; is explicitly defined as &lt;code&gt;noexcept(false)&lt;/code&gt; according to &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;. The precondition for meaningful use is a valid error code of the IdsM domain; the postcondition is the throwing of the corresponding &lt;code&gt;IdsmException&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10708" href="../spec/record.html?id=SWS_AIDSM_10708"&gt;[SWS_AIDSM_10708]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Handling of unknown error codes:&lt;/strong&gt; Interpretation: If a numerical &lt;code&gt;errorCode&lt;/code&gt; is passed to &lt;code&gt;Message()&lt;/code&gt; that does not correspond to any known enumerator from &lt;code&gt;IdsmErrc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_AIDSM_10707" href="../spec/record.html?id=SWS_AIDSM_10707"&gt;[SWS_AIDSM_10707]&lt;/a&gt;), the function is presumably likely to return a generic fallback message to satisfy the &lt;code&gt;noexcept&lt;/code&gt; guarantee.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- annahmen: 1) Singleton-Bereitstellung – Begründung: Der gelöschte Standardkonstruktor in SWS_AIDSM_10709 erfordert eine externe Bereitstellung der Domäneninstanz gemäß ara::core::ErrorDomain-Architektur. 2) Zerstörung bei Prozessende – Begründung: ErrorDomain-Instanzen besitzen prozessweite Gültigkeit ohne expliziten anwendungsseitigen Zerstörungszyklus. 3) Fallback-Meldung bei unbekanntem CodeType – Begründung: SWS_AIDSM_10711 deklariert noexcept und garantiert eine Rückgabe ohne Angabe eines gesonderten Fehlerpfads für ungültige Codes. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated automatically based on the AUTOSAR Adaptive R25-11 specification.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Fehlerbedingungen innerhalb des IdsM-Moduls werden über Werte der Enumeration &lt;code&gt;IdsmErrc&lt;/code&gt; repräsentiert, auf welche typisiert über das Alias &lt;code&gt;Errc&lt;/code&gt; zugegriffen wird &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10707" href="../spec/record.html?id=SWS_AIDSM_10707"&gt;[SWS_AIDSM_10707]&lt;/a&gt;. Die Fehlerdomäne steuert, wie diese Fehlercodes in Ausnahmesituationen überführt werden.&lt;/p&gt;
+&lt;p&gt;Die Methode &lt;code&gt;ThrowAsException(const ara::core::ErrorCode&amp;amp; errorCode)&lt;/code&gt; ist mit &lt;code&gt;noexcept(false)&lt;/code&gt; annotiert und wirft die zum übergebenen Fehlercode gehörige Exception &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10712" href="../spec/record.html?id=SWS_AIDSM_10712"&gt;[SWS_AIDSM_10712]&lt;/a&gt;. Bei diesem Typ handelt es sich um &lt;code&gt;IdsmException&lt;/code&gt;, welche über den Alias &lt;code&gt;Exception&lt;/code&gt; angebunden ist &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10708" href="../spec/record.html?id=SWS_AIDSM_10708"&gt;[SWS_AIDSM_10708]&lt;/a&gt;. Interpretation: Der Aufruf kehrt im Fehlerfall nicht regulär zurück, sondern erzwingt das Verlassen des aktuellen Ausführungskontexts durch das Auslösen der Ausnahme. Demgegenüber garantieren &lt;code&gt;Name()&lt;/code&gt; und &lt;code&gt;Message()&lt;/code&gt; durch ihre &lt;code&gt;noexcept&lt;/code&gt;-Deklaration, dass während der reinen Namens- oder Meldungsabfrage niemals unbeabsichtigte Ausnahmen geworfen werden können &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10710" href="../spec/record.html?id=SWS_AIDSM_10710"&gt;[SWS_AIDSM_10710]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_AIDSM_10711" href="../spec/record.html?id=SWS_AIDSM_10711"&gt;[SWS_AIDSM_10711]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde auf Basis der AUTOSAR-Spezifikation für R25-11 automatisiert generiert.&lt;!-- annahmen: 1) Die Bereitstellung der Domäneninstanz dürfte über eine statische Zugriffsfunktion erfolgen – Begründung: Der Standardkonstruktor ist gelöscht [SWS_AIDSM_10709]. 2) Interpretation: ThrowAsException kehrt nicht regulär zurück – Begründung: Die Methode löst spezifikationsgemäß direkt eine IdsmException aus [SWS_AIDSM_10712]. --&gt;&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -300,7 +407,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e9fda1d11ec1…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>5ad009b86550…</code></div>
               <div><strong>Konstituierende Records:</strong> 7</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

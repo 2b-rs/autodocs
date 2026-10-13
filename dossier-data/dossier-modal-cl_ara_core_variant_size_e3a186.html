@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_variant_size_e3a186" class="dossier-modal dossier-workbench" data-dossier-sha="775442ebac3d8ec8" aria-labelledby="dossier-modal-cl_ara_core_variant_size_e3a186-title">
+<dialog id="dossier-modal-cl_ara_core_variant_size_e3a186" class="dossier-modal dossier-workbench" data-dossier-sha="c26dbac12b6d56c3" aria-labelledby="dossier-modal-cl_ara_core_variant_size_e3a186-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_variant_size_e3a186-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_variant_size_e3a186)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,568 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,090 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::variant_size' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_variant_size_e3a186",
@@ -203,36 +222,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="bd2b4e205bab35b2ae0c3dabdb6f9874dbc830169f21955a2642bad270459459" data-trace-output="775442ebac3d8ec8192e546c62e05d4d2d48892d6f214bad3e430a8fd68f22b4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="7a464dd06736a364882c8c7cd8ef1610de66be829f097f38b09360314e3e1c80" data-trace-output="c26dbac12b6d56c3f8a784caf8cd06991076d837a3b05ca1afc1bb039091f7c3" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermittelt zur Übersetzungszeit die Anzahl der alternativen Typen eines Variant-Konstrukts für adaptive Anwendungen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;Within the AUTOSAR Adaptive Platform in the &lt;code&gt;core&lt;/code&gt; module, the template &lt;code&gt;ara::core::variant_size&lt;/code&gt; provides a metaprogramming utility for type checking and compile-time reflection. In accordance with the specification description, the functionality follows the analogous usage in the C++ standard for variants (&lt;em&gt;“As per corresponding usage in [variant]”&lt;/em&gt;). The primary responsibility of the trait is to make the number of alternatives that a variant type can hold statically available at compile time.&lt;/p&gt;
-  &lt;p&gt;In modern C++ architectures based on the Adaptive Platform, &lt;code&gt;ara::core::variant_size&lt;/code&gt; acts as an interaction partner for generic algorithms, template metaprogramming, and type traits that operate with type-variant data structures such as &lt;code&gt;ara::core::variant&lt;/code&gt;. Interpretation: Since the trait follows the standard pattern from the domain of the C++ standard library, it is expected primarily to support interfaces that handle stateless type checks, static case distinctions, or compile-time loops over variant alternatives without requiring instances to be created at runtime.&lt;/p&gt;
-
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;As a pure template construct without runtime state, &lt;code&gt;ara::core::variant_size&lt;/code&gt; has no classic dynamic lifecycle. There are neither dynamic memory allocations nor ownership of system resources or operating system handles. The structure template is instantiated exclusively during the compiler's semantic analysis and discarded completely after compilation is complete.&lt;/p&gt;
-  &lt;p&gt;This results in unambiguous characteristics regarding concurrency and instantiation: Since no instances, mutable data, or shared memory areas exist at runtime, aspects such as thread safety, data synchronization, or lifetime restrictions do not apply. The use of &lt;code&gt;ara::core::variant_size&lt;/code&gt; is inherently reentrant and stateless, as all evaluations take place deterministically in the compiler.&lt;/p&gt;
-
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;The typical use of &lt;code&gt;ara::core::variant_size&lt;/code&gt; occurs within the scope of generic template functions or metaprogramming patterns where the number of managed types of a variant must be determined at compile time. The developer passes the variant type to be examined as template parameter &lt;code&gt;T&lt;/code&gt; to &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-  &lt;p&gt;Interpretation: Typically, the template is expected to provide specializations for concrete variant types as well as their cv-qualified variants, making the numeric count value available via a static constant member such as &lt;code&gt;value&lt;/code&gt; (analogous to &lt;code&gt;std::integral_constant&lt;/code&gt;). A typical workflow is structured as follows:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Type parameterization:&lt;/strong&gt; A generic algorithm receives a parameter type &lt;code&gt;T&lt;/code&gt; intended to represent a variant type.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Static query:&lt;/strong&gt; The code accesses the constant &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;::value&lt;/code&gt; to determine the exact number of alternative types.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Conditional compilation:&lt;/strong&gt; Based on the determined value, static assertions (&lt;code&gt;static_assert&lt;/code&gt;), SFINAE constructs, or &lt;code&gt;if constexpr&lt;/code&gt; branches are executed, for example to safeguard generic deserializations, index validations, or type transformations.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;Due to this compile-time path, no additional instructions or performance overheads arise at runtime, catering to the strict real-time requirements of safety-critical automotive applications.&lt;/p&gt;
-
-  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
-  &lt;p&gt;Since &lt;code&gt;ara::core::variant_size&lt;/code&gt; operates at the compile-time level, no runtime error codes, exceptions, or return values in the sense of the AUTOSAR error handling model (&lt;code&gt;ara::core::Result&lt;/code&gt;) exist. Possible error situations are restricted entirely to the compilation phase.&lt;/p&gt;
-  &lt;p&gt;Interpretation: If the trait is instantiated with a type that is not a valid variant type or for which no explicit specialization exists, this is expected to lead to a direct compile-time error or a failure in template argument substitution (SFINAE). Developers must therefore ensure that only fully declared and compatible types are passed to the template to avoid incomplete type definitions or compiler aborts.&lt;/p&gt;
-
-  &lt;!-- annahmen:
-  1) Da der Payload die Beschreibung "As per corresponding usage in [variant]" angibt, dürfte sich ara::core::variant_size semantisch an dem C++-Standard std::variant_size orientieren und zur Compile-Zeit die Anzahl der Alternativen eines Variant-Typs ermitteln. – Begründung: Payload verweist explizit auf [variant]; das C++-Standard-Trait std::variant_size erfüllt exakt diesen Zweck.
-  2) Das Trait dürfte typischerweise als Spezialisierung für Variant-Typen bereitgestellt werden und den Zählwert über ein statisches Mitglied value bereitstellen. – Begründung: Standardkonformes Idiom für Größen-Traits in C++ und AUTOSAR Adaptive Core.
-  3) Bei der Anwendung auf inkompatible Typen dürfte ein Compile-Time-Fehler oder SFINAE-Fehlschlag auftreten. – Begründung: Metaprogrammierungsstrukturen besitzen keine Laufzeitfehlerbehandlung, Fehler manifestieren sich zur Übersetzungszeit.
-  --&gt;
-  &lt;p class="ai-note"&gt;This guide is based on the specification data of AUTOSAR Adaptive Platform R25-11. All technical statements rely exclusively on the provided metadata of the core module.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermittelt zur Übersetzungszeit die Anzahl der alternativen Typen eines Variant-Konstrukts für adaptive Anwendungen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klassenvorlage &lt;code&gt;ara::core::variant_size&lt;/code&gt; stellt für die AUTOSAR Adaptive Platform ein Metaprogrammierungs-Konstrukt zur statischen Abfrage der Typanzahl in Varianten bereit. Gemäß der Spezifikation richtet sich das Template nach der entsprechenden Nutzung in &lt;code&gt;[variant]&lt;/code&gt;. Interpretation: Die Auswertung erfolgt ausschließlich zur Übersetzungszeit durch den Compiler, sodass zur Laufzeit weder Speicherallokationen noch dynamische Zustandstransitionen anfallen. Wesentliche Randbedingung ist, dass der übergebene Datentyp eine gültige Variant-Spezialisierung besitzen muss, da unpassende Typen zu einem Fehler bei der Kompilierung führen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Im Rahmen der AUTOSAR Adaptive Platform stellt das Modul &lt;code&gt;core&lt;/code&gt; grundlegende Datenstrukturen, Typdefinitionen und Hilfskonstrukte für adaptive Anwendungen bereit. Die Klassenvorlage &lt;code&gt;ara::core::variant_size&lt;/code&gt; ist syntaktisch als &lt;code&gt;template &amp;lt;typename T&amp;gt; struct variant_size;&lt;/code&gt; deklariert und adressiert die Handhabung von variantenbasierten Typen im System. Laut Spezifikationsbeschreibung orientiert sich die Funktionalität an der korrespondierenden Verwendung in &lt;code&gt;[variant]&lt;/code&gt;. Interpretation: Hierdurch fungiert die Struktur als typischer Compile-Time-Type-Trait, dessen zentrale Verantwortung darin besteht, die Anzahl der in einem Variant-Typ enthaltenen Alternativen zur Übersetzungszeit abzufragen.&lt;/p&gt;
+&lt;p&gt;Die Interaktionspartner beschränken sich auf Softwarekomponenten, Algorithmen und Funktions-Templates innerhalb der Plattform, die typensichere Union-Strukturen auswerten. Insbesondere in Kombination mit Varianten-Typen wie &lt;code&gt;ara::core::variant&lt;/code&gt; ermöglicht &lt;code&gt;ara::core::variant_size&lt;/code&gt; Entwicklern und Bibliotheksfunktionen, Metainformationen über Typlisten abzufragen, ohne Instanzen der zugrunde liegenden Typen erzeugen zu müssen. Da die Deklaration im Namensraum &lt;code&gt;ara::core&lt;/code&gt; verankert ist, bildet sie einen standardisierten Baustein für adaptive Softwarekomponenten, die nach deterministischen und ressourcenschonenden Mustern arbeiten.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Da &lt;code&gt;ara::core::variant_size&lt;/code&gt; als reines Template-Konstrukt ohne Laufzeit-Zustand ausgelegt ist, unterscheidet sich der Lebenszyklus grundlegend von regulären Laufzeitobjekten der Adaptive Platform. Interpretation: Es existieren weder dynamische Allokationen noch Besitzverhältnisse, Zustandstransitionen oder ein expliziter Destruktionsprozess, da die Struktur ausschließlich im Rahmen der Template-Instanziierung durch den Compiler evaluiert wird.&lt;/p&gt;
+&lt;p&gt;Instanzvariablen oder interne Puffer sind in diesem Konzept nicht vorgesehen. Der Typ wird typischerweise nicht als dynamisches Objekt auf dem Heap oder Stack allokiert, sondern dient als compile-zeitliche Konstantenquelle. Hinsichtlich der Nebenläufigkeit ergeben sich keine Synchronisationsanforderungen: Da der Zugriff rein statisch erfolgt und keine gemeinsamen veränderbaren Zustände existieren, ist die Abfrage inhärent nebenläufigkeitssicher und ohne jeglichen Laufzeit-Overhead möglich.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;ara::core::variant_size&lt;/code&gt; findet vollständig während der Übersetzung von C++-Quellcode statt. Ein Entwickler oder ein generischer Algorithmus verwendet das Trait, um Verzweigungen oder statische Zusicherungen anhand der Anzahl zulässiger Typen eines Variants vorzunehmen.&lt;/p&gt;
+&lt;p&gt;Zunächst wird der gewünschte Zieltyp, typischerweise eine Variante mit mehreren Typalternativen, als Template-Argument an &lt;code&gt;ara::core::variant_size&lt;/code&gt; übergeben. Im nächsten Schritt greift der aufrufende Code auf den statischen Wert der Struktur zu, um den numerischen Wert der Typanzahl zu erhalten. Dieser Schritt erfolgt häufig im Kontext von &lt;code&gt;static_assert&lt;/code&gt;-Prüfungen, generischen Schleifenkonstrukten oder Template-Metaprogrammierungs-Ketten, um sicherzustellen, dass nur Varianten mit einer erwarteten Mindest- oder Höchstanzahl an Elementen verarbeitet werden.&lt;/p&gt;
+&lt;p&gt;Interpretation: Sollte ein ungeeigneter Datentyp übergeben werden, für den keine Spezialisierung vorliegt, bricht der Vorgang direkt im Compiler mit einem Übersetzungsfehler ab, sodass ungültige Typnutzungen bereits vor der Programmausführung erkannt und abgewehrt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Interpretation: ara::core::variant_size dient als Compile-Time-Type-Trait zur statischen Abfrage der Alternativen-Anzahl eines Variant-Typs. – Begründung: Die Spezifikationsbeschreibung verweist auf die entsprechende Verwendung in [variant] und die Syntax deklariert ein Template-struct. 2) Interpretation: Die Struktur besitzt keinen Laufzeit-Lebenszyklus, keine dynamische Allokation und keine veränderlichen Zustände. – Begründung: Metaprogrammierungs-Traits in C++ werden rein statisch durch den Compiler ausgewertet. 3) Interpretation: Bei Verwendung mit nicht-spezialisierten Typen bricht der Übersetzungsvorgang mit einem Compilerfehler ab. – Begründung: Entspricht dem Verhalten nicht definierter primärer Template-Klassen in C++ gemäß [variant]. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten von AUTOSAR R25-11 zum Modul core. Alle nicht direkt belegten Aspekte sind als Interpretation gekennzeichnet.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -274,7 +285,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>bd2b4e205bab…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7a464dd06736…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

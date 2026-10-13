@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_com__SI_Namespace_skeleton_3e0cf2" class="dossier-modal dossier-workbench" data-dossier-sha="5cf73ee6356d8c30" aria-labelledby="dossier-modal-ns_com__SI_Namespace_skeleton_3e0cf2-title">
+<dialog id="dossier-modal-ns_com__SI_Namespace_skeleton_3e0cf2" class="dossier-modal dossier-workbench" data-dossier-sha="8f3b47060aec0fa3" aria-labelledby="dossier-modal-ns_com__SI_Namespace_skeleton_3e0cf2-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_com__SI_Namespace_skeleton_3e0cf2-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_com__SI_Namespace_skeleton_3e0cf2)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,628 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,151 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace &lt;SI-Namespace&gt;::skeleton' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -207,28 +226,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="fd0f986c2e0ae25593f8dbcb1de22bb05bacc2a318a0b42af3f88f8448aacfa4" data-trace-output="5cf73ee6356d8c30c51c07e5bd17ee4a579b01c0c16cdaf89e4d38d28858b25e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="ba8ffe94dde60ce3ed96ec6a5e56be9c838f322074c0f4fd246f334e63c6855e" data-trace-output="8f3b47060aec0fa36423e2b3aac5b4e02e6b8a7f49c05f2b843e5b639818a8e9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert das serverseitige Gerüst zur Bereitstellung und Implementierung serviceorientierter Schnittstellen." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton&lt;/code&gt; is part of module &lt;code&gt;com&lt;/code&gt; within the AUTOSAR Adaptive Platform (Release R25-11). It encapsulates the server-side interface artifacts for a specific Service Interface (SI). The core class of this namespace is &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt;, which functions as the service skeleton. In a service-oriented system architecture, the skeleton assumes the role of the server-side endpoint that connects the communication infrastructure with the concrete business implementation of the service methods, events, and fields. The primary interaction partners are the application-specific server component, which is derived from &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; or instantiates it, and the underlying communication layer (Communication Management), which handles network handling, marshalling, and dispatching of incoming requests. Interpretation: The generated skeleton type &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; serves as an application-specific base class for providing the service instance and binds the application-side method implementation to the Communication Management middleware.&lt;/p&gt;
-
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle of service provisioning is tied directly to the object of class &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt;. At the beginning of the operational phase, the service application creates an instance of the concrete skeleton and links it to an identifier for the respective instance configuration. Presumably, the instantiation and destruction of an &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; object controls the offering of the service on the network or the binding to the communication infrastructure. During the active phase, the object processes incoming requests from service clients, delegates calls to the configured application logic, and enables sending events or updates of fields to subscribed clients. When stopping the service or shutting down the process, the skeleton instance is released in a controlled manner. This revokes the offering of the service to the middleware, and all associated communication resources as well as open bindings are closed. With regard to concurrency, it must be noted that incoming client calls can be handed over to the skeleton in parallel via thread pools of the middleware, so that the application-side implementation must be designed to be thread-safe.&lt;/p&gt;
-
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical use of &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; is divided into a fixed sequence of steps for providing and executing a service:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Derivation and implementation:&lt;/strong&gt; The developer implements the business logic of the service interface by deriving an application-owned class from &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; and providing it with the concrete method bodies.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instantiation:&lt;/strong&gt; The service process instantiates the derived skeleton class, specifying the necessary deployment and instance parameters.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Service offering:&lt;/strong&gt; After successful initialization, the service is offered on the network via the communication infrastructure so that authorized clients can find and bind to the instance.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Event and data transmission:&lt;/strong&gt; During runtime, the server application triggers events or updates field values via the skeleton, which the middleware transmits to registered recipients.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Service cessation and cleanup:&lt;/strong&gt; Prior to stopping the component, the service offer is withdrawn and the skeleton instance is destroyed, whereby all existing network connections are properly torn down.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Error scenarios surrounding the service skeleton include, in particular, initialization issues, errors when binding to network endpoints, and faults during method invocation. Error states during method calls or service provisioning are likely signaled via return types of the Communication Management infrastructure or middleware status values. Common causes are invalid or already occupied instance identifiers, insufficient memory or socket resources of the operating system, and unexpected connection drops. Proper initialization of the platform environment is considered a precondition for error-free instantiation and provisioning, whereas postconditions ensure that no pending calls are dispatched into the application logic after destruction of the skeleton.&lt;/p&gt;
-&lt;!-- annahmen: 1) Der generierte Skeleton-Typ &lt;SI&gt;Skeleton dient als anwendungsspezifische Basisklasse zur Bereitstellung der Service-Instanz und bindet die anwendungsseitige Methodenimplementierung an die Communication Management Middleware an. – Begründung: Der Klassenname &lt;SI&gt;Skeleton im Namespace skeleton des Moduls com folgt dem etablierten AUTOSAR-Adaptive-Entwurfsmuster für Service-Skelette. 2) Die Instanziierung und Zerstörung eines &lt;SI&gt;Skeleton-Objekts steuert das Angebot des Dienstes im Netzwerk beziehungsweise die Bindung an die Kommunikationsinfrastruktur. – Begründung: In serviceorientierten Architekturen der Adaptive Platform korreliert die Lebensdauer des Skeleton-Objekts typischerweise mit der Bereitstellung des zugehörigen Dienstes. 3) Fehlerzustände bei Methodenaufrufen oder der Dienstbereitstellung werden über Rückgabetypen der Communication-Management-Infrastruktur oder Middleware-Statuswerte signalisiert. – Begründung: Das Modul com der Adaptive Platform nutzt einheitliche Mechanismen zur Fehlerbehandlung bei Serviceinteraktionen. --&gt;
-&lt;p class="ai-note"&gt;This guide was created automatically based on specification data from AUTOSAR Adaptive R25-11 (module com).&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Definiert das serverseitige Gerüst zur Bereitstellung und Implementierung serviceorientierter Schnittstellen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton&lt;/code&gt; kapselt im Modul &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) die serverseitige Vermittlungsschicht für Service-Interfaces über die Klasse &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt;. Er dient dazu, eingehende Methodenaufrufe an die anwendungsspezifische Geschäftslogik weiterzuleiten sowie Events und Felder an verbundene Clients zu übermitteln. Die Serveranwendung instanziiert das Skelett, bietet den Dienst über die Plattform an und beendet das Angebot vor der Zerstörung des Objekts. Da die Kommunikation vermutlich nebenläufig erfolgt, müssen die bereitgestellten Methodenaufrufe threadsicher implementiert werden.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton&lt;/code&gt; bildet innerhalb des Kommunikationsmoduls &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) den standardisierten Namensraum für serverseitige Dienstkomponenten. Im Zentrum dieses Namespace steht die Service-Skelettklasse &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt;, welche die Vermittlungsschicht zwischen der anwendungsspezifischen Implementierung eines Service-Providers und der unterlagerten Kommunikations-Middleware darstellt. Der Bezeichner &lt;code&gt;&amp;lt;SI&amp;gt;&lt;/code&gt; fungiert als Platzhalter für den konkreten Namen des Service-Interface, während &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;&lt;/code&gt; den konfiguratorisch festgelegten Namensraum der Schnittstellendefinition widerspiegelt.&lt;/p&gt;
+&lt;p&gt;Die primäre Verantwortung des Namespace liegt in der Bereitstellung typsicherer Strukturen zur serverseitigen Abwicklung serviceorientierter Kommunikation. Die wesentlichen Interaktionspartner sind hierbei die Dienstanwendung selbst sowie die Plattform-Middleware. Die Klasse &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; dient vermutlich als Basisklasse für die anwendungsspezifische Implementierung des Service-Providers, von der die Dienstanwendung erbt oder die sie instanziiert, um Methodenaufrufe entgegenzunehmen und Events bereitzustellen.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus der Komponenten im Namespace orientiert sich an der Bereitstellung und dem Betrieb der Klasse &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt;. Eine Instanz des Service-Skeletts repräsentiert die aktive Präsenz eines Dienstes auf einer Instanz der Adaptive Platform. Die Erzeugung und Konfiguration des Objekts obliegt der anbietenden Anwendung, welche die Instanz an eine konkrete Dienst- und Instanzkennung koppelt.&lt;/p&gt;
+&lt;p&gt;Der Lebenszyklus der Skeleton-Instanz dürfte an die Service-Bereitstellung gekoppelt sein, wobei die Instanz vor dem aktiven Anbieten vollständig initialisiert werden muss und erst nach dem ordnungsgemäßen Einstellen des Dienstangebots zerstört werden darf. Während der Betriebsphase übernimmt das Skelett das Dispatching eingehender Anfragen an die registrierten Methodenrümpfe sowie die Verwaltung ausgehender Ereignisse.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich des Ausführungsmodells ist zu berücksichtigen, dass Aufrufe aus dem Netzwerk eintreffen. Die Kommunikation zwischen dem Skelett und der Middleware dürfte asynchron und nebenläufig erfolgen, sodass Methodenaufrufe und Event-Versand threadsicher gehandhabt werden müssen. Bei der Deaktivierung des Dienstes sorgt die Anwendung für ein geordnetes Einstellen der Kommunikation, bevor das &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt;-Objekt zerstört wird.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Ablauf bei der Verwendung des Namespace gliedert sich in die Phasen Implementierung, Bereitstellung, Kommunikation und Deinitialisierung. Zunächst realisiert der Entwickler die geforderte Schnittstellenlogik, indem eine anwendungsspezifische Klasse auf Basis von &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; implementiert wird. Innerhalb dieser Klasse werden die im Service-Interface spezifizierten Methoden mit der konkreten Geschäftslogik versehen.&lt;/p&gt;
+&lt;p&gt;Zur Laufzeit instanziiert die Dienstanwendung das abgeleitete Skelett-Objekt und gibt dieses für die Plattform frei. Nach der Freigabe nimmt die Skelett-Instanz Anfragen verbundener Clients entgegen, leitet diese an die implementierten Methoden weiter und übermittelt Rückgabewerte zurück an die Middleware. Parallel dazu kann die Anwendung das Skelett nutzen, um Events oder Feld-Updates an abonnierende Service-Clients zu publizieren. Nach Abschluss des Betriebs wird der Service deregistriert und die Instanz von &lt;code&gt;&amp;lt;SI&amp;gt;Skeleton&lt;/code&gt; freigegeben.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Klasse &lt;SI&gt;Skeleton dient vermutlich als Basisklasse für die anwendungsspezifische Implementierung des Service-Providers, von der die Dienstanwendung erbt oder die sie instanziiert, um Methodenaufrufe entgegenzunehmen und Events bereitzustellen. – Begründung: Der Payload benennt &lt;SI&gt;Skeleton als „Service skeleton class“, führt jedoch keine Vererbungshierarchie oder konkrete Schnittstellenmethoden auf.
+2) Der Lebenszyklus der Skeleton-Instanz dürfte an die Service-Bereitstellung gekoppelt sein, wobei die Instanz vor dem aktiven Anbieten vollständig initialisiert werden muss und erst nach dem ordnungsgemäßen Einstellen des Dienstangebots zerstört werden darf. – Begründung: Der Payload dokumentiert keine konkreten Lebenszyklusmethoden für &lt;SI&gt;Skeleton.
+3) Die Kommunikation zwischen dem Skelett und der Middleware dürfte asynchron und nebenläufig erfolgen, sodass Methodenaufrufe und Event-Versand threadsicher gehandhabt werden müssen. – Begründung: Der Payload enthält keine Angaben zum Threading-Modell oder zur Nebenläufigkeit. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten der AUTOSAR Adaptive Platform (Release R25-11, Modul com). Er beschreibt das serverseitige Gerüst zur Bereitstellung von Diensten.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -270,7 +291,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>fd0f986c2e0a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ba8ffe94dde6…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_91005" class="dossier-modal dossier-workbench" data-dossier-sha="6f0b154a62e42ba1" aria-labelledby="dossier-modal-SWS_SecOC_91005-title">
+<dialog id="dossier-modal-SWS_SecOC_91005" class="dossier-modal dossier-workbench" data-dossier-sha="e4be3011205068ab" aria-labelledby="dossier-modal-SWS_SecOC_91005-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_91005-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_91005)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,256 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,710 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_SPduTxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,19 +193,18 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="3ed4a5096f02ca0109212738349acb6933b91c569b3779621b73107f92ebf8ed" data-trace-output="6f0b154a62e42ba186e425b23827e00fb1ff0007e706425e89c4ac13a2c3aa3c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="802cf05f792cf91aa641818d7efa3b6c495a19b14b6725b091e211323f91d252" data-trace-output="e4be3011205068ab9ddca265b64eb4aa0239341fe188d4f2d5372499e73d704f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Zeigt synchron an, dass die Übertragung einer gesicherten I-PDU für die angegebene Freshness-ID initiiert wurde." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The function &lt;code&gt;SecOC_SPduTxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;) is an interface of the SecOC (&lt;em&gt;Secure Onboard Communication&lt;/em&gt;) module in release R20-11. It is used to indicate that the transmission of a secured I-PDU (&lt;em&gt;Secured I-PDU&lt;/em&gt;) has been initiated.&lt;/p&gt;
-  &lt;h4&gt;Usage and signature&lt;/h4&gt;
-  &lt;p&gt;The function is declared via the header &lt;code&gt;SecOC.h&lt;/code&gt; and has the service ID &lt;code&gt;0x4d&lt;/code&gt;. Execution is synchronous (&lt;em&gt;Synchronous&lt;/em&gt;). The signature specifies no output parameters, no input/output parameters, and no return value (&lt;code&gt;void&lt;/code&gt;). A single input parameter is passed to it:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;SecOCFreshnessValueID&lt;/code&gt; (type &lt;code&gt;uint16&lt;/code&gt;): Contains the identifier of the freshness value (&lt;em&gt;freshness value&lt;/em&gt;) associated with the initiated secured I-PDU.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency&lt;/h4&gt;
-  &lt;p&gt;According to specification &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;, &lt;code&gt;SecOC_SPduTxConfirmation&lt;/code&gt; is classified as reentrant (&lt;em&gt;Reentrant&lt;/em&gt;) and can therefore be called from concurrent contexts.&lt;/p&gt;
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;In specification &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;, no specific error codes or messages to DET or DEM are defined for this interface. Any error states are not reported back to the caller via the interface due to the lack of a return value.&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+  &lt;p&gt;Die synchrone Funktionsschnittstelle &lt;code&gt;SecOC_SPduTxConfirmation&lt;/code&gt; wird vom Modul SecOC genutzt, um anzuzeigen, dass die Übertragung einer gesicherten I-PDU (Secured I-PDU) initiiert wurde &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;. Die Funktion ist in der Header-Datei &lt;code&gt;SecOC.h&lt;/code&gt; deklariert und besitzt keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Als einziger Übergabeparameter wird &lt;code&gt;SecOCFreshnessValueID&lt;/code&gt; als Eingabewert (in) vom Typ &lt;code&gt;uint16&lt;/code&gt; übergeben &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;. Dieser Parameter transportiert die Kennung des jeweiligen Freshness-Werts für die betroffene I-PDU &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;. Weitere Ein-, Ausgabe- oder Durchgangsparameter (inout/out) sind in der Schnittstelle nicht vorhanden &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Eigenschaften&lt;/h4&gt;
+  &lt;p&gt;Die Schnittstelle besitzt die Service-ID &lt;code&gt;0x4d&lt;/code&gt;, arbeitet synchron und ist vollständig reentrant ausgelegt &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;. Die Eigenschaft der Reentranz gestattet den parallelen Aufruf in nebenläufigen Ausführungskontexten &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;. Fehlermeldungen über DET oder DEM sowie spezielle Fehlercodes sind in der Schnittstellenspezifikation nicht vorgesehen &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Interpretation: Da SecOC diese Funktion aufruft, um das Starten der PDU-Übertragung zu melden, und dabei ausschließlich die &lt;code&gt;SecOCFreshnessValueID&lt;/code&gt; übergibt, dürfte der Aufruf vermutlich der Fortschreibung oder Bestätigung des Freshness-Zählers in einer externen Komponente dienen &lt;a class="spec-record-ref" data-req="SWS_SecOC_91005" href="../../spec/record.html?id=SWS_SecOC_91005"&gt;[SWS_SecOC_91005]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Benachrichtigung über die initiierte Übertragung dient vermutlich der Aktualisierung des Freshness-Werts – Begründung: Der einzige Parameter ist SecOCFreshnessValueID und SecOC zeigt laut Spezifikation damit die initiierte PDU-Übertragung an. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert erstellt und basiert ausschließlich auf den Spezifikationsdaten aus AUTOSAR CP R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -227,7 +244,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>3ed4a5096f02…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>802cf05f792c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -365,4 +382,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_91005","k":"function","d":"AUTOSAR","t":"","n":"SecOC_SPduTxConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/d583e10cae239109.json?v=6b2bc44a" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_91005","k":"function","d":"AUTOSAR","t":"","n":"SecOC_SPduTxConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/d583e10cae239109.json?v=731be569" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

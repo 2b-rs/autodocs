@@ -1,19 +1,33 @@
 {
  "annahmen": [
-  "1) Instanziierung und Bereitstellung von WriteableKeySlot dürfte über den Crypto Provider erfolgen – Begründung: Reine abstrakte Schnittstelle ohne Konstruktoren, verwaltet über Sptr.",
-  "2) Implementierungen dürften interne Synchronisation zur Absicherung von Clear() verwenden – Begründung: Die Methode verändert als const-Methode den Zustand und ist explizit als thread-safe spezifiziert."
+  "1) Die Erzeugung von WriteableKeySlot-Instanzen erfolgt vermutlich über Fabrik- oder Provider-Methoden eines Crypto-Providers, da die Kopier- und Verschiebeoperationen gelöscht sind und kein öffentlicher Konstruktor spezifiziert ist. – Begründung: Der Payload enthält gelöschte Copy-/Move-Operationen sowie den Typ-Alias Sptr, jedoch keinen öffentlichen Konstruktor.",
+  "2) Das Belegen des Schlüsselplatzes mit Schlüsselmaterial dürfte über nachgelagerte Schreib- oder Ladeoperationen des Crypto-Stacks erfolgen, die nicht Teil dieses Schnittstellenausschnitts sind. – Begründung: Der Payload spezifiziert für WriteableKeySlot ausschließlich Clear(), beschreibt die Klasse jedoch als schreibbaren Speicherplatz.",
+  "3) Der Fehler kBusyResource dürfte insbesondere durch parallele Zugriffe auf Hardware-Sicherheitsmodule oder persistente Speicherbereiche ausgelöst werden. – Begründung: SWS_CRYPT_30405 nennt temporäre Nichtausführbarkeit und Rollback-Semantik bei thread-sicherem API-Design."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-context",
-   "quelle": "anchor_r25_11.diag-context.dot"
+   "id": "diag-keyslot-zustand",
+   "quelle": "anchor_r25_11.diag-keyslot-zustand.dot"
   }
  ],
  "fragment": "content/ai/classes/cl_ara_crypto_cryp_WriteableKeySlot_96e71e/anchor_r25_11.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-keyslot-zustand"
+  ],
+  "oneliner_chars": 113,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 59,
+   "3": 217,
+   "4": 448
+  }
+ },
  "lint": [],
- "output_sha256": "c7ebb992c525ca23ffcda7a4da5abd5b0c0f5a9f75e50d348dee8b02306d98d2",
- "output_store": "ai/store/outputs/c7/c7ebb992c525ca23ffcda7a4da5abd5b0c0f5a9f75e50d348dee8b02306d98d2.html",
+ "output_sha256": "181af27059510ed331e514b5aab294de5c2f7d72a78b24f7c0f78910106c3e44",
+ "output_store": "ai/store/outputs/18/181af27059510ed331e514b5aab294de5c2f7d72a78b24f7c0f78910106c3e44.html",
  "params": {
   "class_id": "cl_ara_crypto_cryp_WriteableKeySlot_96e71e",
   "platform": "adaptive",
@@ -39,9 +53,9 @@
   "top_p": null
  },
  "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "ee623097eba814f76f5c07696c0fe1e6cc869c44be432df7504aecdf0668c862",
- "prompt_store": "ai/store/prompts/ee/ee623097eba814f76f5c07696c0fe1e6cc869c44be432df7504aecdf0668c862.txt",
- "recipe": "class-guide@2",
+ "prompt_hash": "5dc02afa797253bbf45e524600b49fbf2cdbaf2f3e6b836180b2e221b710754c",
+ "prompt_store": "ai/store/prompts/5d/5dc02afa797253bbf45e524600b49fbf2cdbaf2f3e6b836180b2e221b710754c.txt",
+ "recipe": "class-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -53,17 +67,18 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T08:15:44Z",
-   "duration_seconds": 31.706544,
+   "created_at": "2026-10-13T03:52:10Z",
+   "duration_seconds": 30.038467751,
+   "prompt_transport": "argv -p",
    "route": "agy-cli-print",
-   "run_id": "d76bca12-5c6a-42b7-b351-1260f2fe4710",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/d76bca12-5c6a-42b7-b351-1260f2fe4710.jsonl",
+   "run_id": "d5a8f983-d5f2-4573-80ec-443fcb401bc5",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/d5a8f983-d5f2-4573-80ec-443fcb401bc5.jsonl",
    "usage": {
-    "cache_read_tokens": 8145,
-    "input_tokens": 7109,
-    "output_tokens": 12363,
-    "thinking_tokens": 10103,
-    "total_tokens": 19472
+    "cache_read_tokens": 0,
+    "input_tokens": 15360,
+    "output_tokens": 10747,
+    "thinking_tokens": 7352,
+    "total_tokens": 26107
    }
   }
  ],

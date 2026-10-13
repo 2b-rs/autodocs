@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_BswM_00157" class="dossier-modal dossier-workbench" data-dossier-sha="3d5ff7e94c22fcf5" aria-labelledby="dossier-modal-SWS_BswM_00157-title">
+<dialog id="dossier-modal-SWS_BswM_00157" class="dossier-modal dossier-workbench" data-dossier-sha="3dcfc3de5fc1bcbd" aria-labelledby="dossier-modal-SWS_BswM_00157-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_BswM_00157-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_BswM_00157)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,230 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,685 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'BswM_WdgM_RequestPartitionReset'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,26 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="e91b9d9c6282a2beb4e17f3f1d66bb32bc00f4b318274ae8b38a992ca8817751" data-trace-output="3d5ff7e94c22fcf5215df18a2c518a061947720215cc03ad2e72708b1c768145" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="51a67f346a31920d8fdf8cd8be741694699186e86e36edc36799e615eeef9090" data-trace-output="3dcfc3de5fc1bcbd875721f636fe9150107078cfc7c4e2b7d44bf53bb7142fae" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem Watchdog Manager dazu, beim BswM synchron das Zurücksetzen einer OS-Application anzufordern." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;BswM_WdgM_RequestPartitionReset&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;) is called by the Watchdog Manager (&lt;code&gt;WdgM&lt;/code&gt;) to request the resetting of a partition from the Basic Software Mode Manager (&lt;code&gt;BswM&lt;/code&gt;). The interface is provided via the header file &lt;code&gt;BswM_WdgM.h&lt;/code&gt; and has the service ID &lt;code&gt;0x11&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The call is executed synchronously (&lt;code&gt;Synchronous&lt;/code&gt;) and returns no return value (&lt;code&gt;void&lt;/code&gt;). Via the input parameter &lt;code&gt;Application&lt;/code&gt; of type &lt;code&gt;ApplicationType&lt;/code&gt;, the identifier of the OS-Application whose reset is to be initiated is passed to the BswM.
-  &lt;/p&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    The service function is declared as reentrant (&lt;code&gt;Reentrant&lt;/code&gt;) according to &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;. Specific DET or DEM error codes as well as restrictions regarding special call contexts (e.g. task or ISR level) are not separately identified in the specification element.
-  &lt;/p&gt;
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    As a standardized interface between the Watchdog Manager and BswM, &lt;code&gt;BswM_WdgM_RequestPartitionReset&lt;/code&gt; serves to forward partition-related error or monitoring states to the central mode management in order to initiate corresponding partition reset sequences.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note is based on specification &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt; of the BSW Mode Manager in release AUTOSAR CP R20-11.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;BswM_WdgM_RequestPartitionReset&lt;/code&gt; wird durch den Watchdog Manager (WdgM) aufgerufen, um beim Basic Software Mode Manager (BswM) das Zurücksetzen einer bestimmten Partition anzufordern &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;. Die Deklaration dieser Schnittstelle wird über den Header &lt;code&gt;BswM_WdgM.h&lt;/code&gt; zur Verfügung gestellt und ist der Service-ID &lt;code&gt;0x11&lt;/code&gt; zugeordnet &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Für die Verwendung und den Aufrufkontext gelten die folgenden Festlegungen der Spezifikation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Parameter:&lt;/strong&gt; Als Eingabeparameter wird &lt;code&gt;Application&lt;/code&gt; vom Typ &lt;code&gt;ApplicationType&lt;/code&gt; übergeben, der den eindeutigen Bezeichner der betreffenden OS-Application darstellt &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;. Weitere Ein- oder Ausgabeparameter existieren für diesen Aufruf nicht &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Rückgabewert:&lt;/strong&gt; Die Funktion besitzt keinen Rückgabewert (Rückgabetyp &lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Synchronizität und Nebenläufigkeit:&lt;/strong&gt; Die Funktionsausführung erfolgt synchron und ist als reentrant spezifiziert, wodurch parallele Aufrufe zulässig sind &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlerbehandlung:&lt;/strong&gt; Spezifische Fehlercodes, Fehlerreaktionen sowie Meldungen an DET oder DEM sind in der Spezifikation dieses Elements nicht dokumentiert &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Im Zusammenspiel der Basissoftwaremodule bildet die Funktion die direkte Benachrichtigungsschnittstelle, über die der WdgM den BswM synchron über einen erforderlichen Partitions-Reset für die übergebene OS-Application in Kenntnis setzt &lt;a class="spec-record-ref" data-req="SWS_BswM_00157" href="../../spec/record.html?id=SWS_BswM_00157"&gt;[SWS_BswM_00157]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: keine – Begründung: Alle Aussagen sind durch den Payload zu SWS_BswM_00157 belegt. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt; die Richtlinien verlangen Prüfung anhand der Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -234,7 +247,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e91b9d9c6282…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>51a67f346a31…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -372,4 +385,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00157","k":"function","d":"AUTOSAR","t":"","n":"BswM_WdgM_RequestPartitionReset"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/5f69d3e00510c403.json?v=bf5b73de" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00157","k":"function","d":"AUTOSAR","t":"","n":"BswM_WdgM_RequestPartitionReset"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/5f69d3e00510c403.json?v=d26746c4" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>

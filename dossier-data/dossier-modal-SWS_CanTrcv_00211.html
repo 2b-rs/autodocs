@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_CanTrcv_00211" class="dossier-modal dossier-workbench" data-dossier-sha="fc04ab35e1323604" aria-labelledby="dossier-modal-SWS_CanTrcv_00211-title">
+<dialog id="dossier-modal-SWS_CanTrcv_00211" class="dossier-modal dossier-workbench" data-dossier-sha="52521e97f97580e9" aria-labelledby="dossier-modal-SWS_CanTrcv_00211-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_CanTrcv_00211-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_CanTrcv_00211)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,153 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,607 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'CanTrcv_TrcvFlagStateType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,30 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="6ff1234c908fd768278b084fda519351d994d76a30a3315c1b770964183414fa" data-trace-output="fc04ab35e1323604c83b88521424ccbd87aea43e28ffd70570c36a6da8c75bf9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4ef0e0487226e99f0262edfb5da2ac8cf49219c350d9c39adcfb1f9fb9a049d2" data-trace-output="52521e97f97580e9c5ce5d39b7567af56adfd0c85acebc2614a181f67e4ad0b1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Zeigt an, ob ein Flag in der CAN-Transceiver-Hardware gesetzt oder gelöscht ist." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;, the enumeration type &lt;code&gt;CanTrcv_TrcvFlagStateType&lt;/code&gt; specifies the current state of a flag in the transceiver hardware. The definition is provided via the header file &lt;code&gt;CanTrcv.h&lt;/code&gt; and serves for standardized state acquisition in module &lt;code&gt;CanTrcv&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The value range comprises the following values:
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Enumerationstyp &lt;code&gt;CanTrcv_TrcvFlagStateType&lt;/code&gt; repräsentiert den Zustand eines einzelnen Flags in der Transceiver-Hardware &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;. Die Deklaration wird für anwendende Softwaremodule und Treiber über die Header-Datei &lt;code&gt;CanTrcv.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;.&lt;/p&gt;
+  
+  &lt;p&gt;Der Wertebereich ist binär aufgebaut und unterscheidet zwei diskrete Zustände gemäß &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;CANTRCV_FLAG_SET&lt;/code&gt;: The corresponding flag is set in the transceiver hardware.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CANTRCV_FLAG_CLEARED&lt;/code&gt;: The corresponding flag is cleared or reset in the transceiver hardware.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CANTRCV_FLAG_SET&lt;/code&gt;: Zeigt an, dass das jeweilige Flag in der Transceiver-Hardware gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CANTRCV_FLAG_CLEARED&lt;/code&gt;: Zeigt an, dass das Flag in der Transceiver-Hardware gelöscht oder nicht gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;
-    In driver interfaces, this enumeration type is presumably typically used as a return value or via pointer parameters in query functions to inform higher-level layers about the hardware status of the transceiver.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    As a pure enumeration type, &lt;code&gt;CanTrcv_TrcvFlagStateType&lt;/code&gt; contains no processing logic of its own, error codes, or notifications to DET or DEM. Requirements for reentrancy, call contexts, or synchronicity do not concern the type itself, but arise exclusively from the respective functions of the transceiver driver that pass or query values of this type.
-  &lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Typische Nutzung als Rückgabe- oder Out-Parameter bei Hardware-Statusabfragen – Begründung: Der Payload beschreibt CanTrcv_TrcvFlagStateType als Statusanzeige für Hardware-Flags, enthält jedoch keine Funktionssignaturen oder Aufrufkontexte. --&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on AUTOSAR R20-11.&lt;/p&gt;
+  
+  &lt;p&gt;Zur praktischen Verwendung lässt sich festhalten, dass der Typ primär der standardisierten Abbildung hardwarenaher Registerzustände dient &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00211" href="../../spec/record.html?id=SWS_CanTrcv_00211"&gt;[SWS_CanTrcv_00211]&lt;/a&gt;. Interpretation: Aufrufende Schichten wie der CAN-Interface-Treiber oder Diagnosemodule dürften diesen Typ typischerweise über Abfragefunktionen via Zeigerparameter oder Rückgabewert auslesen, um etwaige Fehler- oder Weckflags zu bewerten. Da der Typ selbst keine Funktionslogik, Reentranz-Restriktionen oder DET-Meldungen beinhaltet, obliegt die Prüfung auf gültige Wertebereiche den verarbeitenden Schnittstellen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Interpretation: Aufrufende Schichten wie das CAN-Interface dürften diesen Typ zur Auswertung von Status-, Weck- oder Fehlerflags über Zeiger oder Rückgabewerte nutzen. – Begründung: Der Payload definiert den Typ als Zustand eines Hardware-Flags, spezifiziert aber keine Funktionssignaturen oder aufrufenden Module im Detail. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Verbindlich ist die AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,7 +247,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>6ff1234c908f…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4ef0e0487226…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_91010" class="dossier-modal dossier-workbench" data-dossier-sha="ad50f16387aeb63e" aria-labelledby="dossier-modal-SWS_SecOC_91010-title">
+<dialog id="dossier-modal-SWS_SecOC_91010" class="dossier-modal dossier-workbench" data-dossier-sha="f8f9839413c022e8" aria-labelledby="dossier-modal-SWS_SecOC_91010-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_91010-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_91010)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,247 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,701 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_TpCancelReceive'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,26 +193,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="4d8e94ecaa37ea4cbe7aecd202ea622481902004996d7217a0d64379b01d195c" data-trace-output="ad50f16387aeb63efc00c5986eb2537faf0f7ef81e56ffbaed620e8964887807" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="7bc4b1ba75bbdca4c37453ccae5aa8ec6698ac19a31a7723dec3d210177188a8" data-trace-output="f8f9839413c022e841e51d914cf187304495573b572ac77f91305c75c59bf462" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert den Abbruch eines laufenden PDU-Empfangs in einem unterlagerten Transportprotokoll-Modul an." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;SecOC_TpCancelReceive&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;) is used to request the cancellation of an ongoing reception process of a PDU in a lower-layer transport protocol module. The interface is declared via the header &lt;code&gt;SecOC.h&lt;/code&gt; and has the service ID &lt;code&gt;0x4c&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The call is synchronous (&lt;code&gt;Synchronous&lt;/code&gt;). The following is defined regarding the parameters and return values:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;SecOC_TpCancelReceive&lt;/code&gt; dient dazu, den Abbruch eines laufenden Empfangsvorgangs einer PDU in einem unterlagerten Transportprotokoll-Modul anzufordern &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;. Über den einzigen Eingangsparameter &lt;code&gt;RxPduId&lt;/code&gt; wird dem Modul die eindeutige Identifikation der abzubrechenden PDU übergeben &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Ausführung&lt;/h4&gt;
+&lt;p&gt;Die Rückmeldung über den Erfolg der Stornierung erfolgt unmittelbar über den Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;RxPduId&lt;/code&gt; (&lt;code&gt;PduIdType&lt;/code&gt;, In): Identification of the PDU whose reception is to be cancelled.&lt;/li&gt;
-&lt;li&gt;Return value (&lt;code&gt;Std_ReturnType&lt;/code&gt;):
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Cancellation was successfully executed by the target module.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The cancellation was rejected by the destination module.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Stornierung des Empfangs wurde durch das Zielmodul erfolgreich ausgeführt &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Stornierung wurde durch das Zielmodul abgewiesen &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;The function is classified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;). This means that callers must ensure that no concurrent or interrupting calls occur; this will likely need to be ensured by appropriate coordination at the caller level.&lt;/p&gt;
-&lt;h4&gt;Error handling&lt;/h4&gt;
-&lt;p&gt;Specific DET or DEM messages are not listed for this service. If the cancellation fails in the lower-layer target module or is rejected by it, this is indicated directly to the caller by the return value &lt;code&gt;E_NOT_OK&lt;/code&gt;.&lt;/p&gt;
-&lt;p class="ai-note"&gt;This text was generated by an AI system based on the specification.&lt;/p&gt;
-&lt;!-- annahmen: 1) Die Vermeidung nebenläufiger Aufrufe muss auf Aufruferebene koordiniert werden – Begründung: Die Spezifikation definiert SecOC_TpCancelReceive als Non Reentrant, nennt jedoch keine modulinternen Synchronisationsmechanismen. --&gt;
+&lt;p&gt;Spezifische Fehlercodes, Entwicklungsfehler (DET) oder Produktionsfehler (DEM) sind in den Spezifikationsdaten der Funktion nicht vorgesehen. Interpretation: Mit dem in der Spezifikation genannten Zielmodul („destination module“) dürfte das unterlagerte Transportprotokoll-Modul gemeint sein, an welches die Abbruchanforderung gerichtet wird.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einbindung&lt;/h4&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit ist die Funktion als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) deklariert &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;. Daher darf kein gleichzeitiger oder unterbrechender Aufruf erfolgen; aufrufende Softwareeinheiten müssen Zugriffe entsprechend koordinieren. Die Funktion besitzt die Service-ID &lt;code&gt;0x4c&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;SecOC.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_SecOC_91010" href="../../spec/record.html?id=SWS_SecOC_91010"&gt;[SWS_SecOC_91010]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Mit dem „destination module“ dürfte das unterlagerte Transportprotokoll-Modul gemeint sein – Begründung: Die Funktionsbeschreibung verweist direkt auf das Stornieren des Empfangs im unterlagerten Transportprotokoll-Modul. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI generiert und basiert ausschließlich auf den Spezifikationen des AUTOSAR-Releases R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -234,7 +248,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>4d8e94ecaa37…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7bc4b1ba75bb…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -372,4 +386,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_91010","k":"function","d":"AUTOSAR","t":"","n":"SecOC_TpCancelReceive"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/fc6eed6a595bdb3a.json?v=8e054cd3" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_91010","k":"function","d":"AUTOSAR","t":"","n":"SecOC_TpCancelReceive"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/fc6eed6a595bdb3a.json?v=2f8cf306" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

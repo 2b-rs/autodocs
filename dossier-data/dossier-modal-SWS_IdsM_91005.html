@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_IdsM_91005" class="dossier-modal dossier-workbench" data-dossier-sha="c3ef3a56baf92bf3" aria-labelledby="dossier-modal-SWS_IdsM_91005-title">
+<dialog id="dossier-modal-SWS_IdsM_91005" class="dossier-modal dossier-workbench" data-dossier-sha="7457a9f37f7c80a8" aria-labelledby="dossier-modal-SWS_IdsM_91005-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_IdsM_91005-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_IdsM_91005)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,295 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,750 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'IdsM_BswM_StateChanged'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,21 +198,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="44a78a1886d9c93d1846f02edbb57e6f715dd5fc0d3b8acbbd47d3281f19db3f" data-trace-output="c3ef3a56baf92bf36102c1acddd38f51735c2144c0b029c41e704522f6a89cce" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="16285d55bd09ccbd7b5265e96edd658abbc017f4357f1ae4ae8c45a661dec6f1" data-trace-output="7457a9f37f7c80a8d20dd9f71e917ff0b270e5d2fbd7feaf850b82448795d552" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Nimmt Steuergeräte-Zustandsänderungen vom BswM entgegen, um sie für Block-State-Filter im IdsM bereitzustellen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Call Context&lt;/h4&gt;
-  &lt;p&gt;The callback function &lt;code&gt;IdsM_BswM_StateChanged&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;) is called by the BswM module (BSW Mode Manager) to report ECU state changes to the Intrusion Detection System Manager (IdsM). The function interface is designed synchronously and declared via the header &lt;code&gt;IdsM_Cbk.h&lt;/code&gt; with the service ID &lt;code&gt;0x0F&lt;/code&gt;.&lt;/p&gt;
-  &lt;p&gt;The parameters and return values are structured as follows:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;state&lt;/code&gt; (Input parameter, data type &lt;code&gt;IdsM_Filters_BlockStateType&lt;/code&gt;): Passes the current ECU state (Current ECU state).&lt;/li&gt;
-    &lt;li&gt;Input/output parameters: No input or output parameters are defined.&lt;/li&gt;
-    &lt;li&gt;Return value: The function does not return a value (&lt;code&gt;void&lt;/code&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Execution Properties&lt;/h4&gt;
-  &lt;p&gt;According to the specification in &lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;, the synchronous function is classified as reentrant. Specific error codes, error handling routines, or DET or DEM messages are not provided in the specification scope for this callback.&lt;/p&gt;
-  &lt;h4&gt;Interaction and Functional Integration&lt;/h4&gt;
-  &lt;p&gt;According to requirement &lt;a class="spec-record-ref" data-req="SWS_IdsM_01022" href="../../spec/record.html?id=SWS_IdsM_01022"&gt;[SWS_IdsM_01022]&lt;/a&gt;, this callback serves to inform the IdsM about the current state via the BswM. The IdsM subsequently uses the communicated information for evaluation when filters for block states (&lt;em&gt;block state filter&lt;/em&gt;) are executed and processed asynchronously as part of the main function (&lt;code&gt;main function&lt;/code&gt;).&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;
+    Die Callback-Funktion &lt;code&gt;IdsM_BswM_StateChanged&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;) wird durch das BswM aufgerufen, um dem Intrusion Detection System Manager (IdsM) Änderungen des aktuellen Steuergeräte-Zustands zu signalisieren (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;). Sie ist in der Header-Datei &lt;code&gt;IdsM_Cbk.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x0F&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;).
+  &lt;/p&gt;
+  &lt;p&gt;
+    Die Schnittstelle besitzt die Signatur &lt;code&gt;void IdsM_BswM_StateChanged (IdsM_Filters_BlockStateType state)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;). Als einziger Übergabewert dient der Eingangsparameter &lt;code&gt;state&lt;/code&gt; vom Typ &lt;code&gt;IdsM_Filters_BlockStateType&lt;/code&gt;, welcher den aktuellen ECU-Zustand abbildet (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;). Es sind weder Ein-/Ausgabeparameter noch Ausgabeparameter vorgesehen, und die Funktion liefert keinen Rückgabewert zurück (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;). Der Aufruf wird synchron ausgeführt und ist als reentrant eingestuft (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91005" href="../../spec/record.html?id=SWS_IdsM_91005"&gt;[SWS_IdsM_91005]&lt;/a&gt;).
+  &lt;/p&gt;
+  &lt;p&gt;
+    Im funktionalen Zusammenspiel dient dieser Benachrichtigungsdienst dazu, das IdsM durch das BswM fortlaufend über den aktuellen Zustand zu informieren (&lt;a class="spec-record-ref" data-req="SWS_IdsM_01022" href="../../spec/record.html?id=SWS_IdsM_01022"&gt;[SWS_IdsM_01022]&lt;/a&gt;). Die empfangene Zustandsinformation wird im IdsM vorgehalten und bei der späteren asynchronen Verarbeitung von Block-State-Filtern (&lt;code&gt;block state filter&lt;/code&gt;) im Rahmen der Hauptfunktion (&lt;code&gt;main function&lt;/code&gt;) ausgewertet (&lt;a class="spec-record-ref" data-req="SWS_IdsM_01022" href="../../spec/record.html?id=SWS_IdsM_01022"&gt;[SWS_IdsM_01022]&lt;/a&gt;). Für diesen Aufruf sind im Spezifikationsumfang keine spezifischen Fehlercodes, Rückgabewerte oder Meldungen an das Entwicklungsfehler- (DET) oder Diagnose-Event-Management (DEM) festgelegt.
+  &lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert generiert und basiert auf den Spezifikationsanforderungen von AUTOSAR Classic R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -234,9 +251,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>44a78a1886d9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>16285d55bd09…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -271,8 +288,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -309,7 +326,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 9 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 7 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -372,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91005","k":"function","d":"AUTOSAR","t":"","n":"IdsM_BswM_StateChanged"}],"inbound":[{"i":"SWS_IdsM_01022","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_IdsM_01022].","n":"SWS_IdsM_01022"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/9855750ceef9d554.json?v=b9ea3360" data-total="9" data-new="9" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91005","k":"function","d":"AUTOSAR","t":"","n":"IdsM_BswM_StateChanged"}],"inbound":[{"i":"SWS_IdsM_01022","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_IdsM_01022].","n":"SWS_IdsM_01022"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/9855750ceef9d554.json?v=1c8fc66e" data-total="7" data-new="7" data-figures="0" data-used="0"></script></dialog>

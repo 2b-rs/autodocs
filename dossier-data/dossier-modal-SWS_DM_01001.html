@@ -1,0 +1,477 @@
+<dialog id="dossier-modal-SWS_DM_01001" class="dossier-modal dossier-workbench" data-dossier-sha="ffc70550641fc5de" aria-labelledby="dossier-modal-SWS_DM_01001-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-SWS_DM_01001-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_DM_01001)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~5,956 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="SWS_DM_01001" data-fragment="classes/cl_ara_diag_DiagReportingErrorDomain_57e585.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse einen fundierten Nutzungshinweis (&lt;div class="ai usage"&gt;) für das adaptive-Element 'Message' (function) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt weglassen):
+1. Verwendung: Aufrufkontext, Parameter, Rückgabewerte, synchrone/asynchrone Semantik.
+2. Fehlerbehandlung: spezifische Fehlercodes, DET-/DEM-Meldungen, Verhalten im Fehlerfall.
+3. Nebenläufigkeit und Einschränkungen: Reentranz, Aufrufkontext, Reihenfolgebedingungen.
+4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
+Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
+
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
+=== USER PROMPT ===
+Erstelle den Nutzungshinweis für 'Message'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P68_015",
+   "page": 68,
+   "text": "[SWS_DM_00514] [SWS_DM_00515]\n[SWS_DM_00516] [SWS_DM_00517]\n[SWS_DM_00518] [SWS_DM_00519]\n[SWS_DM_00520] [SWS_DM_00521]\n[SWS_DM_00522] [SWS_DM_00523]\n[SWS_DM_00524] [SWS_DM_00525]\n[SWS_DM_00526] [SWS_DM_00527]\n[SWS_DM_00528] [SWS_DM_00529]\n[SWS_DM_00530] [SWS_DM_00531]\n[SWS_DM_00532] [SWS_DM_00533]\n[SWS_DM_00534] [SWS_DM_00535]\n[SWS_DM_00536] [SWS_DM_00537]\n[SWS_DM_00543] [SWS_DM_00554]\n[SWS_DM_00555] [SWS_DM_00556]\n[SWS_DM_00557] [SWS_DM_00559]\n[SWS_DM_00560] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00618] [SWS_DM_00619]\n[SWS_DM_00636] [SWS_DM_00637]\n[SWS_DM_00638] [SWS_DM_00653]\n[SWS_DM_00671] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00764]\n[SWS_DM_00765] [SWS_DM_00766]\n[SWS_DM_00774] [SWS_DM_00776]\n[SWS_DM_00789] [SWS_DM_00790]\n[SWS_DM_00791] [SWS_DM_00792]\n[SWS_DM_00799] [SWS_DM_00800]\n[SWS_DM_00801] [SWS_DM_00802]\n[SWS_DM_00808] [SWS_DM_00809]\n[SWS_DM_00836] [SWS_DM_00985]\n[SWS_DM_00986] [SWS_DM_00987]\n[SWS_DM_00988] [SWS_DM_00989]\n[SWS_DM_00990] [SWS_DM_00991]\n[SWS_DM_00992] [SWS_DM_00993]\n[SWS_DM_00994] [SWS_DM_00995]\n[SWS_DM_00996] [SWS_DM_00997]\n[SWS_DM_00998] [SWS_DM_00999]\n[SWS_DM_01000] [SWS_DM_01001]\n[SWS_DM_01002] [SWS_DM_01003]\n[SWS_DM_01004] [SWS_DM_01005]\n[SWS_DM_01006] [SWS_DM_01016]\n[SWS_DM_01088] [SWS…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": true,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P94_127",
+   "page": 94,
+   "text": "Figure 7.1: Component view on Diagnostic Management\n7.1 UDS Transport Layer\nSince there exist standardized as well as OEM specific UDS Transport Layers, the\nDM supports a standardized C++ API (called\nTransport Protocol API\n), where\ndifferent kinds of UDS Transport Layers can be connected. Currently the Adaptive\nPlatform only provides a detailed description of Ethernet-based network technologies,\nwhich mandates support of DoIP [2]. It is very likely, that upcoming releases of the\nDM will also detail CAN, CAN-FD, FR, ... networks. The\nTransport Protocol API\nallows for extensions of DM towards not-yet-detailed and proprietary UDS Transport\nProtocols.\nThe UDS Transport Protocol (TP) implementation can optionally provide the so far re-\nceived UDS message content in\npayloadInfo\n. It is up to the TP implementation to\ndecide how much of the so far received data is provided. It is recommended to provide\nat least the first two bytes of the received message. The DM is then able to detect a\nfunctional received tester present (UDS bypass logic) and accept this message, even\nthe DM is currently processing a physical request. If the TP does not provide any data\nin\npayloadInfo\n, the DM will not be able to detect the functional TP and will reject…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P98_131",
+   "page": 98,
+   "text": "The side effect of this is that from the viewpoint of Diagnostic Server, which supports\nparallel Diagnostic Clients, it is a perfectly valid scenario that two Diagnostic Clients\nwith the same UDS\nSA\ncan be active in parallel if they originate from different/distin-\nguishable network endpoints.\n[SWS_DM_00385] Acceptance of UDS message reception\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the DM is able to process the indicated request,\napext::diag::uds_trans-\nport::UdsTransportProtocolMgr::IndicateMessage\nshall return a\nstd::\npair\nwith\napext::diag::uds_transport::UdsTransportProtocolMgr::\nIndicationResult\nset to\nkIndicationOk\nand a\napext::diag::uds_trans-\nport::UdsMessagePtr\n, which owns a valid\napext::diag::uds_transport::\nUdsMessage\nobject, with a capacity of so many bytes, the DM wants to process of\nthe indicated request. The minimum size of the\napext::diag::uds_transport::\nUdsMessage\nobject shall be one byte.\n⌋\nNote: For details about\nstd::pair\nsee [SWS_DM_00309].\n[SWS_DM_00392] Properties of returned UdsMessage\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the DM accepted the UDS message reception, the returned\napext::diag::\nuds_transport::UdsMessage\nowned by\napext::diag::uds_transport::\nUdsMessagePtr\nshall return a\napext::diag::ud…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P99_132",
+   "page": 99,
+   "text": "[SWS_DM_00386] Ignoring UDS message reception because DM is busy\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the\nTransport Protocol Manager\nis calling\napext::diag::uds_trans-\nport::UdsTransportProtocolMgr::IndicateMessage\nand the DM is busy\ndue to the active processing of a service from the same Tester Present con-\nversation and the Tester Present request is not a functional request with the\noptional provided\npayloadInfo\n’0x3E 0x80’, the DM shall return a\nstd::\npair\nwith\napext::diag::uds_transport::UdsTransportProtocolMgr::\nIndicationResult\nset to\nkIndicationOccupied\nand a\napext::diag::uds_\ntransport::UdsMessagePtr\nequal to\nnullptr\n.\n⌋\nFunctional\nTesterPresents\n(compare [SWS_DM_00126]) with\nsuppressPosR-\nspMsgIndicationBit\n= TRUE are exceptional requests in UDS and valid at any\npoint in time. Therefore the DM allows to check for functional received\nTesterP-\nresent\nrequest in the\napext::diag::uds_transport::UdsTransportProto-\ncolMgr::IndicateMessage\n. For handling of the functional\nTesterPresent\n, see\nchapter 7.3.2.8.21.\nNote: For details about\nstd::pair\nsee [SWS_DM_00309].\nNote: For declining/ignoring a second request without sending a negative response\naccording to [SWS_DM_00290], the DM would choose this behavior.\n[SWS_DM_00387]…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P100_133",
+   "page": 100,
+   "text": "set to\nkIndicationUnknownTargetAddress\nand a\napext::diag::uds_\ntransport::UdsMessagePtr\nequal to\nUdsMessagePtr(nullptr)\n.\n⌋\nNote: For details about\nstd::pair\nsee [SWS_DM_00309].\n[SWS_DM_00388] Filling provided UdsMessage\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the DM returned\nkIndicationOk\nfrom the\napext::diag::uds_transport::\nUdsTransportProtocolMgr::IndicateMessage\n, the UDS Transport Proto-\ncol implementation shall fill the\napext::diag::uds_transport::UdsMessage\nowned by\napext::diag::uds_transport::UdsMessagePtr\nfrom the received\nUDS request starting from\nSID\nup to either\napext::diag::uds_transport::\nUdsMessage\nfull capacity or up to the entire received UDS request message, whatever\nhappens first.\n⌋\n[SWS_DM_00345] Forwarding of UDS message\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the UDS Transport Protocol implementation has filled the payload of the re-\nturned\napext::diag::uds_transport::UdsMessagePtr\n, it shall call\napext::\ndiag::uds_transport::UdsTransportProtocolMgr::HandleMessage\non its\napext::diag::uds_transport::UdsTransportProtocolMgr\nreference (see\n[SWS_DM_00330]) with the returned\napext::diag::uds_transport::UdsMes-\nsagePtr\nas argument.\n⌋\n[SWS_DM_00389] Skipping Forwarding of UDS message\nUpstream requirements:\nRS_…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P101_134",
+   "page": 101,
+   "text": "[SWS_DM_00342] Indication of UDS message reception\nUpstream requirements:\nRS_Diag_04168\n⌈\nUDS Transport Protocol implementation shall call\napext::diag::uds_trans-\nport::UdsTransportProtocolMgr::IndicateMessage\non its\napext::\ndiag::uds_transport::UdsTransportProtocolMgr\nreference ((see\n[SWS_DM_00330])), as soon as it has at least the following information of an\nincoming UDS request available:\n• UDS\nsource address\nof the request.\n• UDS\ntarget address\nof the request.\n• Type of the UDS target address (physical or functional)\n• Size of the entire UDS message starting from SID\n• If the UDS payload is larger than 1 byte, at least two bytes are received and shall\nbe forwarded in the parameter\npayloadInfo\n⌋\n7.1.1.3 UDS message transmission on a UDS TransportLayer\n[SWS_DM_00348] Transmission of UDS response message\nUpstream requirements:\nRS_Diag_04168\n⌈\nDM shall send a diagnostic response UDS message to the same UDS Trans-\nport Protocol implementation, where it has received the UDS request message (see\n[SWS_DM_00345]) by calling the\napext::diag::uds_transport::UdsTrans-\nportProtocolHandler::Transmit\nmethod of the UDS Transport Protocol imple-\nmentation.\n⌋\n[SWS_DM_00349] Reuse channel identifier of Indication\nUpstream requirements:\nRS_Diag_…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P102_135",
+   "page": 102,
+   "text": "to the\nmessage\nparameter of the\napext::diag::uds_transport::UdsTrans-\nportProtocolHandler::Transmit\ncall ([SWS_DM_00348]).\n⌋\n[SWS_DM_00351] Confirmation Result\nUpstream requirements:\nRS_Diag_04168\n⌈\nWhen the the network layer was able to send the UDS response message to the net-\nwork, the\nresult\nargument in the\napext::diag::uds_transport::UdsTrans-\nportProtocolMgr::TransmitConfirmation\nshall be set to\nkTransmitOk\n, oth-\nerwise to\nkTransmitFailed\n.\n⌋\n7.1.1.4 Channel Notifications\nEach incoming UDS request message is assigned an exact UDS Transport Protocol\nimplementation specific\nChannel\n. With the normal request/reply paradigm in diag-\nnostics, the UDS response message is sent out at the same\nChannel\n, from which\nthe UDS request has been received. Therefore the\nChannel\nidentifier is given to the\nDM in\napext::diag::uds_transport::UdsTransportProtocolMgr::Indi-\ncateMessage\nin the form of parameter\nglobalChannelId\n. The\nChannel\npart from\nthis parameter is then used in the corresponding response in\napext::diag::uds_\ntransport::UdsTransportProtocolHandler::Transmit\n.\nThere are use cases, where a diagnostic request might be answered deferred after the\nrestart of the DM. The UDS service for ECU reset is a candidate for such a requiremen…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P104_137",
+   "page": 104,
+   "text": "[SWS_DM_02111]\nDoIP\nprotocol semantics based on the configured\nDoIP\nproto-\ncol version\nUpstream requirements:\nRS_Diag_00025\n⌈\nThe DM shall adapt the DoIP protocol behavior based on the configured\nDoIpFunc-\ntionalClusterDesign.doIpProtocolVersion\nvalue and shall use only DoIP\nmessages (values, payload types, ...) that are specified by the selected ISO 13400-2[2]\nprotocol version.\n⌋\n[SWS_DM_00449] Supported\nDoIP\nmessage types\nUpstream requirements:\nRS_Diag_00026, RS_Diag_00080, RS_Diag_00082, RS_Diag_00083,\nRS_Diag_00084, RS_Diag_00027\n⌈\nThe DM shall support the DoIP message types listed in Table [SWS_DM_01568].\n⌋\n[SWS_DM_01568] supportedDoIpMessageTypes\nUpstream requirements:\nRS_Diag_00026, RS_Diag_00080, RS_Diag_00082, RS_Diag_00083,\nRS_Diag_00084, RS_Diag_00027\n⌈"
+  }
+ ],
+ "element": {
+  "description": "Translate an error code value into a text message.",
+  "id": "SWS_DM_01001",
+  "kind": "function",
+  "name": "Message",
+  "signature": "const char * Message (ara::core::ErrorDomain::CodeType errorCode) const noexcept override;",
+  "spezifikation": "function Message [SWS_DM_01001] Upstream: RS_AP_00119 const char * Message ( ara::core::ErrorDomain::CodeType errorCode) const noexcept override; Translate an error code value into a text message. Header-Datei #include \"ara/diag/diag_error_domain.h\" class mono Scope class ara::diag::DiagReportingErrorDomain class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td errorCode td the error code value Rückgabewert th Typ th Beschreibung td const char * td the text message, never nullptr"
+ },
+ "module": "dm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "verwandte_requirements": [
+  {
+   "id": "SWS_DM_00309",
+   "text": "function IndicateMessage [SWS_DM_00309] Upstream: RS_AP_00120 , RS_AP_00121 , RS_AP_00122 , RS_Diag_04147 , RS_Diag_04168 virtual std::pair &amp;lt; IndicationResult , UdsMessagePtr &amp;gt; IndicateMessage ( UdsMessage::Address sourceAddr, UdsMessage::Address targetAddr, Uds Message:: TargetAddressType type, GlobalChannelIdentifier globalChannel Id, std::size_t size, ara::core::Span &amp;lt; const std::uint8_t &amp;gt; payload Info) noexcept=0; Indicates a message start. This is an interface, which is just served/called by UdsTransportProtocolHandlers, which return TRUE from UdsTransportProtocolHandlers::isStartOfMessageIndicationSupported(). Header-Datei #include \"apext/diag/uds_transport/protocol_mgr.h\" class mono Scope class apext::diag::uds_transport::UdsTransportProtocolMgr class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Par…"
+  },
+  {
+   "id": "SWS_DM_00310",
+   "text": "function NotifyMessageFailure [SWS_DM_00310] Upstream: RS_Diag_04147 , RS_Diag_04168 virtual void NotifyMessageFailure ( UdsMessagePtr message) noexcept=0; Indicates, that the message indicated via IndicateMessage() has failure and will not lead to a final HandleMessage() call. Header-Datei #include \"apext/diag/uds_transport/protocol_mgr.h\" class mono Scope class apext::diag::uds_transport::UdsTransportProtocolMgr class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Parameter th Beschreibung td message td Pointer to the UDS Message handed back over to the Session Layer. Rückgabewert th Typ th Beschreibung td None td"
+  },
+  {
+   "id": "SWS_DM_00311",
+   "text": "function HandleMessage [SWS_DM_00311] Upstream: RS_Diag_04147 , RS_Diag_04168 virtual void HandleMessage ( UdsMessagePtr message) noexcept=0; Hands over a valid received UDS message (currently this is only a request type) from the Transport Layer to the Session Layer. This corresponds to T_Data.ind of Figure 2 from ISO 14229-2 [25] . The behavior is asynchronously, i.e. the UDS Message is handed over to the Session Layer and it is expected, that it \"instantly\" returns, which means, that real processing of the message shall be done asynchronously by the Transport Layer! Literaturverzeichnis SWS Diagnostics: [25] ISO 14229-2(2021) – Unified diagnostic services (UDS) - Part 2: Session layer services (Release 2021-10) – www.iso.org Header-Datei #include \"apext/diag/uds_transport/protocol_mgr.h\" class mono Scope class apext::diag::uds_transport::UdsTransportProtocolMgr class mono Exception-S…"
+  },
+  {
+   "id": "SWS_DM_00327",
+   "text": "function Transmit [SWS_DM_00327] Upstream: RS_Diag_04147 , RS_Diag_04168 virtual void Transmit ( UdsMessageConstPtr message, ChannelID channel Id) noexcept=0; Transmit a UDS message via the underlying UDS Transport Protocol channel. Header-Datei #include \"apext/diag/uds_transport/protocol_handler.h\" class mono Scope class apext::diag::uds_transport::UdsTransportProtocolHandler class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Parameter (in) th Parameter th Beschreibung td message td The message to be transmitted as a UdsMessage::Ptr (unique_ptr style). UdsTransportProtocolHandler has to give back this Uds Message::Ptr via UdsTransportProtocolMgr::Transmit Confirmation() to signal, that it is done with this message. td channelId td Identification of channel on which to transmit. Rückgabewert th Typ th Beschreibung td None td Hinweise:…"
+  },
+  {
+   "id": "SWS_DM_00522",
+   "text": "function Message [SWS_DM_00522] Upstream: RS_AP_00119 const char * Message ( ara::core::ErrorDomain::CodeType errorCode) const noexcept override; Translate an error code value into a text message. Header-Datei #include \"ara/diag/diag_error_domain.h\" class mono Scope class ara::diag::DiagErrorDomain class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td errorCode td the error code value Rückgabewert th Typ th Beschreibung td const char * td the text message, never nullptr"
+  },
+  {
+   "id": "SWS_DM_00534",
+   "text": "function Message [SWS_DM_00534] Upstream: RS_AP_00119 const char * Message ( ara::core::ErrorDomain::CodeType errorCode) const noexcept override; Translate an error code value into a text message. Header-Datei #include \"ara/diag/diag_uds_nrc_error_domain.h\" class mono Scope class ara::diag::DiagUdsNrcErrorDomain class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td errorCode td the error code value Rückgabewert th Typ th Beschreibung td const char * td the text message, never nullptr"
+  },
+  {
+   "id": "SWS_DM_00994",
+   "text": "function Message [SWS_DM_00994] Upstream: RS_AP_00119 const char * Message ( ara::core::ErrorDomain::CodeType errorCode) const noexcept override; Translate an error code value into a text message. Header-Datei #include \"ara/diag/diag_error_domain.h\" class mono Scope class ara::diag::DiagOfferErrorDomain class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td errorCode td the error code value Rückgabewert th Typ th Beschreibung td const char * td the text message, never nullptr"
+  },
+  {
+   "id": "SWS_DM_01814",
+   "text": "function Message [SWS_DM_01814] Upstream: RS_AP_00119 const char * Message ( ara::core::ErrorDomain::CodeType errorCode) const noexcept override; Translate an error code value into a text message. Header-Datei #include \"ara/diag/diag_sovd_error_domain.h\" class mono Scope class ara::diag::DiagSovdErrorDomain class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td errorCode td the error code value Rückgabewert th Typ th Beschreibung td const char * td the text message, never nullptr"
+  }
+ ]
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ea11a4d30fb649472edcf37e688249788238bd6913f9664bf3c45d7404bc577f" data-trace-output="ffc70550641fc5de08b6e0270fb0a7e744ac301e37a68524d438fc1c46a49da4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Übersetzt Fehlercodes der Diagnose-Meldedomäne synchron und threadsicher in beschreibende Textmeldungen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
+
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Methode &lt;code&gt;Message&lt;/code&gt; der Klasse &lt;code&gt;ara::diag::DiagReportingErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;) dient der synchronen Übersetzung eines numerischen Fehlercodes (&lt;code&gt;ara::core::ErrorDomain::CodeType errorCode&lt;/code&gt;) in eine beschreibende Textnachricht. Als Rückgabewert liefert die Funktion einen Zeiger vom Typ &lt;code&gt;const char *&lt;/code&gt;, der laut Spezifikation niemals &lt;code&gt;nullptr&lt;/code&gt; ist (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;). Aufgrund des Rückgabetyps ohne Freigabemechanismus dürfte der Zeiger vermutlich auf statischen Speicher verweisen (Interpretation). Die Schnittstelle wird über die Header-Datei &lt;code&gt;#include "ara/diag/diag_error_domain.h"&lt;/code&gt; bereitgestellt (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist als &lt;code&gt;noexcept&lt;/code&gt; sowie &lt;code&gt;exception safe&lt;/code&gt; definiert (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;). Da vertraglich garantiert ist, dass niemals ein Nullzeiger zurückgegeben wird, erzeugt die Funktion auch für unbekannte Fehlercodes stets eine gültige Zeichenkette (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;). Bezüglich der Nebenläufigkeit ist &lt;code&gt;Message&lt;/code&gt; als &lt;code&gt;thread-safe&lt;/code&gt; spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;). Aufrufe können somit ohne zusätzliche Synchronisation parallel aus mehreren Threads heraus erfolgen.&lt;/p&gt;
+
+&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Die Methode überschreibt als &lt;code&gt;override&lt;/code&gt; die gleichnamige Basismethode zur Übersetzung von Fehlercodes im Kontext von Adaptive AUTOSAR (&lt;a class="spec-record-ref" data-req="SWS_DM_01001" href="../spec/record.html?id=SWS_DM_01001"&gt;[SWS_DM_01001]&lt;/a&gt;). Dieses einheitliche Verhaltensmuster teilen auch andere Fehlerdomänen des Diagnosemoduls, etwa &lt;code&gt;ara::diag::DiagErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_00522" href="../spec/record.html?id=SWS_DM_00522"&gt;[SWS_DM_00522]&lt;/a&gt;), &lt;code&gt;ara::diag::DiagUdsNrcErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_00534" href="../spec/record.html?id=SWS_DM_00534"&gt;[SWS_DM_00534]&lt;/a&gt;), &lt;code&gt;ara::diag::DiagOfferErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_00994" href="../spec/record.html?id=SWS_DM_00994"&gt;[SWS_DM_00994]&lt;/a&gt;) und &lt;code&gt;ara::diag::DiagSovdErrorDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_01814" href="../spec/record.html?id=SWS_DM_01814"&gt;[SWS_DM_01814]&lt;/a&gt;).&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Rückgabezeiger verweist vermutlich auf statischen Speicher – Begründung: Die Spezifikation definiert den Rückgabetyp const char * ohne Speicherverwaltungs- oder Deallokationsmechanismen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI basierend auf AUTOSAR-Spezifikationen generiert.&lt;/p&gt;
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ea11a4d30fb6…</code></div>
+              <div><strong>Konstituierende Records:</strong> 1</div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">9 von 9 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (1 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 0 seit der Generierung zugeordnet)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_01001","k":"function","d":"AUTOSAR","t":"","n":"Message"}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P68_015","d":"AUTOSAR_AP_SWS_Diagnostics","p":68,"t":"[SWS_DM_00514] [SWS_DM_00515]\n[SWS_DM_00516] [SWS_DM_00517]\n[SWS_DM_00518] [SWS_DM_00519]\n[SWS_DM_00520] [SWS_DM_00521]\n[SWS_DM_00522] [SWS_DM_00523]\n[SWS_DM_00524] [SWS_DM_00525]\n[SWS_DM_00526] [SWS_DM_00527]\n[SWS_DM_00528] [SWS_DM_00529]\n[SWS_DM_00530] [SWS_DM_00531]\n[SWS_DM_00532] [SWS_DM_00533]\n[SWS_DM_00534] [SWS_DM_00535]\n[SWS_DM_00536] [SWS_DM_00537]\n[SWS_DM_00543] [SWS_DM_00554]\n[SWS_DM_00555] [SWS_DM_00556]\n[SWS_DM_00557] [SWS_DM_00559]\n[SWS_DM_00560] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00618] [SWS_DM_00619]\n[SWS_DM_00636] [SWS_DM_00637]\n[SWS_DM_00638] [SWS_DM_00653]\n[SWS_DM_00671] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00764]\n[SWS_DM_00765] [SWS_DM_00766]\n[SWS_DM_00774] [SWS_DM_00776]\n[SWS_DM_00789] [SWS_DM_00790]\n[SWS_DM_00791] [SWS_DM_00792]\n[SWS_DM_00799] [SWS_DM_00800]\n[SWS_DM_00801] [SWS_DM_00802]\n[SWS_DM_00808] [SWS_DM_00809]\n[SWS_DM_00836] [SWS_DM_00985]\n[SWS_DM_00986] [SWS_DM_00987]\n[SWS_DM_00988] [SWS_DM_00989]\n[SWS_DM_00990] [SWS_DM_00991]\n[SWS_DM_00992] [SWS_DM_00993]\n[SWS_DM_00994] [SWS_DM_00995]\n[SWS_DM_00996] [SWS_DM_00997]\n[SWS_DM_00998] [SWS_DM_00999]\n[SWS_DM_01000] [SWS_DM_01001]\n[SWS_DM_01002] [SWS_DM_01003]\n[SWS_DM_01004] [SWS_DM_01005]\n[SWS_DM_01006] [SWS_DM_01016]\n[SWS_DM_01088] [SWS…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P94_127","d":"AUTOSAR_AP_SWS_Diagnostics","p":94,"t":"Figure 7.1: Component view on Diagnostic Management\n7.1 UDS Transport Layer\nSince there exist standardized as well as OEM specific UDS Transport Layers, the\nDM supports a standardized C++ API (called\nTransport Protocol API\n), where\ndifferent kinds of UDS Transport Layers can be connected. Currently the Adaptive\nPlatform only provides a detailed description of Ethernet-based network technologies,\nwhich mandates support of DoIP [2]. It is very likely, that upcoming releases of the\nDM will also detail CAN, CAN-FD, FR, ... networks. The\nTransport Protocol API\nallows for extensions of DM towards not-yet-detailed and proprietary UDS Transport\nProtocols.\nThe UDS Transport Protocol (TP) implementation can optionally provide the so far re-\nceived UDS message content in\npayloadInfo\n. It is up to the TP implementation to\ndecide how much of the so far received data is provided. It is recommended to provide\nat least the first two bytes of the received message. The DM is then able to detect a\nfunctional received tester present (UDS bypass logic) and accept this message, even\nthe DM is currently processing a physical request. If the TP does not provide any data\nin\npayloadInfo\n, the DM will not be able to detect the functional TP and will reject…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P98_131","d":"AUTOSAR_AP_SWS_Diagnostics","p":98,"t":"The side effect of this is that from the viewpoint of Diagnostic Server, which supports\nparallel Diagnostic Clients, it is a perfectly valid scenario that two Diagnostic Clients\nwith the same UDS\nSA\ncan be active in parallel if they originate from different/distin-\nguishable network endpoints.\n[SWS_DM_00385] Acceptance of UDS message reception\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the DM is able to process the indicated request,\napext::diag::uds_trans-\nport::UdsTransportProtocolMgr::IndicateMessage\nshall return a\nstd::\npair\nwith\napext::diag::uds_transport::UdsTransportProtocolMgr::\nIndicationResult\nset to\nkIndicationOk\nand a\napext::diag::uds_trans-\nport::UdsMessagePtr\n, which owns a valid\napext::diag::uds_transport::\nUdsMessage\nobject, with a capacity of so many bytes, the DM wants to process of\nthe indicated request. The minimum size of the\napext::diag::uds_transport::\nUdsMessage\nobject shall be one byte.\n⌋\nNote: For details about\nstd::pair\nsee [SWS_DM_00309].\n[SWS_DM_00392] Properties of returned UdsMessage\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the DM accepted the UDS message reception, the returned\napext::diag::\nuds_transport::UdsMessage\nowned by\napext::diag::uds_transport::\nUdsMessagePtr\nshall return a\napext::diag::ud…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P99_132","d":"AUTOSAR_AP_SWS_Diagnostics","p":99,"t":"[SWS_DM_00386] Ignoring UDS message reception because DM is busy\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the\nTransport Protocol Manager\nis calling\napext::diag::uds_trans-\nport::UdsTransportProtocolMgr::IndicateMessage\nand the DM is busy\ndue to the active processing of a service from the same Tester Present con-\nversation and the Tester Present request is not a functional request with the\noptional provided\npayloadInfo\n’0x3E 0x80’, the DM shall return a\nstd::\npair\nwith\napext::diag::uds_transport::UdsTransportProtocolMgr::\nIndicationResult\nset to\nkIndicationOccupied\nand a\napext::diag::uds_\ntransport::UdsMessagePtr\nequal to\nnullptr\n.\n⌋\nFunctional\nTesterPresents\n(compare [SWS_DM_00126]) with\nsuppressPosR-\nspMsgIndicationBit\n= TRUE are exceptional requests in UDS and valid at any\npoint in time. Therefore the DM allows to check for functional received\nTesterP-\nresent\nrequest in the\napext::diag::uds_transport::UdsTransportProto-\ncolMgr::IndicateMessage\n. For handling of the functional\nTesterPresent\n, see\nchapter 7.3.2.8.21.\nNote: For details about\nstd::pair\nsee [SWS_DM_00309].\nNote: For declining/ignoring a second request without sending a negative response\naccording to [SWS_DM_00290], the DM would choose this behavior.\n[SWS_DM_00387]…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P100_133","d":"AUTOSAR_AP_SWS_Diagnostics","p":100,"t":"set to\nkIndicationUnknownTargetAddress\nand a\napext::diag::uds_\ntransport::UdsMessagePtr\nequal to\nUdsMessagePtr(nullptr)\n.\n⌋\nNote: For details about\nstd::pair\nsee [SWS_DM_00309].\n[SWS_DM_00388] Filling provided UdsMessage\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the DM returned\nkIndicationOk\nfrom the\napext::diag::uds_transport::\nUdsTransportProtocolMgr::IndicateMessage\n, the UDS Transport Proto-\ncol implementation shall fill the\napext::diag::uds_transport::UdsMessage\nowned by\napext::diag::uds_transport::UdsMessagePtr\nfrom the received\nUDS request starting from\nSID\nup to either\napext::diag::uds_transport::\nUdsMessage\nfull capacity or up to the entire received UDS request message, whatever\nhappens first.\n⌋\n[SWS_DM_00345] Forwarding of UDS message\nUpstream requirements:\nRS_Diag_04168\n⌈\nIf the UDS Transport Protocol implementation has filled the payload of the re-\nturned\napext::diag::uds_transport::UdsMessagePtr\n, it shall call\napext::\ndiag::uds_transport::UdsTransportProtocolMgr::HandleMessage\non its\napext::diag::uds_transport::UdsTransportProtocolMgr\nreference (see\n[SWS_DM_00330]) with the returned\napext::diag::uds_transport::UdsMes-\nsagePtr\nas argument.\n⌋\n[SWS_DM_00389] Skipping Forwarding of UDS message\nUpstream requirements:\nRS_…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P101_134","d":"AUTOSAR_AP_SWS_Diagnostics","p":101,"t":"[SWS_DM_00342] Indication of UDS message reception\nUpstream requirements:\nRS_Diag_04168\n⌈\nUDS Transport Protocol implementation shall call\napext::diag::uds_trans-\nport::UdsTransportProtocolMgr::IndicateMessage\non its\napext::\ndiag::uds_transport::UdsTransportProtocolMgr\nreference ((see\n[SWS_DM_00330])), as soon as it has at least the following information of an\nincoming UDS request available:\n• UDS\nsource address\nof the request.\n• UDS\ntarget address\nof the request.\n• Type of the UDS target address (physical or functional)\n• Size of the entire UDS message starting from SID\n• If the UDS payload is larger than 1 byte, at least two bytes are received and shall\nbe forwarded in the parameter\npayloadInfo\n⌋\n7.1.1.3 UDS message transmission on a UDS TransportLayer\n[SWS_DM_00348] Transmission of UDS response message\nUpstream requirements:\nRS_Diag_04168\n⌈\nDM shall send a diagnostic response UDS message to the same UDS Trans-\nport Protocol implementation, where it has received the UDS request message (see\n[SWS_DM_00345]) by calling the\napext::diag::uds_transport::UdsTrans-\nportProtocolHandler::Transmit\nmethod of the UDS Transport Protocol imple-\nmentation.\n⌋\n[SWS_DM_00349] Reuse channel identifier of Indication\nUpstream requirements:\nRS_Diag_…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P102_135","d":"AUTOSAR_AP_SWS_Diagnostics","p":102,"t":"to the\nmessage\nparameter of the\napext::diag::uds_transport::UdsTrans-\nportProtocolHandler::Transmit\ncall ([SWS_DM_00348]).\n⌋\n[SWS_DM_00351] Confirmation Result\nUpstream requirements:\nRS_Diag_04168\n⌈\nWhen the the network layer was able to send the UDS response message to the net-\nwork, the\nresult\nargument in the\napext::diag::uds_transport::UdsTrans-\nportProtocolMgr::TransmitConfirmation\nshall be set to\nkTransmitOk\n, oth-\nerwise to\nkTransmitFailed\n.\n⌋\n7.1.1.4 Channel Notifications\nEach incoming UDS request message is assigned an exact UDS Transport Protocol\nimplementation specific\nChannel\n. With the normal request/reply paradigm in diag-\nnostics, the UDS response message is sent out at the same\nChannel\n, from which\nthe UDS request has been received. Therefore the\nChannel\nidentifier is given to the\nDM in\napext::diag::uds_transport::UdsTransportProtocolMgr::Indi-\ncateMessage\nin the form of parameter\nglobalChannelId\n. The\nChannel\npart from\nthis parameter is then used in the corresponding response in\napext::diag::uds_\ntransport::UdsTransportProtocolHandler::Transmit\n.\nThere are use cases, where a diagnostic request might be answered deferred after the\nrestart of the DM. The UDS service for ECU reset is a candidate for such a requiremen…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P104_137","d":"AUTOSAR_AP_SWS_Diagnostics","p":104,"t":"[SWS_DM_02111]\nDoIP\nprotocol semantics based on the configured\nDoIP\nproto-\ncol version\nUpstream requirements:\nRS_Diag_00025\n⌈\nThe DM shall adapt the DoIP protocol behavior based on the configured\nDoIpFunc-\ntionalClusterDesign.doIpProtocolVersion\nvalue and shall use only DoIP\nmessages (values, payload types, ...) that are specified by the selected ISO 13400-2[2]\nprotocol version.\n⌋\n[SWS_DM_00449] Supported\nDoIP\nmessage types\nUpstream requirements:\nRS_Diag_00026, RS_Diag_00080, RS_Diag_00082, RS_Diag_00083,\nRS_Diag_00084, RS_Diag_00027\n⌈\nThe DM shall support the DoIP message types listed in Table [SWS_DM_01568].\n⌋\n[SWS_DM_01568] supportedDoIpMessageTypes\nUpstream requirements:\nRS_Diag_00026, RS_Diag_00080, RS_Diag_00082, RS_Diag_00083,\nRS_Diag_00084, RS_Diag_00027\n⌈"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/de28f3ad3ce3de62.json?v=c9409074" data-total="0" data-new="0" data-figures="0" data-used="8"></script></dialog>

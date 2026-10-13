@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91005" class="dossier-modal dossier-workbench" data-dossier-sha="f6b641acf65d7817" aria-labelledby="dossier-modal-SWS_Dcm_91005-title">
+<dialog id="dossier-modal-SWS_Dcm_91005" class="dossier-modal dossier-workbench" data-dossier-sha="0f359ca30e3e163f" aria-labelledby="dossier-modal-SWS_Dcm_91005-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91005-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91005)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,963 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,418 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_ReadData'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -196,36 +214,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="490630c6968c086e066ce5351ce7873b878942dd1b46212b8bd4f1fcc8a4d8d7" data-trace-output="f6b641acf65d78179c685516556c1172a1a05fbe5b7a830d9d1afcb264f8789c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="85898fb6f53fc1a679f48adcee2f9bfa25f042a1c828256b83a844e4f20da296" data-trace-output="0f359ca30e3e163f63397cc8cc83bbf4408702c25f31a5d5d91b8c7e53d9b7e7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert asynchron DID- oder PID-Daten von der Applikation an und erlaubt die Rückgabe eines spezifischen Fehlercodes." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion &lt;code&gt;Xxx_ReadData&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;) wird von der Applikation bereitgestellt und über &lt;code&gt;Dcm_Externals.h&lt;/code&gt; deklariert. Sie dient dazu, bei Konfiguration von &lt;code&gt;DcmDspDataUsePort&lt;/code&gt; auf &lt;code&gt;USE_DATA_ASYNCH_CLIENT_SERVER&lt;/code&gt; den Datenwert eines DID oder PID abzufragen.
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Aufrufkontext und Nebenläufigkeit:&lt;/strong&gt; Die Ausführung erfolgt asynchron (Service-ID &lt;code&gt;0x58&lt;/code&gt;); die Funktion ist nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;&lt;code&gt;OpStatus&lt;/code&gt; (in):&lt;/strong&gt; Übergibt den Fortschrittsstatus der laufenden Operation (&lt;code&gt;Dcm_OpStatusType&lt;/code&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;&lt;code&gt;Data&lt;/code&gt; (out):&lt;/strong&gt; Zeiger auf den Puffer, in den die angeforderten Daten kopiert werden müssen.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Rückgabewerte:&lt;/strong&gt; &lt;code&gt;E_OK&lt;/code&gt; bestätigt den erfolgreichen Abschluss der Anfrage. &lt;code&gt;DCM_E_PENDING&lt;/code&gt; signalisiert, dass die Operation noch nicht abgeschlossen ist und weitere Aufrufe zur Fertigstellung benötigt werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;
-    Liefert &lt;code&gt;Xxx_ReadData&lt;/code&gt; den Rückgabewert &lt;code&gt;E_NOT_OK&lt;/code&gt;, sendet das DCM-Modul eine negative Antwort mit dem NRC-Code, der über den Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; (&lt;code&gt;Dcm_NegativeResponseCodeType*&lt;/code&gt;) übergeben wurde (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;
-    Das DCM-Modul bindet konfigurierte &lt;code&gt;Xxx_ReadData&lt;/code&gt;-Funktionen in folgenden Diagnoseabläufen ein:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;OBD Service $01:&lt;/strong&gt; Bei Anfragen mit PIDs, die keine Availability-PIDs darstellen, ermittelt das DCM die aktuellen Datenwerte über die konfigurierten &lt;code&gt;Xxx_ReadData()&lt;/code&gt;-Aufrufe (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00408" href="../../spec/record.html?id=SWS_Dcm_00408"&gt;[SWS_Dcm_00408]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;UDS Service 0x22 (ReadDataByIdentifier):&lt;/strong&gt; Der Aufruf erfolgt je Datum für &lt;code&gt;OBDDataIdentifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01380" href="../../spec/record.html?id=SWS_Dcm_01380"&gt;[SWS_Dcm_01380]&lt;/a&gt;) sowie für &lt;code&gt;OBDInfoTypeDataIdentifier&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01389" href="../../spec/record.html?id=SWS_Dcm_01389"&gt;[SWS_Dcm_01389]&lt;/a&gt;), sofern es sich jeweils nicht um Availability-Identifier handelt.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Zur Abgrenzung: Für synchrone Ports (&lt;code&gt;USE_DATA_SYNCH_CLIENT_SERVER&lt;/code&gt;) existiert eine parameterreduzierte Signatur ohne Status- und Fehlercodes (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00793" href="../../spec/record.html?id=SWS_Dcm_00793"&gt;[SWS_Dcm_00793]&lt;/a&gt;); zudem ist eine alternative asynchrone Signatur ohne den Parameter &lt;code&gt;ErrorCode&lt;/code&gt; spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91006" href="../../spec/record.html?id=SWS_Dcm_91006"&gt;[SWS_Dcm_91006]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation AUTOSAR Classic Release R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Xxx_ReadData&lt;/code&gt; fordert von der Applikation asynchron den Datenwert eines DID oder PID an, sofern der Konfigurationsparameter &lt;code&gt;DcmDspDataUsePort&lt;/code&gt; auf &lt;code&gt;USE_DATA_ASYNCH_CLIENT_SERVER&lt;/code&gt; eingestellt ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;. Die Funktionsdeklaration wird über die Schnittstellendatei &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Schnittstelle besitzt folgende Aufruf- und Ablaufcharakteristika:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Semantik und Parameter:&lt;/strong&gt; Der Eingabeparameter &lt;code&gt;OpStatus&lt;/code&gt; steuert den Fortschritt der laufenden Operation &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;. Bei erfolgreichem Abschluss werden die angeforderten Nutzdaten in den Ausgabepuffer &lt;code&gt;Data&lt;/code&gt; kopiert und &lt;code&gt;E_OK&lt;/code&gt; zurückgegeben &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;. Benötigt die Applikation weitere Bearbeitungszeit, signalisiert sie &lt;code&gt;DCM_E_PENDING&lt;/code&gt;, woraufhin Folgebeschaltungen erforderlich sind &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlerbehandlung:&lt;/strong&gt; Schlägt die Operation fehl und gibt &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, wertet das DCM-Modul den Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; aus und sendet eine negative Diagnoseantwort mit diesem NRC-Code &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) definiert &lt;a class="spec-record-ref" data-req="SWS_Dcm_91005" href="../../spec/record.html?id=SWS_Dcm_91005"&gt;[SWS_Dcm_91005]&lt;/a&gt;. Interpretation: Die wiederholten Aufrufe bei anhängiger Bearbeitung dürften sequenziell im Zyklus der DCM-Hauptverarbeitung erfolgen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Zusammenspiel:&lt;/strong&gt; Das DCM-Modul ruft die Funktion bei Anfragen des OBD Service $01 für Nicht-Verfügbarkeits-PIDs &lt;a class="spec-record-ref" data-req="SWS_Dcm_00408" href="../../spec/record.html?id=SWS_Dcm_00408"&gt;[SWS_Dcm_00408]&lt;/a&gt; sowie beim UDS Service ReadDataByIdentifier (0x22) für &lt;code&gt;OBDDataIdentifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_01380" href="../../spec/record.html?id=SWS_Dcm_01380"&gt;[SWS_Dcm_01380]&lt;/a&gt; und &lt;code&gt;OBDInfoTypeDataIdentifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_01389" href="../../spec/record.html?id=SWS_Dcm_01389"&gt;[SWS_Dcm_01389]&lt;/a&gt; auf. Im Vergleich zur synchronen Variante &lt;a class="spec-record-ref" data-req="SWS_Dcm_00793" href="../../spec/record.html?id=SWS_Dcm_00793"&gt;[SWS_Dcm_00793]&lt;/a&gt; oder asynchronen Schnittstellen ohne NRC-Parameter &lt;a class="spec-record-ref" data-req="SWS_Dcm_91006" href="../../spec/record.html?id=SWS_Dcm_91006"&gt;[SWS_Dcm_91006]&lt;/a&gt; ermöglicht diese Signatur eine spezifische negative Fehlerübermittlung.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Sequenzielle Wiederaufrufe dürften im Zyklus der Dcm-Hauptverarbeitung erfolgen – Begründung: SWS_Dcm_91005 fordert Folgeaufrufe bei DCM_E_PENDING und deklariert die Funktion als Non Reentrant, spezifiziert aber den genauen Taskkontext nicht. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt und basiert ausschließlich auf den Spezifikationsanforderungen des AUTOSAR-Releases R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -265,9 +267,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>490630c6968c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>85898fb6f53f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 24 <span class="dossier-meta-sub">(24 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 24 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 20 <span class="dossier-meta-sub">(20 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 20 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -302,8 +304,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">26</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">25</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">22</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">21</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -340,7 +342,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 24 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 20 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -403,4 +405,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91005","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ReadData"}],"inbound":[{"i":"SWS_Dcm_00408","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00408].","n":"SWS_Dcm_00408"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/e65ab7147aabe856.json?v=154c5d70" data-total="24" data-new="24" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91005","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ReadData"}],"inbound":[{"i":"SWS_Dcm_00408","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00408].","n":"SWS_Dcm_00408"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/e65ab7147aabe856.json?v=4af1c16d" data-total="20" data-new="20" data-figures="1" data-used="0"></script></dialog>

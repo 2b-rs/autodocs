@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinSM_00135" class="dossier-modal dossier-workbench" data-dossier-sha="75871ed443a0a5e8" aria-labelledby="dossier-modal-SWS_LinSM_00135-title">
+<dialog id="dossier-modal-SWS_LinSM_00135" class="dossier-modal dossier-workbench" data-dossier-sha="cbba802f096c55e0" aria-labelledby="dossier-modal-SWS_LinSM_00135-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinSM_00135-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinSM_00135)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,250 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,705 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinSM_GotoSleepConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,24 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="db02cf40272e1b81d2d58bc26512d9e34294b5452cab91f72c126f48bdde53a8" data-trace-output="75871ed443a0a5e8adf07fe2305853915c57fda80c76fcefa98a3a5c6b1efbdd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="cf9e1845fe84ea7cf7153ecccac022efc26e071517e6230865dc8c34af792291" data-trace-output="cbba802f096c55e09624d934a01b736acba3234d6a3f2f17b15a0397c2392a12" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Nimmt die Bestätigung über das Senden des Go-to-Sleep-Befehls auf einem LIN-Kanal entgegen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;LinSM_GotoSleepConfirmation&lt;/code&gt; is a synchronous callback interface (service ID &lt;code&gt;0x22&lt;/code&gt;) provided via header &lt;code&gt;LinSM.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;. It is called by the LIN interface (&lt;code&gt;LinIf&lt;/code&gt;) to confirm whether the command to transition into sleep state ("go to sleep command") was transmitted successfully or unsuccessfully on the network &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callback-Funktion &lt;code&gt;LinSM_GotoSleepConfirmation&lt;/code&gt; wird gemäß &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt; vom LIN Interface (LinIf) aufgerufen, sobald ein Go-to-Sleep-Befehl auf dem LIN-Netzwerk übertragen wurde oder die Übertragung fehlgeschlagen ist.&lt;/p&gt;
+  
+  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Der Callback besitzt die Service-ID &lt;code&gt;0x22&lt;/code&gt;, wird über den Header &lt;code&gt;LinSM.h&lt;/code&gt; deklariert und besitzt keinen Rückgabewert &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;. Zur Identifikation und Statusübermittlung werden zwei Übergabeparameter genutzt:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;network&lt;/code&gt; (in, &lt;code&gt;NetworkHandleType&lt;/code&gt;): Identification of the affected LIN channel &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;success&lt;/code&gt; (in, &lt;code&gt;boolean&lt;/code&gt;): Indicates whether sending the sleep command was successful (&lt;code&gt;TRUE&lt;/code&gt;) or failed (&lt;code&gt;FALSE&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;network&lt;/code&gt;: Identifiziert den betroffenen LIN-Kanal über den Typ &lt;code&gt;NetworkHandleType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;success&lt;/code&gt;: Gibt als boolescher Wert an, ob das Go-to-Sleep-Kommando erfolgreich auf dem Bus gesendet werden konnte (&lt;code&gt;true&lt;/code&gt;) oder nicht (&lt;code&gt;false&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;The function has no return value &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;According to the specification, &lt;code&gt;LinSM_GotoSleepConfirmation&lt;/code&gt; is classified as reentrant &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;. This permits parallel confirmation calls, for example during simultaneous management of multiple LIN networks by &lt;code&gt;LinIf&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Interaction&lt;/h4&gt;
-  &lt;p&gt;The result of the transmission is conveyed via the argument &lt;code&gt;success&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;. Specific DET or DEM errors are not identified for this callback in the specification data. Module &lt;code&gt;LinSM&lt;/code&gt; is likely to use the value of &lt;code&gt;success&lt;/code&gt; internally to adapt the channel state accordingly or to coordinate follow-up actions for failed transmission attempts.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was created automatically based on the AUTOSAR specification for LinSM (release R20-11).&lt;/p&gt;
-  &lt;!-- annahmen: 1) LinSM dürfte den Parameter success intern zur Steuerung des Kanal-Zustandsübergangs oder für Fehlerfolgeaktionen heranziehen – Begründung: Der Payload beschreibt lediglich die Signalisierung durch LinIf, spezifiziert jedoch nicht die interne Zustandsverarbeitung im LinSM bei negativem Rückgabewert. --&gt;
+  &lt;h4&gt;Ausführungskontext und Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Die Spezifikation definiert den Aufruf als synchron und reentrant &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;. Interpretation: Das Modul LinSM dürfte anhand des Parameters &lt;code&gt;success&lt;/code&gt; seinen internen Zustand für das jeweilige Netzwerk aktualisieren und feststellen, ob der Übergang in den Ruhezustand auf dem Bus bestätigt wurde. Fehlerbehandlungen, Rückgabewerte oder spezifische DET- bzw. DEM-Meldungen sind für diese Schnittstelle im Payload nicht spezifiziert &lt;a class="spec-record-ref" data-req="SWS_LinSM_00135" href="../../spec/record.html?id=SWS_LinSM_00135"&gt;[SWS_LinSM_00135]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Das Modul LinSM aktualisiert anhand des Parameters success den internen Zustand des betroffenen Netzwerks – Begründung: Der Payload dokumentiert nur die Bestätigung durch das LinIf, schweigt jedoch über die genauen internen Folgeabläufe im LinSM. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert; verbindlich ist ausschließlich die AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -232,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>db02cf40272e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>cf9e1845fe84…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 18 <span class="dossier-meta-sub">(18 neu · 12 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 18 Belege dazugekommen (12 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 11 <span class="dossier-meta-sub">(11 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 11 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -269,8 +286,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">19</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">18</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">11</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -307,7 +324,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 18 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 11 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -370,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinSM_00135","k":"function","d":"AUTOSAR","t":"","n":"LinSM_GotoSleepConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/0255f9720e52e474.json?v=4e4983d9" data-total="18" data-new="18" data-figures="12" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinSM_00135","k":"function","d":"AUTOSAR","t":"","n":"LinSM_GotoSleepConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/0255f9720e52e474.json?v=fd097429" data-total="11" data-new="11" data-figures="3" data-used="0"></script></dialog>

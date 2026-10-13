@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_rds_RdsErrorDomain_11293" class="dossier-modal dossier-workbench" data-dossier-sha="db319432d076c641" aria-labelledby="dossier-modal-cl_ara_rds_RdsErrorDomain_11293-title">
+<dialog id="dossier-modal-cl_ara_rds_RdsErrorDomain_11293" class="dossier-modal dossier-workbench" data-dossier-sha="cf6c7da891644ee5" aria-labelledby="dossier-modal-cl_ara_rds_RdsErrorDomain_11293-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_rds_RdsErrorDomain_11293-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_rds_RdsErrorDomain_11293)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,984 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,919 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,14 +145,76 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::rds::RdsErrorDomain' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_rds_RdsErrorDomain_11293",
  "class_name": "ara::rds::RdsErrorDomain",
  "description": "Error domain of Raw Data Stream.",
- "dokumentstellen": [],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11294",
+   "page": 1,
+   "text": "[SWS_RDS_11294] RdsErrorDomain()=delete;\nDefault construction is not available."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11295",
+   "page": 1,
+   "text": "[SWS_RDS_11295] const char *Name() const noexcept override;\nReturns the error-domain name."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11296",
+   "page": 1,
+   "text": "[SWS_RDS_11296] const char *Message(CodeType errorCode) const noexcept override;\nReturns the error message."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11297",
+   "page": 1,
+   "text": "[SWS_RDS_11297] void ThrowAsException(const ara::core::ErrorCode &amp;amp;errorCode) const noexcept(false) override;\nThrows the error as RdsException."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11298",
+   "page": 1,
+   "text": "[SWS_RDS_11298] constexpr const ara::core::ErrorDomain &amp;amp;GetRdsErrorDomain() noexcept;\nReturns a reference to the RDS error domain."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11326",
+   "page": 1,
+   "text": "[SWS_RDS_11326] using Errc = RdsErrc;\nAlias for RDS error enumeration."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_11327",
+   "page": 1,
+   "text": "[SWS_RDS_11327] using Exception = RdsException;\nAlias for RDS exception type."
+  }
+ ],
  "member_requirements": [
   {
    "id": "SWS_RDS_11326",
@@ -228,117 +297,40 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="673bc03cd34138247856a9fa525bea2fb87031300912acce9b077f479ab70885" data-trace-output="db319432d076c641a01b7fc45c5f4b6b2498fcb8047ce6b58a11016ace81f236" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="81f3fdb4f855cdb9dcc628bf00ea5cb70868180685613d93b696bd245bd80d95" data-trace-output="cf6c7da891644ee5a993d6b988d5db751e2680695866e5b35d184c444932d0d7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt Fehlercodes, Diagnosemeldungen und Ausnahmetypen für Operationen im funktionalen Cluster des Raw Data Stream." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The class &lt;code&gt;ara::rds::RdsErrorDomain&lt;/code&gt; represents the central error domain for the Raw Data Stream (RDS) module within the AUTOSAR Adaptive Platform in release R25-11. It is declared as &lt;code&gt;final&lt;/code&gt; and inherits from the base class &lt;code&gt;ara::core::ErrorDomain&lt;/code&gt;. Its primary task is the unique identification, classification, and textual description of errors that occur within the functional scope of RDS.&lt;/p&gt;
-&lt;p&gt;As a specialized form of &lt;code&gt;ara::core::ErrorDomain&lt;/code&gt;, &lt;code&gt;RdsErrorDomain&lt;/code&gt; links several types and components of the error system:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;The error enumeration &lt;code&gt;RdsErrc&lt;/code&gt;, which is directly available in the class scope via the typed alias &lt;code&gt;Errc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11326" href="../spec/record.html?id=SWS_RDS_11326"&gt;[SWS_RDS_11326]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;The exception type &lt;code&gt;RdsException&lt;/code&gt;, which is anchored within the domain via the alias &lt;code&gt;Exception&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11327" href="../spec/record.html?id=SWS_RDS_11327"&gt;[SWS_RDS_11327]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;The standard error object &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, which connects a concrete error code from &lt;code&gt;Errc&lt;/code&gt; with the instance of &lt;code&gt;RdsErrorDomain&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;Application code and framework services that query error messages via &lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt;) and &lt;code&gt;Message()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;) or forward errors for exception handling.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class="diagram" id="diag-rds-errordomain-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 352.38 232.80" style="max-width:470px"&gt;
-&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
-&lt;!-- ara::core::ErrorDomain --&gt;
-&lt;g id="node1" class="node"&gt;
-&lt;title&gt;ara::core::ErrorDomain&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M107.23,-204C107.23,-204 12,-204 12,-204 6,-204 0,-198 0,-192 0,-192 0,-180 0,-180 0,-174 6,-168 12,-168 12,-168 107.23,-168 107.23,-168 113.23,-168 119.23,-174 119.23,-180 119.23,-180 119.23,-192 119.23,-192 119.23,-198 113.23,-204 107.23,-204"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="59.61" y="-189.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorDomain_a538fe.html" href="../classes/cl_ara_core_ErrorDomain_a538fe.html"&gt;ara::core::ErrorDomain&lt;/a&gt;&lt;/text&gt;
-&lt;text text-anchor="middle" x="59.61" y="-176.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Basisklasse)&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::rds::RdsErrorDomain --&gt;
-&lt;g id="node2" class="node"&gt;
-&lt;title&gt;ara::rds::RdsErrorDomain&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M178.04,-120C178.04,-120 71.18,-120 71.18,-120 65.18,-120 59.18,-114 59.18,-108 59.18,-108 59.18,-96 59.18,-96 59.18,-90 65.18,-84 71.18,-84 71.18,-84 178.04,-84 178.04,-84 184.04,-84 190.04,-90 190.04,-96 190.04,-96 190.04,-108 190.04,-108 190.04,-114 184.04,-120 178.04,-120"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="124.61" y="-105.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsErrorDomain_11293.html" href="../classes/cl_ara_rds_RdsErrorDomain_11293.html"&gt;ara::rds::RdsErrorDomain&lt;/a&gt;&lt;/text&gt;
-&lt;text text-anchor="middle" x="124.61" y="-92.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Fehlerdomäne RDS)&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::core::ErrorDomain&amp;#45;&amp;gt;ara::rds::RdsErrorDomain --&gt;
-&lt;g id="edge1" class="edge"&gt;
-&lt;title&gt;ara::core::ErrorDomain-&amp;gt;ara::rds::RdsErrorDomain&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M73.4,-167.61C82.19,-156.52 93.75,-141.94 103.66,-129.43"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="106.35,-131.68 109.81,-121.67 100.86,-127.33 106.35,-131.68"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="119.06" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Basisklasse&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::rds::RdsErrc --&gt;
-&lt;g id="node3" class="node"&gt;
-&lt;title&gt;ara::rds::RdsErrc&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M81.18,-36C81.18,-36 14.04,-36 14.04,-36 8.04,-36 2.04,-30 2.04,-24 2.04,-24 2.04,-12 2.04,-12 2.04,-6 8.04,0 14.04,0 14.04,0 81.18,0 81.18,0 87.18,0 93.18,-6 93.18,-12 93.18,-12 93.18,-24 93.18,-24 93.18,-30 87.18,-36 81.18,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="47.61" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_rds_ara_rds_a90311.html#SWS_RDS_12367" href="../namespaces/ns_rds_ara_rds_a90311.html#SWS_RDS_12367"&gt;ara::rds::RdsErrc&lt;/a&gt;&lt;/text&gt;
-&lt;text text-anchor="middle" x="47.61" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Typalias Errc)&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::rds::RdsErrorDomain&amp;#45;&amp;gt;ara::rds::RdsErrc --&gt;
-&lt;g id="edge2" class="edge"&gt;
-&lt;title&gt;ara::rds::RdsErrorDomain-&amp;gt;ara::rds::RdsErrc&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M84.98,-83.58C77.25,-78.77 69.77,-72.92 64.03,-66 59.51,-60.54 56.21,-53.76 53.8,-47.06"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="57.22,-46.29 51.01,-37.7 50.51,-48.29 57.22,-46.29"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="90.82" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;definiert Errc&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::rds::RdsException --&gt;
-&lt;g id="node4" class="node"&gt;
-&lt;title&gt;ara::rds::RdsException&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M243.02,-36C243.02,-36 150.21,-36 150.21,-36 144.21,-36 138.21,-30 138.21,-24 138.21,-24 138.21,-12 138.21,-12 138.21,-6 144.21,0 150.21,0 150.21,0 243.02,0 243.02,0 249.02,0 255.02,-6 255.02,-12 255.02,-12 255.02,-24 255.02,-24 255.02,-30 249.02,-36 243.02,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="196.61" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsException_11291.html" href="../classes/cl_ara_rds_RdsException_11291.html"&gt;ara::rds::RdsException&lt;/a&gt;&lt;/text&gt;
-&lt;text text-anchor="middle" x="196.61" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Typalias Exception)&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::rds::RdsErrorDomain&amp;#45;&amp;gt;ara::rds::RdsException --&gt;
-&lt;g id="edge3" class="edge"&gt;
-&lt;title&gt;ara::rds::RdsErrorDomain-&amp;gt;ara::rds::RdsException&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M120.89,-83.66C119.82,-74.19 120.17,-62.67 125.7,-54 128.2,-50.08 131.29,-46.58 134.75,-43.46"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="136.83,-46.28 142.72,-37.47 132.62,-40.68 136.83,-46.28"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="164.16" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;definiert Exception&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::rds::RdsErrorDomain&amp;#45;&amp;gt;ara::rds::RdsException --&gt;
-&lt;g id="edge5" class="edge"&gt;
-&lt;title&gt;ara::rds::RdsErrorDomain-&amp;gt;ara::rds::RdsException&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M184.02,-83.54C191.37,-78.98 197.94,-73.23 202.61,-66 206.13,-60.56 206.92,-54.02 206.32,-47.57"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="209.79,-47.06 204.37,-37.95 202.93,-48.45 209.79,-47.06"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="264.98" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;wirft in &lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsErrorDomain_11293.html#SWS_RDS_11297" href="../classes/cl_ara_rds_RdsErrorDomain_11293.html#SWS_RDS_11297"&gt;ThrowAsException&lt;/a&gt;()&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::core::ErrorCode --&gt;
-&lt;g id="node5" class="node"&gt;
-&lt;title&gt;ara::core::ErrorCode&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M232.12,-204C232.12,-204 149.11,-204 149.11,-204 143.11,-204 137.11,-198 137.11,-192 137.11,-192 137.11,-180 137.11,-180 137.11,-174 143.11,-168 149.11,-168 149.11,-168 232.12,-168 232.12,-168 238.12,-168 244.12,-174 244.12,-180 244.12,-180 244.12,-192 244.12,-192 244.12,-198 238.12,-204 232.12,-204"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="190.61" y="-189.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorCode_538b08.html" href="../classes/cl_ara_core_ErrorCode_538b08.html"&gt;ara::core::ErrorCode&lt;/a&gt;&lt;/text&gt;
-&lt;text text-anchor="middle" x="190.61" y="-176.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Fehlercontainer)&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- ara::core::ErrorCode&amp;#45;&amp;gt;ara::rds::RdsErrorDomain --&gt;
-&lt;g id="edge4" class="edge"&gt;
-&lt;title&gt;ara::core::ErrorCode-&amp;gt;ara::rds::RdsErrorDomain&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M176.62,-167.61C167.69,-156.52 155.95,-141.94 145.89,-129.43"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="148.63,-127.26 139.63,-121.66 143.18,-131.65 148.63,-127.26"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="203.07" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;referenziert Domäne&lt;/text&gt;
-&lt;/g&gt;
-&lt;/g&gt;
-&lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Context diagram: Type relationships and interaction partners of RdsErrorDomain. Sources: &lt;a class="spec-record-ref" data-req="SWS_RDS_11326" href="../spec/record.html?id=SWS_RDS_11326"&gt;[SWS_RDS_11326]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_11327" href="../spec/record.html?id=SWS_RDS_11327"&gt;[SWS_RDS_11327]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_11297" href="../spec/record.html?id=SWS_RDS_11297"&gt;[SWS_RDS_11297]&lt;/a&gt;&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt Fehlercodes, Diagnosemeldungen und Ausnahmetypen für Operationen im funktionalen Cluster des Raw Data Stream.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Fehlerdomäne &lt;code&gt;ara::rds::RdsErrorDomain&lt;/code&gt; identifiziert und kategorisiert spezifische Fehlerzustände des Moduls Raw Data Stream gemäß &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Raw Data Stream“&lt;/a&gt;. Sie stellt zugehörige Fehlermeldungstexte bereit und erlaubt das Werfen von Fehlern als Ausnahmen &lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;. Da der Standardkonstruktor gelöscht ist &lt;a class="spec-record-ref" data-req="SWS_RDS_11294" href="../spec/record.html?id=SWS_RDS_11294"&gt;[SWS_RDS_11294]&lt;/a&gt;, greifen Anwendungen über die freie Funktion &lt;code&gt;GetRdsErrorDomain()&lt;/code&gt; auf die zentrale Instanz zu &lt;a class="spec-record-ref" data-req="SWS_RDS_11298" href="../spec/record.html?id=SWS_RDS_11298"&gt;[SWS_RDS_11298]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::RdsErrorDomain&lt;/code&gt; repräsentiert die spezifische Fehlerdomäne für das funktionale Cluster des Raw Data Stream (RDS) auf der Adaptive Platform &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Raw Data Stream“&lt;/a&gt;. Als Spezialisierung der Basisklasse &lt;code&gt;ara::core::ErrorDomain&lt;/code&gt; bindet sie streambezogene Fehlerzustände in das plattformweite Fehlerbehandlungsmodell von AUTOSAR ein. Zu den zentralen Aufgaben der Klasse gehört die Bereitstellung eines eindeutigen Domänennamens über die Methode &lt;code&gt;Name()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt; sowie die Zuordnung von Fehlercodes zu aussagekräftigen Diagnosemeldungen mittels &lt;code&gt;Message()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Für eine konsistente Handhabung im Client-Code definiert die Domäne standardisierte Typ-Aliase: Der Alias &lt;code&gt;Errc&lt;/code&gt; verweist auf die Enumeration &lt;code&gt;RdsErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11326" href="../spec/record.html?id=SWS_RDS_11326"&gt;[SWS_RDS_11326]&lt;/a&gt;, während der Typ-Alias &lt;code&gt;Exception&lt;/code&gt; an den Ausnahmetyp &lt;code&gt;RdsException&lt;/code&gt; gebunden ist &lt;a class="spec-record-ref" data-req="SWS_RDS_11327" href="../spec/record.html?id=SWS_RDS_11327"&gt;[SWS_RDS_11327]&lt;/a&gt;. Interaktionspartner sind vor allem Anwendungskomponenten, Streaming-Endpunkte sowie die Infrastrukturtypen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; und &lt;code&gt;ara::core::Result&lt;/code&gt;, welche die Fehlerdomäne zur Identifikation aufgetretener Fehler nutzen.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The creation of objects of class &lt;code&gt;RdsErrorDomain&lt;/code&gt; is subject to restrictive specifications: The default constructor is explicitly defined as deleted (&lt;code&gt;RdsErrorDomain() = delete&lt;/code&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_11294" href="../spec/record.html?id=SWS_RDS_11294"&gt;[SWS_RDS_11294]&lt;/a&gt;). Direct or multiple instantiation by user applications on the stack or heap is therefore excluded.&lt;/p&gt;
-&lt;p&gt;The provision of the domain instance is likely to take place internally via a long-lived or static singleton object, as typically a single global instance exists per error domain in the AUTOSAR Adaptive error model. Due to the declaration as &lt;code&gt;final&lt;/code&gt;, specialization via inheritance is prevented.&lt;/p&gt;
-&lt;p&gt;With respect to concurrency, the class behaves statelessly. The inspection methods &lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt;) und &lt;code&gt;Message()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;) are declared as &lt;code&gt;const noexcept&lt;/code&gt;. They do not modify any internal states and allow simultaneous, concurrent read access from multiple threads without synchronization overhead.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Instanzen von &lt;code&gt;ara::rds::RdsErrorDomain&lt;/code&gt; unterliegen einem streng kontrollierten Lebenszyklus. Eine direkte Instanziierung durch Client-Code ist explizit unterbunden, da der Standardkonstruktor gelöscht ist (&lt;code&gt;=delete&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_RDS_11294" href="../spec/record.html?id=SWS_RDS_11294"&gt;[SWS_RDS_11294]&lt;/a&gt;. Stattdessen wird der Zugriff über die globale Hilfsfunktion &lt;code&gt;GetRdsErrorDomain()&lt;/code&gt; realisiert, welche eine konstante Referenz auf die Domäne zurückgibt &lt;a class="spec-record-ref" data-req="SWS_RDS_11298" href="../spec/record.html?id=SWS_RDS_11298"&gt;[SWS_RDS_11298]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Interpretation: Die Fehlerdomäne dürfte als langlebiges Singleton implementiert sein, das über den gesamten Ausführungszeitraum des Prozesses existiert. Da sämtliche abfragenden Schnittstellen wie &lt;code&gt;Name()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt; und &lt;code&gt;Message()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt; als &lt;code&gt;const&lt;/code&gt; sowie &lt;code&gt;noexcept&lt;/code&gt; deklariert sind, ist ein thread-sicherer, nebenläufiger Lesezugriff durch mehrere Threads ohne Synchronisationsaufwand möglich.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;In regular operation, the class is rarely instantiated directly by application code; instead, it serves as a backend for &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; and &lt;code&gt;ara::core::Result&lt;/code&gt;. A typical sequence during error handling is as follows:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;An operation within module &lt;code&gt;rds&lt;/code&gt; fails and produces an error value of enumeration type &lt;code&gt;Errc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11326" href="../spec/record.html?id=SWS_RDS_11326"&gt;[SWS_RDS_11326]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;The error value is encapsulated in an &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; in conjunction with the &lt;code&gt;RdsErrorDomain&lt;/code&gt; and passed to the caller.&lt;/li&gt;
-&lt;li&gt;The application checks the error object. Via &lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt;), it can be verified that the error originates from the RDS error domain.&lt;/li&gt;
-&lt;li&gt;For diagnosis or logging, the system calls &lt;code&gt;Message()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;) to retrieve the textual message associated with the error code.&lt;/li&gt;
-&lt;li&gt;If an exception mechanism is chosen, calling &lt;code&gt;ErrorCode::ThrowAsException()&lt;/code&gt; delegates to the method &lt;code&gt;RdsErrorDomain::ThrowAsException()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11297" href="../spec/record.html?id=SWS_RDS_11297"&gt;[SWS_RDS_11297]&lt;/a&gt;), thereby triggering an exception of type &lt;code&gt;Exception&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11327" href="../spec/record.html?id=SWS_RDS_11327"&gt;[SWS_RDS_11327]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad tritt auf, sobald eine Operation des Raw Data Stream fehlschlägt und ein entsprechendes Fehlerobjekt analysiert oder propagiert werden muss. Eine Anwendung oder Middleware-Schicht erhält in der Regel ein Fehlerobjekt, das an die Domäne gebunden ist, oder referenziert die Domäne direkt über &lt;code&gt;GetRdsErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11298" href="../spec/record.html?id=SWS_RDS_11298"&gt;[SWS_RDS_11298]&lt;/a&gt;. Über die Methode &lt;code&gt;Message()&lt;/code&gt; kann der zugehörige Text des Fehlercodes zur Laufzeit abgefragt und in Log-Ausgaben protokolliert werden &lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Falls die Fehlerbehandlungsstrategie der Anwendung auf C++-Ausnahmen basiert, wird die Methode &lt;code&gt;ThrowAsException()&lt;/code&gt; aufgerufen &lt;a class="spec-record-ref" data-req="SWS_RDS_11297" href="../spec/record.html?id=SWS_RDS_11297"&gt;[SWS_RDS_11297]&lt;/a&gt;. Dies transformiert den übergebenen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; in eine Ausnahme des Typs &lt;code&gt;RdsException&lt;/code&gt;, die über den Typ-Alias &lt;code&gt;Exception&lt;/code&gt; spezifiziert ist &lt;a class="spec-record-ref" data-req="SWS_RDS_11327" href="../spec/record.html?id=SWS_RDS_11327"&gt;[SWS_RDS_11327]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;RdsErrorDomain&lt;/code&gt; itself serves to handle error situations and defines robust guarantees for its interfaces:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Error codes:&lt;/strong&gt; Specific causes are represented by the enumeration &lt;code&gt;RdsErrc&lt;/code&gt;, which is typed as &lt;code&gt;Errc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11326" href="../spec/record.html?id=SWS_RDS_11326"&gt;[SWS_RDS_11326]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Exception safety of queries:&lt;/strong&gt; The methods &lt;code&gt;Name()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt;) and &lt;code&gt;Message(CodeType errorCode)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;) are specified as &lt;code&gt;noexcept&lt;/code&gt;. They guarantee that no further exceptions are thrown even in the event of resource bottlenecks or errors. If an unknown error code is passed, a generic fallback text is presumably returned to maintain the &lt;code&gt;noexcept&lt;/code&gt; guarantee.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Exception throwing:&lt;/strong&gt; The method &lt;code&gt;ThrowAsException(const ara::core::ErrorCode &amp;amp;errorCode)&lt;/code&gt; is declared with &lt;code&gt;noexcept(false)&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11297" href="../spec/record.html?id=SWS_RDS_11297"&gt;[SWS_RDS_11297]&lt;/a&gt;). It deterministically throws an instance of &lt;code&gt;RdsException&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_11327" href="../spec/record.html?id=SWS_RDS_11327"&gt;[SWS_RDS_11327]&lt;/a&gt;). The precondition is a valid &lt;code&gt;ErrorCode&lt;/code&gt; object; a regular return does not take place.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- annahmen: 1) Instanziierung über internes Singleton oder globale Fabrikfunktion – Begründung: Der Standardkonstruktor ist gelöscht ([SWS_RDS_11294]) und der Payload definiert keinen öffentlichen Konstruktor. 2) Fallback-Text bei unbekanntem Fehlercode in Message() – Begründung: Die noexcept-Garantie in [SWS_RDS_11296] schließt Exceptions bei unbekannten Codes aus. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specification for AUTOSAR Adaptive Platform release R25-11 for the module rds.&lt;/p&gt;
+&lt;div class="diagram" id="diag-rds-errordomain-seq"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 425" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Fehlerbehandlung und Exception-Auslösung über &lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsErrorDomain_11293.html" href="../classes/cl_ara_rds_RdsErrorDomain_11293.html"&gt;RdsErrorDomain&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="411" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="411" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="411" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsErrorDomain_11293.html" href="../classes/cl_ara_rds_RdsErrorDomain_11293.html"&gt;RdsErrorDomain&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsException_11291.html" href="../classes/cl_ara_rds_RdsException_11291.html"&gt;RdsException&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="184" width="610" height="207" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_rds_ara_rds_a90311.html#SWS_RDS_11298" href="../namespaces/ns_rds_ara_rds_a90311.html#SWS_RDS_11298"&gt;GetRdsErrorDomain&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;const &lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorDomain_a538fe.html" href="../classes/cl_ara_core_ErrorDomain_a538fe.html"&gt;ara::core::ErrorDomain&lt;/a&gt;&amp;amp;&lt;/text&gt;&lt;line x1="345" y1="166" x2="135" y2="166" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 40 184 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="199" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="199" font-size="11" font-style="italic" fill="#28251d"&gt;Diagnosetext abfragen&lt;/text&gt;&lt;text x="240.0" y="224" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsErrorDomain_11293.html#SWS_RDS_11296" href="../classes/cl_ara_rds_RdsErrorDomain_11293.html#SWS_RDS_11296"&gt;Message&lt;/a&gt;(errorCode)&lt;/text&gt;&lt;line x1="135" y1="230" x2="345" y2="230" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="258" text-anchor="middle" font-size="11" fill="#28251d"&gt;const char* (Fehlermeldung)&lt;/text&gt;&lt;line x1="345" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="286" x2="650" y2="286" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="301" font-size="11" font-style="italic" fill="#28251d"&gt;Ausnahme werfen&lt;/text&gt;&lt;text x="240.0" y="329" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsErrorDomain_11293.html#SWS_RDS_11297" href="../classes/cl_ara_rds_RdsErrorDomain_11293.html#SWS_RDS_11297"&gt;ThrowAsException&lt;/a&gt;(errorCode)&lt;/text&gt;&lt;line x1="135" y1="335" x2="345" y2="335" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="363" text-anchor="middle" font-size="11" fill="#28251d"&gt;throw &lt;a class="diag-ref" data-ref="classes/cl_ara_rds_RdsException_11291.html" href="../classes/cl_ara_rds_RdsException_11291.html"&gt;RdsException&lt;/a&gt;(errorCode)&lt;/text&gt;&lt;line x1="345" y1="369" x2="555" y2="369" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typischer Ablauf der Fehlerbehandlung und Ausnahmeauslösung über die Fehlerdomäne des Raw Data Stream. Quellen: &lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_11297" href="../spec/record.html?id=SWS_RDS_11297"&gt;[SWS_RDS_11297]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_11298" href="../spec/record.html?id=SWS_RDS_11298"&gt;[SWS_RDS_11298]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Im Kontext der Fehlerdomäne selbst treten keine Ausnahmen während regulärer Abfragen auf: Die Identifikations- und Lokalisierungsmethoden &lt;code&gt;Name()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11295" href="../spec/record.html?id=SWS_RDS_11295"&gt;[SWS_RDS_11295]&lt;/a&gt; und &lt;code&gt;Message()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11296" href="../spec/record.html?id=SWS_RDS_11296"&gt;[SWS_RDS_11296]&lt;/a&gt; garantieren Fehlerfreiheit durch ihre &lt;code&gt;noexcept&lt;/code&gt;-Spezifikation. Auch die Zugriffsfunktion &lt;code&gt;GetRdsErrorDomain()&lt;/code&gt; schlägt niemals fehl &lt;a class="spec-record-ref" data-req="SWS_RDS_11298" href="../spec/record.html?id=SWS_RDS_11298"&gt;[SWS_RDS_11298]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Das primäre Fehlerszenario betrifft die Ausnahmebehandlung: Ruft ein Aufrufer &lt;code&gt;ThrowAsException()&lt;/code&gt; mit einem gültigen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; auf, beendet die Methode nicht regulär, sondern wirft zwingend eine Ausnahme (&lt;code&gt;noexcept(false)&lt;/code&gt;) vom Typ &lt;code&gt;RdsException&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_11297" href="../spec/record.html?id=SWS_RDS_11297"&gt;[SWS_RDS_11297]&lt;/a&gt;. Vorbedingung für diesen Aufruf ist die Übergabe eines konsistenten Fehlercodes aus der Domäne; Nachbedingung ist das Auslösen der Ausnahme im Aufruferkontext zur Weiterbehandlung im entsprechenden &lt;code&gt;catch&lt;/code&gt;-Block.&lt;/p&gt;
+
+&lt;!-- annahmen:
+1) Singleton-Muster – Begründung: Der gelöschte Standardkonstruktor SWS_RDS_11294 in Kombination mit GetRdsErrorDomain() SWS_RDS_11298 lässt auf eine statische Singleton-Instanz schließen.
+2) Thread-Sicherheit – Begründung: Die Kennzeichnung aller abfragenden Methoden mit const noexcept impliziert reinen Lesezugriff ohne internen veränderlichen Zustand.
+--&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der Spezifikation AUTOSAR R25-11 erstellt.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -380,9 +372,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>673bc03cd341…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>81f3fdb4f855…</code></div>
               <div><strong>Konstituierende Records:</strong> 6</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 7</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -417,8 +409,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">4</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">2</span></button>
               </div>
@@ -439,7 +431,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">6 von 6 Elementen angezeigt</span>
+              <span id="dossier-visible-count">13 von 13 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -455,11 +447,11 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 6 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (7 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
           </div>
         </div>
 
@@ -518,4 +510,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_11326","k":"type","d":"RDS","t":"type alias Errc [SWS_RDS_11326] using Errc = RdsErrc; Alias for RDS error enumeration. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"alias"},{"i":"SWS_RDS_11327","k":"type","d":"RDS","t":"type alias Exception [SWS_RDS_11327] using Exception = RdsException; Alias for RDS exception type. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"alias"},{"i":"SWS_RDS_11294","k":"function","d":"RDS","t":"function RdsErrorDomain [SWS_RDS_11294] RdsErrorDomain()=delete; Default construction is not available. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"RdsErrorDomain"},{"i":"SWS_RDS_11296","k":"function","d":"RDS","t":"function Message [SWS_RDS_11296] const char *Message(CodeType errorCode) const noexcept override; Returns the error message. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"Message"},{"i":"SWS_RDS_11295","k":"function","d":"RDS","t":"function Name [SWS_RDS_11295] const char *Name() const noexcept override; Returns the error-domain name. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"Name"},{"i":"SWS_RDS_11297","k":"function","d":"RDS","t":"function ThrowAsException [SWS_RDS_11297] void ThrowAsException(const ara::core::ErrorCode &errorCode) const noexcept(false) override; Throws the error as RdsException. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"ThrowAsException"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/ae01a8266ede5dab.json?v=fc8a565c" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_11326","k":"type","d":"RDS","t":"type alias Errc [SWS_RDS_11326] using Errc = RdsErrc; Alias for RDS error enumeration. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"alias"},{"i":"SWS_RDS_11327","k":"type","d":"RDS","t":"type alias Exception [SWS_RDS_11327] using Exception = RdsException; Alias for RDS exception type. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"alias"},{"i":"SWS_RDS_11294","k":"function","d":"RDS","t":"function RdsErrorDomain [SWS_RDS_11294] RdsErrorDomain()=delete; Default construction is not available. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"RdsErrorDomain"},{"i":"SWS_RDS_11296","k":"function","d":"RDS","t":"function Message [SWS_RDS_11296] const char *Message(CodeType errorCode) const noexcept override; Returns the error message. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"Message"},{"i":"SWS_RDS_11295","k":"function","d":"RDS","t":"function Name [SWS_RDS_11295] const char *Name() const noexcept override; Returns the error-domain name. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"Name"},{"i":"SWS_RDS_11297","k":"function","d":"RDS","t":"function ThrowAsException [SWS_RDS_11297] void ThrowAsException(const ara::core::ErrorCode &errorCode) const noexcept(false) override; Throws the error as RdsException. Header-Datei #include \"ara/rds/rds_error_domain.h\" class mono Scope class ara::rds::RdsErrorDomain class mono","n":"ThrowAsException"}],"inbound":[{"i":"SNIP_rds_SWS_RDS_11294","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11294] RdsErrorDomain()=delete;\nDefault construction is not available."},{"i":"SNIP_rds_SWS_RDS_11295","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11295] const char *Name() const noexcept override;\nReturns the error-domain name."},{"i":"SNIP_rds_SWS_RDS_11296","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11296] const char *Message(CodeType errorCode) const noexcept override;\nReturns the error message."},{"i":"SNIP_rds_SWS_RDS_11297","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11297] void ThrowAsException(const ara::core::ErrorCode &errorCode) const noexcept(false) override;\nThrows the error as RdsException."},{"i":"SNIP_rds_SWS_RDS_11298","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11298] constexpr const ara::core::ErrorDomain &GetRdsErrorDomain() noexcept;\nReturns a reference to the RDS error domain."},{"i":"SNIP_rds_SWS_RDS_11326","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11326] using Errc = RdsErrc;\nAlias for RDS error enumeration."},{"i":"SNIP_rds_SWS_RDS_11327","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_11327] using Exception = RdsException;\nAlias for RDS exception type."}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/ae01a8266ede5dab.json?v=fe2d4b35" data-total="6" data-new="0" data-figures="0" data-used="7"></script></dialog>

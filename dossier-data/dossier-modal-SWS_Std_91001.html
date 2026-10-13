@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Std_91001" class="dossier-modal dossier-workbench" data-dossier-sha="f4f412e7c5120a2d" aria-labelledby="dossier-modal-SWS_Std_91001-title">
+<dialog id="dossier-modal-SWS_Std_91001" class="dossier-modal dossier-workbench" data-dossier-sha="a64bc2eef7bb7094" aria-labelledby="dossier-modal-SWS_Std_91001-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Std_91001-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Std_91001)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,209 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,664 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Std_MessageType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,22 +193,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="377e66c7c8d7ef52801d34bafe71b8115e02d373bf1cf07965a2e72ae92521d3" data-trace-output="f4f412e7c5120a2dead71dd3f6127871ad54f6e47c0ea51d0f53d67b190284df" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="3a61d74dd0cf8eea1b498249e541bda3c008bb9defc0eb8d117f83f13a5121cd" data-trace-output="a64bc2eef7bb709428486645cfe79190b0c9c35a09641252eead66fb12f8130f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient zur Unterscheidung von Anfrage- und Antwortnachrichten in der Client-Server-Kommunikation." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The type &lt;code&gt;Std_MessageType&lt;/code&gt; is used according to &lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt; to encode different message types. It is available via the header &lt;code&gt;Std_Types.h&lt;/code&gt; and is based on the underlying type &lt;code&gt;uint8&lt;/code&gt;.&lt;/p&gt;
-  
-  &lt;h4&gt;Usage and Value Range&lt;/h4&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;, the encoding is currently restricted to distinguishing between requests and responses in client/server communication (C/S Communication). The type defines the following values:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Standardtyp &lt;code&gt;Std_MessageType&lt;/code&gt; wird gemäß &lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt; zur Codierung verschiedener Nachrichtentypen verwendet. In der vorliegenden Spezifikation beschränkt sich diese Codierung auf die Unterscheidung zwischen Anfragen (Requests) und Antworten (Responses) im Rahmen der Client/Server-Kommunikation (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Der Datentyp leitet sich vom Basistyp &lt;code&gt;uint8&lt;/code&gt; ab und wird Software-Komponenten sowie Basissoftware-Modulen über die Header-Datei &lt;code&gt;Std_Types.h&lt;/code&gt; bereitgestellt (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;). Für die Zuweisung und Auswertung sind folgende Werte und Konstanten spezifiziert:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;STD_MESSAGETYPE_REQUEST&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Message type for a request message.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;STD_MESSAGETYPE_RESPONSE&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): Message type for a response message.&lt;/li&gt;
-    &lt;li&gt;Value range &lt;code&gt;0x02&lt;/code&gt; to &lt;code&gt;0x3F&lt;/code&gt;: Reserved for future message types.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;STD_MESSAGETYPE_REQUEST&lt;/code&gt; (Wert &lt;code&gt;0x00&lt;/code&gt;): Kennzeichnet eine Anfragenachricht (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;STD_MESSAGETYPE_RESPONSE&lt;/code&gt; (Wert &lt;code&gt;0x01&lt;/code&gt;): Kennzeichnet eine Antwortnachricht (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Wertebereich &lt;code&gt;0x02&lt;/code&gt; bis &lt;code&gt;0x3F&lt;/code&gt;: Dieser Bereich ist für zukünftige Nachrichtentypen reserviert (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Restrictions and Interaction&lt;/h4&gt;
-  &lt;p&gt;Since &lt;code&gt;Std_MessageType&lt;/code&gt; is a pure type definition, no direct parameters, return values, or specific DET/DEM error codes exist in specification &lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;. Calling modules and interfaces are likely to use the type typically in function parameters or header structures to unambiguously specify the character of a transmitted message.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This text was generated by an AI based on the AUTOSAR specification R20-11.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich der Anwendung und Randbedingungen gilt, dass implementierende Module ausschließlich die definierten Bezeichner verwenden sollten. Da die Werte von &lt;code&gt;0x02&lt;/code&gt; bis &lt;code&gt;0x3F&lt;/code&gt; für künftige AUTOSAR-Erweiterungen reserviert sind, dürfen sie nicht eigenmächtig für andere Zwecke belegt werden (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;). Spezifische Fehlercodes, Rückgabewerte, asynchrone Abläufe oder Meldungen an DET oder DEM sind für diesen Datentyp in der Spezifikation nicht definiert (&lt;a class="spec-record-ref" data-req="SWS_Std_91001" href="../../spec/record.html?id=SWS_Std_91001"&gt;[SWS_Std_91001]&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einem KI-Kurations-Assistenten generiert und basiert auf der Spezifikation von AUTOSAR R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -230,7 +245,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>377e66c7c8d7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3a61d74dd0cf…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -368,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Std_91001","k":"type","d":"AUTOSAR","t":"","n":"Std_MessageType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3008ee396eb8a178.json?v=917603ee" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Std_91001","k":"type","d":"AUTOSAR","t":"","n":"Std_MessageType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3008ee396eb8a178.json?v=9629a1ce" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

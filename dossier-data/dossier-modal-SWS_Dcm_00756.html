@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00756" class="dossier-modal dossier-workbench" data-dossier-sha="83b4b55d23e74abd" aria-labelledby="dossier-modal-SWS_Dcm_00756-title">
+<dialog id="dossier-modal-SWS_Dcm_00756" class="dossier-modal dossier-workbench" data-dossier-sha="3d762408f3cc5e04" aria-labelledby="dossier-modal-SWS_Dcm_00756-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00756-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00756)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,807 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,262 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_ProcessRequestUpload'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -192,27 +210,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="11180955924bf4cf33fbae3eb2e334b664b358fab636faec97f2a07cc7b4170c" data-trace-output="83b4b55d23e74abd87cb2df98ba8039f2b63aeeac12d055cc32adf00609c17f8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="592221ab777a6414a2db18332c6a1c89ee39caf7b341ee77998a32c7ab54df47" data-trace-output="3d762408f3cc5e044695b20527e1c80b134cea4db3151bc4812efb33f5f9ec13" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als DCM-Callout zur Initialisierung des UDS-Dienstes RequestUpload und zur Aushandlung der Übertragungspuffergröße." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Verwendung&lt;/h4&gt;
-&lt;p&gt;Die Callout-Funktion &lt;code&gt;Xxx_ProcessRequestUpload&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;) wird vom DCM-Modul aufgerufen, um den Upload-Prozess im Rahmen des UDS-Dienstes &lt;em&gt;RequestUpload&lt;/em&gt; zu starten. Die Deklaration wird über &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;).&lt;/p&gt;
-&lt;p&gt;Der Aufruf erfolgt mit folgenden Parametern (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;OpStatus&lt;/code&gt;: Operationsstatus des Dienstes (mögliche Werte: &lt;code&gt;DCM_INITIAL&lt;/code&gt;, &lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DataFormatIdentifier&lt;/code&gt;: Spezifiziert das Kompressionsverfahren (Bits 7–4; &lt;code&gt;0x0&lt;/code&gt;: unkomprimiert) und das Verschlüsselungsverfahren (Bits 3–0; &lt;code&gt;0x0&lt;/code&gt;: unverschlüsselt).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;MemoryIdentifier&lt;/code&gt;: Kennung des Speicherblocks (wird auf &lt;code&gt;0&lt;/code&gt; gesetzt, falls nicht genutzt).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;MemoryAddress&lt;/code&gt; und &lt;code&gt;MemorySize&lt;/code&gt;: Startadresse des Serverspeichers sowie unkomprimierte Speichergröße in Bytes.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;BlockLength&lt;/code&gt;: Inout-Parameter für die maximale Blockgröße. Vor dem Aufruf schreibt das DCM die maximal mögliche Puffergröße in diesen Parameter (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01420" href="../../spec/record.html?id=SWS_Dcm_01420"&gt;[SWS_Dcm_01420]&lt;/a&gt;); die Funktion gibt darin die maximale Bytezahl für einen einzelnen &lt;code&gt;Dcm_ReadMemory&lt;/code&gt;-Vorgang zurück (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;ErrorCode&lt;/code&gt;: Ausgabeparameter für den negativen Antwortcode (NRC).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Gültige Rückgabewerte sind &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ausführung, &lt;code&gt;DCM_E_PENDING&lt;/code&gt; bei noch andauernder asynchroner Verarbeitung sowie &lt;code&gt;E_NOT_OK&lt;/code&gt; im Fehlerfall (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
-&lt;p&gt;Die Funktion ist als asynchron und nicht reentrant definiert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;). Wenn der von der Funktion über &lt;code&gt;BlockLength&lt;/code&gt; zurückgegebene Pufferwert kleiner oder gleich der unterstützten Pufferlänge der aktuellen Protokollverbindung ist, übernimmt das DCM diesen Wert in den Parameter &lt;code&gt;maxNumberOfBlockLength&lt;/code&gt; der positiven UDS-Antwort (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01422" href="../../spec/record.html?id=SWS_Dcm_01422"&gt;[SWS_Dcm_01422]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-&lt;p&gt;Gibt der Aufruf &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, sendet das DCM-Modul eine negative UDS-Antwort mit dem im Parameter &lt;code&gt;ErrorCode&lt;/code&gt; bereitgestellten NRC (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00758" href="../../spec/record.html?id=SWS_Dcm_00758"&gt;[SWS_Dcm_00758]&lt;/a&gt;). Fordert die Funktion in &lt;code&gt;BlockLength&lt;/code&gt; eine Pufferlänge an, die größer ist als die unterstützte Puffergröße der aktuellen Verbindung, meldet das DCM den DET-Fehler &lt;code&gt;DCM_E_INTERFACE_BUFFER_OVERFLOW&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01421" href="../../spec/record.html?id=SWS_Dcm_01421"&gt;[SWS_Dcm_01421]&lt;/a&gt;).&lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callout-Funktion &lt;code&gt;Xxx_ProcessRequestUpload&lt;/code&gt; wird vom DCM-Modul aufgerufen, um den UDS-Dienst &lt;em&gt;RequestUpload&lt;/em&gt; zu initiieren (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;). Sie wird über &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt und ist als nicht reentrant sowie asynchron spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;). Über den Parameter &lt;code&gt;OpStatus&lt;/code&gt; (mit den Zuständen &lt;code&gt;DCM_INITIAL&lt;/code&gt;, &lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt;) steuert der DCM den Ablauf der Operation (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Beim Aufruf übergibt der DCM unter anderem die Kompressions- und Verschlüsselungsmethode (&lt;code&gt;DataFormatIdentifier&lt;/code&gt;), den Speicherblock (&lt;code&gt;MemoryIdentifier&lt;/code&gt;), die Startadresse (&lt;code&gt;MemoryAddress&lt;/code&gt;) sowie die unkomprimierte Speichergröße in Bytes (&lt;code&gt;MemorySize&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;). Der In/Out-Parameter &lt;code&gt;BlockLength&lt;/code&gt; definiert die maximale Anzahl an Bytes für einen nachfolgenden &lt;code&gt;Dcm_ReadMemory&lt;/code&gt;-Aufruf; vor dem Aufruf schreibt der DCM die maximal mögliche Puffergröße in diesen Parameter (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01420" href="../../spec/record.html?id=SWS_Dcm_01420"&gt;[SWS_Dcm_01420]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Als Rückgabewerte von &lt;code&gt;Xxx_ProcessRequestUpload&lt;/code&gt; sind &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Anfrage, &lt;code&gt;E_NOT_OK&lt;/code&gt; bei Fehlern und &lt;code&gt;DCM_E_PENDING&lt;/code&gt; bei noch nicht abgeschlossener Verarbeitung definiert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;):&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Gibt die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, sendet das DCM-Modul eine negative UDS-Antwort mit dem im Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; gesetzten NRC-Wert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00756" href="../../spec/record.html?id=SWS_Dcm_00756"&gt;[SWS_Dcm_00756]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00758" href="../../spec/record.html?id=SWS_Dcm_00758"&gt;[SWS_Dcm_00758]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Liefert die Funktion einen angeforderten Pufferwert in &lt;code&gt;BlockLength&lt;/code&gt; zurück, der kleiner oder gleich der unterstützten Pufferlänge der aktuellen Protokollverbindung ist, verwendet der DCM diesen Wert als &lt;code&gt;maxNumberOfBlockLength&lt;/code&gt; in der positiven Antwort (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01422" href="../../spec/record.html?id=SWS_Dcm_01422"&gt;[SWS_Dcm_01422]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Fällt die zurückgegebene Pufferlänge hingegen größer aus als die von der Protokollverbindung unterstützte Pufferlänge, meldet der DCM den DET-Fehler &lt;code&gt;DCM_E_INTERFACE_BUFFER_OVERFLOW&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01421" href="../../spec/record.html?id=SWS_Dcm_01421"&gt;[SWS_Dcm_01421]&lt;/a&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Er basiert ausschließlich auf den Spezifikationen des übergebenen AUTOSAR-Payloads.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -252,7 +262,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>11180955924b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>592221ab777a…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -390,4 +400,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00756","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ProcessRequestUpload"}],"inbound":[{"i":"SWS_Dcm_01420","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_01420].","n":"SWS_Dcm_01420"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/8465e505062733c3.json?v=7e66a001" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00756","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ProcessRequestUpload"}],"inbound":[{"i":"SWS_Dcm_01420","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_01420].","n":"SWS_Dcm_01420"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/8465e505062733c3.json?v=9910ceaa" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

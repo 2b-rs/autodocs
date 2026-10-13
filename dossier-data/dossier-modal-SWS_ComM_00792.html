@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_ComM_00792" class="dossier-modal dossier-workbench" data-dossier-sha="66bbbf3fb5e6f2cc" aria-labelledby="dossier-modal-SWS_ComM_00792-title">
+<dialog id="dossier-modal-SWS_ComM_00792" class="dossier-modal dossier-workbench" data-dossier-sha="4b2ecbda4eb26bf9" aria-labelledby="dossier-modal-SWS_ComM_00792-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_ComM_00792-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_ComM_00792)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,361 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,816 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'ComM_Nm_RestartIndication'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,33 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="71f33b4976fa48ee8f759a329406dd9a931165d55784d410b2f031a51652da09" data-trace-output="66bbbf3fb5e6f2cc7ba5d50bf08880cc381e73c336a26115c8aff6ff80ec7bb8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="29b85b6e34cda601b7ea659bab81821a31e6930ce46098d50bc510c389250d04" data-trace-output="4b2ecbda4eb26bf923cbf195f728e118d31c0e5ad3b98ef4a9a1ef32f606a658" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet den Wiederanlauf des Netzwerkmanagements während des koordinierten Herunterfahrens mehrerer Busse." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The callback function &lt;code&gt;ComM_Nm_RestartIndication&lt;/code&gt; (service ID &lt;code&gt;0x1b&lt;/code&gt;, provided via &lt;code&gt;ComM_Nm.h&lt;/code&gt;) is called by the NM interface to notify the Communication Manager about the restart of network management on coordinated communication buses (&lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;, the call by the NM interface is subject to the following conditions:
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callback-Funktion &lt;code&gt;ComM_Nm_RestartIndication&lt;/code&gt; mit der Service-ID &lt;code&gt;0x1b&lt;/code&gt; wird vom NM-Interface aufgerufen und ist über die Header-Datei &lt;code&gt;ComM_Nm.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;. Sie dient dazu, den Communication Manager über den Wiederanlauf des Netzwerkmanagements während eines laufenden Abschaltvorgangs koordinierter Busse in Kenntnis zu setzen &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;. Der einzige Eingabeparameter &lt;code&gt;Channel&lt;/code&gt; vom Typ &lt;code&gt;NetworkHandleType&lt;/code&gt; benennt den betroffenen Kanal; die Operation liefert keinen Rückgabewert zurück &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Schnittstelle ist als asynchron und reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;. Ihr Aufruf durch das NM-Interface erfolgt, wenn drei Bedingungen gleichzeitig vorliegen:
   &lt;ul&gt;
-    &lt;li&gt;The NM interface has started shutting down coordinated buses,&lt;/li&gt;
-    &lt;li&gt;not all coordinated buses have indicated the &lt;em&gt;bus sleep&lt;/em&gt; state yet, and&lt;/li&gt;
-    &lt;li&gt;NM is restarted on at least one of the coordinated buses.&lt;/li&gt;
+    &lt;li&gt;Das NM-Interface hat mit dem Herunterfahren der koordinierten Busse bereits begonnen &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Es haben noch nicht alle dieser koordinierten Busse den Bus-Sleep-Zustand gemeldet &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Auf mindestens einem der koordinierten Busse wird das Netzwerkmanagement neu gestartet &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;
-    If this constellation is present, &lt;code&gt;ComM_Nm_RestartIndication&lt;/code&gt; is called with the network handle of those channels that have already reported the bus sleep state (&lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Parameters and Concurrency&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Parameters:&lt;/strong&gt; &lt;code&gt;Channel&lt;/code&gt; of type &lt;code&gt;NetworkHandleType&lt;/code&gt; serves as an input parameter, identifying the affected network channel (&lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;). Input/output and output parameters (inout/out) are not present.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Return value:&lt;/strong&gt; None (&lt;code&gt;void&lt;/code&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Execution:&lt;/strong&gt; The semantics of the function is asynchronous (&lt;em&gt;Asynchronous&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Reentrancy:&lt;/strong&gt; The interface is specified as reentrant (&lt;em&gt;Reentrant&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated based on the specification of AUTOSAR Classic Release R20-11.&lt;/p&gt;
+  Sind diese Voraussetzungen erfüllt, ruft das NM-Interface die Funktion spezifisch mit dem Handle derjenigen Kanäle auf, die den Bus-Sleep-Zustand bereits signalisiert hatten &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Spezifische Fehlercodes, Fehlerreaktionen oder Meldungen an das Entwicklungstest- oder Fehlerspeicher-Modul (DET/DEM) sind im Spezifikationsauszug nicht vorgesehen &lt;a class="spec-record-ref" data-req="SWS_ComM_00792" href="../../spec/record.html?id=SWS_ComM_00792"&gt;[SWS_ComM_00792]&lt;/a&gt;. Interpretation: Die Funktion dürfte im ComM dafür vorgesehen sein, den internen Zustand bereits schlafender Kanäle wieder an die reaktivierte Buskoordinierung anzugleichen.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Zweck der Signalisierung im ComM – Begründung: Die Spezifikation definiert nur die Auslösebedingung im NM-Interface, beschreibt aber nicht die internen Folgezustände im ComM. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -241,9 +247,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>71f33b4976fa…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>29b85b6e34cd…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -278,8 +284,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -316,7 +322,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 6 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -379,4 +385,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_00792","k":"function","d":"AUTOSAR","t":"","n":"ComM_Nm_RestartIndication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ca02a5078573bfe5.json?v=7b0f8171" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_00792","k":"function","d":"AUTOSAR","t":"","n":"ComM_Nm_RestartIndication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ca02a5078573bfe5.json?v=1fe1718f" data-total="6" data-new="6" data-figures="1" data-used="0"></script></dialog>

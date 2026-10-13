@@ -1,0 +1,461 @@
+<dialog id="dossier-modal-SWS_CM_11331" class="dossier-modal dossier-workbench" data-dossier-sha="b8e2f8c2891fcbb9" aria-labelledby="dossier-modal-SWS_CM_11331-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-SWS_CM_11331-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_CM_11331)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~4,596 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="SWS_CM_11331" data-fragment="classes/cl_ara_com_ComErrorDomain_f7fe3f.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse einen fundierten Nutzungshinweis (&lt;div class="ai usage"&gt;) für das adaptive-Element 'Name' (function) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt weglassen):
+1. Verwendung: Aufrufkontext, Parameter, Rückgabewerte, synchrone/asynchrone Semantik.
+2. Fehlerbehandlung: spezifische Fehlercodes, DET-/DEM-Meldungen, Verhalten im Fehlerfall.
+3. Nebenläufigkeit und Einschränkungen: Reentranz, Aufrufkontext, Reihenfolgebedingungen.
+4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
+Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
+
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
+=== USER PROMPT ===
+Erstelle den Nutzungshinweis für 'Name'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "ARAComAPI",
+   "figure": true,
+   "id": "SNIP_ADAPTIVE_CAN_FIGURE_Figure_6_5_ARACOMAPI",
+   "page": 103,
+   "text": "Figure 6.5: Service Discovery The Communication Management provides a method in the Service Skeleton class to offer the service: ara::core::Result&lt;void&gt; OfferService(); After the method OfferService() has been called, the service can be found by the applications. The Communication Management provides in the Service Proxy class a methods to find a service according to the InstanceIdentifier or InstanceSpecifier: static ara::core::Result&lt;ara::com::ServiceHandleContainer&lt; &lt;ProxyClassName&gt;::HandleType&gt;&gt; FindService(ara::com::InstanceIdentifier instance); static ara::core::Result&lt;ara::com::ServiceHandleContainer&lt; &lt;ProxyClassName&gt;::HandleType&gt;&gt; FindService(ara::core::InstanceSpecifier instance); These methods return a ServiceHandleContainer that can have different number of elements: • Empty: No Service Instance was found • One: A single Service instance was found • Several: Multiple Service instances were found"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": true,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P89_1235",
+   "page": 89,
+   "text": "Figure 6.5: Service Discovery\nThe Communication Management provides a method in the Service Skeleton class to\noffer the service:\nara::core::Result&lt;void&gt; OfferService();\nAfter the method\nOfferService()\nhas been called, the service can be found by the\napplications. The Communication Management provides in the Service Proxy class\na methods to find a service according to the\nInstanceIdentifier\nor\nInstance-\nSpecifier\n:\nstatic ara::core::Result&lt;ara::com::ServiceHandleContainer&lt;\n&lt;ProxyClassName&gt;::HandleType&gt;&gt;\nFindService(ara::com::InstanceIdentifier instance);\nstatic ara::core::Result&lt;ara::com::ServiceHandleContainer&lt;\n&lt;ProxyClassName&gt;::HandleType&gt;&gt;\nFindService(ara::core::InstanceSpecifier instance);\nThese methods return a\nServiceHandleContainer\nthat can have different number\nof elements:\n• Empty: No Service Instance was found\n• One: A single Service instance was found\n• Several: Multiple Service instances were found"
+  },
+  {
+   "doc": "AUTOSAR_AP_EXP_ARAComAPI",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_EXP_A_P90_1236",
+   "page": 90,
+   "text": "The example in 5.5 (lines 52 - 60) shows how to create a\nService Proxy\nusing\nFindService()\n.\nA\nService Handler\ngives access to all the events, methods and fields of the service.\nFor the events, the application has to subscibe to the events using the corresponding\nmethod setting also the size of the cache for this event :\nara::core:Result&lt;void&gt; Event::Subscribe(size_t maxSampleCount);\nTo unsubscribe to an event the Unsubscribe method must be used:\nvoid Event::Unsubscribe();\nThe example in 5.5 (lines 62 - 64) shows how to subscribe for an event.\nThe application code for the\nService Proxy\nand\nSkeleton\nis generated according\nto the\nSI\ndefined in the\nManifest\n. An example of the generated code for the\nProxy\nClass can be found in the 5.2 and for the\nSkeleton\nClass in 5.12\n6.2 Usage of InstanceSpecifier\nInstanceSpecifier\nis a core concept defined in [2], representing a \"/\"-separated\nlist of\nshortName\ns of model elements conforming an absolute path to an specific\nmodel element. In less formal terms, Instance Specifiers bridge Adaptive Platform\nmodels and applications, allowing application code to unequivocally reference resource\ninstances defined by the system model.\nThe instances referenced by Instance Specifiers may be of many differen…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P3_006",
+   "page": 3,
+   "text": "• Added SecOC Behavior, API and\nFreshness Value Management to\nspecification\n• Standardized API Error Codes for\nara::com API\n• Added unique ErrorDomain identifiers\n• Added Named Constructor Approach\n• Updated E2E Support for methods and\nevents\n• Updated Raw Data Streaming chapters\n• Introduced optional execution context\nparameter to APIs with an asynchronous\ncallback\n• Changed kCapabilityEnforcementError\nto kGrantEnforcementError\n▽"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P40_058",
+   "page": 40,
+   "text": "[SWS_CM_00101] [SWS_CM_00111]\n[SWS_CM_00112] [SWS_CM_00113]\n[SWS_CM_00114] [SWS_CM_00116]\n[SWS_CM_00118] [SWS_CM_00119]\n[SWS_CM_00122] [SWS_CM_00123]\n[SWS_CM_00125] [SWS_CM_00181]\n[SWS_CM_00192] [SWS_CM_00195]\n[SWS_CM_00196] [SWS_CM_00199]\n[SWS_CM_00226] [SWS_CM_00250]\n[SWS_CM_00309] [SWS_CM_00334]\n[SWS_CM_00351] [SWS_CM_00352]\n[SWS_CM_00701] [SWS_CM_00705]\n[SWS_CM_00723] [SWS_CM_00810]\n[SWS_CM_01106] [SWS_CM_01108]\n[SWS_CM_11328] [SWS_CM_11330]\n[SWS_CM_11331] [SWS_CM_11332]\n[SWS_CM_11333] [SWS_CM_11334]\n[SWS_CM_11335] [SWS_CM_11336]\n[SWS_CM_11337] [SWS_CM_11352]\n[SWS_CM_11354] [SWS_CM_11356]\n[SWS_CM_11360] [SWS_CM_11362]\n[SWS_CM_11365] [SWS_CM_11603]\n[SWS_CM_11605] [SWS_CM_11608]\n[SWS_CM_11609] [SWS_CM_11610]\n[SWS_CM_11611] [SWS_CM_11615]\n[SWS_CM_12002] [SWS_CM_12003]\n[SWS_CM_12502] [SWS_CM_12504]\n[SWS_CM_12505] [SWS_CM_12506]\n▽"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P42_065",
+   "page": 42,
+   "text": "[SWS_CM_10432] [SWS_CM_10474]\n[SWS_CM_11327] [SWS_CM_11328]\n[SWS_CM_11329] [SWS_CM_11330]\n[SWS_CM_11331] [SWS_CM_11332]\n[SWS_CM_11333] [SWS_CM_11334]\n[SWS_CM_11335] [SWS_CM_11336]\n[SWS_CM_11337] [SWS_CM_11342]\n[SWS_CM_12501] [SWS_CM_12502]\n[SWS_CM_12503] [SWS_CM_12504]\n[SWS_CM_12505] [SWS_CM_12506]\n[SWS_CM_12507] [SWS_CM_12508]\n[SWS_CM_12509] [SWS_CM_12510]\n[SWS_CM_12511] [SWS_CM_12512]\n[SWS_CM_12513] [SWS_CM_12514]\n[SWS_CM_12515] [SWS_CM_12516]\n[SWS_CM_12517] [SWS_CM_12518]\n[SWS_CM_12519] [SWS_CM_12520]\n[SWS_CM_12521] [SWS_CM_12522]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P206_317",
+   "page": 206,
+   "text": "7.2.3.7.3 Structured Data Types (structs)\n[SWS_CM_11043] DDS serialization of\nStdCppImplementationDataType\nof\ncategory STRUCTURE\nUpstream requirements:\nRS_CM_00204, RS_CM_00201, RS_CM_00202, RS_CM_00211, FO_-\nRS_Dds_00001, FO_RS_Dds_00002, FO_RS_Dds_00007\n⌈\nStdCppImplementationDataType\nof\ncategory STRUCTURE\nshall be serialized\nas described in [FO_PRS_DDS_00503].\n⌋\n7.2.3.7.4 Strings\n[SWS_CM_11044] DDS serialization of\nStdCppImplementationDataType\nof\ncategory STRING\nwith string\nshortName\nUpstream requirements:\nRS_CM_00204, RS_CM_00201, RS_CM_00202, RS_CM_00211, FO_-\nRS_Dds_00001, FO_RS_Dds_00002, FO_RS_Dds_00007\n⌈\nAn\nStdCppImplementationDataType\nof\ncategory STRING\nshall be serialized,\nas described in [FO_PRS_DDS_00504].\n⌋\n[SWS_CM_11046] Encoding Format and Endianness of Strings in DDS\nUpstream requirements:\nRS_CM_00204, RS_CM_00201, RS_CM_00202, RS_CM_00211, RS_\nAP_00136, FO_RS_Dds_00001, FO_RS_Dds_00002, FO_RS_Dds_-\n00007\n⌈\nSection 7.4.1.1.2 of [23] specifies the standard character encoding format for\nSTRING_TYPE\n: UTF-8. The serialized version shall be as described in [FO_PRS_\nDDS_00505].\n⌋\n7.2.3.7.5 Vectors and Arrays\n[SWS_CM_11047] DDS serialization of\nCppImplementationDataType\nof\ncate-\ngory VECTOR\nUpstream requirements:\nRS_CM_…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_CommunicationManagement",
+   "figure": false,
+   "id": "SNIP_Com_AUTOSAR_AP_SWS_C_P276_384",
+   "page": 276,
+   "text": "7.4.2.2 Triggers\n[SWS_CM_00212] Mapping of ara::com::e2e::TransportFaultCondition for Proxy\nTriggers\nStatus:\nDRAFT\n⌈\nara::com::e2e::TransportFaultConditionHandler\nconfigured via\nTrig-\nger::SetTransportFaultConditionHandler()\nshall report one of the following\nvalues for each transport error detected:\n•\nTransportFaultCondition::kSampleRejected\nif the underlying\nDataReader\nentity has signaled\nSAMPLE_REJECTED\n(e.g. due to corrup-\ntion or lack of storage resources)\n•\nTransportFaultCondition::kDeadlineMissed\nif the underlying\nDataReader\nhas signaled\nREQUESTED_DEADLINE_MISSED\n(e.g. due to\none or more missed timing deadlines)\n•\nTransportFaultCondition::kSampleLost\nif the underlying\nDataReader\nhas signaled\nSAMPLE_LOST\n(e.g. because one or more samples have been de-\ntected to be lost)\n⌋\n7.4.2.3 Methods\nThis section specifies the integration of E2E communication protection in the DDS\nNetwork Binding of\nara::com\nfor the processing of\nMethod\ns.\n[SWS_CM_00213] Skeleton E2E Error Handler - Invocation\nStatus:\nDRAFT\n⌈\nSkeleton::E2EErrorHandler()\nshall be invoked from within a separate thread\nby the Communication Management software in case the underlying\nDataReader\nen-\ntity for method requests reports an E2E error.\n⌋\n[SWS_CM_00214] Skeleton E2E E…"
+  }
+ ],
+ "element": {
+  "description": "Returns a string constant associated with the ara::com::ComErrorDomain",
+  "id": "SWS_CM_11331",
+  "kind": "function",
+  "name": "Name",
+  "signature": "const char * Name () const noexcept override;",
+  "spezifikation": "function Name [SWS_CM_11331] Upstream: RS_AP_00120 , RS_AP_00130 const char * Name () const noexcept override; Returns a string constant associated with the ara::com::ComErrorDomain Header-Datei #include \"ara/com/com_error_domain.h\" class mono Scope class ara::com::ComErrorDomain class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const char * td As per ara::com::ComErrorDomain in [SWS_CORE_90023]"
+ },
+ "module": "cm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "verwandte_requirements": [
+  {
+   "id": "SWS_CM_10049",
+   "text": "service method VerifyStatusOverride [SWS_CM_10049] Upstream: RS_CM_00801 , RS_CM_00802 , RS_CM_00803 , RS_CM_00804 VerifyStatusOverride (IN uint16_t freshnessID, IN OverrideStatus overrideStatus, IN uint8_t numberOfMessagesToOverride) This service method provides the ability to force specific behavior of SecOc: accept or drop a message with or without performing the verification of authenticator or independent of the authenticator verification result, and to force a specific result for VerificationStatusResult allowing additional fault handling in the application. Scope service interface VerificationStatusConfigurationByFreshnessId class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td freshnessID td IN td uint16_t td Freshness value ID for which the override operation shall happen td overrideStatus td IN td OverrideS…"
+  },
+  {
+   "id": "SWS_CM_10050",
+   "text": "service method VerifyStatusOverride [SWS_CM_10050] Upstream: RS_CM_00801 , RS_CM_00802 , RS_CM_00803 , RS_CM_00804 VerifyStatusOverride (IN uint16_t dataID, IN OverrideStatus overrideStatus, IN uint8_t numberOfMessagesToOverride) This service method provides the ability to force specific behavior of SecOc: accept or drop a message with or without performing the verification of authenticator or independent of the authenticator verification result, and to force a specific result for VerificationStatusResult allowing additional fault handling in the application. Scope service interface VerificationStatusConfigurationByDataId class mono Fire &amp;amp; Forget false class mono Version 1.0 class mono Parameter th Name th Richtung th Typ th Beschreibung td dataID td IN td uint16_t td Data ID for which the override operation shall happen td overrideStatus td IN td OverrideStatus td The override stat…"
+  },
+  {
+   "id": "SWS_CM_12507",
+   "text": "function Name [SWS_CM_12507] Upstream: RS_AP_00120 , RS_AP_00130 const char * Name () const noexcept override; Returns a string constant associated with the ara::com::e2e::ComE2EErrorDomain Header-Datei #include \"ara/com/e2e/e2e_error_domain.h\" class mono Scope class ara::com::e2e::ComE2EErrorDomain class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const char * td As per ara::com::e2e::ComE2EErrorDomain in [SWS_ CORE_90023]"
+  },
+  {
+   "id": "SWS_CM_12518",
+   "text": "function Name [SWS_CM_12518] Upstream: RS_AP_00120 , RS_AP_00127 , RS_AP_00130 const char * Name () const noexcept override; Returns a string constant associated with the apext::com::secoc :: ComSecOcFvmErrorDomain Header-Datei #include \"apext/com/secoc/fvm_error_domain.h\" class mono Scope class apext::com::secoc::ComSecOcFvmErrorDomain class mono Exception-Sicherheit exception safe class mono Rückgabewert th Typ th Beschreibung td const char * td As per apext::com::secoc::ComSecOcFvmErrorDomain in [SWS_CORE_90023]"
+  }
+ ]
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4c51965f3a9377d8c6e66268477abb4e405f8be5fc42ad0d91a489fb5734c367" data-trace-output="b8e2f8c2891fcbb90711d88c71c1b3a70620a93609ddf26a1a88d86234dfb045" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liefert die statische Namensbezeichnung der Fehlerdomäne ComErrorDomain als konstante Zeichenkette zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
+
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Elementfunktion &lt;code&gt;Name()&lt;/code&gt; der Klasse &lt;code&gt;ara::com::ComErrorDomain&lt;/code&gt; dient dem standardisierten Abruf der textuellen Bezeichnung dieser Fehlerdomäne (&lt;a class="spec-record-ref" data-req="SWS_CM_11331" href="../spec/record.html?id=SWS_CM_11331"&gt;[SWS_CM_11331]&lt;/a&gt;). Der Aufruf erfolgt synchron, erfordert keine Übergabeparameter und liefert einen konstanten Zeiger vom Typ &lt;code&gt;const char *&lt;/code&gt; auf die zugeordnete Zeichenkette zurück (&lt;a class="spec-record-ref" data-req="SWS_CM_11331" href="../spec/record.html?id=SWS_CM_11331"&gt;[SWS_CM_11331]&lt;/a&gt;). Die genaue Repräsentation der gelieferten Zeichenkette richtet sich nach den Vorgaben für &lt;code&gt;ara::com::ComErrorDomain&lt;/code&gt; in &lt;a class="spec-record-ref" data-req="SWS_CORE_90023" href="../spec/record.html?id=SWS_CORE_90023"&gt;[SWS_CORE_90023]&lt;/a&gt;. Die Deklaration ist über den Header &lt;code&gt;ara/com/com_error_domain.h&lt;/code&gt; einzubinden (&lt;a class="spec-record-ref" data-req="SWS_CM_11331" href="../spec/record.html?id=SWS_CM_11331"&gt;[SWS_CM_11331]&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Die Methode ist mit der Spezifikation &lt;code&gt;noexcept&lt;/code&gt; versehen und als ausnahmesicher (&lt;em&gt;exception safe&lt;/em&gt;) eingestuft (&lt;a class="spec-record-ref" data-req="SWS_CM_11331" href="../spec/record.html?id=SWS_CM_11331"&gt;[SWS_CM_11331]&lt;/a&gt;). Es werden im Fehlerfall weder Exceptions geworfen noch spezifische Fehlercodes zurückgemeldet, da es sich um eine reine Leseoperation handelt. Da ausschließlich eine unveränderliche Zeichenkettenkonstante adressiert wird, dürfte die Methode reentrant sein und nebenläufige Aufrufe aus mehreren Threads ohne externe Synchronisation sicher unterstützen.&lt;/p&gt;
+
+&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist Bestandteil der standardisierten Fehlerdomänen-Identifikatoren innerhalb der Kommunikationsverwaltung (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;amp;page=3"&gt;AUTOSAR_AP_SWS_CommunicationManagement §1 „Change History“&lt;/a&gt;). Das Namens- und Schnittstellenschema ist konsistent über verwandte Domänen umgesetzt: So definieren auch die End-to-End-Fehlerdomäne &lt;code&gt;ara::com::e2e::ComE2EErrorDomain&lt;/code&gt; via &lt;a class="spec-record-ref" data-req="SWS_CM_12507" href="../spec/record.html?id=SWS_CM_12507"&gt;[SWS_CM_12507]&lt;/a&gt; sowie die SecOC-FVM-Fehlerdomäne &lt;code&gt;apext::com::secoc::ComSecOcFvmErrorDomain&lt;/code&gt; via &lt;a class="spec-record-ref" data-req="SWS_CM_12518" href="../spec/record.html?id=SWS_CM_12518"&gt;[SWS_CM_12518]&lt;/a&gt; gleichartige &lt;code&gt;Name()&lt;/code&gt;-Methoden zur Identifikation.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Methode dürfte reentrant und threadsicher sein – Begründung: Sie ist als const noexcept deklariert, führt keine Zustandsänderungen durch und liefert eine String-Konstante zurück. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4c51965f3a93…</code></div>
+              <div><strong>Konstituierende Records:</strong> 1</div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">9 von 9 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (1 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 0 seit der Generierung zugeordnet)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CM_11331","k":"function","d":"AUTOSAR","t":"","n":"Name"}],"inbound":[{"i":"SNIP_ADAPTIVE_CAN_FIGURE_Figure_6_5_ARACOMAPI","d":"ARAComAPI","p":103,"t":"Figure 6.5: Service Discovery The Communication Management provides a method in the Service Skeleton class to offer the service: ara::core::Result\u003cvoid> OfferService(); After the method OfferService() has been called, the service can be found by the applications. The Communication Management provides in the Service Proxy class a methods to find a service according to the InstanceIdentifier or InstanceSpecifier: static ara::core::Result\u003cara::com::ServiceHandleContainer\u003c \u003cProxyClassName>::HandleType>> FindService(ara::com::InstanceIdentifier instance); static ara::core::Result\u003cara::com::ServiceHandleContainer\u003c \u003cProxyClassName>::HandleType>> FindService(ara::core::InstanceSpecifier instance); These methods return a ServiceHandleContainer that can have different number of elements: • Empty: No Service Instance was found • One: A single Service instance was found • Several: Multiple Service instances were found"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P89_1235","d":"AUTOSAR_AP_EXP_ARAComAPI","p":89,"t":"Figure 6.5: Service Discovery\nThe Communication Management provides a method in the Service Skeleton class to\noffer the service:\nara::core::Result\u003cvoid> OfferService();\nAfter the method\nOfferService()\nhas been called, the service can be found by the\napplications. The Communication Management provides in the Service Proxy class\na methods to find a service according to the\nInstanceIdentifier\nor\nInstance-\nSpecifier\n:\nstatic ara::core::Result\u003cara::com::ServiceHandleContainer\u003c\n\u003cProxyClassName>::HandleType>>\nFindService(ara::com::InstanceIdentifier instance);\nstatic ara::core::Result\u003cara::com::ServiceHandleContainer\u003c\n\u003cProxyClassName>::HandleType>>\nFindService(ara::core::InstanceSpecifier instance);\nThese methods return a\nServiceHandleContainer\nthat can have different number\nof elements:\n• Empty: No Service Instance was found\n• One: A single Service instance was found\n• Several: Multiple Service instances were found"},{"i":"SNIP_Com_AUTOSAR_AP_EXP_A_P90_1236","d":"AUTOSAR_AP_EXP_ARAComAPI","p":90,"t":"The example in 5.5 (lines 52 - 60) shows how to create a\nService Proxy\nusing\nFindService()\n.\nA\nService Handler\ngives access to all the events, methods and fields of the service.\nFor the events, the application has to subscibe to the events using the corresponding\nmethod setting also the size of the cache for this event :\nara::core:Result\u003cvoid> Event::Subscribe(size_t maxSampleCount);\nTo unsubscribe to an event the Unsubscribe method must be used:\nvoid Event::Unsubscribe();\nThe example in 5.5 (lines 62 - 64) shows how to subscribe for an event.\nThe application code for the\nService Proxy\nand\nSkeleton\nis generated according\nto the\nSI\ndefined in the\nManifest\n. An example of the generated code for the\nProxy\nClass can be found in the 5.2 and for the\nSkeleton\nClass in 5.12\n6.2 Usage of InstanceSpecifier\nInstanceSpecifier\nis a core concept defined in [2], representing a \"/\"-separated\nlist of\nshortName\ns of model elements conforming an absolute path to an specific\nmodel element. In less formal terms, Instance Specifiers bridge Adaptive Platform\nmodels and applications, allowing application code to unequivocally reference resource\ninstances defined by the system model.\nThe instances referenced by Instance Specifiers may be of many differen…"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P3_006","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":3,"t":"• Added SecOC Behavior, API and\nFreshness Value Management to\nspecification\n• Standardized API Error Codes for\nara::com API\n• Added unique ErrorDomain identifiers\n• Added Named Constructor Approach\n• Updated E2E Support for methods and\nevents\n• Updated Raw Data Streaming chapters\n• Introduced optional execution context\nparameter to APIs with an asynchronous\ncallback\n• Changed kCapabilityEnforcementError\nto kGrantEnforcementError\n▽"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P40_058","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":40,"t":"[SWS_CM_00101] [SWS_CM_00111]\n[SWS_CM_00112] [SWS_CM_00113]\n[SWS_CM_00114] [SWS_CM_00116]\n[SWS_CM_00118] [SWS_CM_00119]\n[SWS_CM_00122] [SWS_CM_00123]\n[SWS_CM_00125] [SWS_CM_00181]\n[SWS_CM_00192] [SWS_CM_00195]\n[SWS_CM_00196] [SWS_CM_00199]\n[SWS_CM_00226] [SWS_CM_00250]\n[SWS_CM_00309] [SWS_CM_00334]\n[SWS_CM_00351] [SWS_CM_00352]\n[SWS_CM_00701] [SWS_CM_00705]\n[SWS_CM_00723] [SWS_CM_00810]\n[SWS_CM_01106] [SWS_CM_01108]\n[SWS_CM_11328] [SWS_CM_11330]\n[SWS_CM_11331] [SWS_CM_11332]\n[SWS_CM_11333] [SWS_CM_11334]\n[SWS_CM_11335] [SWS_CM_11336]\n[SWS_CM_11337] [SWS_CM_11352]\n[SWS_CM_11354] [SWS_CM_11356]\n[SWS_CM_11360] [SWS_CM_11362]\n[SWS_CM_11365] [SWS_CM_11603]\n[SWS_CM_11605] [SWS_CM_11608]\n[SWS_CM_11609] [SWS_CM_11610]\n[SWS_CM_11611] [SWS_CM_11615]\n[SWS_CM_12002] [SWS_CM_12003]\n[SWS_CM_12502] [SWS_CM_12504]\n[SWS_CM_12505] [SWS_CM_12506]\n▽"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P42_065","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":42,"t":"[SWS_CM_10432] [SWS_CM_10474]\n[SWS_CM_11327] [SWS_CM_11328]\n[SWS_CM_11329] [SWS_CM_11330]\n[SWS_CM_11331] [SWS_CM_11332]\n[SWS_CM_11333] [SWS_CM_11334]\n[SWS_CM_11335] [SWS_CM_11336]\n[SWS_CM_11337] [SWS_CM_11342]\n[SWS_CM_12501] [SWS_CM_12502]\n[SWS_CM_12503] [SWS_CM_12504]\n[SWS_CM_12505] [SWS_CM_12506]\n[SWS_CM_12507] [SWS_CM_12508]\n[SWS_CM_12509] [SWS_CM_12510]\n[SWS_CM_12511] [SWS_CM_12512]\n[SWS_CM_12513] [SWS_CM_12514]\n[SWS_CM_12515] [SWS_CM_12516]\n[SWS_CM_12517] [SWS_CM_12518]\n[SWS_CM_12519] [SWS_CM_12520]\n[SWS_CM_12521] [SWS_CM_12522]"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P206_317","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":206,"t":"7.2.3.7.3 Structured Data Types (structs)\n[SWS_CM_11043] DDS serialization of\nStdCppImplementationDataType\nof\ncategory STRUCTURE\nUpstream requirements:\nRS_CM_00204, RS_CM_00201, RS_CM_00202, RS_CM_00211, FO_-\nRS_Dds_00001, FO_RS_Dds_00002, FO_RS_Dds_00007\n⌈\nStdCppImplementationDataType\nof\ncategory STRUCTURE\nshall be serialized\nas described in [FO_PRS_DDS_00503].\n⌋\n7.2.3.7.4 Strings\n[SWS_CM_11044] DDS serialization of\nStdCppImplementationDataType\nof\ncategory STRING\nwith string\nshortName\nUpstream requirements:\nRS_CM_00204, RS_CM_00201, RS_CM_00202, RS_CM_00211, FO_-\nRS_Dds_00001, FO_RS_Dds_00002, FO_RS_Dds_00007\n⌈\nAn\nStdCppImplementationDataType\nof\ncategory STRING\nshall be serialized,\nas described in [FO_PRS_DDS_00504].\n⌋\n[SWS_CM_11046] Encoding Format and Endianness of Strings in DDS\nUpstream requirements:\nRS_CM_00204, RS_CM_00201, RS_CM_00202, RS_CM_00211, RS_\nAP_00136, FO_RS_Dds_00001, FO_RS_Dds_00002, FO_RS_Dds_-\n00007\n⌈\nSection 7.4.1.1.2 of [23] specifies the standard character encoding format for\nSTRING_TYPE\n: UTF-8. The serialized version shall be as described in [FO_PRS_\nDDS_00505].\n⌋\n7.2.3.7.5 Vectors and Arrays\n[SWS_CM_11047] DDS serialization of\nCppImplementationDataType\nof\ncate-\ngory VECTOR\nUpstream requirements:\nRS_CM_…"},{"i":"SNIP_Com_AUTOSAR_AP_SWS_C_P276_384","d":"AUTOSAR_AP_SWS_CommunicationManagement","p":276,"t":"7.4.2.2 Triggers\n[SWS_CM_00212] Mapping of ara::com::e2e::TransportFaultCondition for Proxy\nTriggers\nStatus:\nDRAFT\n⌈\nara::com::e2e::TransportFaultConditionHandler\nconfigured via\nTrig-\nger::SetTransportFaultConditionHandler()\nshall report one of the following\nvalues for each transport error detected:\n•\nTransportFaultCondition::kSampleRejected\nif the underlying\nDataReader\nentity has signaled\nSAMPLE_REJECTED\n(e.g. due to corrup-\ntion or lack of storage resources)\n•\nTransportFaultCondition::kDeadlineMissed\nif the underlying\nDataReader\nhas signaled\nREQUESTED_DEADLINE_MISSED\n(e.g. due to\none or more missed timing deadlines)\n•\nTransportFaultCondition::kSampleLost\nif the underlying\nDataReader\nhas signaled\nSAMPLE_LOST\n(e.g. because one or more samples have been de-\ntected to be lost)\n⌋\n7.4.2.3 Methods\nThis section specifies the integration of E2E communication protection in the DDS\nNetwork Binding of\nara::com\nfor the processing of\nMethod\ns.\n[SWS_CM_00213] Skeleton E2E Error Handler - Invocation\nStatus:\nDRAFT\n⌈\nSkeleton::E2EErrorHandler()\nshall be invoked from within a separate thread\nby the Communication Management software in case the underlying\nDataReader\nen-\ntity for method requests reports an E2E error.\n⌋\n[SWS_CM_00214] Skeleton E2E E…"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/764a8bff1706118f.json?v=baa7d35c" data-total="0" data-new="0" data-figures="0" data-used="8"></script></dialog>

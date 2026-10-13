@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_FrSM_00199" class="dossier-modal dossier-workbench" data-dossier-sha="71a721658995d7d0" aria-labelledby="dossier-modal-SWS_FrSM_00199-title">
+<dialog id="dossier-modal-SWS_FrSM_00199" class="dossier-modal dossier-workbench" data-dossier-sha="4575291da8758bad" aria-labelledby="dossier-modal-SWS_FrSM_00199-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_FrSM_00199-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_FrSM_00199)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,271 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,725 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'FrSM_BswM_StateType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,29 +193,27 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="f182019fc91ad662d91d94f5ee4f2d1563b833bbf6d10d451b77943620a9d6e5" data-trace-output="71a721658995d7d0fd1f29d242b2e2bd3573a7b3a43a22f83ea5f975baca4e57" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a8440a0185d0f2b1f69abc934fec9f4627703f88dc8bd1af841f37e5ab9f9ee0" data-trace-output="4575291da8758bad71578f9b24f5cbb643b1488e7ab4a51de61c58728a8f0dcf" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Zustände des FlexRay State Managers zur Übermittlung an den BswM mittels BswM_FrSM_CurrentState." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The enumeration type &lt;code&gt;FrSM_BswM_StateType&lt;/code&gt; defines the states of the FlexRay State Manager (FrSM) that are reported to the Basic Software Mode Manager (BswM) and is declared via the header file &lt;code&gt;FrSm.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_FrSM_00199" href="../../spec/record.html?id=SWS_FrSM_00199"&gt;[SWS_FrSM_00199]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Usage and Interaction&lt;/h4&gt;
-  &lt;p&gt;The type serves as the data basis for status reporting to the BswM by means of interface &lt;code&gt;BswM_FrSM_CurrentState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_FrSM_00199" href="../../spec/record.html?id=SWS_FrSM_00199"&gt;[SWS_FrSM_00199]&lt;/a&gt;. Based on the transmitted states, the BswM evaluates mode changes and coordinating actions of the overall vehicle communication.&lt;/p&gt;
-
-  &lt;h4&gt;Value Range&lt;/h4&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_FrSM_00199" href="../../spec/record.html?id=SWS_FrSM_00199"&gt;[SWS_FrSM_00199]&lt;/a&gt;, the range of values comprises the following states from &lt;code&gt;0x00&lt;/code&gt; to &lt;code&gt;0x0F&lt;/code&gt;:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_READY&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_READY_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_STARTUP&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_STARTUP_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x03&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_WAKEUP&lt;/code&gt; (&lt;code&gt;0x04&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_WAKEUP_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x05&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_HALT_REQ&lt;/code&gt; (&lt;code&gt;0x06&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_HALT_REQ_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x07&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_KEYSLOT_ONLY&lt;/code&gt; (&lt;code&gt;0x08&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_KEYSLOT_ONLY_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x09&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_ONLINE&lt;/code&gt; (&lt;code&gt;0x0A&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_ONLINE_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x0B&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_BSWM_ONLINE_PASSIVE&lt;/code&gt; (&lt;code&gt;0x0C&lt;/code&gt;) and &lt;code&gt;FRSM_BSWM_ONLINE_PASSIVE_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x0D&lt;/code&gt;)&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRSM_LOW_NUMBER_OF_COLDSTARTERS&lt;/code&gt; (&lt;code&gt;0x0E&lt;/code&gt;) and &lt;code&gt;FRSM_LOW_NUMBER_OF_COLDSTARTERS_ECU_PASSIVE&lt;/code&gt; (&lt;code&gt;0x0F&lt;/code&gt;)&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;Interpretation: The paired provision of regular states and variants with the suffix &lt;code&gt;_ECU_PASSIVE&lt;/code&gt; likely signals whether the ECU is in passive mode during the respective communication status.&lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Die Suffixe _ECU_PASSIVE dürften den Zustand des FrSM bei passiv geschalteter ECU repräsentieren – Begründung: Der Payload enthält jeweils parallele Zustandswerte mit diesem Suffix, spezifiziert deren genaue Auslösebedingungen hier jedoch nicht weiter. --&gt;
-  &lt;p class="ai-note"&gt;This text was created by an AI. All details are based on the AUTOSAR R20-11 specification.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Der Aufzählungstyp &lt;code&gt;FrSM_BswM_StateType&lt;/code&gt; definiert gemäß &lt;a class="spec-record-ref" data-req="SWS_FrSM_00199" href="../../spec/record.html?id=SWS_FrSM_00199"&gt;[SWS_FrSM_00199]&lt;/a&gt; die Zustände des FlexRay State Managers (FrSM), die an den BswM (Basic Software Mode Manager) gemeldet werden. Die Deklaration und Bereitstellung des Typs erfolgt über die Header-Datei &lt;code&gt;FrSm.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_FrSM_00199" href="../../spec/record.html?id=SWS_FrSM_00199"&gt;[SWS_FrSM_00199]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Wertebereich&lt;/h4&gt;
+&lt;p&gt;Die Werte dieses Typs werden im Zusammenspiel mit der Schnittstelle &lt;code&gt;BswM_FrSM_CurrentState&lt;/code&gt; verwendet, um den aktuellen Betriebs- und Kommunikationszustand an das BswM-Modul zu übermitteln &lt;a class="spec-record-ref" data-req="SWS_FrSM_00199" href="../../spec/record.html?id=SWS_FrSM_00199"&gt;[SWS_FrSM_00199]&lt;/a&gt;. Der Wertebereich umfasst folgende Enumerationswerte:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_READY&lt;/code&gt; (0x00) und &lt;code&gt;FRSM_BSWM_READY_ECU_PASSIVE&lt;/code&gt; (0x01)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_STARTUP&lt;/code&gt; (0x02) und &lt;code&gt;FRSM_BSWM_STARTUP_ECU_PASSIVE&lt;/code&gt; (0x03)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_WAKEUP&lt;/code&gt; (0x04) und &lt;code&gt;FRSM_BSWM_WAKEUP_ECU_PASSIVE&lt;/code&gt; (0x05)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_HALT_REQ&lt;/code&gt; (0x06) und &lt;code&gt;FRSM_BSWM_HALT_REQ_ECU_PASSIVE&lt;/code&gt; (0x07)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_KEYSLOT_ONLY&lt;/code&gt; (0x08) und &lt;code&gt;FRSM_BSWM_KEYSLOT_ONLY_ECU_PASSIVE&lt;/code&gt; (0x09)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_ONLINE&lt;/code&gt; (0x0A) und &lt;code&gt;FRSM_BSWM_ONLINE_ECU_PASSIVE&lt;/code&gt; (0x0B)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_BSWM_ONLINE_PASSIVE&lt;/code&gt; (0x0C) und &lt;code&gt;FRSM_BSWM_ONLINE_PASSIVE_ECU_PASSIVE&lt;/code&gt; (0x0D)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRSM_LOW_NUMBER_OF_COLDSTARTERS&lt;/code&gt; (0x0E) und &lt;code&gt;FRSM_LOW_NUMBER_OF_COLDSTARTERS_ECU_PASSIVE&lt;/code&gt; (0x0F)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Auffällig ist die paarweise Strukturierung der Zustände: Jeder Basiszustand besitzt ein reguläres Pendant sowie eine Variante mit dem Suffix &lt;code&gt;_ECU_PASSIVE&lt;/code&gt;. Dies dient vermutlich dazu, den Kommunikationszustand des FlexRay-Clusters kombiniert mit dem passiven Modus des Steuergeräts an den BswM zu melden, damit dieser entsprechende Moduswechsel koordinieren kann.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Paarbildung mit '_ECU_PASSIVE' signalisiert dem BswM die Kombination aus Cluster- und ECU-Passivitätsmodus. – Begründung: Der Payload listet die Literalpaare von 0x00 bis 0x0F auf, spezifiziert deren funktionale Trennung im Typ-Eintrag jedoch nicht weiter im Detail. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Maßgeblich sind die referenzierten AUTOSAR-Spezifikationen.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -237,9 +253,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>f182019fc91a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a8440a0185d0…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -375,4 +391,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrSM_00199","k":"type","d":"AUTOSAR","t":"","n":"FrSM_BswM_StateType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/888c3ac9d8fa3aef.json?v=9d694a73" data-total="2" data-new="2" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrSM_00199","k":"type","d":"AUTOSAR","t":"","n":"FrSM_BswM_StateType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/888c3ac9d8fa3aef.json?v=fb17712d" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

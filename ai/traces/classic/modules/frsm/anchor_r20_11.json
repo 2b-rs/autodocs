@@ -1,10 +1,12 @@
 {
  "annahmen": [
-  "1) Text: FrSM_BswM_StateType meldet CcCtrl-Zustand und TrcvCtrl-Passivstatus kombiniert in einem Wert – Begründung: Der Wertebereich führt jeden Zustand doppelt mit Suffix _ECU_PASSIVE; eine Zuordnungsregel enthält der Payload nicht.",
-  "2) Text: Eine SilentCom-Anforderung löst FRSM_E_INV_MODE aus – Begründung: SilentCom ist laut 7.3.3 nicht unterstützt und SWS_FrSM_91001 definiert „Invalid communication mode requested“; die Verknüpfung ist nicht ausdrücklich belegt.",
-  "3) Diagramm diag-hochlauf: Reihenfolge der FrIf-Aufrufe im Startup – Begründung: Die Figurtexte im Payload sind nur ungeordnet extrahiert.",
-  "4) Diagramm diag-keyslot: ComM_BusSM_ModeIndication(FULL) erst bei Erreichen von FRSM_ONLINE – Begründung: Die Position in Figure 9.10 ist nicht eindeutig; die Annahme passt dazu, dass GetCurrentComMode in KEYSLOT_ONLY NoCom liefert.",
-  "5) Diagramm diag-abschaltung: Reihenfolge der Aufrufe innerhalb von FrSM_RequestComMode – Begründung: Der Figurtext zu Figure 9.11 ist nur ungeordnet extrahiert."
+  "Text:",
+  "1) Die Hauptfunktion wird im Takt von FrSMMainFunctionCycleTime aufgerufen – Begründung: Nur der Parametername im Container FrSMCluster legt das nahe, eine normative Aussage fehlt im Payload.",
+  "2) FrSMStartupRepetitions begrenzt die Anlaufwiederholungen – Begründung: Der Parametername und die Variable startupCounter deuten darauf hin, der Regeltext fehlt im Payload. Diagramm diag-zustand:",
+  "1) Übergänge zwischen FRSM_ONLINE und FRSM_ONLINE_PASSIVE bzw. FRSM_LOW_NUMBER_OF_COLDSTARTERS – Begründung: aus POC-Zuordnung und Bedingung lowNumberOfColdstarters abgeleitet, die Übergangstabelle fehlt im Payload. Diagramm diag-weckentscheidung:",
+  "1) Nicht-Weck-ECUs laufen ohne eigenes Weckmuster an – Begründung: aus dem Parameter FrSMIsWakeupEcu abgeleitet. Diagramm diag-weckstart:",
+  "1) Reihenfolge innerhalb der Hauptfunktionsläufe – Begründung: aus textextrahierten Abbildungen rekonstruiert. Diagramm diag-shutdown:",
+  "1) Reihenfolge der Aufrufe – Begründung: aus textextrahierter Abbildung 9.11 rekonstruiert."
  ],
  "diagrams": [
   {
@@ -14,18 +16,23 @@
   },
   {
    "art": "dot",
-   "id": "diag-zustaende",
-   "quelle": "anchor_r20_11.diag-zustaende.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-hochlauf",
-   "quelle": "anchor_r20_11.diag-hochlauf.seq.json"
+   "id": "diag-zustand",
+   "quelle": "anchor_r20_11.diag-zustand.dot"
   },
   {
    "art": "dot",
-   "id": "diag-wakeup",
-   "quelle": "anchor_r20_11.diag-wakeup.dot"
+   "id": "diag-weckentscheidung",
+   "quelle": "anchor_r20_11.diag-weckentscheidung.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-weckmuster",
+   "quelle": "anchor_r20_11.diag-weckmuster.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-weckstart",
+   "quelle": "anchor_r20_11.diag-weckstart.seq.json"
   },
   {
    "art": "seq",
@@ -34,8 +41,8 @@
   },
   {
    "art": "seq",
-   "id": "diag-abschaltung",
-   "quelle": "anchor_r20_11.diag-abschaltung.seq.json"
+   "id": "diag-shutdown",
+   "quelle": "anchor_r20_11.diag-shutdown.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/frsm/anchor_r20_11.html",
@@ -43,6 +50,7 @@
   "ausgelassen": {
    "budget": [],
    "dublette": {
+    "SNIP_CLASSIC_FRIF_SECTION_10_2_4_FrSMCluster": "SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster",
     "SNIP_CLASSIC_FRIF_SECTION_8_3_5_FrSM_AllSlots": "SNIP_CLASSIC_FRSM_SECTION_8_3_5_FrSM_AllSlots",
     "SNIP_CLASSIC_FRIF_SECTION_8_3_6_FrSM_SetEcuPassive": "SNIP_CLASSIC_FRSM_SECTION_8_3_6_FrSM_SetEcuPassive"
    },
@@ -52,19 +60,98 @@
    "ohne_inhalt": [
     "SNIP_CLASSIC_FRSM_SECTION_7_Functional_specification",
     "SNIP_CLASSIC_FRSM_SECTION_8_API_specification",
-    "SNIP_CLASSIC_FRSM_SECTION_9_Sequence_diagrams",
-    "SNIP_det_AUTOSAR_SWS_Flex_P40_299"
+    "SNIP_CLASSIC_FRSM_SECTION_9_Sequence_diagrams"
    ],
    "ohne_text": []
   },
-  "im_prompt": 42,
-  "im_prompt_schaubilder": 15,
-  "kandidaten": 49,
+  "im_prompt": 31,
+  "im_prompt_schaubilder": 2,
+  "kandidaten": 38,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "4088a9362590298f8bccc97cca2b7975dbbd578331b4fdd36d47866ff0fa817a",
- "output_store": "ai/store/outputs/40/4088a9362590298f8bccc97cca2b7975dbbd578331b4fdd36d47866ff0fa817a.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-zustand"
+  ],
+  "oneliner_chars": 108,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 76,
+   "3": 307,
+   "4": 1752
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_3_4_Communication_Management: EXP_ModeManagementGuide S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_FIGURE_Figure_7_1: SWS_FlexRayStateManager S. 24 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_6_FrSM_SetEcuPassive: SWS_FlexRayStateManager S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_3_FrSM_GetCurrentComMode: SWS_FlexRayStateManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_3_Variables: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_1_FrSM_Init: SWS_FlexRayStateManager S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster: SWS_FlexRayStateManager S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_5_Dual_Channel_Wakeup_Forward: SWS_FlexRayStateManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_4_Dual_Channel_Wakeup: SWS_FlexRayStateManager S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_8_Wakeup_Pattern_Transmission: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_8_Wakeup_Pattern_Transmission: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_3_Variables: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_2_Single_Channel_Wakeup: SWS_FlexRayStateManager S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_2_Single_Channel_Wakeup: SWS_FlexRayStateManager S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-0ef27a8d1bd9d79f: AUTOSAR_CP_SWS_FlexRayStateManager S. 55 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_5_FrSM_AllSlots: SWS_FlexRayStateManager S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_6_Key_Slot_Only_Mode: SWS_FlexRayStateManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_6_Key_Slot_Only_Mode: SWS_FlexRayStateManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-0ef27a8d1bd9d79f: AUTOSAR_CP_SWS_FlexRayStateManager S. 55 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_7_Transition_from_full_communication_to_no_communication: SWS_FlexRayStateManager S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_7_Transition_from_full_communication_to_no_communication: SWS_FlexRayStateManager S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_6_Timers: SWS_FlexRayStateManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster: SWS_FlexRayStateManager S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_5_FrSM_AllSlots: SWS_FlexRayStateManager S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_6_FrSM_SetEcuPassive: SWS_FlexRayStateManager S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_6_Timers: SWS_FlexRayStateManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster: SWS_FlexRayStateManager S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_6_Timers: SWS_FlexRayStateManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_2_Single_Channel_Wakeup: SWS_FlexRayStateManager S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_7_Transition_from_full_communication_to_no_communication: SWS_FlexRayStateManager S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 2: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_3_FrSM_GetCurrentComMode: SWS_FlexRayStateManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_1_FrSM_Init: SWS_FlexRayStateManager S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_3_FrSM_GetCurrentComMode: SWS_FlexRayStateManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "02bbc0477818b9bf22aa2cf3dd34c318d35e496ba8bb9d33d1dc480d771ef964",
+ "output_store": "ai/store/outputs/02/02bbc0477818b9bf22aa2cf3dd34c318d35e496ba8bb9d33d1dc480d771ef964.html",
  "params": {
   "module": "frsm",
   "platform": "classic",
@@ -93,9 +180,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "f922c98546e248eae814dc77317049df2ef4a2501c27e92860fbf173296e8211",
- "prompt_store": "ai/store/prompts/f9/f922c98546e248eae814dc77317049df2ef4a2501c27e92860fbf173296e8211.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "a3de1ac25c5ef87a0be384f73dee92ca223ec069a95b74d056e4d8ffe663fbf0",
+ "prompt_store": "ai/store/prompts/a3/a3de1ac25c5ef87a0be384f73dee92ca223ec069a95b74d056e4d8ffe663fbf0.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -108,14 +195,80 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.436732,
-   "cost_usd_reported": 1.436732,
-   "created_at": "2026-10-09T07:06:56Z",
-   "duration_api_seconds": 469.918,
-   "duration_seconds": 470.036,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.10686,
+   "cost_usd_reported": 1.10686,
+   "created_at": "2026-10-13T02:52:13Z",
+   "duration_api_seconds": 349.44,
+   "duration_seconds": 350.871,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_3_4_Communication_Management: EXP_ModeManagementGuide S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_FIGURE_Figure_7_1: SWS_FlexRayStateManager S. 24 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_6_FrSM_SetEcuPassive: SWS_FlexRayStateManager S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_3_FrSM_GetCurrentComMode: SWS_FlexRayStateManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_3_Variables: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_1_FrSM_Init: SWS_FlexRayStateManager S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster: SWS_FlexRayStateManager S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_5_Dual_Channel_Wakeup_Forward: SWS_FlexRayStateManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_4_Dual_Channel_Wakeup: SWS_FlexRayStateManager S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_8_Wakeup_Pattern_Transmission: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_8_Wakeup_Pattern_Transmission: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_3_Variables: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_2_Single_Channel_Wakeup: SWS_FlexRayStateManager S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_2_Single_Channel_Wakeup: SWS_FlexRayStateManager S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-0ef27a8d1bd9d79f: AUTOSAR_CP_SWS_FlexRayStateManager S. 55 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_5_FrSM_AllSlots: SWS_FlexRayStateManager S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_6_Key_Slot_Only_Mode: SWS_FlexRayStateManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_6_Key_Slot_Only_Mode: SWS_FlexRayStateManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-0ef27a8d1bd9d79f: AUTOSAR_CP_SWS_FlexRayStateManager S. 55 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_7_Transition_from_full_communication_to_no_communication: SWS_FlexRayStateManager S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_7_Transition_from_full_communication_to_no_communication: SWS_FlexRayStateManager S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_6_Timers: SWS_FlexRayStateManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster: SWS_FlexRayStateManager S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_5_FrSM_AllSlots: SWS_FlexRayStateManager S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_6_FrSM_SetEcuPassive: SWS_FlexRayStateManager S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_6_Timers: SWS_FlexRayStateManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_4_FrSMCluster: SWS_FlexRayStateManager S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_7_Functional_Elements: SWS_FlexRayStateManager S. 22 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_3_6_Timers: SWS_FlexRayStateManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_2_Single_Channel_Wakeup: SWS_FlexRayStateManager S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_9_7_Transition_from_full_communication_to_no_communication: SWS_FlexRayStateManager S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 2: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_3_FrSM_GetCurrentComMode: SWS_FlexRayStateManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_1_FrSM_Init: SWS_FlexRayStateManager S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_2_FrSM_RequestComMode: SWS_FlexRayStateManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_COMM_SECTION_9_3_Single_Channel_Passive_Startup: SWS_FlexRayStateManager S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_2_States: SWS_FlexRayStateManager S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_7_3_9_Transitions: SWS_FlexRayStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FRSM_SECTION_8_3_3_FrSM_GetCurrentComMode: SWS_FlexRayStateManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -124,19 +277,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.436732,
-     "inputTokens": 48888,
+     "costUSD": 1.10686,
+     "inputTokens": 39955,
      "maxOutputTokens": 128000,
-     "outputTokens": 62059,
+     "outputTokens": 47352,
      "provider": "firstParty",
-     "thinkingTokens": 37448,
+     "thinkingTokens": 21028,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "f382d430-61c7-4f70-a4ff-2208bb3f41b5",
+   "run_id": "5d486a10-c2d3-4d42-a1bd-8d7ce4e59f1f",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/f382d430-61c7-4f70-a4ff-2208bb3f41b5.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/5d486a10-c2d3-4d42-a1bd-8d7ce4e59f1f.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -145,11 +298,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 48888,
-    "output_tokens": 62059,
+    "inference_geo": "global",
+    "input_tokens": 39955,
+    "output_tokens": 47352,
     "output_tokens_details": {
-     "thinking_tokens": 37448
+     "thinking_tokens": 21028
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -161,11 +314,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 48888,
-    "output": 62059,
-    "thinking": 37448
+    "input_uncached": 39955,
+    "output": 47352,
+    "thinking": 21028
    },
-   "wall_seconds": 472.02
+   "wall_seconds": 352.213
   }
  ],
  "schema": "ai-trace@2",

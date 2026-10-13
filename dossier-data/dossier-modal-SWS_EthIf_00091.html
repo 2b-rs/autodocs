@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_00091" class="dossier-modal dossier-workbench" data-dossier-sha="16bb027d334fb9e9" aria-labelledby="dossier-modal-SWS_EthIf_00091-title">
+<dialog id="dossier-modal-SWS_EthIf_00091" class="dossier-modal dossier-workbench" data-dossier-sha="ee798403417db6f3" aria-labelledby="dossier-modal-SWS_EthIf_00091-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_00091-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_00091)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,318 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,773 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_TxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,25 +198,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="285c634b4baf6b841f24218775205fdf9d181da1baf535d403ce191d7ed3ef55" data-trace-output="16bb027d334fb9e9e75a469d2ff62a36b4b1a9232c207847507c3306a77dddf5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="da5fb02ebb8bde85292d11015942ae9e7660f1fb2c5b712c24242cba9130fcc3" data-trace-output="ee798403417db6f36e1478827bcece314b1542f1d2b93faf6ef564ac9597a282" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bestätigt die Übertragung eines Ethernet-Frames und leitet das Ergebnis synchron an die obere Schicht weiter." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Function &lt;code&gt;EthIf_TxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;) serves to confirm a frame transmission by the physical Ethernet controller indexed via &lt;code&gt;CtrlIdx&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Usage and Parameters&lt;/h4&gt;
-  &lt;p&gt;The call is executed synchronously (service ID &lt;code&gt;0x11&lt;/code&gt;, available via header &lt;code&gt;EthIf.h&lt;/code&gt;) and has no return value (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;). The function takes the following input parameters:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;Die synchrone Funktion &lt;code&gt;EthIf_TxConfirmation&lt;/code&gt; (Service-ID &lt;code&gt;0x11&lt;/code&gt;) bestätigt die Übertragung eines Ethernet-Frames durch den über &lt;code&gt;CtrlIdx&lt;/code&gt; referenzierten physischen Ethernet-Controller &lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;. Die Funktion besitzt keinen Rückgabewert und ist über die Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Eingangsparameter sind wie folgt definiert &lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;CtrlIdx&lt;/code&gt;: Index of the physical Ethernet controller within the context of the Ethernet Interface.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BufIdx&lt;/code&gt;: Index of the transmitted buffer.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Result&lt;/code&gt;: Result of the frame transmission with the status values &lt;code&gt;E_OK&lt;/code&gt; (transmission was successful) or &lt;code&gt;E_NOT_OK&lt;/code&gt; (transmission failed).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CtrlIdx&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Index des physischen Ethernet-Controllers im Kontext des Ethernet-Interface.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BufIdx&lt;/code&gt; (&lt;code&gt;Eth_BufIdxType&lt;/code&gt;): Index des übertragenen Puffers.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;Result&lt;/code&gt; (&lt;code&gt;Std_ReturnType&lt;/code&gt;): Ergebnis der Übertragung; &lt;code&gt;E_OK&lt;/code&gt; signalisiert einen erfolgreichen Sendevorgang, &lt;code&gt;E_NOT_OK&lt;/code&gt; einen Übertragungsfehler.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The interface is defined as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00255" href="../../spec/record.html?id=SWS_EthIf_00255"&gt;[SWS_EthIf_00255]&lt;/a&gt;, &lt;code&gt;EthIf_TxConfirmation&lt;/code&gt; forwards the transmission result &lt;code&gt;Result&lt;/code&gt; received upon invocation to the configured upper layer via its callback &lt;code&gt;&amp;lt;UL&amp;gt;_TxConfirmation&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+  &lt;h4&gt;Zusammenspiel mit übergeordneten Schichten&lt;/h4&gt;
+  &lt;p&gt;Gemäß &lt;a class="spec-record-ref" data-req="SWS_EthIf_00255" href="../../spec/record.html?id=SWS_EthIf_00255"&gt;[SWS_EthIf_00255]&lt;/a&gt; leitet &lt;code&gt;EthIf_TxConfirmation&lt;/code&gt; das empfangene Übertragungsergebnis &lt;code&gt;Result&lt;/code&gt; an die konfigurierte obere Schicht über deren Callback &lt;code&gt;&amp;lt;UL&amp;gt;_TxConfirmation&lt;/code&gt; weiter.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;. Parallele Aufrufe müssen daher vermieden werden. Spezifische DET- oder DEM-Fehlermeldungen sind im Spezifikationsauszug nicht vorgesehen; Fehler werden ausschließlich über den Parameter &lt;code&gt;Result&lt;/code&gt; mit dem Wert &lt;code&gt;E_NOT_OK&lt;/code&gt; übermittelt &lt;a class="spec-record-ref" data-req="SWS_EthIf_00091" href="../../spec/record.html?id=SWS_EthIf_00091"&gt;[SWS_EthIf_00091]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde automatisch von einer KI erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,9 +254,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>285c634b4baf…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>da5fb02ebb8b…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 45 <span class="dossier-meta-sub">(45 neu · 12 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 45 Belege dazugekommen (12 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 44 <span class="dossier-meta-sub">(44 neu · 11 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 44 Belege dazugekommen (11 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -275,8 +291,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">47</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">46</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">46</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">45</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -313,7 +329,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 45 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 44 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -376,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_00091","k":"function","d":"AUTOSAR","t":"","n":"EthIf_TxConfirmation"}],"inbound":[{"i":"SWS_EthIf_00255","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00255].","n":"SWS_EthIf_00255"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/2c83f9696733c148.json?v=819aecfa" data-total="45" data-new="45" data-figures="12" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_00091","k":"function","d":"AUTOSAR","t":"","n":"EthIf_TxConfirmation"}],"inbound":[{"i":"SWS_EthIf_00255","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00255].","n":"SWS_EthIf_00255"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/2c83f9696733c148.json?v=5c846db5" data-total="44" data-new="44" data-figures="11" data-used="0"></script></dialog>

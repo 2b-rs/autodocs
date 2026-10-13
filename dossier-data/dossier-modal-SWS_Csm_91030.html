@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_91030" class="dossier-modal dossier-workbench" data-dossier-sha="115b5761582c57bf" aria-labelledby="dossier-modal-SWS_Csm_91030-title">
+<dialog id="dossier-modal-SWS_Csm_91030" class="dossier-modal dossier-workbench" data-dossier-sha="1b8184fa490fb9bb" aria-labelledby="dossier-modal-SWS_Csm_91030-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_91030-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_91030)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,505 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,959 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_JobKeyDerive'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,30 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="8a3a3b3933b6aa22fc00baa6791ce7b88ae74072aed4e0a54bed93ac683d6efe" data-trace-output="115b5761582c57bf5076c8a2962036704ed2eb18aac0b734315415095d2cd2c0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="edeb66131e0bde5881e0cbefa528f8e8704a6f7ec820fdc00e85a02ffba59aef" data-trace-output="1b8184fa490fb9bb4177709995de1c7a530785acab9f034c9fa6a80025913f7f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Leitet aus Passwort und Salt eines Quellschlüssels einen neuen Schlüssel ab und speichert ihn im Zielschlüssel." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;, the function &lt;code&gt;Csm_JobKeyDerive&lt;/code&gt; derives a new key. For this purpose, it uses the key elements for password and salt stored in the source key (&lt;code&gt;keyId&lt;/code&gt;). The result of the key derivation is stored in the key element with ID 1 of the target key identified by &lt;code&gt;targetKeyId&lt;/code&gt;. The declaration is provided via the header file &lt;code&gt;Csm.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    &lt;strong&gt;Call and synchronization behavior:&lt;/strong&gt; The identifiers of the CSM job (&lt;code&gt;jobId&lt;/code&gt;), the source key (&lt;code&gt;keyId&lt;/code&gt;), and the target key (&lt;code&gt;targetKeyId&lt;/code&gt;) are passed to DEM call &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;. The function is designed to be reentrant; execution is either synchronous or asynchronous depending on the job configuration &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    &lt;strong&gt;Return values and error handling:&lt;/strong&gt; The type &lt;code&gt;Std_ReturnType&lt;/code&gt; serves as the return value &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The request was issued successfully &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The request has failed &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The requested service is currently busy &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Reading the source key element is not allowed &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Writing to the target key element is not allowed &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: The key is in the invalid state ("invalid") &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: The key element sizes involved are not compatible with each other &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: The source key element is uninitialized &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p class="ai-note"&gt;
-    This note is based on the information of the AUTOSAR specification R20-11 for &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Csm_JobKeyDerive&lt;/code&gt; leitet einen neuen kryptografischen Schlüssel ab, indem sie die Schlüsselelemente für Passwort und Salt aus dem durch &lt;code&gt;keyId&lt;/code&gt; identifizierten Schlüssel verwendet &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;. Das Ergebnis wird im Schlüsselelement mit der ID 1 des durch &lt;code&gt;targetKeyId&lt;/code&gt; festgelegten Zielschlüssels abgelegt &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;. Der Aufruf erfolgt über die Header-Datei &lt;code&gt;Csm.h&lt;/code&gt; mit der Service-ID &lt;code&gt;0x7d&lt;/code&gt; unter Übergabe des jeweiligen Jobs via &lt;code&gt;jobId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Verarbeitung erfolgt je nach Konfiguration des übergebenen Jobs entweder synchron oder asynchron &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;. Die Funktion ist als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Als Rückgabewert liefert die Funktion den Typ &lt;code&gt;Std_ReturnType&lt;/code&gt;. Eine erfolgreiche Ausführung der Anfrage wird durch &lt;code&gt;E_OK&lt;/code&gt; bestätigt &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;. Im Fehlerfall oder bei unpassenden Vorbedingungen werden spezifische Rückgabewerte gemeldet &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage ist fehlgeschlagen &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Die Anfrage scheitert, da der Dienst aktuell noch ausgelastet ist &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Das Auslesen des Schlüsselelements ist nicht zulässig &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Das Schreiben in das Ziel-Schlüsselelement ist nicht gestattet &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Der Zustand des Schlüssels ist ungültig &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Die beteiligten Schlüsselelement-Größen sind zueinander nicht kompatibel &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Quell-Schlüsselelement ist uninitialisiert &lt;a class="spec-record-ref" data-req="SWS_Csm_91030" href="../../spec/record.html?id=SWS_Csm_91030"&gt;[SWS_Csm_91030]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,7 +251,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8a3a3b3933b6…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>edeb66131e0b…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -376,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_91030","k":"function","d":"AUTOSAR","t":"","n":"Csm_JobKeyDerive"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/5bcc1d561908d8f4.json?v=109b0635" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_91030","k":"function","d":"AUTOSAR","t":"","n":"Csm_JobKeyDerive"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/5bcc1d561908d8f4.json?v=db8494d1" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

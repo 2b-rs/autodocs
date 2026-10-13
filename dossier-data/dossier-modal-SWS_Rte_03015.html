@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Rte_03015" class="dossier-modal dossier-workbench" data-dossier-sha="3625f2e7cd99f8d0" aria-labelledby="dossier-modal-SWS_Rte_03015-title">
+<dialog id="dossier-modal-SWS_Rte_03015" class="dossier-modal dossier-workbench" data-dossier-sha="cf4213414b06b588" aria-labelledby="dossier-modal-SWS_Rte_03015-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Rte_03015-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Rte_03015)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,024 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,478 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Rte_Start'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -240,34 +258,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="aab1852b5fb62e864ed3d09951360ecf40575e74cad88cac797e2d915e7c845a" data-trace-output="3625f2e7cd99f8d022dc7b5aad145a768841fef87f52874be6c944836ef335f1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="7e79d12edbc48b7201a8bc0c31f1de51de15795afa9a625d1f5dfa570a2d7a4f" data-trace-output="cf4213414b06b588624f9736f0fd77e1f26959a58381bf2e286540a702178bfe" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Allokiert und initialisiert die System- und Kommunikationsressourcen der RTE und startet deren Partitionen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;Rte_Start&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_02569" href="../../spec/record.html?id=SWS_Rte_02569"&gt;[SWS_Rte_02569]&lt;/a&gt;), which is always generated (&lt;a class="spec-record-ref" data-req="SWS_Rte_01309" href="../../spec/record.html?id=SWS_Rte_01309"&gt;[SWS_Rte_01309]&lt;/a&gt;), allocates and initializes the system and communication resources used by the RTE (&lt;a class="spec-record-ref" data-req="SWS_Rte_03015" href="../../spec/record.html?id=SWS_Rte_03015"&gt;[SWS_Rte_03015]&lt;/a&gt;). It has no input parameters, returns a &lt;code&gt;Std_ReturnType&lt;/code&gt;, and must terminate within a finite execution time without an endless loop (&lt;a class="spec-record-ref" data-req="SWS_Rte_02585" href="../../spec/record.html?id=SWS_Rte_02585"&gt;[SWS_Rte_02585]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;h4&gt;Call Context and Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    &lt;code&gt;Rte_Start&lt;/code&gt; may only be called exactly once on each Core by the &lt;code&gt;EcuStateManager&lt;/code&gt; from a trusted OS context after all basic software modules required for the RTE have been initialized (&lt;a class="spec-record-ref" data-req="SWS_Rte_CONSTR_09035" href="../../spec/record.html?id=SWS_Rte_CONSTR_09035"&gt;[SWS_Rte_CONSTR_09035]&lt;/a&gt;). The call occurs independently on each Core (&lt;a class="spec-record-ref" data-req="SWS_Rte_07615" href="../../spec/record.html?id=SWS_Rte_07615"&gt;[SWS_Rte_07615]&lt;/a&gt;) and covers the partition-specific startup activities for all partitions allocated to this Core (&lt;a class="spec-record-ref" data-req="SWS_Rte_07616" href="../../spec/record.html?id=SWS_Rte_07616"&gt;[SWS_Rte_07616]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;h4&gt;Initialization Sequence and Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    As part of &lt;code&gt;Rte_Start&lt;/code&gt;, a coordinated startup sequence is run through:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;The variables allocated for &lt;code&gt;ramBlock&lt;/code&gt;s are initialized depending on the configured &lt;code&gt;RteInitializationStrategy&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_07632" href="../../spec/record.html?id=SWS_Rte_07632"&gt;[SWS_Rte_07632]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;After variable initialization, but before execution of runnable entities, the RTE calls the initialization functions &lt;code&gt;Rte_Rips_Rte_Start&lt;/code&gt; of all participating RTE implementation plug-ins (&lt;a class="spec-record-ref" data-req="SWS_Rte_80052" href="../../spec/record.html?id=SWS_Rte_80052"&gt;[SWS_Rte_80052]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Runnables triggered by &lt;code&gt;InitEvent&lt;/code&gt; are activated once (&lt;a class="spec-record-ref" data-req="SWS_Rte_06761" href="../../spec/record.html?id=SWS_Rte_06761"&gt;[SWS_Rte_06761]&lt;/a&gt;), and the transition to initial modes is initiated (&lt;a class="spec-record-ref" data-req="SWS_Rte_06766" href="../../spec/record.html?id=SWS_Rte_06766"&gt;[SWS_Rte_06766]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;If no separate &lt;code&gt;Rte_StartTiming&lt;/code&gt; exists, &lt;code&gt;Rte_Start&lt;/code&gt; additionally starts the activation of runnables that are controlled by &lt;code&gt;TimingEvent&lt;/code&gt;s (&lt;a class="spec-record-ref" data-req="SWS_Rte_07575" href="../../spec/record.html?id=SWS_Rte_07575"&gt;[SWS_Rte_07575]&lt;/a&gt;) or &lt;code&gt;BackgroundEvent&lt;/code&gt;s (&lt;a class="spec-record-ref" data-req="SWS_Rte_07178" href="../../spec/record.html?id=SWS_Rte_07178"&gt;[SWS_Rte_07178]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Certain functions such as &lt;code&gt;Rte_SetMirror&lt;/code&gt; may explicitly already be called before &lt;code&gt;Rte_Start&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_07319" href="../../spec/record.html?id=SWS_Rte_07319"&gt;[SWS_Rte_07319]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;
-    If &lt;code&gt;Rte_Start&lt;/code&gt; is called before &lt;code&gt;SchM_Init&lt;/code&gt;, the basic software scheduler or the RTE reports the error &lt;code&gt;RTE_E_UNINIT&lt;/code&gt; (0x07) when &lt;code&gt;RteDevErrorDetectUninit&lt;/code&gt; is activated (&lt;a class="spec-record-ref" data-req="SWS_Rte_07683" href="../../spec/record.html?id=SWS_Rte_07683"&gt;[SWS_Rte_07683]&lt;/a&gt;). Likewise, an impermissible call to monitored RTE APIs before &lt;code&gt;Rte_Start&lt;/code&gt; leads to the reporting of &lt;code&gt;RTE_E_UNINIT&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_07682" href="../../spec/record.html?id=SWS_Rte_07682"&gt;[SWS_Rte_07682]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI based on the specification requirements of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;
+Die Funktion &lt;code&gt;Rte_Start&lt;/code&gt; allokiert und initialisiert die von der RTE genutzten System- und Kommunikationsressourcen &lt;a class="spec-record-ref" data-req="SWS_Rte_03015" href="../../spec/record.html?id=SWS_Rte_03015"&gt;[SWS_Rte_03015]&lt;/a&gt;. Die API wird stets generiert &lt;a class="spec-record-ref" data-req="SWS_Rte_01309" href="../../spec/record.html?id=SWS_Rte_01309"&gt;[SWS_Rte_01309]&lt;/a&gt;, besitzt die Signatur &lt;code&gt;Std_ReturnType Rte_Start (void)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Rte_02569" href="../../spec/record.html?id=SWS_Rte_02569"&gt;[SWS_Rte_02569]&lt;/a&gt; und muss zwingend innerhalb endlicher Ausführungszeit ohne Endlosschleife zurückkehren &lt;a class="spec-record-ref" data-req="SWS_Rte_02585" href="../../spec/record.html?id=SWS_Rte_02585"&gt;[SWS_Rte_02585]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+Die Funktion darf auf jedem Core nur genau einmal durch den &lt;code&gt;EcuStateManager&lt;/code&gt; aus einem vertrauenswürdigen OS-Kontext aufgerufen werden, nachdem alle von der RTE benötigten Basissoftware-Module initialisiert wurden &lt;a class="spec-record-ref" data-req="SWS_Rte_CONSTR_09035" href="../../spec/record.html?id=SWS_Rte_CONSTR_09035"&gt;[SWS_Rte_CONSTR_09035]&lt;/a&gt;. Der Aufruf wird auf jedem Core unabhängig ausgeführt &lt;a class="spec-record-ref" data-req="SWS_Rte_07615" href="../../spec/record.html?id=SWS_Rte_07615"&gt;[SWS_Rte_07615]&lt;/a&gt; und führt die partitionsspezifischen Startaktivitäten für alle diesem Core zugeordneten Partitionen aus &lt;a class="spec-record-ref" data-req="SWS_Rte_07616" href="../../spec/record.html?id=SWS_Rte_07616"&gt;[SWS_Rte_07616]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+Während des Ablaufs initialisiert die RTE die für RAM-Blöcke allokierten Variablen abhängig von der konfigurierten Strategie &lt;a class="spec-record-ref" data-req="SWS_Rte_07632" href="../../spec/record.html?id=SWS_Rte_07632"&gt;[SWS_Rte_07632]&lt;/a&gt;. Nach den Variableninitialisierungen, jedoch noch vor der Ausführung von Runnables, ruft die RTE die Initialisierungsfunktionen &lt;code&gt;Rte_Rips_Rte_Start&lt;/code&gt; aller beteiligten RTE Implementation Plug-Ins auf &lt;a class="spec-record-ref" data-req="SWS_Rte_80052" href="../../spec/record.html?id=SWS_Rte_80052"&gt;[SWS_Rte_80052]&lt;/a&gt;. Anschließend aktiviert die RTE einmalig alle durch &lt;code&gt;InitEvent&lt;/code&gt; ausgelösten Runnables &lt;a class="spec-record-ref" data-req="SWS_Rte_06761" href="../../spec/record.html?id=SWS_Rte_06761"&gt;[SWS_Rte_06761]&lt;/a&gt; und leitet den Wechsel in die initialen Modi ein &lt;a class="spec-record-ref" data-req="SWS_Rte_06766" href="../../spec/record.html?id=SWS_Rte_06766"&gt;[SWS_Rte_06766]&lt;/a&gt;. Falls die API &lt;code&gt;Rte_StartTiming&lt;/code&gt; nicht existiert, startet &lt;code&gt;Rte_Start&lt;/code&gt; zudem die Aktivierung von Runnables, die durch &lt;code&gt;TimingEvent&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Rte_07575" href="../../spec/record.html?id=SWS_Rte_07575"&gt;[SWS_Rte_07575]&lt;/a&gt; oder &lt;code&gt;BackgroundEvent&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Rte_07178" href="../../spec/record.html?id=SWS_Rte_07178"&gt;[SWS_Rte_07178]&lt;/a&gt; ausgelöst werden.
+&lt;/p&gt;
+&lt;p&gt;
+Zur Fehlerbehandlung meldet die RTE bzw. der SchM bei aktiviertem &lt;code&gt;RteDevErrorDetectUninit&lt;/code&gt; den Fehler &lt;code&gt;RTE_E_UNINIT&lt;/code&gt; (0x07), wenn &lt;code&gt;Rte_Start&lt;/code&gt; vor &lt;code&gt;SchM_Init&lt;/code&gt; aufgerufen wird &lt;a class="spec-record-ref" data-req="SWS_Rte_07683" href="../../spec/record.html?id=SWS_Rte_07683"&gt;[SWS_Rte_07683]&lt;/a&gt;. Vor der Ausführung von &lt;code&gt;Rte_Start&lt;/code&gt; dürfen Laufzeit-APIs der RTE nicht aufgerufen werden, da dies andernfalls ebenfalls zu &lt;code&gt;RTE_E_UNINIT&lt;/code&gt; führt &lt;a class="spec-record-ref" data-req="SWS_Rte_07682" href="../../spec/record.html?id=SWS_Rte_07682"&gt;[SWS_Rte_07682]&lt;/a&gt;; &lt;code&gt;Rte_SetMirror&lt;/code&gt; darf hingegen bereits vor &lt;code&gt;Rte_Start&lt;/code&gt; aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_Rte_07319" href="../../spec/record.html?id=SWS_Rte_07319"&gt;[SWS_Rte_07319]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -307,9 +314,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>aab1852b5fb6…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7e79d12edbc4…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -344,8 +351,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">10</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">9</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -382,7 +389,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 6 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 8 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -445,4 +452,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Rte_03015","k":"function","d":"AUTOSAR","t":"","n":"Rte_Start"}],"inbound":[{"i":"SWS_Rte_02569","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Rte_02569].","n":"SWS_Rte_02569"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/dbcc7b112065c799.json?v=7e39a070" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Rte_03015","k":"function","d":"AUTOSAR","t":"","n":"Rte_Start"}],"inbound":[{"i":"SWS_Rte_01309","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Rte_01309].","n":"SWS_Rte_01309"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/dbcc7b112065c799.json?v=e060c98a" data-total="8" data-new="8" data-figures="3" data-used="0"></script></dialog>

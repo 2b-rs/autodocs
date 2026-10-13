@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00976" class="dossier-modal dossier-workbench" data-dossier-sha="aef0cd208d99a4d9" aria-labelledby="dossier-modal-SWS_Dcm_00976-title">
+<dialog id="dossier-modal-SWS_Dcm_00976" class="dossier-modal dossier-workbench" data-dossier-sha="9e2cb166ee0363e6" aria-labelledby="dossier-modal-SWS_Dcm_00976-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00976-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00976)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,236 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,691 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_StatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,19 +193,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="b598b559c3496661e769a275fd16bf90b0723dece839fa6732e0751ec7d72b22" data-trace-output="aef0cd208d99a4d95816a9eb812dcfba675f5d7864d513793fd7617fabbe40cf" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="87dab698e982d8ddc72c4e63d0e623e270c5e63b1f37229040f8301b4d9d28dd" data-trace-output="9e2cb166ee0363e6186279745c8d124a83f6ae95069997c0dc493b8051ae1073" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Überträgt Status- und Fehlerinformationen bei Diagnoseoperationen wie Ereignis- oder periodischen Sendeanforderungen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;p&gt;Der Datentyp &lt;code&gt;Dcm_StatusType&lt;/code&gt; dient gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt; als Basistyp zum Transport von Statusinformationen innerhalb des Diagnostic Communication Managers (DCM). Er ist vom Basistyp &lt;code&gt;uint8&lt;/code&gt; abgeleitet und wird über die Header-Datei &lt;code&gt;Dcm.h&lt;/code&gt; zur Verfügung gestellt.&lt;/p&gt;
-&lt;h4&gt;Verwendung und Statuswerte&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;Dcm_StatusType&lt;/code&gt; wird als Rückgabetyp für spezifische DCM-Funktionen verwendet, um den Ausführungsstatus oder die Annahme einer Dienstanforderung anzuzeigen. In &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt; sind folgende Werte definiert:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Typ &lt;code&gt;Dcm_StatusType&lt;/code&gt; dient als grundlegender Status- und Rückgabetyp zur Übertragung von Statusinformationen innerhalb des Moduls &lt;code&gt;Dcm&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;Dcm.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;. Er basiert auf dem Standardtyp &lt;code&gt;uint8&lt;/code&gt; und definiert standardisierte Statuswerte für Rückmeldungen spezifischer DCM-Schnittstellen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Definierte Statuswerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Die Spezifikation definiert für &lt;code&gt;Dcm_StatusType&lt;/code&gt; folgende Status- und Fehlercodes &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;DCM_E_OK&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Signalisiert eine erfolgreiche Operation &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DCM_E_ROE_NOT_ACCEPTED&lt;/code&gt; (&lt;code&gt;0x06&lt;/code&gt;): Zeigt an, dass eine &lt;em&gt;ResponseOnOneEvent&lt;/em&gt;-Anforderung vom DCM nicht angenommen wurde (beispielsweise weil eine vorangegangene &lt;em&gt;ResponseOnOneEvent&lt;/em&gt;-Aktion noch nicht abgeschlossen ist). Dieser Statuswert wird an der Schnittstelle &lt;code&gt;Dcm_ResponseOnOneEvent()&lt;/code&gt; verwendet &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DCM_E_PERIODICID_NOT_ACCEPTED&lt;/code&gt; (&lt;code&gt;0x07&lt;/code&gt;): Zeigt an, dass eine periodische Übertragungsanforderung vom DCM abgewiesen wurde (beispielsweise weil eine vorangegangene periodische Übertragung noch nicht beendet ist). Dieser Rückgabewert wird an der Schnittstelle &lt;code&gt;Dcm_ResponseOnOneDataByPeriodicId()&lt;/code&gt; zurückgegeben &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DCM_E_OK&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Zeigt an, dass die angeforderte Operation erfolgreich ausgeführt bzw. angenommen wurde &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DCM_E_ROE_NOT_ACCEPTED&lt;/code&gt; (&lt;code&gt;0x06&lt;/code&gt;): Gibt an, dass eine ResponseOnOneEvent-Anfrage vom DCM abgewiesen wurde, beispielsweise weil ein vorheriger ResponseOnOneEvent-Vorgang noch nicht abgeschlossen ist; der Wert kommt an der Schnittstelle &lt;code&gt;Dcm_ResponseOnOneEvent()&lt;/code&gt; zum Einsatz &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DCM_E_PERIODICID_NOT_ACCEPTED&lt;/code&gt; (&lt;code&gt;0x07&lt;/code&gt;): Signalisiert, dass eine periodische Übertragungsanforderung vom DCM nicht akzeptiert wurde, etwa weil eine laufende periodische Übertragung noch nicht beendet ist; dieser Status wird an der Schnittstelle &lt;code&gt;Dcm_ResponseOnOneDataByPeriodicId()&lt;/code&gt; verwendet &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
-&lt;p&gt;Die Fehlerwerte &lt;code&gt;DCM_E_ROE_NOT_ACCEPTED&lt;/code&gt; und &lt;code&gt;DCM_E_PERIODICID_NOT_ACCEPTED&lt;/code&gt; verweisen auf zeitliche Abhängigkeiten und Reihenfolgebedingungen: Der DCM lehnt neue Anfragen ab, solange eine vorherige Operation desselben Typs noch in Bearbeitung ist. Aufrufende Komponenten müssen diese Rückgabewerte auswerten, um zu erkennen, ob eine Anforderung abgewiesen wurde &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert anhand der AUTOSAR-Spezifikation für Dcm_StatusType erstellt.&lt;/p&gt;
+&lt;h4&gt;Einschränkungen und Aufrufbedingungen&lt;/h4&gt;
+&lt;p&gt;Aufrufer der genannten Schnittstellen müssen den Rückgabewert vom Typ &lt;code&gt;Dcm_StatusType&lt;/code&gt; auswerten, um festzustellen, ob neue Anforderungen unmittelbar akzeptiert werden können oder aufgrund noch laufender Übertragungen verworfen wurden &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;. Eine wiederholte Anforderung dürfte erst dann Aussicht auf Erfolg haben, sobald vorherige Ereignis- oder Sendevorgänge vollständig abgeschlossen sind &lt;a class="spec-record-ref" data-req="SWS_Dcm_00976" href="../../spec/record.html?id=SWS_Dcm_00976"&gt;[SWS_Dcm_00976]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Eine erneute Anfrage ist vermutlich erst nach Abschluss vorangegangener Übertragungen erfolgreich – Begründung: Der Payload begründet die Ablehnungscodes mit noch nicht beendeten Vorgängen (z. B. „old ResponseOnOneEvent is not finished“). --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt und basiert auf der AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -227,7 +248,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>b598b559c349…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>87dab698e982…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

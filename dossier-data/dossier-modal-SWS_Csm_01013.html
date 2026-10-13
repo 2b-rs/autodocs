@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_01013" class="dossier-modal dossier-workbench" data-dossier-sha="a219162a0b8b77db" aria-labelledby="dossier-modal-SWS_Csm_01013-title">
+<dialog id="dossier-modal-SWS_Csm_01013" class="dossier-modal dossier-workbench" data-dossier-sha="b32da75c0a20c4eb" aria-labelledby="dossier-modal-SWS_Csm_01013-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_01013-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_01013)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,418 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,873 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Crypto_JobType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,28 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="c00b5ed61beeec63f5162e2806983e7fa5336ec3be5f2d611129e45ca03ea7ea" data-trace-output="a219162a0b8b77dbf338c638f09be992f394086c58d6480768480ce499b49221" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="040ccf713f2cdef330d5d860fbd4cec0c3efda01a742d2fee1bb67f58a990d01" data-trace-output="b32da75c0a20c4ebc6dc468c3f73d290a87017428fa5add3b1df4c43a7034c0e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient der Bündelung aller Konfigurations-, Puffer- und Zustandsdaten zur Ausführung eines kryptografischen Auftrags." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The structure &lt;code&gt;Crypto_JobType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Csm_01013" href="../../spec/record.html?id=SWS_Csm_01013"&gt;[SWS_Csm_01013]&lt;/a&gt; bundles all relevant information and parameters for executing a cryptographic job depending on the crypto primitive used. It is provided via the header &lt;code&gt;Crypto_GeneralTypes.h&lt;/code&gt; and consists of the following elements:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;jobId&lt;/code&gt; (&lt;code&gt;uint32&lt;/code&gt;): Unique identifier of the job structure.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;jobState&lt;/code&gt; (&lt;code&gt;Crypto_JobStateType&lt;/code&gt;): Determines the current processing state of the job.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;jobPrimitiveInputOutput&lt;/code&gt; (&lt;code&gt;Crypto_JobPrimitiveInputOutputType&lt;/code&gt;): Structure containing input and output data for the specific job and crypto primitive.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;jobPrimitiveInfo&lt;/code&gt; (&lt;code&gt;const Crypto_JobPrimitiveInfoType*&lt;/code&gt;): Pointer to further primitive- and job-specific detail information.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;jobPriority&lt;/code&gt; (&lt;code&gt;const uint32&lt;/code&gt;): Determines the priority of the job, where a higher value signals higher importance.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;jobRedirectionInfoRef&lt;/code&gt; (&lt;code&gt;Crypto_JobRedirectionInfoType*&lt;/code&gt;): Pointer to configurations for redirecting keys as input or output.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;cryptoKeyId&lt;/code&gt; and &lt;code&gt;targetCryptoKeyId&lt;/code&gt; (&lt;code&gt;uint32&lt;/code&gt; each): Identifiers of the crypto driver keys or the target key.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Interaction and Constraints&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Csm_01013" href="../../spec/record.html?id=SWS_Csm_01013"&gt;[SWS_Csm_01013]&lt;/a&gt;, the identifiers &lt;code&gt;cryptoKeyId&lt;/code&gt; and &lt;code&gt;targetCryptoKeyId&lt;/code&gt; must not be assigned arbitrarily, but are mandatorily to be written by the Crypto Interface. The caller of the CSM is likely to prepare and pass the instance of &lt;code&gt;Crypto_JobType&lt;/code&gt;, while the Crypto Interface performs the assignment of the driver keys. Concurrent or queued processings are likely prioritized based on &lt;code&gt;jobPriority&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically by an AI system based on AUTOSAR R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Der Aufrufer initialisiert die Job-Struktur und übergibt sie dem CSM – Begründung: Spezifikation fordert für cryptoKeyId/targetCryptoKeyId explizit das Schreiben durch das Crypto Interface, woraus sich eine geteilte Initialisierungsabfolge ableiten lässt; 2) Die Priorisierung nebenläufiger Abarbeitungen erfolgt anhand des Feldes jobPriority – Begründung: Das Feld definiert laut SWS_Csm_01013 die Wichtigkeit, konkrete Scheduling-Vorschriften sind im Payload jedoch nicht enthalten. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufbau von Crypto_JobType&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;Crypto_JobType&lt;/code&gt; bündelt alle relevanten Steuerungs-, Zustands- und Pufferdaten für die Durchführung eines kryptografischen Auftrags im Crypto Service Manager und steht über &lt;code&gt;Crypto_GeneralTypes.h&lt;/code&gt; bereit &lt;a class="spec-record-ref" data-req="SWS_Csm_01013" href="../../spec/record.html?id=SWS_Csm_01013"&gt;[SWS_Csm_01013]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Zu den zentralen Elementen der Struktur gehören &lt;a class="spec-record-ref" data-req="SWS_Csm_01013" href="../../spec/record.html?id=SWS_Csm_01013"&gt;[SWS_Csm_01013]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;jobId&lt;/code&gt;: Eindeutige Kennung des Jobs.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jobState&lt;/code&gt;: Repräsentiert den aktuellen Ausführungsstatus des Jobs.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jobPrimitiveInputOutput&lt;/code&gt;: Verweist auf die spezifischen Ein- und Ausgabedaten des Primitivs.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jobPrimitiveInfo&lt;/code&gt;: Zeiger auf konstante Zusatzinformationen zum gewählten Krypto-Primitiv.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jobPriority&lt;/code&gt;: Bestimmt die Ausführungspriorität, wobei ein höherer Wert eine höhere Dringlichkeit kennzeichnet.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jobRedirectionInfoRef&lt;/code&gt;: Zeiger auf optionale Angaben zur Umleitung von Schlüsseln als Ein- und Ausgabewerte.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Zusammenspiel und Schnittstellenbeziehungen&lt;/h4&gt;
+&lt;p&gt;Die Strukturfelder &lt;code&gt;cryptoKeyId&lt;/code&gt; und &lt;code&gt;targetCryptoKeyId&lt;/code&gt; referenzieren die zu verwendenden Schlüssel im Krypto-Treiber; gemäß Spezifikation werden diese Bezeichner durch das Crypto Interface beschrieben &lt;a class="spec-record-ref" data-req="SWS_Csm_01013" href="../../spec/record.html?id=SWS_Csm_01013"&gt;[SWS_Csm_01013]&lt;/a&gt;. Interpretation: Über &lt;code&gt;jobPriority&lt;/code&gt; dürfte die Reihenfolge bei der Einplanung und Abarbeitung nebenläufiger Aufträge in Warteschlangen geregelt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Über jobPriority dürfte die Reihenfolge bei der Einplanung in Warteschlangen geregelt werden. – Begründung: SWS_Csm_01013 definiert die Priorität („the higher, the more important“), führt jedoch bei der Typdefinition den exakten Scheduling-Mechanismus nicht aus. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Alle Angaben basieren ausschließlich auf der Spezifikation von AUTOSAR R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -236,7 +251,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>c00b5ed61bee…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>040ccf713f2c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -374,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_01013","k":"type","d":"AUTOSAR","t":"","n":"Crypto_JobType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/184ec4f4bcafcb23.json?v=a3851c2b" data-total="3" data-new="3" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_01013","k":"type","d":"AUTOSAR","t":"","n":"Crypto_JobType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/184ec4f4bcafcb23.json?v=6d44d7c9" data-total="3" data-new="3" data-figures="2" data-used="0"></script></dialog>

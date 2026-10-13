@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Crypto_00148" class="dossier-modal dossier-workbench" data-dossier-sha="2a8f2da4b9349055" aria-labelledby="dossier-modal-SWS_Crypto_00148-title">
+<dialog id="dossier-modal-SWS_Crypto_00148" class="dossier-modal dossier-workbench" data-dossier-sha="524e18552f2b0743" aria-labelledby="dossier-modal-SWS_Crypto_00148-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Crypto_00148-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Crypto_00148)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,532 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,987 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Crypto_KeyElementCopy'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,36 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a9ecee086479fb371180e93674b8213418de302bdcbb2b77b89b7099f77e175b" data-trace-output="2a8f2da4b9349055580541b9cef3bd5fe78cdc10664cf7c84796aee80ea41236" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="0bf976054e55871e0619977e2746c098224a14e54722cbd6515f8fdcdb1c07b5" data-trace-output="524e18552f2b0743a5c6733bee082bf13acba1993bcf8c1ab7e0a9795faa7aef" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kopiert synchron ein Schlüsselelement auf ein anderes Zielelement innerhalb desselben Krypto-Treibers." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The synchronous function &lt;code&gt;Crypto_KeyElementCopy&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;) serves to copy a key element within the same crypto driver to a target key element. It is declared in &lt;code&gt;Crypto.h&lt;/code&gt; and has the service ID &lt;code&gt;0x0f&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Parameters and call behavior&lt;/h4&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Crypto_KeyElementCopy&lt;/code&gt; dient dem Kopieren eines Schlüsselelements auf ein anderes Schlüsselelement innerhalb desselben Crypto-Treibers &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;. Übergeben werden die Identifikatoren des Quellschlüssels (&lt;code&gt;cryptoKeyId&lt;/code&gt;) und des Quell-Schlüsselelements (&lt;code&gt;keyElementId&lt;/code&gt;) sowie des Zielschlüssels (&lt;code&gt;targetCryptoKeyId&lt;/code&gt;) und des Ziel-Schlüsselelements (&lt;code&gt;targetKeyElementId&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich des Zeitverhaltens ist zu beachten, dass es bei direkt im Flash-Speicher abgebildeten Schlüsselelementen aufgrund der synchronen Ausführung zu größeren Verzögerungen beim Funktionsaufruf kommen kann &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;. Das Laufzeitverhalten ist daher insbesondere in zeitkritischen Kontexten zu berücksichtigen.&lt;/p&gt;
+  &lt;p&gt;Die Funktion ist reentrant ausgelegt, jedoch explizit nicht für dieselbe &lt;code&gt;cryptoKeyId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;. Gleichzeitige Aufrufe mit identischem Quellschlüssel sind folglich vom Aufrufer zu synchronisieren oder auszuschließen.&lt;/p&gt;
+  &lt;p&gt;Im Erfolgsfall gibt die Funktion &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;. Bei Fehlern signalisiert der Rückgabewert die spezifische Ursache &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;cryptoKeyId&lt;/code&gt;: Identifier of the key containing the source key element (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;keyElementId&lt;/code&gt;: Identifier of the source key element (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;targetCryptoKeyId&lt;/code&gt;: Identifier of the key intended to receive the target key element (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;targetKeyElementId&lt;/code&gt;: Identifier of the target key element (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Das Crypto-Treiber-Objekt ist belegt &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;: Das angeforderte Schlüsselelement mindestens eines Schlüssels ist nicht verfügbar &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt; oder &lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Das Auslesen des Quell- bzw. Schreiben des Zielelements ist nicht gestattet &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Die Größen der Schlüsselelemente sind nicht zueinander kompatibel &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Quell-Schlüsselelement ist nicht initialisiert &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage ist allgemein fehlgeschlagen &lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;Since the copy process is executed synchronously, noticeable delays can occur during the function call if the affected key element is stored directly in flash memory (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-  &lt;p&gt;The function returns a status of type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Copy process successful (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: General malfunction during execution (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The Crypto Driver Object is busy (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;: The requested key element of at least one involved key is not available (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Reading or extracting the source element is not allowed (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Writing the target element is not allowed (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Incompatible sizes of the involved key elements (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: The source key element is uninitialized (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is reentrant, but must not be called concurrently for the same &lt;code&gt;cryptoKeyId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00148" href="../../spec/record.html?id=SWS_Crypto_00148"&gt;[SWS_Crypto_00148]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR Classic Release R20-11.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -244,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a9ecee086479…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>0bf976054e55…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -281,8 +286,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -319,7 +324,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 4 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -382,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_00148","k":"function","d":"AUTOSAR","t":"","n":"Crypto_KeyElementCopy"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b8ce88c6af8d55a3.json?v=9e523874" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_00148","k":"function","d":"AUTOSAR","t":"","n":"Crypto_KeyElementCopy"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b8ce88c6af8d55a3.json?v=a9bb6cb8" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

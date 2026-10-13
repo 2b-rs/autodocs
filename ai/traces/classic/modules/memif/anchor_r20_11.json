@@ -1,14 +1,10 @@
 {
  "annahmen": [
-  "1) MEMIF_E_PARAM_POINTER betrifft vermutlich DataBufferPtr und VersionInfoPtr – Begründung: SWS_MemIf_00006 nennt nur „NULL pointer argument“, ohne Zuordnung zu Diensten.",
-  "2) MemIf_SetMode dürfte nur bei ruhenden Geräten sinnvoll sein – Begründung: abgeleitet aus Eep_SetMode (nicht während laufender Operation) und Fls_SetMode (Ablehnung bei busy); für MemIf selbst keine Regel im Payload.",
-  "3) DeviceIndex dient vermutlich als Index der Funktionszeigertabellen – Begründung: der Hinweis in SWS MemIf S. 17 ist abgeschnitten („where the parameter DeviceIndex is u…“). | diag-verteilung:",
-  "1) Parameterprüfung nur in der Tabellenvariante – Begründung: eine reine Makroabbildung enthält keinen eigenen MemIf-Code. | diag-schreiben:",
-  "1) Ea meldet das Jobende per NvM_JobEndNotification – Begründung: analog zum Fee_Write-Ablauf; die Ea_Write-Vorlage ist abgeschnitten. | diag-geraetestatus:",
-  "1) Übergänge aus den Rückgabebedingungen von Fee_GetStatus abgeleitet – Begründung: die Spezifikation zeichnet keine Zustandsmaschine. | diag-jobergebnis:",
-  "1) Rücksprung auf MEMIF_JOB_PENDING bei neuem Auftrag gilt auch für Fee/Ea – Begründung: explizit nur für Fls festgelegt. | diag-abbruch:",
-  "1) Verschachtelung der Rückmeldungen innerhalb von Fls_Cancel – Begründung: aus den Beschriftungen von Figure 9.4 rekonstruiert. | diag-fehlerpfad:",
-  "1) DEM-Meldung erst nach erschöpften Wiederholungen – Begründung: die Quelle nennt Reaktion und Meldung getrennt, ohne Reihenfolge."
+  "1) Für R20-11 sind unterhalb von Fee/Ea vermutlich Fls/Eep statt MemAcc/Mem maßgeblich – Begründung: Die MemAcc-Abbildungen stammen aus R23-11 ff., die Übersicht mit Fls/Eep trägt keine Release-Angabe.",
+  "2) MemIf_SetMode nur bei MEMIF_IDLE aller Geräte aufrufen – Begründung: abgeleitet aus Eep_SetMode/Fls_SetMode-Regeln, da MemIf_SetMode alle Module erreicht.",
+  "3) MemIf in Mehrkernsystemen kernlokal – Begründung: Interpretation der Einordnung als „Type I“ mit lokalem Scope. Diagramm diag-schreiben:",
+  "1) Eep ruft Ea_JobEndNotification auf – Begründung: Bildtext der Ea-Sequenz abgeschnitten, Aufruf aus R23-11-Abbildung übertragen. Diagramm diag-abbruch:",
+  "1) Reihenfolge Fls_Cancel → Fee_JobErrorNotification → NvM_JobErrorNotification und Bedingung „Benachrichtigung konfiguriert“ – Begründung: Reihenfolge aus Abb. 9.4 ohne explizite Pfeilrichtung rekonstruiert."
  ],
  "diagrams": [
   {
@@ -18,8 +14,8 @@
   },
   {
    "art": "dot",
-   "id": "diag-verteilung",
-   "quelle": "anchor_r20_11.diag-verteilung.dot"
+   "id": "diag-abbildung",
+   "quelle": "anchor_r20_11.diag-abbildung.dot"
   },
   {
    "art": "seq",
@@ -28,8 +24,8 @@
   },
   {
    "art": "dot",
-   "id": "diag-geraetestatus",
-   "quelle": "anchor_r20_11.diag-geraetestatus.dot"
+   "id": "diag-status",
+   "quelle": "anchor_r20_11.diag-status.dot"
   },
   {
    "art": "dot",
@@ -43,13 +39,8 @@
   },
   {
    "art": "dot",
-   "id": "diag-header",
-   "quelle": "anchor_r20_11.diag-header.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-fehlerpfad",
-   "quelle": "anchor_r20_11.diag-fehlerpfad.dot"
+   "id": "diag-fehlerpruefung",
+   "quelle": "anchor_r20_11.diag-fehlerpruefung.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/memif/anchor_r20_11.html",
@@ -58,16 +49,9 @@
    "budget": [],
    "dublette": {
     "SNIP_CLASSIC_DET_SECTION_8_6_2_Optional_Interfaces_MEMORYABSTRACTIONINTERFACE": "SNIP_CLASSIC_FEE_SECTION_8_6_2_Optional_Interfaces",
-    "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_1_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_1_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_3_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_3_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_6_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_6_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_8_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_8_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_MEMIF_SECTION_6_2_1_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_1_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_MEMIF_SECTION_6_2_2_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_2_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_MEMIF_SECTION_6_2_3_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_3_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_MEMIF_SECTION_6_2_6_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_6_2_4_Memory_Abstraction_Interface",
+    "SNIP_CLASSIC_MEMIF_SECTION_6_2_6_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_6_2_4_Memory_Abstraction_Interface",
     "SNIP_CLASSIC_MEMIF_SECTION_6_2_7_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_7_2_4_Memory_Abstraction_Interface",
-    "SNIP_CLASSIC_MEMIF_SECTION_6_2_8_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_NVM_SECTION_6_2_8_2_4_Memory_Abstraction_Interface"
+    "SNIP_CLASSIC_MEMIF_SECTION_6_2_8_2_4_Memory_Abstraction_Interface": "SNIP_CLASSIC_ERRORDESCRIPTION_SECTION_6_2_8_2_4_Memory_Abstraction_Interface"
    },
    "inhaltsverzeichnis": [],
    "ohne_inhalt": [
@@ -85,13 +69,85 @@
    "ohne_text": []
   },
   "im_prompt": 43,
-  "im_prompt_schaubilder": 5,
-  "kandidaten": 64,
+  "im_prompt_schaubilder": 6,
+  "kandidaten": 57,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "1e7b9466f6d07f3617420551dfcef6a8174014d4418bfe511806fad0188863c7",
- "output_store": "ai/store/outputs/1e/1e7b9466f6d07f3617420551dfcef6a8174014d4418bfe511806fad0188863c7.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-schreiben"
+  ],
+  "oneliner_chars": 116,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 83,
+   "3": 286,
+   "4": 1523
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 7 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-607bf2d10fae231b: AUTOSAR_CP_SWS_EEPROMAbstraction S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-584d2e8102693d79: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 6 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-584d2e8102693d79: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 6 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-5dcc697f7998a885: AUTOSAR_SWS_EEPROM_Abstraction S. 41 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_6_2_2_2_5_NVRAM_Manager: EXP_ErrorDescription S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-5dcc697f7998a885: AUTOSAR_SWS_EEPROM_Abstraction S. 41 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_5_Fee_GetStatus: SWS_FlashEEPROMEmulation S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_Fls_GetStatus: SWS_FlashDriver S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_5_Fee_GetStatus: SWS_FlashEEPROMEmulation S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_2_Eep_SetMode: SWS_EEPROMDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_9_Fls_SetMode: SWS_FlashDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_3_Fee_Cancel: SWS_FlashEEPROMEmulation S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_3_Ea_Cancel: SWS_EEPROMAbstraction S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_4_Canceling_a_running_job: SWS_FlashDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_4_Canceling_a_running_job: SWS_FlashDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_3_Fee_Cancel: SWS_FlashEEPROMEmulation S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_7_3_3_Code_Section_in_ICC2_cluster: SWS_MemoryMapping S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_2_8: EXP_BSWDistributionGuide S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_6_Requirements_Tracing: SWS_MemoryAbstractionInterface S. 12 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_MemIf_GetJobResult: SWS_MemoryAbstractionInterface S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_MemIf_GetJobResult: SWS_MemoryAbstractionInterface S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_6_2_2_2_5_NVRAM_Manager: EXP_ErrorDescription S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_4_Canceling_a_running_job: SWS_FlashDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 2: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 7 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 2: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 7 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-584d2e8102693d79: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 6 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-5dcc697f7998a885: AUTOSAR_SWS_EEPROM_Abstraction S. 41 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_MemIf_GetJobResult: SWS_MemoryAbstractionInterface S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "0b49c0a440284a0ae8ccb2195ae9a1d67669705ce5532bbec7bd322b3f7747bc",
+ "output_store": "ai/store/outputs/0b/0b49c0a440284a0ae8ccb2195ae9a1d67669705ce5532bbec7bd322b3f7747bc.html",
  "params": {
   "module": "memif",
   "platform": "classic",
@@ -120,9 +176,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "44002bc7d01892a98eea1e062299e29bc4f4b5b7a7e8c1bbce5a2701d84ac3e2",
- "prompt_store": "ai/store/prompts/44/44002bc7d01892a98eea1e062299e29bc4f4b5b7a7e8c1bbce5a2701d84ac3e2.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "423eb9cf4c9baa64fdaa1e40b17a351323a58a99789f8fab6324fcfa22915771",
+ "prompt_store": "ai/store/prompts/42/423eb9cf4c9baa64fdaa1e40b17a351323a58a99789f8fab6324fcfa22915771.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -135,14 +191,72 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 0.928356,
-   "cost_usd_reported": 0.928356,
-   "created_at": "2026-10-09T07:20:01Z",
-   "duration_api_seconds": 301.751,
-   "duration_seconds": 301.926,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.033912,
+   "cost_usd_reported": 1.033912,
+   "created_at": "2026-10-13T03:08:45Z",
+   "duration_api_seconds": 334.636,
+   "duration_seconds": 335.987,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 7 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-607bf2d10fae231b: AUTOSAR_CP_SWS_EEPROMAbstraction S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-584d2e8102693d79: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 6 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-584d2e8102693d79: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 6 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-5dcc697f7998a885: AUTOSAR_SWS_EEPROM_Abstraction S. 41 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_6_2_2_2_5_NVRAM_Manager: EXP_ErrorDescription S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-5dcc697f7998a885: AUTOSAR_SWS_EEPROM_Abstraction S. 41 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_5_Fee_GetStatus: SWS_FlashEEPROMEmulation S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_Fls_GetStatus: SWS_FlashDriver S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_5_Fee_GetStatus: SWS_FlashEEPROMEmulation S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_2_Eep_SetMode: SWS_EEPROMDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_9_Fls_SetMode: SWS_FlashDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_3_Fee_Cancel: SWS_FlashEEPROMEmulation S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_3_Ea_Cancel: SWS_EEPROMAbstraction S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FEE_SECTION_8_3_6_Fee_GetJobResult: SWS_FlashEEPROMEmulation S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_4_Canceling_a_running_job: SWS_FlashDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_4_Canceling_a_running_job: SWS_FlashDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_3_Fee_Cancel: SWS_FlashEEPROMEmulation S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_6_Fls_GetJobResult: SWS_FlashDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_7_3_3_Code_Section_in_ICC2_cluster: SWS_MemoryMapping S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_2_8: EXP_BSWDistributionGuide S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_6_Requirements_Tracing: SWS_MemoryAbstractionInterface S. 12 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_MemIf_GetJobResult: SWS_MemoryAbstractionInterface S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_1_MemIf_Read: SWS_MemoryAbstractionInterface S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_MemIf_GetJobResult: SWS_MemoryAbstractionInterface S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_6_2_2_2_5_NVRAM_Manager: EXP_ErrorDescription S. 45 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_4_Canceling_a_running_job: SWS_FlashDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 2: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 7 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 2: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYHWABSTRACTIONLAYER: SRS_MemoryHWAbstractionLayer S. 5 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_FIGURE_Figure_1_1_MEMORYABSTRACTIONINTERFACE: SWS_MemoryAbstractionInterface S. 7 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-584d2e8102693d79: AUTOSAR_SWS_Flash_EEPROM_Emulation S. 6 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_Function_definitions: SWS_MemoryAbstractionInterface S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_9_2_Fee_Write: SWS_FlashEEPROMEmulation S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-5dcc697f7998a885: AUTOSAR_SWS_EEPROM_Abstraction S. 41 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 3: data-snip SNIP_CLASSIC_MEMIF_SECTION_8_3_5_MemIf_GetJobResult: SWS_MemoryAbstractionInterface S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -151,19 +265,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 0.928356,
-     "inputTokens": 37889,
+     "costUSD": 1.033912,
+     "inputTokens": 40198,
      "maxOutputTokens": 128000,
-     "outputTokens": 38840,
+     "outputTokens": 43656,
      "provider": "firstParty",
-     "thinkingTokens": 18899,
+     "thinkingTokens": 22318,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "5d68d078-a847-4fc0-809c-0d2e4edff584",
+   "run_id": "72e1dc15-3a72-4f62-ae76-028cb421ba36",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/5d68d078-a847-4fc0-809c-0d2e4edff584.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/72e1dc15-3a72-4f62-ae76-028cb421ba36.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -172,11 +286,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 37889,
-    "output_tokens": 38840,
+    "inference_geo": "global",
+    "input_tokens": 40198,
+    "output_tokens": 43656,
     "output_tokens_details": {
-     "thinking_tokens": 18899
+     "thinking_tokens": 22318
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -188,11 +302,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 37889,
-    "output": 38840,
-    "thinking": 18899
+    "input_uncached": 40198,
+    "output": 43656,
+    "thinking": 22318
    },
-   "wall_seconds": 304.359
+   "wall_seconds": 337.381
   }
  ],
  "schema": "ai-trace@2",

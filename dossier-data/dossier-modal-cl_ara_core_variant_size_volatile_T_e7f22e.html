@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_variant_size_volatile_T_e7f22e" class="dossier-modal dossier-workbench" data-dossier-sha="072bff962b77ffc2" aria-labelledby="dossier-modal-cl_ara_core_variant_size_volatile_T_e7f22e-title">
+<dialog id="dossier-modal-cl_ara_core_variant_size_volatile_T_e7f22e" class="dossier-modal dossier-workbench" data-dossier-sha="ce5556e3f63fa40a" aria-labelledby="dossier-modal-cl_ara_core_variant_size_volatile_T_e7f22e-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_variant_size_volatile_T_e7f22e-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_variant_size_volatile_T_e7f22e)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,588 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,110 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::variant_size&lt; volatile T &gt;' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_variant_size_volatile_T_e7f22e",
@@ -203,40 +222,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3378124aad4ce954a4f9afa285e105a20f0f1c960d464151910f1d09fc62af24" data-trace-output="072bff962b77ffc2743e191e04d549d4fe3d3706633ff6d1809dc6cfaac8cf27" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="20b3cd2d699d0be0f0450276e1d770da41bf2c48dca3c5c683788aea6a47dd9c" data-trace-output="ce5556e3f63fa40ad54af2033ca3e3dda11dc2b5dba546b41f3457a7cefe304b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermittelt die Anzahl der Alternativen eines volatile-qualifizierten Variantentyps zur Übersetzungszeit." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;In the &lt;code&gt;core&lt;/code&gt; module of the AUTOSAR Adaptive Platform (release R25-11), the template class &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; provides a specialized utility structure for static type analysis and template metaprogramming. It is a partial specialization of the generic class template &lt;code&gt;ara::core::variant_size&lt;/code&gt; designed specifically for types with the qualifier &lt;code&gt;volatile&lt;/code&gt;. Regarding semantics and usage, the specification refers directly to the definition of variants in the C++ standard library under &lt;code&gt;[variant]&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The primary task of this specialization is to provide consistent type information at compile time regarding the number of alternatives defined in a typed variant construct (for example &lt;code&gt;ara::core::variant&lt;/code&gt;). In the C++ type system, adding type qualifiers such as &lt;code&gt;volatile&lt;/code&gt; results in a distinct type. Without a corresponding explicit specialization, querying &lt;code&gt;ara::core::variant_size&lt;/code&gt; for a type &lt;code&gt;volatile T&lt;/code&gt; would fail, because the primary template for unqualified types does not automatically resolve the modified type. The specialization for &lt;code&gt;volatile T&lt;/code&gt; ensures that generic libraries and algorithms work correctly even when types in hardware-related or concurrent contexts are provided with the qualifier &lt;code&gt;volatile&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Interaction partners include generic interfaces, metaprogramming utilities, static assertions, and algorithms that process variants at compile time. Following the behavior in &lt;code&gt;[variant]&lt;/code&gt;, this specialization is expected to provide a static integral constant &lt;code&gt;value&lt;/code&gt; that reflects the exact number of type alternatives of the underlying type &lt;code&gt;T&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermittelt die Anzahl der Alternativen eines volatile-qualifizierten Variantentyps zur Übersetzungszeit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Template-Spezialisierung &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; stellt die Anzahl der Alternativen eines &lt;code&gt;volatile&lt;/code&gt;-qualifizierten Variantentyps zur Übersetzungszeit bereit, entsprechend der Verwendung in &lt;code&gt;[variant]&lt;/code&gt;. Interpretation: Die Ermittlung erfolgt vermutlich durch Weiterleitung an die unqualifizierte Variante, sodass generische Algorithmen qualifizierte Typen transparent verarbeiten können. Als reine Compile-Time-Struktur existiert kein dynamischer Lebenszyklus und Laufzeitfehler sind ausgeschlossen. Wichtigste Randbedingung ist, dass fehlerhafte Typargumente zu einem sofortigen Abbruch des Kompiliervorgangs führen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Template-Klasse &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; stellt eine partielle Spezialisierung des Metaprogrammierungs-Hilfstyps &lt;code&gt;ara::core::variant_size&lt;/code&gt; für Typen mit dem Typ-Qualifizierer &lt;code&gt;volatile&lt;/code&gt; innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform dar. Gemäß der Beschreibung stützt sich die Klasse auf die entsprechende Verwendung im C++-Standard unter &lt;code&gt;[variant]&lt;/code&gt;. Ihre primäre Aufgabe ist es, die exakte Anzahl der in einem varianten Datentyp enthaltenen Alternativen zur Übersetzungszeit bereitzustellen. In modernen eingebetteten Architekturen ermöglicht diese Spezialisierung die konsistente Handhabung von qualifizierten Typen in generischen Algorithmen und Datenstrukturen, ohne dass Entwickler Typmodifikatoren vorab manuell entfernen müssen.&lt;/p&gt;
+&lt;p&gt;Die Klasse agiert als statischer Metadaten-Dienstleister für Typsysteme, generische Container und Hilfsfunktionen. Oftmals entstehen &lt;code&gt;volatile&lt;/code&gt;-Qualifizierungen in sicherheitskritischen Steuergeräten durch hardwarenahe Schnittstellen, Registerzugriffe oder automatische Typableitungen in komplexen Template-Ketten. Indem &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; explizit für volatile Varianten bereitgestellt wird, gewährleistet die Plattform, dass Metaprogrammierungscode auch unter solchen Randbedingungen fehlerfrei kompiliert werden kann und die Typintegrität gewahrt bleibt.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;Since &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; acts as a pure type trait for template metaprogramming, the structure has no dynamic lifecycle at runtime. All mechanisms are traversed exclusively during the compilation phase by the C++ compiler:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Creation and instantiation:&lt;/strong&gt; No allocation of memory occurs on the heap or stack. Instantiation takes place on demand by the compiler as soon as an expression requesting the specialization for a concrete type &lt;code&gt;volatile T&lt;/code&gt; is evaluated in source code.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;State and ownership:&lt;/strong&gt; The structure does not manage any dynamic data or resources. The class is presumably completely stateless and merely defines integral compile-time constants and type aliases.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Destruction:&lt;/strong&gt; A destructor is not invoked at program runtime, since no actual class instances exist in memory.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Concurrency:&lt;/strong&gt; Since all provided metadata is already evaluated as constant expressions during compilation, no dependencies on threads, locking mechanisms, or synchronization objects exist at runtime.&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Da es sich bei &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; um ein rein compile-zeitliches Metaprogrammierungs-Konstrukt handelt, existiert für diese Struktur kein klassischer dynamischer Lebenszyklus zur Programmlaufzeit. Während der Ausführung des Programms werden zu keinem Zeitpunkt Instanzen im flüchtigen Speicher allokiert, initialisiert oder zerstört. Der gesamte Lebenszyklus ist vollständig auf die Phasen der semantischen Analyse, Typ-Substitution und Template-Instanziierung durch den C++-Compiler beschränkt.&lt;/p&gt;
+&lt;p&gt;Interpretation: &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; dürfte als reine Compile-Time-Typmetadaten-Struktur fungieren und zur Laufzeit keinerlei Speicherzustände oder Instanzlebenszyklen beanspruchen. In Bezug auf Nebenläufigkeit und Parallelität existieren daher keinerlei Synchronisationsanforderungen. Da keine veränderlichen globalen oder statischen Zustände vorliegen, ist die Compile-Time-Auswertung vollständig seiteneffektfrei und inhärent threadsicher über alle Ausführungskontexte hinweg.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The application of &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; typically takes place within generic functions, type checks, or static verification routines. A standard workflow for static analysis is structured as follows:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Type passing:&lt;/strong&gt; A generic function or metaprogramming component receives a variant type that is qualified as &lt;code&gt;volatile&lt;/code&gt;, for example due to hardware-related interface configurations.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Querying the number of alternatives:&lt;/strong&gt; The algorithm accesses the constant &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;::value&lt;/code&gt; to determine the total number of contained type alternatives.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Static checking and branching:&lt;/strong&gt; The determined value is used in &lt;code&gt;static_assert&lt;/code&gt; checks, SFINAE conditions, or &lt;code&gt;if constexpr&lt;/code&gt; constructs, for example to ensure that the variant is not empty or to perform type-safe index calculations.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The specialization ensures that the type query for &lt;code&gt;volatile T&lt;/code&gt; can be performed using the same syntax as for the unqualified type &lt;code&gt;T&lt;/code&gt;.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad vollzieht sich innerhalb von Template-Funktionen, generischen Bibliotheken oder Compile-Time-Zusicherungen, die auf Varianten basieren. Entwickler übergeben einen potenziell qualifizierten Variantentyp an das Template, um die Anzahl der enthaltenen Alternativen zu ermitteln. Die gewonnene Größeninformation dient beispielsweise der Parametrisierung von Hilfsdatenstrukturen, Indexprüfungen oder statischen Verzweigungen mittels &lt;code&gt;if constexpr&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Interpretation: Die Spezialisierung leitet ihren Wert vermutlich rekursiv oder direkt von &lt;code&gt;ara::core::variant_size&amp;lt;T&amp;gt;&lt;/code&gt; ab, analog zum Verhalten im zugrundeliegenden Standard &lt;code&gt;[variant]&lt;/code&gt;, indem der &lt;code&gt;volatile&lt;/code&gt;-Qualifizierer entfernt und die unqualifizierte Variante ausgewertet wird. Dieser Mechanismus sorgt dafür, dass generische Bibliotheksbausteine ohne Fallunterscheidungen für qualifizierte und unqualifizierte Typen denselben konsistenten Zugriffspfad nutzen können, was die Wiederverwendbarkeit und Robustheit des Plattformcodes erhöht.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Because the evaluation of &lt;code&gt;ara::core::variant_size&amp;lt; volatile T &amp;gt;&lt;/code&gt; takes place entirely at compile time, classic runtime errors do not occur. No error codes are returned via &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; and no exceptions are thrown. Error situations are confined to the compilation level:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Invalid base type:&lt;/strong&gt; If the specialization is instantiated with a base type &lt;code&gt;T&lt;/code&gt; that is not a valid variant type, this presumably leads to an abort of compilation due to an incomplete type or missing declarations.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Erroneous template arguments:&lt;/strong&gt; Passing non-types or incomplete forward declarations instead of a complete type triggers syntax and semantic errors in the compiler.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Semantic risks of the volatile qualifier:&lt;/strong&gt; Although querying metadata via this trait is syntactically supported, practical usage of &lt;code&gt;volatile&lt;/code&gt; on complex variant types is often error-prone in modern C++. The specialization merely guarantees the availability of size information, but does not protect against logical issues when accessing volatile objects.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- annahmen: 1) ara::core::variant_size&lt; volatile T &gt; erbt vermutlich analog zu ISO-C++ [variant] von ara::core::variant_size&lt;T&gt; und stellt die Konstante value bereit – Begründung: Der Spezifikations-Payload verweist explizit auf die entsprechende Nutzung in [variant]. 2) Als reines Metaprogrammierungs-Trait besitzt die Spezialisierung vermutlich keinen Laufzeit-Zustand oder dynamischen Lebenszyklus – Begründung: Typ-Traits in C++ und AUTOSAR Core sind reine Compile-Time-Konstrukte. 3) Fehlerszenarien manifestieren sich vermutlich ausschließlich als Übersetzungsfehler und nicht über ara::core::ErrorCode – Begründung: Statische Typ-Traits besitzen keine Laufzeit-Schnittstellen zur Fehlerberichterstattung. --&gt;
-&lt;p class="ai-note"&gt;This guide is based exclusively on the specification data from release R25-11. Since no separate requirements or document references are defined for this specialization in the specification payload, technical interpretations have been indicated based on the standard C++ specification [variant].&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Klassische Laufzeit-Fehlerszenarien, wie das Werfen von C++-Ausnahmen (&lt;code&gt;exceptions&lt;/code&gt;) oder die Rückgabe von Fehlerobjekten des Typs &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, sind für diese Template-Spezialisierung ausgeschlossen. Alle denkbaren Fehlerursachen treten ausschließlich zur Übersetzungszeit auf und führen zu einer Unterbrechung des Übersetzungsvorgangs durch den Compiler.&lt;/p&gt;
+&lt;p&gt;Interpretation: Die Verwendung auf Typen, die keine Varianten darstellen, führt vermutlich zu einem direkten Übersetzungsfehler, da für unpassende Typen keine gültige Definition oder Werterzeugung bereitgestellt wird. Ein typischer Anwendungsfehler besteht in der fehlerhaften Übergabe von Nicht-Variantentypen, unvollständigen Typen oder Laufzeitwerten anstelle von Typbezeichnern. In solchen Fällen greift die statische Typanalyse des Compilers und verhindert die Generierung von fehlerhaftem Maschinencode zuverlässig vor der Auslieferung des Systems.&lt;/p&gt;
+&lt;!-- annahmen: 1) Reine Compile-Time-Struktur ohne Laufzeitzustände – Begründung: Der Payload spezifiziert ein C++-Template-Trait analog zu [variant], das üblicherweise rein statische Konstanten bereitstellt. 2) Wertableitung durch Entfernung des volatile-Qualifizierers – Begründung: Der Payload verweist auf [variant], worin volatile-Spezialisierungen standardmäßig an die unqualifizierte Implementierung delegieren. 3) Übersetzungsfehler bei Nicht-Variant-Typen – Begründung: Typ-Traits für Varianten definieren typischerweise keine Mitglieder für ungültige Typen, um SFINAE bzw. Compile-Time-Fehler zu ermöglichen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf dem AUTOSAR-Adaptive-Release R25-11 und wurde automatisiert erstellt.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -278,7 +290,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>3378124aad4c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>20b3cd2d699d…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Os_00676" class="dossier-modal dossier-workbench" data-dossier-sha="f64c5c662a815380" aria-labelledby="dossier-modal-SWS_Os_00676-title">
+<dialog id="dossier-modal-SWS_Os_00676" class="dossier-modal dossier-workbench" data-dossier-sha="431559b969614637" aria-labelledby="dossier-modal-SWS_Os_00676-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Os_00676-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Os_00676)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,614 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,069 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'StartCore'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,33 +198,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a29be0c0059e048054ad5c5600d2f26ca562b24f464d419f1af42095a59d886f" data-trace-output="f64c5c662a815380aa46006b1b7b1e06f4458db9c63ad36fd70c620fd368e4e6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="06b25350e9392645730b00dd0142279ea54a1b11f74cea5c6a5fe8f2c973d2ab" data-trace-output="431559b9696146376a0867e60787f894f78de7235ad7be037a67801af243ebcb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Startet einen angegebenen Prozessorkern synchron vor dem Initialisieren des Betriebssystems." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The synchronous, non-reentrant function &lt;code&gt;StartCore&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;, service ID &lt;code&gt;0x17&lt;/code&gt;, declared in &lt;code&gt;Os.h&lt;/code&gt;) is used to activate the processor core specified via the parameter &lt;code&gt;CoreID&lt;/code&gt;. The function has no direct return value (return type &lt;code&gt;void&lt;/code&gt;); the success of execution is reported back to the caller via the pointer output parameter &lt;code&gt;Status&lt;/code&gt; (type &lt;code&gt;StatusType*&lt;/code&gt;). After a core has been successfully started via this function, &lt;code&gt;StartOS()&lt;/code&gt; must be called on the started core.&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;Call context and restrictions:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;StartCore&lt;/code&gt; startet den über den Parameter &lt;code&gt;Core ID&lt;/code&gt; spezifizierten Prozessorkern &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;. Die Funktion besitzt keinen direkten Rückgabewert, sondern übergibt das Ergebnis der Ausführung über den OUT-Parameter &lt;code&gt;Status&lt;/code&gt; an den Aufrufer &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;. Wurde ein Kern mittels dieser Funktion gestartet, muss auf dem betreffenden Kern nachfolgend &lt;code&gt;Start OS&lt;/code&gt; aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Für den Aufrufkontext sowie die Nebenläufigkeit gelten feste Einschränkungen: &lt;code&gt;StartCore&lt;/code&gt; ist als nicht reentrant (Non Reentrant) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;. Ein Aufruf nach dem Starten des Betriebssystems über &lt;code&gt;Start OS()&lt;/code&gt; wird nicht unterstützt &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;. Der Dienst ist synchron implementiert und wird über die Header-Datei &lt;code&gt;Os.h&lt;/code&gt; mit der Service-ID &lt;code&gt;0x17&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Fehlerbehandlung erfolgt über den Parameter &lt;code&gt;Status&lt;/code&gt;, der je nach Status-Konfiguration folgende Werte annehmen kann &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;A call to &lt;code&gt;StartCore&lt;/code&gt; after starting the operating system (&lt;code&gt;StartOS()&lt;/code&gt;) is not supported (&lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Due to the property &lt;em&gt;Non Reentrant&lt;/em&gt;, the function must not be called concurrently (&lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Im Standard-Status zeigt &lt;code&gt;E_OK&lt;/code&gt; eine fehlerfreie Ausführung an &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Im erweiterten Status (extended status) bestätigt &lt;code&gt;E_OK&lt;/code&gt; ebenfalls einen erfolgreichen Start &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OS_ID&lt;/code&gt; meldet, dass die übergebene &lt;code&gt;Core ID&lt;/code&gt; ungültig ist &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OS_ACCESS&lt;/code&gt; signalisiert einen unzulässigen Aufruf nach dem Start des Betriebssystems &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OS_STATE&lt;/code&gt; zeigt an, dass der angeforderte Prozessorkern bereits aktiviert ist &lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;p&gt;&lt;strong&gt;Error handling:&lt;/strong&gt;&lt;/p&gt;
-  &lt;p&gt;The output parameter &lt;code&gt;Status&lt;/code&gt; enables evaluation of occurred error states (&lt;a class="spec-record-ref" data-req="SWS_Os_00676" href="../../spec/record.html?id=SWS_Os_00676"&gt;[SWS_Os_00676]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Standard status:&lt;/strong&gt; Returns &lt;code&gt;E_OK&lt;/code&gt; upon error-free execution.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Extended status:&lt;/strong&gt;
-      &lt;ul&gt;
-        &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: No error occurred.&lt;/li&gt;
-        &lt;li&gt;&lt;code&gt;E_OS_ID&lt;/code&gt;: The passed &lt;code&gt;CoreID&lt;/code&gt; is invalid.&lt;/li&gt;
-        &lt;li&gt;&lt;code&gt;E_OS_ACCESS&lt;/code&gt;: The call was made inadmissibly after the start of the operating system.&lt;/li&gt;
-        &lt;li&gt;&lt;code&gt;E_OS_STATE&lt;/code&gt;: The addressed core was already activated previously.&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p&gt;&lt;strong&gt;Interplay:&lt;/strong&gt; The related requirement &lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt; describes ARTI and ORTI debug information for observing operating system objects and states, but contains no direct requirements for the control flows of &lt;code&gt;StartCore&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated based on the AUTOSAR Classic specification R20-11.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI generiert und stützt sich ausschließlich auf die Spezifikation des AUTOSAR-Classic-Betriebssystems aus Release R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -246,9 +252,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a29be0c0059e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>06b25350e939…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 13 <span class="dossier-meta-sub">(13 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 13 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -283,8 +289,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">11</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">14</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">13</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -305,7 +311,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">2 von 2 Elementen angezeigt</span>
+              <span id="dossier-visible-count">1 von 1 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -321,11 +327,11 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 10 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 13 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
           </div>
         </div>
 
@@ -384,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Os_00676","k":"function","d":"AUTOSAR","t":"","n":"StartCore"}],"inbound":[{"i":"SWS_Os_00829","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Os_00829].","n":"SWS_Os_00829"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/8d01d32d909a8447.json?v=c399d5a3" data-total="10" data-new="10" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Os_00676","k":"function","d":"AUTOSAR","t":"","n":"StartCore"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/8d01d32d909a8447.json?v=c6975799" data-total="13" data-new="13" data-figures="0" data-used="0"></script></dialog>

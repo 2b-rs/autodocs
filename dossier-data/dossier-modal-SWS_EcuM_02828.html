@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EcuM_02828" class="dossier-modal dossier-workbench" data-dossier-sha="397cde37ed89e042" aria-labelledby="dossier-modal-SWS_EcuM_02828-title">
+<dialog id="dossier-modal-SWS_EcuM_02828" class="dossier-modal dossier-workbench" data-dossier-sha="1ca0b59855f983a9" aria-labelledby="dossier-modal-SWS_EcuM_02828-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EcuM_02828-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EcuM_02828)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,281 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,735 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EcuM_ClearWakeupEvent'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,22 +202,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="5de97c21bf1fbfd9ee0837a48c0ced0f76bfdd1f8982ae8f474de662280e93b1" data-trace-output="397cde37ed89e042882278e1a21f9ac622092dfe69742f60574b87760a02f5f7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8efe1e7a60e884ae1ccec852ac25116269f7aca8ad8bc8785aad96dec3c6e1a2" data-trace-output="1ca0b59855f983a999dd3ddd76ec54b1ac2ad3d95e460c63911266e069885201" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Löscht übergebene Wakeup-Ereignisse synchron aus den Variablen für anstehende, validierte und abgelaufene Events." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The synchronous function &lt;code&gt;EcuM_ClearWakeupEvent&lt;/code&gt; (service ID &lt;code&gt;0x16&lt;/code&gt;) serves to reset wakeup events and is provided via the header file &lt;code&gt;EcuM.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02828" href="../../spec/record.html?id=SWS_EcuM_02828"&gt;[SWS_EcuM_02828]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;Usage:&lt;/strong&gt; The function has no return value (return type &lt;code&gt;void&lt;/code&gt;). As an input parameter, it accepts &lt;code&gt;sources&lt;/code&gt; of type &lt;code&gt;EcuM_WakeupSourceType&lt;/code&gt;, via which the events to be reset are passed in the form of a bitmask (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02828" href="../../spec/record.html?id=SWS_EcuM_02828"&gt;[SWS_EcuM_02828]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_EcuM_02683" href="../../spec/record.html?id=SWS_EcuM_02683"&gt;[SWS_EcuM_02683]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;Interaction and functional effect:&lt;/strong&gt; According to &lt;a class="spec-record-ref" data-req="SWS_EcuM_02683" href="../../spec/record.html?id=SWS_EcuM_02683"&gt;[SWS_EcuM_02683]&lt;/a&gt;, the call synchronously clears all events passed as a set bit in parameter &lt;code&gt;sources&lt;/code&gt; from three internal state variables of the module:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Service-Funktion &lt;code&gt;EcuM_ClearWakeupEvent&lt;/code&gt; (Service-ID &lt;code&gt;0x16&lt;/code&gt;) dient dem Zurücksetzen von Wakeup-Ereignissen und steht über die Header-Datei &lt;code&gt;EcuM.h&lt;/code&gt; zur Verfügung &lt;a class="spec-record-ref" data-req="SWS_EcuM_02828" href="../../spec/record.html?id=SWS_EcuM_02828"&gt;[SWS_EcuM_02828]&lt;/a&gt;. Als Parameter nimmt sie die Bitmaske &lt;code&gt;sources&lt;/code&gt; vom Typ &lt;code&gt;EcuM_WakeupSourceType&lt;/code&gt; entgegen und besitzt keinen Rückgabewert &lt;a class="spec-record-ref" data-req="SWS_EcuM_02828" href="../../spec/record.html?id=SWS_EcuM_02828"&gt;[SWS_EcuM_02828]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Beim Aufruf werden alle in &lt;code&gt;sources&lt;/code&gt; als Bit gesetzten anstehenden Ereignisse aus drei internen Variablen des Moduls gelöscht &lt;a class="spec-record-ref" data-req="SWS_EcuM_02683" href="../../spec/record.html?id=SWS_EcuM_02683"&gt;[SWS_EcuM_02683]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;from the internal variable for pending wakeup events (&lt;em&gt;pending wakeup events&lt;/em&gt;),&lt;/li&gt;
-    &lt;li&gt;from the internal variable for validated wakeup events (&lt;em&gt;validated events&lt;/em&gt;), and&lt;/li&gt;
-    &lt;li&gt;from the internal variable for expired wakeup events (&lt;em&gt;expired events&lt;/em&gt;).&lt;/li&gt;
+    &lt;li&gt;aus der internen Variablen für anstehende Wakeup-Ereignisse (pending wakeup events),&lt;/li&gt;
+    &lt;li&gt;aus der internen Variablen für validierte Wakeup-Ereignisse (validated events) sowie&lt;/li&gt;
+    &lt;li&gt;aus der internen Variablen für abgelaufene Wakeup-Ereignisse (expired events) &lt;a class="spec-record-ref" data-req="SWS_EcuM_02683" href="../../spec/record.html?id=SWS_EcuM_02683"&gt;[SWS_EcuM_02683]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;p&gt;&lt;strong&gt;Call context and concurrency:&lt;/strong&gt; For the call context, it is specified that &lt;code&gt;EcuM_ClearWakeupEvent&lt;/code&gt; may be called from the interrupt context as well as from the OS context and an OS-free context (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02807" href="../../spec/record.html?id=SWS_EcuM_02807"&gt;[SWS_EcuM_02807]&lt;/a&gt;). However, since the interface is explicitly classified as non-reentrant and non-interruptible (&lt;em&gt;Non-Reentrant&lt;/em&gt;, &lt;em&gt;Non-Interruptible&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02828" href="../../spec/record.html?id=SWS_EcuM_02828"&gt;[SWS_EcuM_02828]&lt;/a&gt;), concurrent or mutually interrupting calls across these contexts must be ruled out at system level.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR R20-11.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich des Aufrufkontexts darf &lt;code&gt;EcuM_ClearWakeupEvent&lt;/code&gt; flexibel aus dem Interrupt-Kontext, aus dem regulären OS-Kontext sowie aus einem OS-freien Kontext aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_EcuM_02807" href="../../spec/record.html?id=SWS_EcuM_02807"&gt;[SWS_EcuM_02807]&lt;/a&gt;. Gleichzeitig ist die Funktion jedoch verbindlich als nicht reentrant (Non-Reentrant) und nicht unterbrechbar (Non-Interruptible) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EcuM_02828" href="../../spec/record.html?id=SWS_EcuM_02828"&gt;[SWS_EcuM_02828]&lt;/a&gt;. Interpretation: Da die Funktion in unterschiedlichen Kontexten zulässig, aber nicht unterbrechbar ist, dürfte der Integrator oder Aufrufer organisatorisch sicherstellen müssen, dass keine gleichzeitigen oder einander unterbrechenden Aufrufe stattfinden.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Da die Funktion Non-Reentrant und Non-Interruptible spezifiziert ist, aber aus ISR-, OS- und OS-freien Kontexten aufgerufen werden darf, dürfte die Vermeidung nebenläufiger Aufrufe durch den Aufrufer oder die Systemintegration sichergestellt werden müssen – Begründung: SWS_EcuM_02828 schließt Reentranz und Unterbrechbarkeit aus, während SWS_EcuM_02807 die Aufrufkontexte erlaubt, ohne interne Synchronisationsmechanismen zu nennen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -239,9 +255,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>5de97c21bf1f…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8efe1e7a60e8…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 11 <span class="dossier-meta-sub">(11 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 11 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -276,8 +292,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">11</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">12</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -314,7 +330,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 10 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 11 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -377,4 +393,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02828","k":"function","d":"AUTOSAR","t":"","n":"EcuM_ClearWakeupEvent"}],"inbound":[{"i":"SWS_EcuM_02683","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_02683].","n":"SWS_EcuM_02683"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/bc968167006f9ac4.json?v=59897bdf" data-total="10" data-new="10" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02828","k":"function","d":"AUTOSAR","t":"","n":"EcuM_ClearWakeupEvent"}],"inbound":[{"i":"SWS_EcuM_02683","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_02683].","n":"SWS_EcuM_02683"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/bc968167006f9ac4.json?v=a0ac64b1" data-total="11" data-new="11" data-figures="3" data-used="0"></script></dialog>

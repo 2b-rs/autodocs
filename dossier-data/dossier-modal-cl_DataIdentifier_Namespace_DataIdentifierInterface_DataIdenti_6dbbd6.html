@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" class="dossier-modal dossier-workbench" data-dossier-sha="5b21e6473f1200bb" aria-labelledby="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6-title">
+<dialog id="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6" class="dossier-modal dossier-workbench" data-dossier-sha="3cab5e0e7a8eaea3" aria-labelledby="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,624 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,146 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für '&lt;DataIdentifier-Namespace&gt;::&lt;DataIdentifierInterface&gt;::&lt;DataIdentifier&gt;ReadOutput' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_DataIdentifier_Namespace_DataIdentifierInterface_DataIdenti_6dbbd6",
@@ -203,55 +222,29 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e99044a03d11e8b09b129f1b5c47ea5922c27eb4b52d94473eae5fa72ded1446" data-trace-output="5b21e6473f1200bb788b607a95f4bbc5672f78e6a2a7c1c616413fdea8550597" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="9d5c95602c39f01a7ebf3957e653523a7229770cb1c9f1a259b940b4681a7fd8" data-trace-output="3cab5e0e7a8eaea3db75931c0565110eed0196bc038bd686da121892192ba310" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt als Datenstruktur die Ausgabeargumente für das Auslesen eines Diagnose-Identifikators." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-The data structure &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; is part of the module &lt;code&gt;diag&lt;/code&gt; within the AUTOSAR Adaptive Platform for release R25-11. Its primary task is to aggregate the output arguments for the operation &lt;code&gt;ReadOutput&lt;/code&gt; and provide them as a typed transport structure.
-&lt;/p&gt;
-&lt;p&gt;
-In diagnostic-oriented applications, this data construct encapsulates the read payload data and associated output parameters of a specific Data Identifier (DID). Instead of passing multiple individual return parameters via pointers or references, the structure bundles all resulting values into a cohesive unit. The interaction partners include the internal diagnostic server, the implementing application layer, and the generated interface of the respective Data Identifier. Interpretation: The structure likely acts as a standardized return container that is transmitted within asynchronous call chains to keep the interface definition consistent.
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt als Datenstruktur die Ausgabeargumente für das Auslesen eines Diagnose-Identifikators.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; bündelt im Modul &lt;code&gt;diag&lt;/code&gt; der Adaptive Platform (R25-11) die Ausgabeargumente für Lesezugriffe auf einen Diagnose-Identifikator. Sie wird typischerweise von der Anwendung während einer Leseanfrage instanziiert, mit den ermittelten Diagnosedaten befüllt und an die aufrufende Diagnoseschicht zurückgegeben. Spezifische Fehlercodes sind für die Struktur selbst nicht definiert; Fehlschläge dürften über übergeordnete Schnittstellenmechanismen signalisiert werden.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; ist Bestandteil der Diagnosefunktionalität (Modul &lt;code&gt;diag&lt;/code&gt;) innerhalb der Adaptive Platform von AUTOSAR für das Release R25-11. Gemäß der Spezifikationsbeschreibung dient sie als Kapselung für die Ausgabeargumente (&lt;em&gt;out arguments&lt;/em&gt;) einer Leseoperation auf einem Diagnose-Identifikator (&lt;em&gt;ReadOutput&lt;/em&gt;). Sie bildet die Datenübertragungsstruktur zwischen der Diagnose-Dienstschicht und der Anwendungsschnittstelle &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;, welche innerhalb des konfigurierbaren Namensraums &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;&lt;/code&gt; definiert ist. Die Rolle dieses Typs besteht darin, die von der Anwendung für einen konkreten Daten-Identifikator bereitgestellten Ausgabedaten zusammenzufassen und an den Aufrufer zurückzugeben.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-As a pure data capsule (Data Transfer Object), &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; typically possesses the character of a value object (Value Object). Instantiation takes place on an instance basis as soon as a read request for the respective Data Identifier is processed.
-&lt;/p&gt;
-&lt;p&gt;
-Ownership depends on the chosen passing mechanism:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Creation:&lt;/strong&gt; Instantiation presumably takes place on the side of the providing application logic, which determines the queried diagnostic values and embeds them into the structure fields.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Transfer and transport:&lt;/strong&gt; The object is passed to the calling layer of Diagnostic Management by copying or moving (move semantics). When passing across interface boundaries, ownership transfers to the receiver.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Destruction:&lt;/strong&gt; The lifetime ends automatically upon leaving the receiver's scope or after completion of serialization for the diagnostic response.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-Since the structure does not have its own flow of control, it does not manage any internal state machines. Regarding concurrency: Because it is a pure data aggregate, no internal synchronization mechanism is likely present, meaning that simultaneous read and write accesses from different threads must be synchronized externally.
-&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Instanziierung von &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; erfolgt typischerweise im Kontext der Bearbeitung einer Diagnose-Leseanforderung. Vermutlich erzeugt die Anwendungssoftware oder der Diagnose-Stack eine Instanz dieses Strukturtyps, befüllt die enthaltenen Ausgabefelder und überträgt die Struktur als Rückgabewert oder Ergebnisobjekt. Da es sich um eine Datenkapselungsstruktur (&lt;code&gt;struct&lt;/code&gt;) ohne komplexe Schnittstellenverträge handelt, unterliegt ihr Lebenszyklus der regulären Wertsemantik in C++. Die Zerstörung erfolgt automatisch beim Verlassen des Gültigkeitsbereichs (Scope) oder nach dem Auslesen der Werte durch den Aufrufer.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The typical use of the data structure follows a fixed sequence within the scope of a diagnostic request to read a Data Identifier:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Request receipt:&lt;/strong&gt; A diagnostic client requests the reading of a Data Identifier via standardized diagnostic protocols. The diagnostic stack maps this request to the corresponding interface &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Processing and data determination:&lt;/strong&gt; The responsible application function determines the current data values of the vehicle subsystem or internal memory.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Assignment:&lt;/strong&gt; An instance of &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; is declared and populated with the determined result values.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Reporting back:&lt;/strong&gt; The populated structure is returned to the diagnostic framework, which reads the fields, formats the diagnostic telegrams, and sends the response to the diagnostic client.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Resource release:&lt;/strong&gt; After successful transfer and processing, the instance is destroyed.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Ein typischer Ablauf zur Verwendung von &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; umfasst die Entgegennahme einer Diagnose-Leseanfrage über das Interface &lt;code&gt;&amp;lt;DataIdentifierInterface&amp;gt;&lt;/code&gt;, die Ausführung der anwendungsspezifischen Leseoperation, das Befüllen der Struktur &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; mit den ermittelten Daten und die anschließende Übergabe der Struktur an den Aufrufer zur Weiterleitung der Diagnoseantwort. Vermutlich wird die Struktur dabei als Bestandteil eines Funktionsergebnisses (beispielsweise innerhalb eines Ergebnis- oder Zukunftstyps wie &lt;code&gt;ara::core::Future&lt;/code&gt; oder &lt;code&gt;ara::core::Result&lt;/code&gt;) übergeben.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-As a pure data structure, &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::&amp;lt;DataIdentifierInterface&amp;gt;::&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; itself does not throw functional error codes or exceptions. However, potential error conditions arise in the usage context:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Incomplete initialization:&lt;/strong&gt; If not all required output parameters are correctly populated before return, downstream layers may generate incomplete or inconsistent diagnostic responses. The precondition for the return is always the complete population of all defined fields.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Provision error:&lt;/strong&gt; If the application logic cannot determine the requested values (for example due to sensor or bus errors), typically no valid structure instance is forwarded, but a corresponding diagnostic error code is reported.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Scope violations:&lt;/strong&gt; During asynchronous forwarding, it must be ensured that the data structure is not released prematurely as long as referencing components access it.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- annahmen: 1) Die Struktur dürfte als standardisierter Rückgabebehälter in asynchronen Aufrufketten dienen – Begründung: Typisches Entwurfsmuster für generierte Read-Operationen im AUTOSAR-Adaptive-Diagnoseumfeld. 2) Die Instanziierung erfolgt vermutlich auf Seiten der bereitstellenden Anwendungslogik – Begründung: Der Inhalt repräsentiert systemspezifische Mess- und Statusdaten, die von der Anwendung ermittelt werden. 3) Es dürfte kein interner Synchronisationsmechanismus vorhanden sein – Begründung: Datenkapseln und Ausgabestrukturen (structs) werden in C++ üblicherweise als leichtgewichtige Value-Typen ohne interne Mutexe implementiert. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the structural metadata of the AUTOSAR Adaptive module &lt;code&gt;diag&lt;/code&gt; (release R25-11). Specific interface requirements and data field definitions can be found in the respective module specification.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Da der Payload für &lt;code&gt;&amp;lt;DataIdentifier&amp;gt;ReadOutput&lt;/code&gt; keine spezifischen Fehlercodes, Vorbedingungen oder Ausnahmetypen aufführt, transportiert die Struktur selbst primär die Nutzinformationen erfolgreicher Ausgabeargumente. Schlägt das Auslesen der Daten auf Anwendungsseite fehl, dürfte dies nicht über ungültige Instanzen der Struktur, sondern über übergeordnete Fehlerbehandlungsmechanismen der Diagnose-Schnittstelle (beispielsweise Diagnose-Rückgabecodes oder negative Response-Codes) signalisiert werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Typischer Lebenszyklus und Wertsemantik der C++-Struktur bei der Diagnoseanfragebearbeitung – Begründung: Der Payload belegt nur 'struct wrapping the out arguments', Details zu Speicherverwaltung oder Klassenmethoden fehlen. 2) Asynchrone/Ergebnis-basierte Rückgabe der Struktur über gängige Adaptive-Muster – Begründung: In Adaptive AUTOSAR werden Service-Ausgabeargumente von Leseoperationen üblicherweise via Result oder Future bereitgestellt. 3) Fehlerbehandlung erfolgt außerhalb der Nutzinformationsstruktur über Status- oder Fehlercodes – Begründung: Der Payload enthält keine Fehlerelemente oder Fehlercodes für diese Struktur. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisch auf Basis der AUTOSAR-Spezifikationsmetadaten für Release R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -293,7 +286,7 @@ As a pure data structure, &lt;code&gt;&amp;lt;DataIdentifier-Namespace&amp;gt;::
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e99044a03d11…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>9d5c95602c39…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

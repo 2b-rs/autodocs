@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_crypto_ara_crypto_cryp_39bdc3" class="dossier-modal dossier-workbench" data-dossier-sha="1dfe8ffceb8e7e40" aria-labelledby="dossier-modal-ns_crypto_ara_crypto_cryp_39bdc3-title">
+<dialog id="dossier-modal-ns_crypto_ara_crypto_cryp_39bdc3" class="dossier-modal dossier-workbench" data-dossier-sha="f7dd57f46651f205" aria-labelledby="dossier-modal-ns_crypto_ara_crypto_cryp_39bdc3-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_crypto_ara_crypto_cryp_39bdc3-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_crypto_ara_crypto_cryp_39bdc3)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,075 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,597 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace ara::crypto::cryp' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -229,107 +248,139 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="100abc8794a659e07410b98a62ad0d36023e857747958622d881b15d560bc889" data-trace-output="1dfe8ffceb8e7e40b2d3038b5a4f5fefff5de6facdf2ff0f9cbb416fead32095" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="f15c72def57133ff60acb010f17f0908f9025c1993caa73a36dad6b997e19a5e" data-trace-output="f7dd57f46651f205ce98f87c0e663702793780b2d2ba229fa07ac64f7c4735a0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert Schnittstellen für kryptografische Berechnungen, Schlüsselobjekte und deren Speicherverwaltung." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Namespace &lt;code&gt;ara::crypto::cryp&lt;/code&gt; forms the functional core of the cryptographic subsystem in the AUTOSAR Adaptive Platform. Its primary responsibility consists in providing standardized interfaces for cryptographic operations, encapsulating algorithm states, and connecting to underlying key and storage structures. The architecture of the namespace is divided into three functional pillars: provider infrastructure, cryptographic contexts, and cryptographic objects.&lt;/p&gt;
-&lt;p&gt;The provider infrastructure is defined by interface &lt;code&gt;CryptoProvider&lt;/code&gt;. This functions as a central entry point for concrete implementations of cryptographic primitives and simultaneously manages access to key storage.&lt;/p&gt;
-&lt;p&gt;The second pillar comprises the cryptographic contexts, which build upon the common base interface &lt;code&gt;CryptoContext&lt;/code&gt; or implement the paradigm of a mutable execution context:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Symmetric primitives:&lt;/strong&gt; Interfaces such as &lt;code&gt;SymmetricCipherCtx&lt;/code&gt; for symmetric encryption and decryption, &lt;code&gt;AuthCipherCtx&lt;/code&gt; for authenticated encryption (AEAD), &lt;code&gt;MessageAuthnCodeCtx&lt;/code&gt; for message-based authentication codes, and &lt;code&gt;SymmetricKeyWrapperCtx&lt;/code&gt; for wrapping symmetric keys.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Asymmetric primitives:&lt;/strong&gt; Interface pairs for cipher operations (&lt;code&gt;EncryptorPublicCtx&lt;/code&gt;, &lt;code&gt;DecryptorPrivateCtx&lt;/code&gt;), signature generation and verification (&lt;code&gt;SignerPrivateCtx&lt;/code&gt;, &lt;code&gt;VerifierPublicCtx&lt;/code&gt;), key agreement (&lt;code&gt;KeyAgreementPrivateCtx&lt;/code&gt;), and asymmetric encapsulation mechanisms (&lt;code&gt;KeyEncapsulatorPublicCtx&lt;/code&gt;, &lt;code&gt;KeyDecapsulatorPrivateCtx&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Auxiliary and transformation services:&lt;/strong&gt; Context interfaces for cryptographic hash functions (&lt;code&gt;HashFunctionCtx&lt;/code&gt;), pseudo-random number generators (&lt;code&gt;RandomGeneratorCtx&lt;/code&gt;), key derivation functions (&lt;code&gt;KeyDerivationFunctionCtx&lt;/code&gt;), and the protected import of sensitive key material (&lt;code&gt;ProtectedKeyImportCtx&lt;/code&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The third pillar is formed by cryptographic objects (&lt;code&gt;CryptoObject&lt;/code&gt;), which abstract key data and certificates. These include &lt;code&gt;SymmetricKey&lt;/code&gt; for symmetric algorithms as well as &lt;code&gt;PublicKey&lt;/code&gt; and &lt;code&gt;PrivateKey&lt;/code&gt; for asymmetric algorithms. The management of these key objects is carried out via storage structures such as &lt;code&gt;KeySlot&lt;/code&gt; and &lt;code&gt;WriteableKeySlot&lt;/code&gt; within the provider.&lt;/p&gt;
-&lt;div class="diagram" id="diag-cryp-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 548.22 118.80" style="max-width:731px"&gt;
-&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 104.4)"&gt;
-&lt;title&gt;cryp_kontext&lt;/title&gt;
-&lt;!-- Anwendung --&gt;
-&lt;g id="node1" class="node"&gt;
-&lt;title&gt;Anwendung&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M57.77,-62C57.77,-62 12,-62 12,-62 6,-62 0,-56 0,-50 0,-50 0,-38 0,-38 0,-32 6,-26 12,-26 12,-26 57.77,-26 57.77,-26 63.77,-26 69.77,-32 69.77,-38 69.77,-38 69.77,-50 69.77,-50 69.77,-56 63.77,-62 57.77,-62"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="34.89" y="-40.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Anwendung&lt;/text&gt;
-&lt;/g&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Definiert Schnittstellen für kryptografische Berechnungen, Schlüsselobjekte und deren Speicherverwaltung.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::crypto::cryp&lt;/code&gt; stellt die zentralen Schnittstellen für kryptografische Operationen, Schlüsselobjekte und Schlüsselspeicher in der AUTOSAR-Adaptive-Plattform bereit. Über die zentrale Fabrik &lt;code&gt;CryptoProvider&lt;/code&gt; werden Schlüssel aus Instanzen von &lt;code&gt;KeySlot&lt;/code&gt; bezogen und spezialisierte, von &lt;code&gt;CryptoContext&lt;/code&gt; abgeleitete Ausführungskontexte für Verschlüsselung, Signaturen oder Hashing instanziiert. Die kryptografischen Operationen werden nach Konfiguration des zustandsbehafteten Kontexts mit den Eingabedaten ausgeführt. Eine wesentliche Randbedingung liegt nach vorliegender Interpretation in der strikten Kapselung des Schlüsselmaterials über &lt;code&gt;CryptoObject&lt;/code&gt; sowie der Differenzierung von Schreibrechten über &lt;code&gt;WriteableKeySlot&lt;/code&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext und Aufgabenbereich&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::crypto::cryp&lt;/code&gt; bildet den funktionalen Kern des AUTOSAR-Adaptive-Kryptografiemoduls und stellt Schnittstellen für kryptografische Primitive, Objektmodelle und Schlüsselverwaltungsstrukturen bereit. Im Mittelpunkt der Architektur steht die Schnittstelle &lt;code&gt;CryptoProvider&lt;/code&gt;, welche als Implementierungsinstanz und Fabrik für kryptografische Algorithmen sowie für den Zugriff auf Schlüsselspeicher dient. Grundlegende Datenstrukturen und Schlüssel werden über die gemeinsame Schnittstelle &lt;code&gt;CryptoObject&lt;/code&gt; repräsentiert, von der konkrete Schlüsseltypen wie &lt;code&gt;SymmetricKey&lt;/code&gt;, &lt;code&gt;PublicKey&lt;/code&gt; und &lt;code&gt;PrivateKey&lt;/code&gt; abstammen. Speicherorte für Schlüsselmaterial werden durch &lt;code&gt;KeySlot&lt;/code&gt; sowie dessen schreibbare Spezialisierung &lt;code&gt;WriteableKeySlot&lt;/code&gt; abgebildet.&lt;/p&gt;
+&lt;div class="diagram" id="diag-cryp-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 278.81 316.80" style="max-width:372px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 302.4)"&gt;
+&lt;title&gt;CrypKontext&lt;/title&gt;
 &lt;!-- CryptoProvider --&gt;
-&lt;g id="node2" class="node"&gt;
+&lt;g id="node1" class="node"&gt;
 &lt;title&gt;CryptoProvider&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M198.2,-62C198.2,-62 137.77,-62 137.77,-62 131.77,-62 125.77,-56 125.77,-50 125.77,-50 125.77,-38 125.77,-38 125.77,-32 131.77,-26 137.77,-26 137.77,-26 198.2,-26 198.2,-26 204.2,-26 210.2,-32 210.2,-38 210.2,-38 210.2,-50 210.2,-50 210.2,-56 204.2,-62 198.2,-62"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="167.98" y="-40.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html" href="../classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html"&gt;CryptoProvider&lt;/a&gt;&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- Anwendung&amp;#45;&amp;gt;CryptoProvider --&gt;
-&lt;g id="edge1" class="edge"&gt;
-&lt;title&gt;Anwendung-&amp;gt;CryptoProvider&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M69.99,-44C83.4,-44 99.11,-44 113.93,-44"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="113.91,-47.5 123.91,-44 113.91,-40.5 113.91,-47.5"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="97.77" y="-47" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M122.52,-288C122.52,-288 62.08,-288 62.08,-288 56.08,-288 50.08,-282 50.08,-276 50.08,-276 50.08,-264 50.08,-264 50.08,-258 56.08,-252 62.08,-252 62.08,-252 122.52,-252 122.52,-252 128.52,-252 134.52,-258 134.52,-264 134.52,-264 134.52,-276 134.52,-276 134.52,-282 128.52,-288 122.52,-288"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="92.3" y="-266.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html" href="../classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html"&gt;CryptoProvider&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- KeySlot --&gt;
-&lt;g id="node3" class="node"&gt;
+&lt;g id="node2" class="node"&gt;
 &lt;title&gt;KeySlot&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M339.1,-90C339.1,-90 309.1,-90 309.1,-90 303.1,-90 297.1,-84 297.1,-78 297.1,-78 297.1,-66 297.1,-66 297.1,-60 303.1,-54 309.1,-54 309.1,-54 339.1,-54 339.1,-54 345.1,-54 351.1,-60 351.1,-66 351.1,-66 351.1,-78 351.1,-78 351.1,-84 345.1,-90 339.1,-90"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="324.1" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html" href="../classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html"&gt;KeySlot&lt;/a&gt;&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M191.3,-204C191.3,-204 161.3,-204 161.3,-204 155.3,-204 149.3,-198 149.3,-192 149.3,-192 149.3,-180 149.3,-180 149.3,-174 155.3,-168 161.3,-168 161.3,-168 191.3,-168 191.3,-168 197.3,-168 203.3,-174 203.3,-180 203.3,-180 203.3,-192 203.3,-192 203.3,-198 197.3,-204 191.3,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="176.3" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html" href="../classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html"&gt;KeySlot&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- CryptoProvider&amp;#45;&amp;gt;KeySlot --&gt;
-&lt;g id="edge2" class="edge"&gt;
+&lt;g id="edge1" class="edge"&gt;
 &lt;title&gt;CryptoProvider-&amp;gt;KeySlot&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M210.69,-51.58C234.07,-55.83 263,-61.08 285.65,-65.2"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="284.76,-68.59 295.22,-66.94 286.01,-61.7 284.76,-68.59"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="246.8" y="-64.33" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;verwaltet&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M110.11,-251.61C121.81,-240.19 137.29,-225.08 150.35,-212.33"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="152.61,-215.02 157.32,-205.53 147.72,-210.01 152.61,-215.02"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="157.93" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;verwaltet&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- CryptoContext --&gt;
-&lt;g id="node4" class="node"&gt;
+&lt;g id="node3" class="node"&gt;
 &lt;title&gt;CryptoContext&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M352.79,-36C352.79,-36 295.41,-36 295.41,-36 289.41,-36 283.41,-30 283.41,-24 283.41,-24 283.41,-12 283.41,-12 283.41,-6 289.41,0 295.41,0 295.41,0 352.79,0 352.79,0 358.79,0 364.79,-6 364.79,-12 364.79,-12 364.79,-24 364.79,-24 364.79,-30 358.79,-36 352.79,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="324.1" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html" href="../classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html"&gt;CryptoContext&lt;/a&gt;&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M118.99,-204C118.99,-204 61.6,-204 61.6,-204 55.6,-204 49.6,-198 49.6,-192 49.6,-192 49.6,-180 49.6,-180 49.6,-174 55.6,-168 61.6,-168 61.6,-168 118.99,-168 118.99,-168 124.99,-168 130.99,-174 130.99,-180 130.99,-180 130.99,-192 130.99,-192 130.99,-198 124.99,-204 118.99,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="90.3" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html" href="../classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html"&gt;CryptoContext&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- CryptoProvider&amp;#45;&amp;gt;CryptoContext --&gt;
-&lt;g id="edge3" class="edge"&gt;
+&lt;g id="edge2" class="edge"&gt;
 &lt;title&gt;CryptoProvider-&amp;gt;CryptoContext&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M210.69,-36.11C216.57,-35.04 222.54,-33.97 228.2,-33 242.47,-30.55 257.97,-28.03 272.23,-25.78"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="272.37,-29.3 281.71,-24.3 271.29,-22.39 272.37,-29.3"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="246.8" y="-36" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M91.49,-251.56C91.26,-245.95 91.03,-239.71 90.87,-234 90.72,-228.19 90.61,-221.97 90.52,-216.02"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="94.03,-216.04 90.41,-206.08 87.03,-216.12 94.03,-216.04"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="105.59" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- CryptoObject --&gt;
-&lt;g id="node5" class="node"&gt;
+&lt;g id="node4" class="node"&gt;
 &lt;title&gt;CryptoObject&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M507.42,-62C507.42,-62 455.54,-62 455.54,-62 449.54,-62 443.54,-56 443.54,-50 443.54,-50 443.54,-38 443.54,-38 443.54,-32 449.54,-26 455.54,-26 455.54,-26 507.42,-26 507.42,-26 513.42,-26 519.42,-32 519.42,-38 519.42,-38 519.42,-50 519.42,-50 519.42,-56 513.42,-62 507.42,-62"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="481.48" y="-40.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html" href="../classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html"&gt;CryptoObject&lt;/a&gt;&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M158.24,-120C158.24,-120 106.36,-120 106.36,-120 100.36,-120 94.36,-114 94.36,-108 94.36,-108 94.36,-96 94.36,-96 94.36,-90 100.36,-84 106.36,-84 106.36,-84 158.24,-84 158.24,-84 164.24,-84 170.24,-90 170.24,-96 170.24,-96 170.24,-108 170.24,-108 170.24,-114 164.24,-120 158.24,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="132.3" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html" href="../classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html"&gt;CryptoObject&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- KeySlot&amp;#45;&amp;gt;CryptoObject --&gt;
-&lt;g id="edge4" class="edge"&gt;
+&lt;g id="edge3" class="edge"&gt;
 &lt;title&gt;KeySlot-&amp;gt;CryptoObject&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M351.46,-67.25C373.41,-63.3 405.25,-57.56 431.81,-52.77"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="432.34,-56.23 441.56,-51.01 431.1,-49.34 432.34,-56.23"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="404.17" y="-64.33" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;speichert&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M166.97,-167.61C161.19,-156.85 153.65,-142.79 147.08,-130.54"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="150.22,-128.99 142.4,-121.83 144.05,-132.3 150.22,-128.99"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="166.65" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;haelt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- CryptoContext&amp;#45;&amp;gt;CryptoObject --&gt;
-&lt;g id="edge5" class="edge"&gt;
+&lt;g id="edge4" class="edge"&gt;
 &lt;title&gt;CryptoContext-&amp;gt;CryptoObject&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M365.25,-23.53C383.66,-26.19 405.74,-29.54 425.54,-33 427.61,-33.36 429.72,-33.74 431.84,-34.13"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="431.18,-37.57 441.66,-35.99 432.48,-30.69 431.18,-37.57"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="404.17" y="-36" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;verarbeitet&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M99.21,-167.61C104.72,-156.85 111.92,-142.79 118.19,-130.54"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="121.2,-132.34 122.64,-121.85 114.97,-129.15 121.2,-132.34"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="123.81" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- SymmetricKey --&gt;
+&lt;g id="node6" class="node"&gt;
+&lt;title&gt;SymmetricKey&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M70.6,-36C70.6,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 70.6,0 70.6,0 76.6,0 82.6,-6 82.6,-12 82.6,-12 82.6,-24 82.6,-24 82.6,-30 76.6,-36 70.6,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="41.3" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_SymmetricKey_25c975.html" href="../classes/cl_ara_crypto_cryp_SymmetricKey_25c975.html"&gt;SymmetricKey&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- CryptoObject&amp;#45;&amp;gt;SymmetricKey --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;CryptoObject-&amp;gt;SymmetricKey&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M103.56,-83.65C95.76,-78.4 87.54,-72.33 80.54,-66 73.55,-59.69 66.7,-52.11 60.73,-44.91"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="63.71,-43.03 54.73,-37.4 58.24,-47.4 63.71,-43.03"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="104.42" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;spezialisiert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PublicKey --&gt;
+&lt;g id="node7" class="node"&gt;
+&lt;title&gt;PublicKey&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M151.52,-36C151.52,-36 113.08,-36 113.08,-36 107.08,-36 101.08,-30 101.08,-24 101.08,-24 101.08,-12 101.08,-12 101.08,-6 107.08,0 113.08,0 113.08,0 151.52,0 151.52,0 157.52,0 163.52,-6 163.52,-12 163.52,-12 163.52,-24 163.52,-24 163.52,-30 157.52,-36 151.52,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="132.3" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PublicKey_11ccb6.html" href="../classes/cl_ara_crypto_cryp_PublicKey_11ccb6.html"&gt;PublicKey&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- CryptoObject&amp;#45;&amp;gt;PublicKey --&gt;
+&lt;g id="edge7" class="edge"&gt;
+&lt;title&gt;CryptoObject-&amp;gt;PublicKey&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M132.3,-83.61C132.3,-73.17 132.3,-59.64 132.3,-47.66"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="135.8,-48.03 132.3,-38.03 128.8,-48.03 135.8,-48.03"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="156.18" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;spezialisiert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PrivateKey --&gt;
+&lt;g id="node8" class="node"&gt;
+&lt;title&gt;PrivateKey&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M235.04,-36C235.04,-36 193.56,-36 193.56,-36 187.56,-36 181.56,-30 181.56,-24 181.56,-24 181.56,-12 181.56,-12 181.56,-6 187.56,0 193.56,0 193.56,0 235.04,0 235.04,0 241.04,0 247.04,-6 247.04,-12 247.04,-12 247.04,-24 247.04,-24 247.04,-30 241.04,-36 235.04,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="214.3" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html" href="../classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html"&gt;PrivateKey&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- CryptoObject&amp;#45;&amp;gt;PrivateKey --&gt;
+&lt;g id="edge8" class="edge"&gt;
+&lt;title&gt;CryptoObject-&amp;gt;PrivateKey&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M162.8,-83.51C170.31,-78.42 177.99,-72.46 184.3,-66 190.02,-60.14 195.24,-53.01 199.66,-46.1"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="202.54,-48.1 204.68,-37.73 196.54,-44.5 202.54,-48.1"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="217.94" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;spezialisiert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- WriteableKeySlot --&gt;
+&lt;g id="node5" class="node"&gt;
+&lt;title&gt;WriteableKeySlot&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M238.01,-288C238.01,-288 166.59,-288 166.59,-288 160.59,-288 154.59,-282 154.59,-276 154.59,-276 154.59,-264 154.59,-264 154.59,-258 160.59,-252 166.59,-252 166.59,-252 238.01,-252 238.01,-252 244.01,-252 250.01,-258 250.01,-264 250.01,-264 250.01,-276 250.01,-276 250.01,-282 244.01,-288 238.01,-288"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="202.3" y="-266.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_WriteableKeySlot_96e71e.html" href="../classes/cl_ara_crypto_cryp_WriteableKeySlot_96e71e.html"&gt;WriteableKeySlot&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- WriteableKeySlot&amp;#45;&amp;gt;KeySlot --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;WriteableKeySlot-&amp;gt;KeySlot&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M196.78,-251.61C193.44,-241.06 189.09,-227.36 185.27,-215.28"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="188.67,-214.43 182.31,-205.95 181.99,-216.54 188.67,-214.43"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="208.62" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erweitert&lt;/text&gt;
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Context diagram: Interaction between application, CryptoProvider, contexts, and key objects. Sources: No sources specified in payload.&lt;/p&gt;
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle within &lt;code&gt;ara::crypto::cryp&lt;/code&gt; is determined by the interaction of long-lived provider and storage instances with ephemeral operational contexts.&lt;/p&gt;
-&lt;p&gt;Cryptographic contexts are likely instantiated primarily via the &lt;code&gt;CryptoProvider&lt;/code&gt; as the central factory, since according to the specification overview it provides the concrete implementation of cryptographic primitives. A &lt;code&gt;CryptoContext&lt;/code&gt; is designed as a mutable interface. After creation, a context is initially in an unconfigured initial state. Application-specific parameters must be assigned prior to actual processing.&lt;/p&gt;
-&lt;p&gt;Interpretation: To prepare cryptographic operations, stateful contexts (&lt;code&gt;CryptoContext&lt;/code&gt;) presumably must be bound to matching key objects (&lt;code&gt;CryptoObject&lt;/code&gt; such as &lt;code&gt;SymmetricKey&lt;/code&gt; or &lt;code&gt;PrivateKey&lt;/code&gt;) in order to be able to authorize and execute transformations. After completion of data processing (e.g., after final reading of a signature or ciphertext result), a context can either be released or reused for another computation cycle by resetting it.&lt;/p&gt;
-&lt;p&gt;The key objects themselves are subject to the lifecycle of the storage locations: &lt;code&gt;KeySlot&lt;/code&gt; provides read-only storage slots, whereas &lt;code&gt;WriteableKeySlot&lt;/code&gt; enables persistent writing and updating of keys, for instance in interaction with &lt;code&gt;ProtectedKeyImportCtx&lt;/code&gt;. When discarding keys and contexts, underlying sensitive buffers must be sanitized securely.&lt;/p&gt;
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;A typical execution path within &lt;code&gt;ara::crypto::cryp&lt;/code&gt; consists of generating a digital signature for payload data using an asymmetric private key:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Retrieve key:&lt;/strong&gt; The application contacts the &lt;code&gt;CryptoProvider&lt;/code&gt; and accesses the stored &lt;code&gt;PrivateKey&lt;/code&gt; object via an assigned &lt;code&gt;KeySlot&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Provide context:&lt;/strong&gt; The application requests an instance of &lt;code&gt;SignerPrivateCtx&lt;/code&gt; configured for the desired signature algorithm from the &lt;code&gt;CryptoProvider&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Initialization:&lt;/strong&gt; The private key is bound to the &lt;code&gt;SignerPrivateCtx&lt;/code&gt; to transition the context into the operational state.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Process data:&lt;/strong&gt; The data to be signed is transferred to the signature context.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Acquire result:&lt;/strong&gt; The context finishes the calculation, passes the generated signature to the application, and is subsequently reset or released.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class="diagram" id="diag-cryp-nutzung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 374" font-family="Helvetica,sans-Serif" style="max-width:900px"&gt;&lt;text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf einer kryptografischen Signaturerstellung&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="765" y1="102" x2="765" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html" href="../classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html"&gt;CryptoProvider&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html" href="../classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html"&gt;KeySlot&lt;/a&gt;&lt;/text&gt;&lt;rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_SignerPrivateCtx_ca7ab5.html" href="../classes/cl_ara_crypto_cryp_SignerPrivateCtx_ca7ab5.html"&gt;SignerPrivateCtx&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Schlüsselspeicher abfragen&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;Schlüssel laden&lt;/text&gt;&lt;line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;Referenz auf &lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html" href="../classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html"&gt;PrivateKey&lt;/a&gt;&lt;/text&gt;&lt;line x1="555" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="228" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_SignerPrivateCtx_ca7ab5.html" href="../classes/cl_ara_crypto_cryp_SignerPrivateCtx_ca7ab5.html"&gt;SignerPrivateCtx&lt;/a&gt; anfordern&lt;/text&gt;&lt;line x1="135" y1="234" x2="345" y2="234" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="262" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_SignerPrivateCtx_ca7ab5.html" href="../classes/cl_ara_crypto_cryp_SignerPrivateCtx_ca7ab5.html"&gt;SignerPrivateCtx&lt;/a&gt; bereitstellen&lt;/text&gt;&lt;line x1="345" y1="268" x2="135" y2="268" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="450.0" y="296" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html" href="../classes/cl_ara_crypto_cryp_PrivateKey_a661f0.html"&gt;PrivateKey&lt;/a&gt; zuweisen und Nutzdaten übergeben&lt;/text&gt;&lt;line x1="135" y1="302" x2="765" y2="302" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="330" text-anchor="middle" font-size="11" fill="#28251d"&gt;Signaturwert zurückgeben&lt;/text&gt;&lt;line x1="765" y1="336" x2="135" y2="336" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Sequence diagram: Call sequence for initialization and generation of a signature. Sources: No sources specified in payload.&lt;/p&gt;
-&lt;!-- annahmen: 1) Kryptografische Kontexte dürften primär über den CryptoProvider instanziiert werden – Begründung: Der CryptoProvider repräsentiert die Implementierung der Primitiven und des Schlüsselspeichers; 2) Veränderliche Kontexte (CryptoContext) müssen zur Durchführung von Transformationen vermutlich an passende Schlüsselobjekte gebunden werden – Begründung: Kryptografische Operationen wie Signaturen oder Chiffren setzen zur Ausführung dedizierte Schlüssel voraus. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the interface descriptions of AUTOSAR Adaptive Release R25-11.&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel von CryptoProvider, Schlüsselspeicher und kryptografischen Kontexten. Quellen: Keine im Payload angegeben.&lt;/p&gt;
+&lt;p&gt;Für die Ausführung kryptografischer Transformationen stellt der Namespace eine Familie spezialisierter Schnittstellen bereit, die auf dem veränderlichen Basiskontext &lt;code&gt;CryptoContext&lt;/code&gt; aufbauen. Zu diesen Ausführungskontexten gehören symmetrische Chiffrierer (&lt;code&gt;SymmetricCipherCtx&lt;/code&gt;, &lt;code&gt;AuthCipherCtx&lt;/code&gt;), asymmetrische Verschlüsselung und Entschlüsselung (&lt;code&gt;EncryptorPublicCtx&lt;/code&gt;, &lt;code&gt;DecryptorPrivateCtx&lt;/code&gt;) sowie Mechanismen zur Signaturerzeugung und -prüfung (&lt;code&gt;SignerPrivateCtx&lt;/code&gt;, &lt;code&gt;VerifierPublicCtx&lt;/code&gt;). Ergänzt wird dieses Spektrum durch Kontexte für Hashfunktionen (&lt;code&gt;HashFunctionCtx&lt;/code&gt;), nachrichtenbasierte Authentifizierungscodes (&lt;code&gt;MessageAuthnCodeCtx&lt;/code&gt;), Schlüsselableitung (&lt;code&gt;KeyDerivationFunctionCtx&lt;/code&gt;), Schlüsselvereinbarung (&lt;code&gt;KeyAgreementPrivateCtx&lt;/code&gt;), Schlüsselkapselung (&lt;code&gt;KeyEncapsulatorPublicCtx&lt;/code&gt;, &lt;code&gt;KeyDecapsulatorPrivateCtx&lt;/code&gt;), Schlüsselkapselung mit symmetrischem Wrapping (&lt;code&gt;SymmetricKeyWrapperCtx&lt;/code&gt;), Zufallszahlengenerierung (&lt;code&gt;RandomGeneratorCtx&lt;/code&gt;) sowie den sicheren Schlüsselimport (&lt;code&gt;ProtectedKeyImportCtx&lt;/code&gt;).&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus und Zustandshaltung&lt;/h4&gt;
+&lt;p&gt;Die Verwaltung und Lebensdauer kryptografischer Artefakte ist eng an das Zusammenspiel zwischen &lt;code&gt;CryptoProvider&lt;/code&gt;, Schlüsselobjekten und Kontexten gekoppelt. Der Lebenszyklus kryptografischer Kontexte und Objekte wird nach vorliegender Interpretation primär über die Fabrik- und Verwaltungsmethoden von &lt;code&gt;CryptoProvider&lt;/code&gt; gesteuert, welcher als zentraler Einstiegspunkt für die Instanziierung fungiert. Objekte, die von &lt;code&gt;CryptoObject&lt;/code&gt; abgeleitet sind, repräsentieren unveränderliche oder verwaltete kryptografische Entitäten, während &lt;code&gt;CryptoContext&lt;/code&gt; explizit als zustandsbehafteter, veränderlicher Kontext definiert ist. Dies erfordert, dass Konfigurationen, Zwischenzustände und algorithmische Parameter innerhalb der jeweiligen Kontextinstanz gepflegt werden.&lt;/p&gt;
+&lt;p&gt;Für die persistente oder temporäre Ablage von Schlüsselmaterial differenziert der Namespace zwischen &lt;code&gt;KeySlot&lt;/code&gt; und &lt;code&gt;WriteableKeySlot&lt;/code&gt;. Die Trennung zwischen &lt;code&gt;KeySlot&lt;/code&gt; und &lt;code&gt;WriteableKeySlot&lt;/code&gt; dürfte nach sachgerechter Interpretation lesende Zugriffe von schreibenden Schlüsselmodifikationen trennen, sodass unveränderliche oder schreibgeschützte Schlüsselbereiche vor versehentlichem Überschreiben geschützt werden können. Zustandstransformationen von Schlüsseln und Kontexten finden somit unter der Kontrolle des zugehörigen Providers statt, welcher die Gültigkeit der Schlüsselobjekte über deren Lebenszyklus hinweg sicherstellt.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad kryptografischer Operationen&lt;/h4&gt;
+&lt;p&gt;Kryptografische Operationen folgen typischerweise der Sequenz aus Provider-Abfrage, Schlüsselbereitstellung über Key-Slots und Initialisierung des zustandsbehafteten Kontexts. In einem ersten Schritt greift eine Anwendungskomponente auf den zuständigen &lt;code&gt;CryptoProvider&lt;/code&gt; zu. Über diesen Provider wird das erforderliche Schlüsselmaterial entweder aus einem &lt;code&gt;KeySlot&lt;/code&gt; bzw. &lt;code&gt;WriteableKeySlot&lt;/code&gt; geladen oder als konkretes &lt;code&gt;CryptoObject&lt;/code&gt; (beispielsweise als &lt;code&gt;SymmetricKey&lt;/code&gt;, &lt;code&gt;PrivateKey&lt;/code&gt; oder &lt;code&gt;PublicKey&lt;/code&gt;) bezogen. Parallel oder nachfolgend erzeugt der Provider die passende Instanz von &lt;code&gt;CryptoContext&lt;/code&gt;, etwa einen &lt;code&gt;SymmetricCipherCtx&lt;/code&gt; für Verschlüsselungen oder einen &lt;code&gt;SignerPrivateCtx&lt;/code&gt; für digitale Signaturen.&lt;/p&gt;
+&lt;div class="diagram" id="diag-cryp-nutzung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 442" font-family="Helvetica,sans-Serif" style="max-width:900px"&gt;&lt;text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf einer kryptografischen Operation&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="428" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="428" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="428" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="765" y1="102" x2="765" y2="428" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html" href="../classes/cl_ara_crypto_cryp_CryptoProvider_4d0caf.html"&gt;CryptoProvider&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html" href="../classes/cl_ara_crypto_cryp_KeySlot_ded1fc.html"&gt;KeySlot&lt;/a&gt;&lt;/text&gt;&lt;rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html" href="../classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html"&gt;CryptoContext&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Schlüssel anfordern&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;Schlüsselobjekt laden&lt;/text&gt;&lt;line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html" href="../classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html"&gt;CryptoObject&lt;/a&gt; bereitstellen&lt;/text&gt;&lt;line x1="555" y1="200" x2="345" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="228" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html" href="../classes/cl_ara_crypto_cryp_CryptoObject_b2f4d2.html"&gt;CryptoObject&lt;/a&gt; zurückgeben&lt;/text&gt;&lt;line x1="345" y1="234" x2="135" y2="234" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="262" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html" href="../classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html"&gt;CryptoContext&lt;/a&gt; anfordern&lt;/text&gt;&lt;line x1="135" y1="268" x2="345" y2="268" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="296" text-anchor="middle" font-size="11" fill="#28251d"&gt;Kontext instanziieren&lt;/text&gt;&lt;line x1="345" y1="302" x2="765" y2="302" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="330" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html" href="../classes/cl_ara_crypto_cryp_CryptoContext_b86b98.html"&gt;CryptoContext&lt;/a&gt; zurückgeben&lt;/text&gt;&lt;line x1="345" y1="336" x2="135" y2="336" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="450.0" y="364" text-anchor="middle" font-size="11" fill="#28251d"&gt;Operation ausführen&lt;/text&gt;&lt;line x1="135" y1="370" x2="765" y2="370" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="398" text-anchor="middle" font-size="11" fill="#28251d"&gt;Ergebnis liefern&lt;/text&gt;&lt;line x1="765" y1="404" x2="135" y2="404" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typische Aufrufreihenfolge bei der Durchführung kryptografischer Operationen. Quellen: Keine im Payload angegeben.&lt;/p&gt;
+&lt;p&gt;Im anschließenden Ausführungsschritt wird der erzeugte Kontext mit dem geladenen Schlüssel konfiguriert und mit den zu verarbeitenden Nutzdaten versorgt. Aufgrund der zustandsbehafteten Natur von &lt;code&gt;CryptoContext&lt;/code&gt; können Streaming-Operationen oder mehrstufige Transformationen schrittweise durchgeführt werden, bevor das abschließende kryptografische Ergebnis (wie Chiffrat, Signatur oder Hashwert) an die Anwendung zurückgeliefert wird. Nach Abschluss der Verarbeitung obliegt die Freigabe flüchtiger Zustände der Konvention des ausführenden Kontexts und Providers.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Lebenszyklus kryptografischer Kontexte und Objekte wird primär über die Fabrik- und Verwaltungsmethoden von CryptoProvider gesteuert. – Begründung: Der Payload beschreibt CryptoProvider als Implementierungsinstanz kryptografischer Primitive und CryptoContext als mutable Schnittstelle. 2) Die Trennung zwischen KeySlot und WriteableKeySlot dürfte lesende Zugriffe von schreibenden Schlüsselmodifikationen trennen. – Begründung: WriteableKeySlot ist laut Payload als schreibbarer Speicherort spezifiziert, KeySlot allgemein als Speicherort. 3) Kryptografische Operationen folgen typischerweise der Sequenz aus Provider-Abfrage, Schlüsselbereitstellung über Key-Slots und Initialisierung des zustandsbehafteten Kontexts. – Begründung: CryptoContext ist als mutable Schnittstelle definiert, die für kryptografische Operationen an Schlüsselobjekte gekoppelt wird. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch eine künstliche Intelligenz auf Basis der Metadaten des Releases R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -371,7 +422,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>100abc8794a6…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f15c72def571…</code></div>
               <div><strong>Konstituierende Records:</strong> 23</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

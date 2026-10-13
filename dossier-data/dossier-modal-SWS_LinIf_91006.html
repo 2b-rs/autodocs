@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinIf_91006" class="dossier-modal dossier-workbench" data-dossier-sha="f6f13cf254809445" aria-labelledby="dossier-modal-SWS_LinIf_91006-title">
+<dialog id="dossier-modal-SWS_LinIf_91006" class="dossier-modal dossier-workbench" data-dossier-sha="13161ad60c65360b" aria-labelledby="dossier-modal-SWS_LinIf_91006-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinIf_91006-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinIf_91006)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,648 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,103 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinIf_TxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -196,41 +214,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9a25de5518108c653ee272fb5a7ad31fe61a845036997ed07cf3ff80ef76c981" data-trace-output="f6f13cf254809445d2b0dce0c92db549903e2a29abd060d5103d7f4dcb33cd10" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4b5b40f235ec7973eca3e485b7fe0cd4834c4b407b7f24b6a94d476d77f49d20" data-trace-output="13161ad60c65360be0750bf6af32585cecd4afcddbe4821fa0c5cc3ad4baafa0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bestätigt dem LIN-Interface das erfolgreiche Senden einer Slave-Antwort und benachrichtigt die Oberschicht." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The callback function &lt;code&gt;LinIf_TxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_91006" href="../../spec/record.html?id=SWS_LinIf_91006"&gt;[SWS_LinIf_91006]&lt;/a&gt;) is called synchronously by the LIN driver to report the successful transmission of a response. It is intended exclusively for LIN slave nodes and only exists if the ECU has at least one LIN slave channel. The affected LIN channel is passed via parameter &lt;code&gt;Channel&lt;/code&gt; (type &lt;code&gt;NetworkHandleType&lt;/code&gt;); the function has no return value.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Callback-Funktion &lt;code&gt;LinIf_TxConfirmation&lt;/code&gt; (Service-ID &lt;code&gt;0x7a&lt;/code&gt;, deklariert in &lt;code&gt;LinIf.h&lt;/code&gt;) wird vom LIN-Treiber aufgerufen, um die erfolgreiche Übertragung einer Antwort (Response) auf dem angegebenen Kanal zu bestätigen &lt;a class="spec-record-ref" data-req="SWS_LinIf_91006" href="../../spec/record.html?id=SWS_LinIf_91006"&gt;[SWS_LinIf_91006]&lt;/a&gt;. Die Funktion besitzt keinen Rückgabewert und ist ausschließlich für Steuergeräte mit mindestens einem konfigurierten LIN-Slave-Kanal vorgesehen &lt;a class="spec-record-ref" data-req="SWS_LinIf_91006" href="../../spec/record.html?id=SWS_LinIf_91006"&gt;[SWS_LinIf_91006]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Reentrancy&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_LinIf_91006" href="../../spec/record.html?id=SWS_LinIf_91006"&gt;[SWS_LinIf_91006]&lt;/a&gt;, &lt;code&gt;LinIf_TxConfirmation&lt;/code&gt; is reentrant for calls on different channels, but must not be called reentrantly for the same channel.
-  &lt;/p&gt;
+&lt;p&gt;Beim Eintreffen der Bestätigung führt das LIN-Interface mehrere Folgeverarbeitungen aus:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Oberschicht-Benachrichtigung:&lt;/strong&gt; Das Modul leitet das Sendeereignis über die Callback-Funktion &lt;code&gt;&amp;lt;User_TxConfirmation&amp;gt;&lt;/code&gt; mit dem Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; an die übergeordnete Schicht weiter &lt;a class="spec-record-ref" data-req="SWS_LinIf_00741" href="../../spec/record.html?id=SWS_LinIf_00741"&gt;[SWS_LinIf_00741]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlerstatus:&lt;/strong&gt; Falls der erfolgreich gesendete Frame das Fehlersignal &lt;code&gt;response_error&lt;/code&gt; beinhaltet, setzt das LIN-Interface dieses Signal zurück &lt;a class="spec-record-ref" data-req="SWS_LinIf_00747" href="../../spec/record.html?id=SWS_LinIf_00747"&gt;[SWS_LinIf_00747]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Busruheüberwachung:&lt;/strong&gt; Jeder Aufruf von &lt;code&gt;LinIf_TxConfirmation&lt;/code&gt; lädt den laufenden Bus-Idle-Timer des Kanals neu &lt;a class="spec-record-ref" data-req="SWS_LinIf_00754" href="../../spec/record.html?id=SWS_LinIf_00754"&gt;[SWS_LinIf_00754]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Transportprotokoll (LinTp):&lt;/strong&gt; Bestätigt der Treiber die Antwort auf einen SRF-Header (Slave Response Frame), stoppt das Interface den Überwachungstimer &lt;code&gt;N_As&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00800" href="../../spec/record.html?id=SWS_LinIf_00800"&gt;[SWS_LinIf_00800]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Bus Mirroring:&lt;/strong&gt; Ist das Spiegeln global über &lt;code&gt;LinIfBusMirroringSupported&lt;/code&gt; konfiguriert und per &lt;code&gt;LinIf_EnableBusMirroring()&lt;/code&gt; aktiviert, meldet das Interface den Rahmen mit dem Status &lt;code&gt;LIN_TX_OK&lt;/code&gt; und Zeiger auf die Sendedaten an &lt;code&gt;Mirror_ReportLinFrame()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00839" href="../../spec/record.html?id=SWS_LinIf_00839"&gt;[SWS_LinIf_00839]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Interaction and Functional Effects&lt;/h4&gt;
-  &lt;p&gt;
-    The call of &lt;code&gt;LinIf_TxConfirmation&lt;/code&gt; initiates several subsequent actions in the LIN interface:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Notification of the upper layer:&lt;/strong&gt; The LIN interface forwards the confirmation via callback &lt;code&gt;&amp;lt;User_TxConfirmation&amp;gt;&lt;/code&gt; with status value &lt;code&gt;E_OK&lt;/code&gt; to the superimposed layer (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00741" href="../../spec/record.html?id=SWS_LinIf_00741"&gt;[SWS_LinIf_00741]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Clearing error state:&lt;/strong&gt; If the successfully transmitted frame contains the signal &lt;code&gt;response_error&lt;/code&gt;, the LIN interface resets this signal (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00747" href="../../spec/record.html?id=SWS_LinIf_00747"&gt;[SWS_LinIf_00747]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Bus idle monitoring:&lt;/strong&gt; The running bus idle timer is reloaded with each call of the confirmation (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00754" href="../../spec/record.html?id=SWS_LinIf_00754"&gt;[SWS_LinIf_00754]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Transport protocol (LinTp):&lt;/strong&gt; If the driver confirms the transmission of a response to an SRF header (Slave Response Frame), the LIN interface stops the &lt;code&gt;N_As&lt;/code&gt; timer (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00800" href="../../spec/record.html?id=SWS_LinIf_00800"&gt;[SWS_LinIf_00800]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Bus mirroring:&lt;/strong&gt; If bus mirroring is enabled globally via configuration parameter &lt;code&gt;LinIfBusMirroringSupported&lt;/code&gt; and switched on for the channel via &lt;code&gt;LinIf_EnableBusMirroring()&lt;/code&gt;, the LIN interface calls &lt;code&gt;Mirror_ReportLinFrame()&lt;/code&gt; with status &lt;code&gt;LIN_TX_OK&lt;/code&gt; and a pointer to the transmitted data (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00839" href="../../spec/record.html?id=SWS_LinIf_00839"&gt;[SWS_LinIf_00839]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;p&gt;Bezüglich der Nebenläufigkeit ist &lt;code&gt;LinIf_TxConfirmation&lt;/code&gt; für unterschiedliche LIN-Kanäle reentrant ausgelegt, darf jedoch für denselben Kanal nicht reentrant aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_LinIf_91006" href="../../spec/record.html?id=SWS_LinIf_91006"&gt;[SWS_LinIf_91006]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -270,7 +270,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9a25de551810…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4b5b40f235ec…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -408,4 +408,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_91006","k":"function","d":"AUTOSAR","t":"","n":"LinIf_TxConfirmation"}],"inbound":[{"i":"SWS_LinIf_00741","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_LinIf_00741].","n":"SWS_LinIf_00741"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a89663822848b596.json?v=278633e5" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_91006","k":"function","d":"AUTOSAR","t":"","n":"LinIf_TxConfirmation"}],"inbound":[{"i":"SWS_LinIf_00741","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_LinIf_00741].","n":"SWS_LinIf_00741"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a89663822848b596.json?v=e1b349b8" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

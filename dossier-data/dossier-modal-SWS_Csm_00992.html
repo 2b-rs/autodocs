@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_00992" class="dossier-modal dossier-workbench" data-dossier-sha="dfc35a45c3d5037a" aria-labelledby="dossier-modal-SWS_Csm_00992-title">
+<dialog id="dossier-modal-SWS_Csm_00992" class="dossier-modal dossier-workbench" data-dossier-sha="093b61229b3957bc" aria-labelledby="dossier-modal-SWS_Csm_00992-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_00992-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_00992)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,528 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,983 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_SignatureGenerate'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,25 +193,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="55613730449d0c3859173a7ed22cfc515aeeca77e7d2b9405e1afe90f13a4b8e" data-trace-output="dfc35a45c3d5037a9932fccd82d3ce1a8d9d2ea1c7720802a99049fec0018f81" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="2a36f47e9fca517e34cd99bf712d9e7e3a5b39ecc4661857028333aa4987cc18" data-trace-output="093b61229b3957bccc49a2bca2976a804b5061e1dbd1a7638b8d0e8e79dad7af" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Berechnet eine kryptografische Signatur über übergebene Daten anhand einer spezifischen Jobkonfiguration." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;Csm_SignatureGenerate&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;, service ID &lt;code&gt;0x76&lt;/code&gt;, header &lt;code&gt;Csm.h&lt;/code&gt;) performs a signature calculation based on the passed input data and stores the result at the memory location referenced by &lt;code&gt;signaturePtr&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The execution semantics is synchronous or asynchronous, depending on the configuration of the job identified via &lt;code&gt;jobId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;). The operation modes to be executed are specified via parameter &lt;code&gt;mode&lt;/code&gt; (type &lt;code&gt;Crypto_OperationModeType&lt;/code&gt;). The data to be signed and their length in bytes are provided via &lt;code&gt;dataPtr&lt;/code&gt; and &lt;code&gt;dataLength&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Input/output parameter &lt;code&gt;signatureLengthPtr&lt;/code&gt; serves for the output: Upon invocation, this pointer must refer to the available buffer size of destination memory &lt;code&gt;signaturePtr&lt;/code&gt;. After completion of the request, the actual byte length of the generated signature is stored there (&lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;).&lt;/p&gt;
-&lt;h4&gt;Concurrency&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;Csm_SignatureGenerate&lt;/code&gt; is specified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;).&lt;/p&gt;
-&lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-&lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; indicates the status of the service request (&lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Csm_SignatureGenerate&lt;/code&gt; dient der kryptografischen Signaturberechnung über übergebene Nutzdaten gemäß &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;. Ob der Aufruf synchron oder asynchron verarbeitet wird, hängt von der jeweiligen Konfiguration des übergebenen Jobs (&lt;code&gt;jobId&lt;/code&gt;) ab &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;. Die Funktion ist als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Beim Aufruf steuert der Parameter &lt;code&gt;mode&lt;/code&gt; vom Typ &lt;code&gt;Crypto_OperationModeType&lt;/code&gt; die auszuführenden Operationsmodi &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;. Die zu signierenden Daten werden über &lt;code&gt;dataPtr&lt;/code&gt; zusammen mit ihrer Bytelänge &lt;code&gt;dataLength&lt;/code&gt; übergeben &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;. Die berechnete Signatur wird in den durch &lt;code&gt;signaturePtr&lt;/code&gt; referenzierten Speicherbereich geschrieben &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;. Der Ein-/Ausgabeparameter &lt;code&gt;signatureLengthPtr&lt;/code&gt; muss vor dem Aufruf die bereitgestellte Puffergröße in Bytes enthalten; nach Abschluss der Anfrage enthält er die tatsächliche Bytelänge der erzeugten Signatur &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Der Rückgabewert signalisiert den Status der Funktionsanforderung &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The request was successful.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The request has failed.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Request failed because the service is still busy.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Request failed because the status of the key is invalid.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Request failed because a key element has the wrong size.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Request failed due to an uninitialized source key element.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Anforderung erfolgreich ausgeführt bzw. gestartet &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Allgemeine Fehler bei der Anfrage &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Der angeforderte Dienst ist derzeit belegt &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Der Status des verwendeten Schlüssels ist ungültig &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Ein Schlüsselelement weist eine unpassende Größe auf &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Quell-Schlüsselelement ist nicht initialisiert &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p class="ai-note"&gt;This usage note was created automatically based on specification element &lt;a class="spec-record-ref" data-req="SWS_Csm_00992" href="../../spec/record.html?id=SWS_Csm_00992"&gt;[SWS_Csm_00992]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt und basiert ausschließlich auf den Spezifikationsdaten aus dem AUTOSAR-Release R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -233,7 +248,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>55613730449d…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2a36f47e9fca…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -371,4 +386,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_00992","k":"function","d":"AUTOSAR","t":"","n":"Csm_SignatureGenerate"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6fa8e7f5b2953442.json?v=8eb65bf1" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_00992","k":"function","d":"AUTOSAR","t":"","n":"Csm_SignatureGenerate"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6fa8e7f5b2953442.json?v=bd34e6db" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

@@ -1,7 +1,6 @@
 {
  "annahmen": [
-  "1) Ein erneutes Pwm_Init nach Pwm_DeInit ist zulässig (Text und diag-lebenszyklus) – Begründung: Pwm_DeInit de-initialisiert das Modul, und PWM_E_ALREADY_INITIALIZED betrifft nur den bereits initialisierten Treiber.",
-  "2) In diag-power-seq ist die Reihenfolge Bereitmeldung → IoHwAb_PollForResults → Pwm_SetPowerState vereinfacht – Begründung: Die Bildtexte der IoHwAb-Schaubilder liegen nur ungeordnet vor; belegt ist lediglich, dass Prepare vor Set erfolgen muss."
+  "1) Nach Pwm_DeInit gilt das Modul wieder als nicht initialisiert und kann erneut mit Pwm_Init gestartet werden – Begründung: Pwm_DeInit „de-initialisiert“ das Modul (SWS_Pwm_00096, SWS PWM Driver S. 27); einen ausdrücklichen Folgezustand nennt der Payload nicht."
  ],
  "diagrams": [
   {
@@ -16,28 +15,33 @@
   },
   {
    "art": "dot",
-   "id": "diag-dutycycle",
-   "quelle": "anchor_r20_11.diag-dutycycle.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-idle",
-   "quelle": "anchor_r20_11.diag-idle.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-notification",
-   "quelle": "anchor_r20_11.diag-notification.seq.json"
+   "id": "diag-tastgrad",
+   "quelle": "anchor_r20_11.diag-tastgrad.dot"
   },
   {
    "art": "dot",
-   "id": "diag-power-zustand",
-   "quelle": "anchor_r20_11.diag-power-zustand.dot"
+   "id": "diag-kanal",
+   "quelle": "anchor_r20_11.diag-kanal.dot"
   },
   {
    "art": "seq",
-   "id": "diag-power-seq",
-   "quelle": "anchor_r20_11.diag-power-seq.seq.json"
+   "id": "diag-benachrichtigung",
+   "quelle": "anchor_r20_11.diag-benachrichtigung.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-powerzustand",
+   "quelle": "anchor_r20_11.diag-powerzustand.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-power-async",
+   "quelle": "anchor_r20_11.diag-power-async.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-pruefung",
+   "quelle": "anchor_r20_11.diag-pruefung.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/pwm/anchor_r20_11.html",
@@ -65,14 +69,86 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 78,
-  "im_prompt_schaubilder": 32,
-  "kandidaten": 92,
+  "im_prompt": 75,
+  "im_prompt_schaubilder": 29,
+  "kandidaten": 89,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "0a85019f1f20dd0aee6bc491cdb1cd1bb731d9bf7228ad8dfe9884c5ec6ec5f9",
- "output_store": "ai/store/outputs/0a/0a85019f1f20dd0aee6bc491cdb1cd1bb731d9bf7228ad8dfe9884c5ec6ec5f9.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-kanal"
+  ],
+  "oneliner_chars": 104,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 79,
+   "3": 290,
+   "4": 1973
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_1_Mandatory_interfaces: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_4_Callback_notifications: SWS_PWMDriver S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_Service_Interfaces: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 152 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_7_7: SWS_IOHardwareAbstraction S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_6_2: TPS_BSWModuleDescriptionTemplate S. 122 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 152 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_7_7: SWS_IOHardwareAbstraction S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-22f73e742491a849: AUTOSAR_CP_RS_PWMDriver S. 14 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_2_Acronyms_and_abbreviations: SWS_PWMDriver S. 9 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_4_Duty_Cycle_Resolution_and_scaling: SWS_PWMDriver S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-7047bb635bd81ab1: AUTOSAR_SWS_PWM_Driver S. 23 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_2_Pwm_DeInit: SWS_PWMDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_2_Pwm_DeInit: SWS_PWMDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_3_Pwm_SetDutyCycle: SWS_PWMDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-8cc28a0526026be2: AUTOSAR_SWS_PWM_Driver S. 37 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_4_Pwm_SetPeriodAndDuty: SWS_PWMDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_3_Pwm_SetDutyCycle: SWS_PWMDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_4_Pwm_SetPeriodAndDuty: SWS_PWMDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-22f73e742491a849: AUTOSAR_CP_RS_PWMDriver S. 14 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_3_Pwm_SetDutyCycle: SWS_PWMDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_8_Pwm_EnableNotification: SWS_PWMDriver S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_7_Pwm_DisableNotification: SWS_PWMDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_3_Configurable_interfaces: SWS_PWMDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_3_Configurable_interfaces: SWS_PWMDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_3_1_Background: SWS_PWMDriver S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_3_2_Requirements: SWS_PWMDriver S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_2_8_Pwm_PowerStateType: SWS_PWMDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_5_1_Pwm_Main_PowerTransitionManager: SWS_PWMDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_9_Pwm_SetPowerState: SWS_PWMDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_12_Pwm_PreparePowerState: SWS_PWMDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_11_Pwm_GetTargetPowerState: SWS_PWMDriver S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_9_2_Setting_ADC_and_PWM_in_a_low_consumption_power_state_as_a: SWS_IOHardwareAbstraction S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_2_8_Pwm_PowerStateType: SWS_PWMDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-8bad3385375e60dd: AUTOSAR_ECU_ConfigurationParameters S. 545 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_10_2_4_PwmChannel: SWS_PWMDriver S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_6_Pwm_GetOutputState: SWS_PWMDriver S. 33 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_2_2_6_Concurrency_safe_implementation_of_modules: EXP_BSWDistributionGuide S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_6_2_Runtime_Errors: SWS_PWMDriver S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_5_1_Pwm_Main_PowerTransitionManager: SWS_PWMDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_2_Pwm_DeInit: SWS_PWMDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_4_Duty_Cycle_Resolution_and_scaling: SWS_PWMDriver S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_3_Configurable_interfaces: SWS_PWMDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_3_1_Background: SWS_PWMDriver S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_1_Mandatory_interfaces: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 152 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_7_7: SWS_IOHardwareAbstraction S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_7_4_Duty_Cycle_Resolution_and_scaling: SWS_PWMDriver S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+ ],
+ "output_sha256": "38bbe9f85825e1503079553a5ce5f9a8a99995ad26d2d0b64f8ae7cfd8aa602a",
+ "output_store": "ai/store/outputs/38/38bbe9f85825e1503079553a5ce5f9a8a99995ad26d2d0b64f8ae7cfd8aa602a.html",
  "params": {
   "module": "pwm",
   "platform": "classic",
@@ -101,9 +177,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "b2ff27f03e799951d252760fca577081abcf9738fb9609250df81ca97b4458e3",
- "prompt_store": "ai/store/prompts/b2/b2ff27f03e799951d252760fca577081abcf9738fb9609250df81ca97b4458e3.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "346ede702b241ebf5d73593f5a50c3b226a49cd6ba35cc9fbe0b8bc33bf642ee",
+ "prompt_store": "ai/store/prompts/34/346ede702b241ebf5d73593f5a50c3b226a49cd6ba35cc9fbe0b8bc33bf642ee.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -116,14 +192,72 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.18152,
-   "cost_usd_reported": 1.18152,
-   "created_at": "2026-10-09T07:25:48Z",
-   "duration_api_seconds": 332.007,
-   "duration_seconds": 332.21,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.333856,
+   "cost_usd_reported": 1.333856,
+   "created_at": "2026-10-13T03:18:19Z",
+   "duration_api_seconds": 393.268,
+   "duration_seconds": 396.915,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_1_Mandatory_interfaces: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_4_Callback_notifications: SWS_PWMDriver S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_Service_Interfaces: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 152 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_7_7: SWS_IOHardwareAbstraction S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_6_2: TPS_BSWModuleDescriptionTemplate S. 122 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 152 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_7_7: SWS_IOHardwareAbstraction S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-22f73e742491a849: AUTOSAR_CP_RS_PWMDriver S. 14 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_2_Acronyms_and_abbreviations: SWS_PWMDriver S. 9 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_4_Duty_Cycle_Resolution_and_scaling: SWS_PWMDriver S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-7047bb635bd81ab1: AUTOSAR_SWS_PWM_Driver S. 23 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_2_Pwm_DeInit: SWS_PWMDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_2_Pwm_DeInit: SWS_PWMDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_3_Pwm_SetDutyCycle: SWS_PWMDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-8cc28a0526026be2: AUTOSAR_SWS_PWM_Driver S. 37 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_4_Pwm_SetPeriodAndDuty: SWS_PWMDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_3_Pwm_SetDutyCycle: SWS_PWMDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_4_Pwm_SetPeriodAndDuty: SWS_PWMDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-22f73e742491a849: AUTOSAR_CP_RS_PWMDriver S. 14 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_3_Pwm_SetDutyCycle: SWS_PWMDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_8_Pwm_EnableNotification: SWS_PWMDriver S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_7_Pwm_DisableNotification: SWS_PWMDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_3_Configurable_interfaces: SWS_PWMDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_3_Configurable_interfaces: SWS_PWMDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_3_1_Background: SWS_PWMDriver S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_3_2_Requirements: SWS_PWMDriver S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_2_8_Pwm_PowerStateType: SWS_PWMDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_5_1_Pwm_Main_PowerTransitionManager: SWS_PWMDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_9_Pwm_SetPowerState: SWS_PWMDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_12_Pwm_PreparePowerState: SWS_PWMDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_11_Pwm_GetTargetPowerState: SWS_PWMDriver S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_9_2_Setting_ADC_and_PWM_in_a_low_consumption_power_state_as_a: SWS_IOHardwareAbstraction S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_2_8_Pwm_PowerStateType: SWS_PWMDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-8bad3385375e60dd: AUTOSAR_ECU_ConfigurationParameters S. 545 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_10_2_4_PwmChannel: SWS_PWMDriver S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_6_Pwm_GetOutputState: SWS_PWMDriver S. 33 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_2_2_6_Concurrency_safe_implementation_of_modules: EXP_BSWDistributionGuide S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_6_2_Runtime_Errors: SWS_PWMDriver S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_5_1_Pwm_Main_PowerTransitionManager: SWS_PWMDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_2_Pwm_DeInit: SWS_PWMDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_4_Duty_Cycle_Resolution_and_scaling: SWS_PWMDriver S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_3_Configurable_interfaces: SWS_PWMDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_7_3_1_Background: SWS_PWMDriver S. 17 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_6_1_Mandatory_interfaces: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 152 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PWM_FIGURE_Figure_7_7: SWS_IOHardwareAbstraction S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_7_4_Duty_Cycle_Resolution_and_scaling: SWS_PWMDriver S. 18 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_3_5_Pwm_SetOutputToIdle: SWS_PWMDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PWM_SECTION_8_7_API_parameter_checking: SWS_PWMDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -132,19 +266,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.18152,
-     "inputTokens": 76200,
+     "costUSD": 1.333856,
+     "inputTokens": 74294,
      "maxOutputTokens": 128000,
-     "outputTokens": 43836,
+     "outputTokens": 51834,
      "provider": "firstParty",
-     "thinkingTokens": 23228,
+     "thinkingTokens": 26759,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "35dcffd6-432c-4487-9408-f424ba363b6b",
+   "run_id": "ded9e26a-6090-4d30-89f8-b778c7bacf23",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/35dcffd6-432c-4487-9408-f424ba363b6b.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/ded9e26a-6090-4d30-89f8-b778c7bacf23.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -153,11 +287,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 76200,
-    "output_tokens": 43836,
+    "inference_geo": "global",
+    "input_tokens": 74294,
+    "output_tokens": 51834,
     "output_tokens_details": {
-     "thinking_tokens": 23228
+     "thinking_tokens": 26759
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -169,11 +303,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 76200,
-    "output": 43836,
-    "thinking": 23228
+    "input_uncached": 74294,
+    "output": 51834,
+    "thinking": 26759
    },
-   "wall_seconds": 334.794
+   "wall_seconds": 398.297
   }
  ],
  "schema": "ai-trace@2",

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_MemIf_00046" class="dossier-modal dossier-workbench" data-dossier-sha="6f969e9dfdecfbc4" aria-labelledby="dossier-modal-SWS_MemIf_00046-title">
+<dialog id="dossier-modal-SWS_MemIf_00046" class="dossier-modal dossier-workbench" data-dossier-sha="fd24ae59e025e63e" aria-labelledby="dossier-modal-SWS_MemIf_00046-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_MemIf_00046-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_MemIf_00046)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,339 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,794 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'MemIf_EraseImmediateBlock'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,24 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="5acac5ca5d8ca3ccd5f7a3dc391f40708fe49e6d29acee69c219633edd355ebe" data-trace-output="6f969e9dfdecfbc407a33c1a79c1509b93c3fc44dac21f74126db80fa6d10af1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="e3fb9cffcdadcfd897db4832809b4b5f484d3339a17f08ecb751a3fa30cb7e0e" data-trace-output="fd24ae59e025e63e2d5ee29e5729c1ffe54dc7bd718626f68bf996e19688107c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Löscht synchron einen unmittelbaren Speicherblock im über den Index ausgewählten Speicherabstraktionsmodul." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;MemIf_EraseImmediateBlock&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;) is used to erase an immediate block in the underlying memory abstraction module (Memory Abstraction Module). It calls the “Erase Immediate Block” function of the module selected via parameter &lt;code&gt;Device Index&lt;/code&gt;. The interface is available via the header file &lt;code&gt;MemIf.h&lt;/code&gt; and has service ID &lt;code&gt;0x09&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;The parameters of the function include:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Device Index&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Selects the underlying memory abstraction module (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Block Number&lt;/code&gt; (&lt;code&gt;uint16&lt;/code&gt;): Designates the logical block number (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;The function has synchronous execution semantics (&lt;em&gt;Synchronous&lt;/em&gt;). The return value is of type &lt;code&gt;Std_ReturnType&lt;/code&gt; and returns the return value of the called function of the underlying module, provided no development error exists (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;MemIf_EraseImmediateBlock&lt;/code&gt; veranlasst das Löschen eines als unmittelbar eingestuften Blocks im unterlagerten Speicherabstraktionsmodul &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;. Der Aufruf wird über den Header &lt;code&gt;MemIf.h&lt;/code&gt; bereitgestellt und führt die Service-ID &lt;code&gt;0x09&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;. Als Eingangsparameter dienen &lt;code&gt;DeviceIndex&lt;/code&gt; zur Adressierung des spezifischen Speichergeräts bzw. Abstraktionsmoduls sowie &lt;code&gt;BlockNumber&lt;/code&gt; zur Identifikation des Zielblocks &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;. Zusätzliche Inout- oder Out-Parameter existieren nicht &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;If development error detection (Development Error Detection) is enabled for the Memory Abstraction Interface and a development error is detected according to &lt;a class="spec-record-ref" data-req="SWS_MemIf_00022" href="../../spec/record.html?id=SWS_MemIf_00022"&gt;[SWS_MemIf_00022]&lt;/a&gt;, the function returns the return value &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;).&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Die Funktion gibt einen Statuswert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;. Wenn die Erkennung von Entwicklungsfehlern für das Memory Abstraction Interface aktiviert ist und ein entsprechender Fehler gemäß &lt;a class="spec-record-ref" data-req="SWS_MemIf_00022" href="../../spec/record.html?id=SWS_MemIf_00022"&gt;[SWS_MemIf_00022]&lt;/a&gt; festgestellt wird, liefert der Aufruf den festen Rückgabewert &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;. Tritt kein derartiger Fehler auf, wird das unmittelbare Ergebnis der aufgerufenen Funktion des unterlagerten Moduls an den Aufrufer durchgereicht &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The element &lt;code&gt;MemIf_EraseImmediateBlock&lt;/code&gt; is specified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR CP R20-11 specification.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Ausführung von &lt;code&gt;MemIf_EraseImmediateBlock&lt;/code&gt; erfolgt synchron und ist als nicht reentrant (Non Reentrant) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_MemIf_00046" href="../../spec/record.html?id=SWS_MemIf_00046"&gt;[SWS_MemIf_00046]&lt;/a&gt;. Interpretation: Da parallele Aufrufe der Schnittstelle unzulässig sind, dürfte die Funktion im Gesamtsystem vermutlich nur aus einem synchronisierten Kontext auf Task-Ebene aufgerufen werden, um Dateninkonsistenzen in den unterlagerten Speichertreibern zu verhindern.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Funktion dürfte vermutlich nur aus einem synchronisierten Kontext auf Task-Ebene aufgerufen werden. – Begründung: Die Spezifikation kennzeichnet den Aufruf als nicht reentrant, definiert aber keinen spezifischen Caller-Kontext. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -232,7 +246,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>5acac5ca5d8c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e3fb9cffcdad…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -370,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_MemIf_00046","k":"function","d":"AUTOSAR","t":"","n":"MemIf_EraseImmediateBlock"}],"inbound":[{"i":"SWS_MemIf_00022","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_MemIf_00022].","n":"SWS_MemIf_00022"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/4e181272976aa798.json?v=fc4696e3" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_MemIf_00046","k":"function","d":"AUTOSAR","t":"","n":"MemIf_EraseImmediateBlock"}],"inbound":[{"i":"SWS_MemIf_00022","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_MemIf_00022].","n":"SWS_MemIf_00022"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/4e181272976aa798.json?v=efca6de6" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

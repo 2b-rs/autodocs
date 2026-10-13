@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_std_hash_ara_core_Optional_T_992b73" class="dossier-modal dossier-workbench" data-dossier-sha="67bede11ec4e69a3" aria-labelledby="dossier-modal-cl_std_hash_ara_core_Optional_T_992b73-title">
+<dialog id="dossier-modal-cl_std_hash_ara_core_Optional_T_992b73" class="dossier-modal dossier-workbench" data-dossier-sha="3c8d7e8dcc721328" aria-labelledby="dossier-modal-cl_std_hash_ara_core_Optional_T_992b73-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_std_hash_ara_core_Optional_T_992b73-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_std_hash_ara_core_Optional_T_992b73)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,596 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,118 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'std::hash&lt; ara::core::Optional&lt; T &gt;' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_std_hash_ara_core_Optional_T_992b73",
@@ -203,34 +222,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="08eb86f37a30bc7dc1aeb7bf7681ff2000f845233ac3ca22b19f1b232d3b29ac" data-trace-output="67bede11ec4e69a3ade6f55afbf9c05eb5cf9df9798f70cb689a0639525f0a4a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="2accb8eb3431cd64f908cbdb89fa72a864458c10c9ca3567f3508ef19a23ddc5" data-trace-output="3c8d7e8dcc721328cd0816853b54208e3d74ea6f3ba272345668581e5ff1ce2c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die Berechnung von Hashwerten für optionale Werte zur Verwendung in assoziativen Standard-Containern." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The template class &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; represents a functional specialization of the C++ standard functor &lt;code&gt;std::hash&lt;/code&gt; for the generic container type &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; within the AUTOSAR Adaptive Platform in module &lt;code&gt;core&lt;/code&gt;. In modern software-defined vehicle architectures, &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; serves as a type-safe encapsulation for values that may either be present or disengaged at runtime, without requiring dynamic pointers or error-prone sentinel values.&lt;/p&gt;
-&lt;p&gt;The primary role of this specialization is to act as a unary function object that maps a given instance of &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; to a numeric hash value of the primitive type &lt;code&gt;std::size_t&lt;/code&gt;. This interface adaptation enables seamless interoperability with the unordered associative standard containers of the C++ standard library such as &lt;code&gt;std::unordered_map&lt;/code&gt;, &lt;code&gt;std::unordered_set&lt;/code&gt;, &lt;code&gt;std::unordered_multimap&lt;/code&gt;, and &lt;code&gt;std::unordered_multiset&lt;/code&gt;. In this way, optional data types can be used directly as key types in hash tables without manual helper constructs.&lt;/p&gt;
-&lt;p&gt;In addition to the calling associative containers, key interaction partners notably include the parameterized payload type &lt;code&gt;T&lt;/code&gt; and its own hash function. Presumably, the specialization assumes that a valid and enabled specialization of &lt;code&gt;std::hash&amp;lt;T&amp;gt;&lt;/code&gt; in namespace &lt;code&gt;std&lt;/code&gt; is already available for the concrete data type &lt;code&gt;T&lt;/code&gt; so that recursive delegation of the hashing operation can take place.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die Berechnung von Hashwerten für optionale Werte zur Verwendung in assoziativen Standard-Containern.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Template-Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) eine standardkonforme Hash-Funktion für &lt;code&gt;ara::core::Optional&lt;/code&gt; zur Verfügung. Sie ermöglicht den direkten Einsatz optionaler Werte als Schlüssel in ungeordneten Assoziativcontainern wie &lt;code&gt;std::unordered_map&lt;/code&gt;, indem sie den Hashwert anhand des Belegungszustands und des enthaltenen Werts berechnet. Interpretation: Als wichtigste Randbedingung dürfte vorausgesetzt werden, dass für den parametrisierten Datentyp &lt;code&gt;T&lt;/code&gt; eine funktionsfähige Spezialisierung &lt;code&gt;std::hash&amp;lt;T&amp;gt;&lt;/code&gt; existiert und das zustandslose Funktionsobjekt nebenläufig ohne Seiteneffekte aufgerufen werden kann. Das Fehlen eines Wertes im Optional stellt dabei keinen Fehlerzustand dar, sondern führt zu einem deterministischen Ergebnis.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Template-Klasse &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) eine Spezialisierung des standardisierten Funktionsobjekts &lt;code&gt;std::hash&lt;/code&gt; für den generischen Datentyp &lt;code&gt;ara::core::Optional&lt;/code&gt; bereit. Die primäre Aufgabe dieser Spezialisierung besteht darin, Berechnungen von Hashwerten für Instanzen von &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; transparent in das standardkonforme Hashing-Ökosystem von C++ einzubinden. Auf diese Weise können optionale Werte direkt als Schlüssel in ungeordneten assoziativen Containern wie beispielsweise &lt;code&gt;std::unordered_map&lt;/code&gt; oder &lt;code&gt;std::unordered_set&lt;/code&gt; eingesetzt werden. Interpretation: Die Spezialisierung von &lt;code&gt;std::hash&lt;/code&gt; für &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; dürfte voraussetzen, dass für den zugrunde liegenden Typ &lt;code&gt;T&lt;/code&gt; ebenfalls eine gültige Spezialisierung von &lt;code&gt;std::hash&amp;lt;T&amp;gt;&lt;/code&gt; verfügbar ist, um den Hashwert eines belegten Werts zu ermitteln.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a function object, &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; features a straightforward and resource-efficient lifecycle. The functor is usually designed as a stateless function object (stateless functor). Therefore, creation requires neither dynamic memory allocations nor complex initialization logic. Instances can be created via the default constructor as standard or directly at the call site as temporary objects (rvalues).&lt;/p&gt;
-&lt;p&gt;Ownership of the passed data is never established: The objects to be hashed are passed to the call operator exclusively via references to const instances. Access ends immediately after computation of the hash value. Because the structure manages no resources of its own, destruction of the functor is also trivial and does not lead to any release of system memory.&lt;/p&gt;
-&lt;p&gt;Regarding concurrency and behavior in multithreading environments, the function object is inherently reentrant. Because no mutable internal state is maintained, multiple threads can use the same functor or separate instances simultaneously. The only prerequisite for thread-safe use is that read access to the passed object &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; and the hash operation of the contained type &lt;code&gt;T&lt;/code&gt; are concurrently safe and that no application-level data races exist.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als Spezialisierung einer Struktur gemäß der Syntax &lt;code&gt;template &amp;lt;typename T&amp;gt; struct hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; fungiert dieser Typ als reguläres Funktionsobjekt. Das Objekt besitzt typischerweise keinen eigenen internen Zustand und unterliegt keinen komplexen Lebenszyklusphasen oder aufwendigen Ressourcenreservierungen. Die Instanziierung erfolgt bedarfsgesteuert, üblicherweise implizit durch den verwaltenden assoziativen Container oder explizit bei der direkten Ausführung eines Hashing-Vorgangs im Anwendungscode.&lt;/p&gt;
+&lt;p&gt;Besitzverhältnisse an den übergebenen Daten werden beim Aufruf nicht begründet, da die Instanz von &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; lediglich als konstante Referenz zur Auswertung herangezogen wird. Nach Abschluss des Funktionsaufrufs oder beim Verlassen des Gültigkeitsbereichs des Containers wird die Instanz von &lt;code&gt;std::hash&lt;/code&gt; trivial zerstört. Interpretation: Das Funktionsobjekt ist zustandslos und dürfte daher seiteneffektfrei und thread-sicher für parallele Hashing-Operationen über mehrere Ausführungskontexte hinweg verwendbar sein, solange der referenzierte Wert nicht zeitgleich modifiziert wird.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical usage path is divided into defining the data structure, populating it with keys and values, and evaluating it during element lookup:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Container instantiation:&lt;/strong&gt; The application developer declares an associative container using &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; as the key, for example &lt;code&gt;std::unordered_map&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;, DataRecord&amp;gt;&lt;/code&gt;. The compiler automatically selects the specialization &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; as the default hash functor.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Inserting elements:&lt;/strong&gt; When inserting elements, the application passes instances of &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt;. These can be engaged instances holding a concrete payload value of type &lt;code&gt;T&lt;/code&gt;, or disengaged instances representing the absence of a value.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Computation of the hash value:&lt;/strong&gt; The container internally invokes the function call operator &lt;code&gt;operator()(const ara::core::Optional&amp;lt;T&amp;gt;&amp;amp;) const&lt;/code&gt;. For an empty object, a fixed predefined hash value is likely returned, whereas for an engaged value, the hash value of the contained type is computed.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bucket determination:&lt;/strong&gt; The returned value of type &lt;code&gt;std::size_t&lt;/code&gt; is mapped by the container to the available bucket indices using modulo or bitmasking operations to determine the position in the internal hash table structure.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Einsatz erfolgt im Rahmen der Verwendung von &lt;code&gt;ara::core::Optional&lt;/code&gt; in Hash-basierten Datenstrukturen. Entwickler binden die Definition ein und deklarieren beispielsweise ein Set oder eine Map, deren Schlüsseltyp &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; entspricht. Bei Einfüge-, Such- oder Löschoperationen ruft der Container selbstständig den Aufrufoperator &lt;code&gt;operator()&lt;/code&gt; der Spezialisierung auf.&lt;/p&gt;
+&lt;p&gt;Bei der Auswertung des Hashwerts wird zwischen dem Vorhandensein und dem Fehlen eines Werts unterschieden. Interpretation: Für ein leeres &lt;code&gt;ara::core::Optional&lt;/code&gt; (ohne Wert) dürfte ein fester, deterministischer Hashwert berechnet werden, während bei vorhandenem Wert vermutlich der Hashwert des enthaltenen Objekts über die entsprechende Hash-Funktion von &lt;code&gt;T&lt;/code&gt; bestimmt wird. Der ermittelte numerische Wert vom Typ &lt;code&gt;std::size_t&lt;/code&gt; wird anschließend an den aufrufenden Container zurückgegeben, um den Speicher-Bucket zu adressieren.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Because &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; reflects the signature and semantics of the C++ standard library, the error model differs from the return patterns typically used in AUTOSAR Adaptive with &lt;code&gt;ara::core::Result&lt;/code&gt; or error codes from &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;. The hash computation returns a pure primitive value and does not signal functional results via error codes.&lt;/p&gt;
-&lt;p&gt;A primary error scenario involves static type checking at compile time: If no valid specialization of &lt;code&gt;std::hash&amp;lt;T&amp;gt;&lt;/code&gt; exists for type &lt;code&gt;T&lt;/code&gt; or if it has been explicitly deleted, compilation fails. It is thus a precondition that type &lt;code&gt;T&lt;/code&gt; satisfies the standard library requirements for hash functions.&lt;/p&gt;
-&lt;p&gt;Interpretation: The function calls of the hashing functor are likely declared as &lt;code&gt;noexcept&lt;/code&gt;, provided that the hash operator of type &lt;code&gt;T&lt;/code&gt; itself does not throw exceptions. If the hash computation for &lt;code&gt;T&lt;/code&gt; throws exceptions, they are propagated to the caller, which however is considered a violation of basic robustness properties in the context of standard hash tables.&lt;/p&gt;
-&lt;p&gt;Another relevant scenario is hash collisions. While these do not represent a program error, poor distribution by the hash algorithm can degrade runtime complexity from O(1) to O(n). Careful tuning of the hash implementation of type &lt;code&gt;T&lt;/code&gt; is therefore essential for overall system performance.&lt;/p&gt;
-&lt;!-- annahmen: 1) Hash-Berechnung für leere Instanzen: Für leere Optional-Objekte dürfte ein fester Hash-Wert verwendet werden – Begründung: Der Payload spezifiziert keinen konkreten Hashing-Algorithmus für leere Zustände. 2) Abhängigkeit von std::hash&lt;T&gt;: Vermutlich erfordert die Template-Spezialisierung eine vollständige Spezialisierung von std::hash&lt;T&gt; – Begründung: Der Payload enthält nur die Syntaxdeklaration ohne Typanforderungen an T. 3) Ausnahmeverhalten: Interpretation: Die Instanziierung und Ausführung dürften noexcept sein, sofern std::hash&lt;T&gt; ausnahmefrei ist – Begründung: Im Payload fehlen Angaben zur Exception-Spezifikation des Aufrufoperators. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on AUTOSAR release R25-11 for the core module.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Auf Ebene der Hash-Berechnung sind regulär keine Fehlerrückgaben über Fehlercodes wie &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; oder dergleichen vorgesehen. Ein Funktionsobjekt für Hashwerte muss deterministisch und zuverlässig arbeiten, um die Integrität der Container-Invarianten zu wahren. Ein Fehlen des Wertes in &lt;code&gt;ara::core::Optional&lt;/code&gt; stellt keinen Fehlerzustand dar, sondern ist ein regulärer Zustand des Objekts, der in einen definierten Hashwert überführt werden muss.&lt;/p&gt;
+&lt;p&gt;Mögliche Kompilierfehler treten auf, falls der Typ &lt;code&gt;T&lt;/code&gt; nicht hashbar ist und keine entsprechende &lt;code&gt;std::hash&amp;lt;T&amp;gt;&lt;/code&gt;-Spezialisierung existiert. Laufzeitfehler können entstehen, falls benutzerdefinierte Hash-Funktionen für den Typ &lt;code&gt;T&lt;/code&gt; Ausnahmen werfen oder undefiniertes Verhalten hervorrufen. Vorbedingung für einen fehlerfreien Aufruf ist die Gültigkeit des referenzierten &lt;code&gt;ara::core::Optional&lt;/code&gt;-Objekts während der Ausführung der Operation.&lt;/p&gt;
+&lt;!-- annahmen: 1) Es wird vorausgesetzt, dass für den Typ T eine gültige std::hash-Spezialisierung existiert. – Begründung: Der Payload enthält keine Member-Requirements, die Abhängigkeit zu std::hash&lt;T&gt; entspricht jedoch den C++-Standardanforderungen generischer Container-Wrapper. 2) Zustandslosigkeit und Thread-Sicherheit des Funktionsobjekts. – Begründung: Das Template besitzt laut Syntax keine Datenmember; die Thread-Sicherheit für nebenläufige Lesezugriffe ist im Payload nicht gesondert dokumentiert. 3) Deterministischer Hashwert für leere Optionals und Weiterleitung bei belegtem Zustand. – Begründung: Der Payload beschreibt die Spezialisierung abstrakt als Hashing-Funktion; das konkrete Verhalten bei leerem Optional entspricht der üblichen Semantik von std::optional. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den strukturellen Metadaten der AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -272,7 +289,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>08eb86f37a30…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2accb8eb3431…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

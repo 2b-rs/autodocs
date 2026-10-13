@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Fr_00014" class="dossier-modal dossier-workbench" data-dossier-sha="fe2a0725b1a62c6f" aria-labelledby="dossier-modal-SWS_Fr_00014-title">
+<dialog id="dossier-modal-SWS_Fr_00014" class="dossier-modal dossier-workbench" data-dossier-sha="1579025c7360dea7" aria-labelledby="dossier-modal-SWS_Fr_00014-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Fr_00014-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Fr_00014)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,211 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,666 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Fr_HaltCommunication'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,29 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="0e21a66d5a7a205a5f2641c537dcb3481d829f6f794f91bd5aa39fea150a3896" data-trace-output="fe2a0725b1a62c6f2ff32a5d079500eb46bf33abb295ace7778905a407ca5f00" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ff4ce9c60f632c21f3c6164d789bbfc3525dc9bfcd21e0b1aa6edded04150d7e" data-trace-output="1579025c7360dea78ef9416b0e159dc8151e34441f33445aa39d543931f7d5a4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Initiiert asynchron das Beenden der Kommunikation eines FlexRay-Controllers über den CHI-Befehl DEFERRED_HALT." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;Fr_HaltCommunication&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;) is used to issue the CC-CHI command &lt;code&gt;'DEFERRED_HALT'&lt;/code&gt; to the addressed FlexRay Communication Controller. It is declared via the header file &lt;code&gt;Fr.h&lt;/code&gt; and has the service ID &lt;code&gt;0x04&lt;/code&gt;. The function execution is &lt;em&gt;Asynchronous&lt;/em&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Fr_HaltCommunication&lt;/code&gt; dient dazu, das Anhalten der Kommunikation an einem FlexRay-Kommunikationscontroller einzuleiten, indem sie den CC-CHI-Befehl &lt;code&gt;'DEFERRED_HALT'&lt;/code&gt; ausführt &lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;.&lt;/p&gt;
+  
+  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Der Aufruf erfolgt asynchron und wird über den Header &lt;code&gt;Fr.h&lt;/code&gt; bereitgestellt (Service-ID &lt;code&gt;0x04&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;&lt;code&gt;Fr_CtrlIdx&lt;/code&gt;&lt;/strong&gt; (Eingangsparameter): Bestimmt den Index des anzusteuernden FlexRay-Kommunikationscontrollers innerhalb des FlexRay-Treibers &lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Rückgabewert&lt;/strong&gt; (&lt;code&gt;Std_ReturnType&lt;/code&gt;): Gibt &lt;code&gt;E_OK&lt;/code&gt; zurück, wenn der Funktionsaufruf erfolgreich abgeschlossen wurde, oder &lt;code&gt;E_NOT_OK&lt;/code&gt;, wenn der Aufruf infolge von Fehlern abgebrochen wurde &lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;p&gt;The following input parameter is expected:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Fr_CtrlIdx&lt;/code&gt; (input parameter of type &lt;code&gt;uint8&lt;/code&gt;): Index of the FlexRay Communication Controller in the context of the FlexRay driver.&lt;/li&gt;
-&lt;/ul&gt;
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;Hinsichtlich des Aufrufkontexts und der Nebenläufigkeit ist &lt;code&gt;Fr_HaltCommunication&lt;/code&gt; nicht reentrant bezüglich desselben Geräts (&lt;code&gt;Non Reentrant for the same device&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;. Für denselben Controller-Index darf folglich kein nebenläufiger oder überlappender Aufruf erfolgen. Aufrufe für unterschiedliche Controller-Instanzen sind hingegen zulässig.&lt;/p&gt;
 
-&lt;p&gt;The call returns a status value of type &lt;code&gt;Std_ReturnType&lt;/code&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The API call was completed successfully.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The API call was aborted due to errors.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Error handling&lt;/h4&gt;
-&lt;p&gt;If an internal error occurs during processing, the function aborts execution and immediately signals this state via the return value &lt;code&gt;E_NOT_OK&lt;/code&gt;. Specific error codes or notifications to the Development Error Tracer (DET) or the Diagnostic Event Manager (DEM) are not reported in the available specification data.&lt;/p&gt;
-
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;The function is &lt;em&gt;Non Reentrant for the same device&lt;/em&gt;. Simultaneous or interrupting calls to &lt;code&gt;Fr_HaltCommunication&lt;/code&gt; with an identical &lt;code&gt;Fr_CtrlIdx&lt;/code&gt; must therefore be avoided at caller level.&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note is based on the AUTOSAR specification R20-11 and was generated automatically.&lt;/p&gt;
+  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Tritt während des Aufrufs ein Fehler auf, bricht die Funktion die Ausführung ab und signalisiert dies über den Rückgabewert &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Fr_00014" href="../../spec/record.html?id=SWS_Fr_00014"&gt;[SWS_Fr_00014]&lt;/a&gt;. Detaillierte Fehlermeldungen sind für diese Funktion im Spezifikationsumfang nicht aufgeführt.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -237,7 +251,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>0e21a66d5a7a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ff4ce9c60f63…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -375,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fr_00014","k":"function","d":"AUTOSAR","t":"","n":"Fr_HaltCommunication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/94e93d62f47c8d00.json?v=7ad6c4d7" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fr_00014","k":"function","d":"AUTOSAR","t":"","n":"Fr_HaltCommunication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/94e93d62f47c8d00.json?v=78af1cfb" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

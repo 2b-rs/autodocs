@@ -915,12 +915,14 @@
       var rel = currentRelease(), all = scope.querySelectorAll(".ai-guide-release-variant");
       var v = Array.prototype.filter.call(all, function (x) { return rel && words(x, "data-applicable-releases").indexOf(rel) >= 0; })[0] || all[0] || scope;
       var ai = v.matches && v.matches(".ai") ? v : (v.querySelector(".ai") || v);
-      var c = ai.cloneNode(true);
+      // Guides mit Ausführlichkeitsstufen: Kennzahlen der ausführlichen Fassung (Stufe 4)
+      var body = (ai.querySelector && ai.querySelector(':scope > .ai-level[data-ai-level="4"]')) || ai;
+      var c = body.cloneNode(true);
       c.querySelectorAll(".ai-trace-badge, .ai-note, .ai-commentary-actions, script, style, svg").forEach(function (x) { x.remove(); });
       var txt = c.textContent, nw = (txt.match(/\S+/g) || []).length;
       if (/[\u3040-\u9fff\uac00-\ud7af]/.test(txt)) nw = Math.max(nw, txt.replace(/\s/g, "").length / 2.5);
       var refs = {};
-      ai.querySelectorAll(".spec-record-ref[data-req]").forEach(function (a) { refs[a.getAttribute("data-req")] = 1; });
+      body.querySelectorAll(".spec-record-ref[data-req]").forEach(function (a) { refs[a.getAttribute("data-req")] = 1; });
       var rev = ai.querySelector(".ai-review-state"), parts = [];
       var revState = ai.getAttribute("data-trace-review") || "";
       // "ungeprüft" weglassen (Nutzerwunsch: Ungeprüft wird in der Titelzeile nicht benötigt)
@@ -940,10 +942,10 @@
       var asof = v.getAttribute && v.getAttribute("data-asof-release");
       if (asof) parts.push('<span class="nsx-st nsx-st-asof">' + esc(asof) + "</span>");
       function st(k, n) { if (n) parts.push('<span class="nsx-st nsx-st-' + k + '">' + esc(labels[k] || "") + " <b>" + n + "</b></span>"); }
-      st("secs", ai.querySelectorAll("h4, h3").length);
+      st("secs", body.querySelectorAll("h4, h3").length);
       if (nw) parts.push('<span class="nsx-st nsx-st-read">' + esc(labels.read || "") + " <b>≈" + Math.max(1, Math.round(nw / 200)) + " min</b></span>");
       st("refs", Object.keys(refs).length);
-      st("diag", ai.querySelectorAll(".diagram").length);
+      st("diag", body.querySelectorAll(".diagram").length);
 
       var dosBtn = scope.querySelector(".dossier-open-link, .ai-badge-dossier-btn");
       var dossierHtml = "";
@@ -2168,12 +2170,23 @@
     }
     // Titelzeile der Detailansicht: Art (in API-Farbe), voll qualifizierter Name als Link
     // auf die kanonische Sicht (Klassen- bzw. Record-Seite), eigene SWS-ID; kein Upstream.
+    // Eigene Kompaktansicht eines Eintrags: Klassen- bzw. Dienstseite, auf Clusterseiten die Seite
+    // des Teils mit dem Eintragsanker (#nsx-e-…), sonst der Eintragsanker dieser Seite
+    function ownHref(name) {
+      var r = rows[name];
+      if (!r) return "";
+      if (isPageRow(r)) return r.getAttribute("data-href");
+      var pg = r.getAttribute("data-page");
+      return (pg ? pg : "") + "#" + r.id;
+    }
     function setTitle(name, info) {
       if (!detTitle) return;
       var r = rows[name];
       info = info || {};
       var k = info.kind || (r.querySelector(".nsx-nm > .kind") || {}).textContent || "";
-      var href = info.href || "";
+      // Name in der Titelzeile führt zur eigenen Kompaktansicht des Elements (Wunsch des Admins
+      // vom 2026-10-13); der Versions-Explorer bleibt über die SWS-ID erreichbar
+      var href = ownHref(name) || info.href || "";
       var qn = info.qname || name;
       detTitle.innerHTML = (k ? '<span class="kind">' + esc(k.trim()) + "</span> " : "")
         + (href ? '<a class="nsx-detname" href="' + esc(href) + '">' + esc(qn) + "</a>" : '<span class="nsx-detname">' + esc(qn) + "</span>")
@@ -2264,7 +2277,11 @@
       dTab.type = "button";
       dTab.className = "nsx-tab nsx-dtab";
       dTab.setAttribute("aria-expanded", "false");
-      dTab.innerHTML = '<span class="nsx-tab-h">' + label + '</span><span class="nsx-stats">' + statsHtml(statsRoot || dPanel) + "</span>";
+      // Einzeiler des Guides (fold.js, Ausführlichkeitsstufen) auch im eingeklappten Reiter
+      var one = window.autodocsGuideLevels ? window.autodocsGuideLevels.oneliner(statsRoot || dPanel) : "";
+      dTab.innerHTML = '<span class="nsx-tab-h">' + label + '</span>'
+        + (one ? '<span class="ai-oneliner" title="' + esc(one) + '">' + esc(one) + "</span>" : "")
+        + '<span class="nsx-stats">' + statsHtml(statsRoot || dPanel) + "</span>";
       detTitle.parentNode.insertBefore(dTab, detTitle.nextSibling);
     }
     function clearDetailAi() {
@@ -2444,6 +2461,10 @@
     function select(name, opts) {
       if (!rows[name]) return;
       opts = opts || {};
+      if (histPick && histPick.name !== name) {   // angeklickte Zelle gilt nur für ihr Element
+        histPick = null;
+        root.querySelectorAll(".nsx-hc.sel").forEach(function (x) { x.classList.remove("sel"); });
+      }
       if (opts.from && popFold && popFold.contains(opts.from)) setPop(null);   // Auswahl im Panel schließt es
       var origin = opts.origin || "side", was = detailVisible();
       var jump = !!(opts.ai || opts.anchor);
@@ -2581,7 +2602,11 @@
       }
       if (id.indexOf("nsx-e-") === 0) {
         var row = document.getElementById(id);
-        if (row && rows[row.getAttribute("data-n")]) { ev.preventDefault(); select(row.getAttribute("data-n"), { from: link }); }
+        if (row && rows[row.getAttribute("data-n")]) {
+          ev.preventDefault();
+          if (link.classList.contains("nsx-detname") && row.getAttribute("data-n") === selected) toDetail();
+          else select(row.getAttribute("data-n"), { from: link });
+        }
         return;
       }
       if (recOwner[id]) {
@@ -2654,6 +2679,42 @@
       });
       aside.addEventListener("mouseleave", function () { peek(null); });
     }
+    // Doppelklick auf ein Element im Inspektor öffnet seine Ansicht (Wunsch des Admins vom
+    // 2026-10-13): Einträge dieser Seite wie die Auswahl in der Gliederung, der Kopf des
+    // Inspektors die eigene Kompaktansicht (auf Clusterseiten die Seite des Teils). Namen ohne
+    // Verweis (Listen, Signaturen) zählen, wenn sie ein Eintrag dieser Seite sind. Verweise auf
+    // andere Seiten führen schon beim einfachen Klick dorthin (Record-Anker wählen dort aus).
+    // Der erste Klick wählt wie bisher aus und baut den Inspektor neu; gemerkt wird, worauf er fiel
+    var insPick = null;
+    if (relBox) relBox.addEventListener("click", function (ev) {
+      // Zweiter Klick eines Doppelklicks: fällt auf den neu aufgebauten Inspektor und darf dort
+      // nichts anderes auswählen; der Doppelklick gilt dem zuerst getroffenen Element
+      if (ev.detail >= 2 && insPick && Date.now() - insPick.at < 800) { ev.preventDefault(); ev.stopPropagation(); return; }
+      var j = ev.target.closest && ev.target.closest("[data-jump], a[data-n]");
+      insPick = j ? { n: j.getAttribute("data-jump") || j.getAttribute("data-n"), own: !!j.closest(".nsx-rel > .t"), at: Date.now() } : null;
+    }, true);
+    if (relBox) relBox.addEventListener("dblclick", function (ev) {
+      var t = ev.target;
+      if (!t || !t.closest) return;
+      var fresh = insPick && Date.now() - insPick.at < 800 ? insPick : null;
+      var j = fresh ? null : t.closest("[data-jump], a[data-n]");
+      var n = fresh ? fresh.n : j ? (j.getAttribute("data-jump") || j.getAttribute("data-n")) : "";
+      var own = fresh ? fresh.own : !!(j && j.closest(".nsx-rel > .t"));
+      if (!fresh && !j) {
+        var w = window.getSelection ? String(getSelection()).trim() : "";
+        n = /^[A-Za-z_~][\w~]*$/.test(w) ? w : "";
+      }
+      if (!n || !rows[n]) return;
+      ev.preventDefault();
+      clearSelection();
+      var href = ownHref(n);
+      if (own && href && href.charAt(0) !== "#") {
+        location.assign(new URL(href, location.href).href);   // anderes Verzeichnis: vollständig laden
+        return;
+      }
+      if (n === selected) toDetail();
+      else select(n, { origin: "nav" });
+    });
     if (detFold) {
       addButton(detFold, "nsx-closebtn", ICON_CLOSE, labels.close);
       detFold.hidden = true;
@@ -2706,14 +2767,14 @@
       add: "neu", chg: "geändert", pre: "unverändert", del: "entfallen", none: "nicht enthalten",
       changes: "Änderungen", same: "Keine inhaltliche Änderung", first: "Erstmals in", gone: "Entfallen in",
       nodata: "Keine Versionsdaten verfügbar.", loading: "Versionsdaten werden geladen …", text: "Text",
-      notext: "Wortlaut in diesem Release nicht erfasst", pick: "Zelle: mit dem Vorgänger vergleichen · Umschalt+Zelle: zweites Release",
-      from: "Von", to: "Bis", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut"
+      notext: "Wortlaut in diesem Release nicht erfasst", pick: "Zelle zeigen oder anklicken: gegen das gewählte Release vergleichen · Release-Kopf anklicken: Release wählen",
+      selrel: "Release wählen", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut"
     } : {
       add: "added", chg: "changed", pre: "unchanged", del: "removed", none: "not included",
       changes: "Changes", same: "No change in content", first: "First in", gone: "Removed in",
       nodata: "No version data available.", loading: "Loading version data …", text: "Text",
-      notext: "Wording not captured for this release", pick: "Cell: compare with predecessor · Shift+cell: second release",
-      from: "From", to: "To", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording"
+      notext: "Wording not captured for this release", pick: "Hover or click a cell: compare with the selected release · Click a release header: select the release",
+      selrel: "Select release", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording"
     };
     function histKey(r) {
       var m = /^R(\d+)-(\d+)/.exec(r || "");
@@ -2750,11 +2811,11 @@
         if (!head) {
           head = document.createElement("div");
           head.className = "nsx-hhead";
-          head.setAttribute("aria-hidden", "true");
           ol.insertBefore(head, ol.firstChild);
         }
         head.innerHTML = '<span class="nsx-hhead-n">' + esc(HL.elem) + '</span><span class="nsx-hcells">' + histCols.map(function (c) {
-          return '<span class="nsx-hcol' + (c === cur ? " cur" : "") + '" data-rel="' + esc(c) + '" title="' + esc(c) + '">' + esc(shortRel(c)) + "</span>";
+          return '<span class="nsx-hcol' + (c === cur ? " cur" : "") + '" role="button" tabindex="0" aria-pressed="' + (c === cur) + '" data-rel="' + esc(c) +
+            '" title="' + esc(HL.selrel + ": " + c) + '" aria-label="' + esc(HL.selrel + ": " + c) + '">' + esc(shortRel(c)) + "</span>";
         }).join("") + "</span>";
         ol.style.setProperty("--nsx-hcols", histCols.length);
       }
@@ -2764,7 +2825,8 @@
         if (!r) return;
         var html = histCols.map(function (c) {
           var stt = cellState(r, c);
-          return '<span class="nsx-hc' + (stt ? " nsx-hc-" + stt : "") + (c === cur ? " cur" : "") + '" role="button" tabindex="-1" data-rel="' + esc(c) +
+          var picked = histPick && histPick.name === a.getAttribute("data-n") && histPick.rel === c;
+          return '<span class="nsx-hc' + (stt ? " nsx-hc-" + stt : "") + (c === cur ? " cur" : "") + (picked ? " sel" : "") + '" role="button" tabindex="-1" data-rel="' + esc(c) +
             '" title="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '"></span>';
         }).join("");
         a.insertAdjacentHTML("beforeend", '<span class="nsx-hcells">' + html + "</span>");
@@ -2775,21 +2837,29 @@
       });
     }
 
-    // Vergleichspaar je Element: {name, from, to}; from fehlt beim ersten Auftreten
-    var histPair = null;
+    // Vergleichspaar je Element {name, from, to} (from fehlt beim ersten Auftreten) folgt aus der
+    // Auswahl in der Gliederung: gewähltes Release (Release-Kopf bzw. Release-Kontext, sonst das
+    // neueste) gegen die angeklickte Zelle (histPick) oder vorübergehend die überfahrene (hoverPair).
+    // Ohne Zelle bzw. bei der Zelle des gewählten Releases: gegen dessen Vorgänger.
+    var histPick = null, hoverPair = null;
     function predecessor(r, rel) {
       var rs = entryRels(r).filter(function (x) { return cellState(r, x) && cellState(r, x) !== "del"; }), i = rs.indexOf(rel);
       return i > 0 ? rs[i - 1] : (i < 0 ? rs.filter(function (x) { return histKey(x) < histKey(rel); }).pop() || null : null);
     }
-    function defaultPair(name) {
-      var r = rows[name], cur = currentRelease(), rs = entryRels(r);
-      var to = cur && rs.indexOf(cur) >= 0 ? cur : (words(r, "data-changes").sort(bySort).pop() || rs[rs.length - 1] || null);
-      return { name: name, from: to ? predecessor(r, to) : null, to: to };
+    function selRel() { return currentRelease() || latestRel(); }
+    function pairWith(name, cell) {
+      var r = rows[name], s = selRel(), rs = entryRels(r).filter(function (x) { return cellState(r, x); });
+      // Bezug: das gewählte Release, sonst das letzte Release des Elements davor (bzw. sein letztes)
+      var base = rs.indexOf(s) >= 0 ? s : (rs.filter(function (x) { return histKey(x) <= histKey(s); }).pop() || rs[rs.length - 1] || null);
+      if (!cell || cell === base || !base) return { name: name, from: base ? predecessor(r, base) : null, to: base };
+      var two = [cell, base].sort(bySort);
+      return { name: name, from: two[0], to: two[1] };
     }
     function pairFor(name) {
-      if (!histPair || histPair.name !== name) histPair = defaultPair(name);
-      return histPair;
+      if (hoverPair && hoverPair.name === name) return hoverPair;
+      return pairWith(name, histPick && histPick.name === name ? histPick.rel : null);
     }
+    function samePair(a, b) { return !!a && !!b && a.name === b.name && a.from === b.from && a.to === b.to; }
     function histModeChanged(on) {
       root.classList.toggle("nsx-hist", !!on);
       if (typeof placePop === "function") placePop();
@@ -2896,8 +2966,8 @@
       return ids;
     }
     // Ergebnis je Record für das aktuelle Paar: {id, state: same|chg|add|del|none|notext, fields}
-    function histCompare(name) {
-      var pr = pairFor(name), ids = histRecIds(name);
+    function histCompare(name, pr) {
+      var ids = histRecIds(name);
       return Promise.all([textDiffLib()].concat(ids.map(versionsOf))).then(function (res) {
         var ds = res.slice(1);
         return ids.map(function (id, k) {
@@ -2912,27 +2982,24 @@
         });
       });
     }
-    function relOptions(r, sel) {
-      return entryRels(r).filter(function (x) { return cellState(r, x); }).map(function (x) {
-        return '<option value="' + esc(x) + '"' + (x === sel ? " selected" : "") + ">" + esc(x) + "</option>";
-      }).join("");
-    }
-    // Inspektor: Abschnitt „Änderungen“ oben (nur ausgewähltes Element, nur im Historie-Modus)
+    // Inspektor: Abschnitt „Änderungen“ oben (ausgewähltes oder in der Tabelle überfahrenes Element,
+    // nur im Historie-Modus). Welche Fassungen verglichen werden, folgt aus der Gliederung.
     function histInspector(name) {
-      if (!histOn() || name !== selected || !relBox || relBox.getAttribute("data-owner") !== name) return;
+      var hov = hoverPair && hoverPair.name === name;
+      if (!histOn() || (name !== selected && !hov) || !relBox || relBox.getAttribute("data-owner") !== name) return;
       var old = relBox.querySelector(":scope > .nsx-hist-is");
       if (old) old.remove();
       var r = rows[name], pr = pairFor(name);
       var sec = document.createElement("section");
       sec.className = "nsx-is nsx-hist-is";
-      sec.innerHTML = "<h4>" + esc(HL.changes) + '</h4><div class="nsx-hpair"><label>' + esc(HL.from) + ' <select data-h="from"><option value="">–</option>' +
-        relOptions(r, pr.from) + '</select></label> <span aria-hidden="true">→</span> <label>' + esc(HL.to) + ' <select data-h="to">' +
-        relOptions(r, pr.to) + '</select></label></div><p class="nsx-hnote">' + esc(HL.pick) + '</p><div class="nsx-hres"><p class="nsx-hint">' +
-        esc(HL.loading) + "</p></div>";
+      sec.classList.toggle("nsx-hist-hover", hov);
+      sec.innerHTML = "<h4>" + esc(HL.changes) + '</h4><p class="nsx-hpair" data-from="' + esc(pr.from || "") + '" data-to="' + esc(pr.to || "") + '">' +
+        (pr.from ? "<code>" + esc(pr.from) + '</code> <span aria-hidden="true">→</span> ' : "") + "<code>" + esc(pr.to || "–") + "</code></p>" +
+        '<p class="nsx-hnote">' + esc(HL.pick) + '</p><div class="nsx-hres"><p class="nsx-hint">' + esc(HL.loading) + "</p></div>";
       var k = relBox.querySelector(":scope > .k");
       if (k) k.insertAdjacentElement("afterend", sec); else relBox.insertBefore(sec, relBox.firstChild);
-      histCompare(name).then(function (list) {
-        if (!sec.isConnected || histPair !== pr) return;
+      histCompare(name, pr).then(function (list) {
+        if (!sec.isConnected) return;
         var box = sec.querySelector(".nsx-hres"), html = "";
         if (!list.length || list.every(function (x) { return x.state === "none"; })) {
           box.innerHTML = '<p class="nsx-hint">' + esc(HL.nodata) + "</p>";
@@ -2982,9 +3049,11 @@
     function histDetail(name) {
       clearHistMarks();
       if (!histOn() || name !== selected || !detBody) return;
-      var pr = pairFor(name), my = token;
-      histCompare(name).then(function (list) {
-        if (my !== token || histPair !== pr || !histOn()) return;
+      var pr = hoverPair && hoverPair.name === name ? pairWith(name, histPick && histPick.name === name ? histPick.rel : null) : pairFor(name), my = token;
+      histCompare(name, pr).then(function (list) {
+        if (my !== token || !histOn()) return;
+        var now = pairWith(name, histPick && histPick.name === name ? histPick.rel : null);
+        if (!samePair(now, pr)) return;
         clearHistMarks();
         if (!pr.from && entryRels(rows[name]).filter(function (x) { return cellState(rows[name], x); }).length <= 1) return;
         list.forEach(function (x) {
@@ -3023,15 +3092,51 @@
     }
     renderHistory();
     window.addEventListener("hashchange", renderHistory);
-    if (relBox) relBox.addEventListener("change", function (ev) {
-      var sel = ev.target.closest && ev.target.closest(".nsx-hist-is select");
-      if (!sel || !selected) return;
-      var pr = pairFor(selected), v = sel.value || null;
-      histPair = sel.getAttribute("data-h") === "from" ? { name: selected, from: v, to: pr.to } : { name: selected, from: pr.from, to: v };
-      if (histPair.from && histPair.to && bySort(histPair.from, histPair.to) > 0) histPair = { name: selected, from: histPair.to, to: histPair.from };
+    // Gewähltes Release geändert (Release-Kopf, Release-Wahl, Anker): Vergleich neu
+    window.addEventListener("hashchange", function () {
+      if (!histOn() || !selected) return;
       showRelations(selected);
       histDetail(selected);
     });
+    function selectRelease(rel) {
+      if (!rel || rel === currentRelease()) return;
+      var hp = hashParts(), rest = hp.params.filter(function (x) { return x.split("=")[0] !== "release"; });
+      rest.unshift("release=" + rel);
+      location.hash = (hp.target ? [hp.target] : []).concat(rest).join("&");
+    }
+    // Vorschau beim Überfahren einer Zelle: Unterschied des Elements zwischen diesem und dem
+    // gewählten Release im Inspektor; beim Verlassen wieder der gewählte Vergleich
+    var hoverTimer = 0;
+    function endHover() {
+      clearTimeout(hoverTimer);
+      if (!hoverPair) return;
+      var was = hoverPair.name;
+      hoverPair = null;
+      if (selected) showRelations(selected);
+      else if (relBox && relBox.getAttribute("data-owner") === was) showRelations(was);
+    }
+    if (outline) {
+      outline.addEventListener("mouseover", function (ev) {
+        if (!histOn()) return;
+        var c = ev.target.closest && ev.target.closest(".nsx-hc"), a = c && c.closest("a.nsx-oi"), n = a && a.getAttribute("data-n");
+        if (!c || !n || !rows[n] || !cellState(rows[n], c.getAttribute("data-rel"))) {
+          if (hoverPair) { clearTimeout(hoverTimer); hoverTimer = setTimeout(endHover, 120); }
+          return;
+        }
+        clearTimeout(hoverTimer);
+        var pr = pairWith(n, c.getAttribute("data-rel"));
+        if (samePair(pr, hoverPair)) return;
+        hoverPair = pr;
+        showRelations(n);
+      });
+      outline.addEventListener("mouseleave", endHover);
+      outline.addEventListener("keydown", function (ev) {
+        var hc = ev.target.closest && ev.target.closest(".nsx-hcol");
+        if (!hc || (ev.key !== "Enter" && ev.key !== " ")) return;
+        ev.preventDefault();
+        selectRelease(hc.getAttribute("data-rel"));
+      });
+    }
     histModeChanged(!!outline && !!outline.querySelector('.nsx-by button[data-by="since"][aria-pressed="true"]'));
     root.addEventListener("mouseover", function (ev) {
       var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");
@@ -3044,15 +3149,20 @@
         ev.stopPropagation();
         var ha = hc.closest("a.nsx-oi"), hn = ha && ha.getAttribute("data-n"), hrel = hc.getAttribute("data-rel");
         if (!hn || !rows[hn] || !cellState(rows[hn], hrel)) return;
-        var prev = histPair && histPair.name === hn ? histPair : null;
-        if (ev.shiftKey && prev && prev.to && prev.to !== hrel) {
-          var two = [prev.to, hrel].sort(bySort);
-          histPair = { name: hn, from: two[0], to: two[1] };
-        } else histPair = { name: hn, from: predecessor(rows[hn], hrel), to: hrel };
+        histPick = { name: hn, rel: hrel };
+        hoverPair = null;
+        clearTimeout(hoverTimer);
         root.querySelectorAll(".nsx-hc.sel").forEach(function (x) { x.classList.remove("sel"); });
         hc.classList.add("sel");
         if (hn === selected) { showRelations(hn); histDetail(hn); }
         else select(hn, { origin: "side", from: ha });
+        return;
+      }
+      var hcol = ev.target.closest && ev.target.closest(".nsx-hcol");
+      if (hcol) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        selectRelease(hcol.getAttribute("data-rel"));
         return;
       }
       var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");

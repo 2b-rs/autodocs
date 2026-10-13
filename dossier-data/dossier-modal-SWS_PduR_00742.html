@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_PduR_00742" class="dossier-modal dossier-workbench" data-dossier-sha="925f910d530c2789" aria-labelledby="dossier-modal-SWS_PduR_00742-title">
+<dialog id="dossier-modal-SWS_PduR_00742" class="dossier-modal dossier-workbench" data-dossier-sha="36adb72cee0a8a1f" aria-labelledby="dossier-modal-SWS_PduR_00742-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_PduR_00742-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_PduR_00742)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,146 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,601 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'PduR_StateType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,16 +198,18 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d156b5ee4ccc2ee70ec917094cd2ebbf5c3dd6bb97860b720ae68bf33d1b0e5b" data-trace-output="925f910d530c278970acc1c3a8cb5df417f0e6f9886fda2ab75f64b73f96613c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="9763b14fa079f3cd142c819ee110941abcab7996b0d96f2e8fe463a23fb2f679" data-trace-output="36adb72cee0a8a1f1239f4509c1d218672bf9c1521ba368222d3819a40bd8066" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Betriebszustände des PDU-Routers für den uninitialisierten und erfolgreich initialisierten Zustand." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The enumeration type &lt;code&gt;PduR_StateType&lt;/code&gt; describes the states of the PDU Router (&lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt;). It is available via the header &lt;code&gt;PduR.h&lt;/code&gt; and defines the fundamental lifecycle of the module.&lt;/p&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_PduR_00324" href="../../spec/record.html?id=SWS_PduR_00324"&gt;[SWS_PduR_00324]&lt;/a&gt;, the PDU Router module consists of exactly two states, which are represented by the values of the type:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;PDUR_UNINIT&lt;/code&gt;: The PDU Router is not initialized (&lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PduR_00324" href="../../spec/record.html?id=SWS_PduR_00324"&gt;[SWS_PduR_00324]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;PDUR_ONLINE&lt;/code&gt;: The PDU Router was successfully initialized (&lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PduR_00324" href="../../spec/record.html?id=SWS_PduR_00324"&gt;[SWS_PduR_00324]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;In interaction, this type serves as the state basis for the PDU Router, where the transition to &lt;code&gt;PDUR_ONLINE&lt;/code&gt; indicates the successful completion of module initialization, while &lt;code&gt;PDUR_UNINIT&lt;/code&gt; represents the state before or after leaving operational mode.&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI on the basis of specification metadata for AUTOSAR Classic Release R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Enumerationstyp &lt;code&gt;PduR_StateType&lt;/code&gt; spezifiziert gemäß &lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt; die Zustände des PDU-Routers. Der Datentyp wird über die Header-Datei &lt;code&gt;PduR.h&lt;/code&gt; zur Verfügung gestellt und dient im PDU-Router als formale typisierte Grundlage zur Repräsentation des jeweiligen Initialisierungszustands innerhalb des Moduls sowie für aufrufende Komponenten.&lt;/p&gt;
+&lt;p&gt;Gemäß der Anforderung &lt;a class="spec-record-ref" data-req="SWS_PduR_00324" href="../../spec/record.html?id=SWS_PduR_00324"&gt;[SWS_PduR_00324]&lt;/a&gt; besteht das PDU-Router-Modul aus genau zwei Betriebszuständen, die durch die Enumerationswerte von &lt;code&gt;PduR_StateType&lt;/code&gt; festgelegt werden. Der nach &lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt; definierte Wertebereich umfasst folgende Werte:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;PDUR_UNINIT&lt;/code&gt;: Kennzeichnet den Zustand, in dem der PDU-Router nicht initialisiert ist (&lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PDUR_ONLINE&lt;/code&gt;: Signalisiert, dass der PDU-Router erfolgreich initialisiert wurde und betriebsbereit ist (&lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Im Rahmen des Zusammenspiels der Spezifikationsanforderungen fungiert &lt;code&gt;PduR_StateType&lt;/code&gt; als verbindliche Festlegung für das interne und externe Zustandsmodell des PDU-Routers (&lt;a class="spec-record-ref" data-req="SWS_PduR_00324" href="../../spec/record.html?id=SWS_PduR_00324"&gt;[SWS_PduR_00324]&lt;/a&gt;). Da der Wertebereich laut &lt;a class="spec-record-ref" data-req="SWS_PduR_00742" href="../../spec/record.html?id=SWS_PduR_00742"&gt;[SWS_PduR_00742]&lt;/a&gt; ausschließlich auf &lt;code&gt;PDUR_UNINIT&lt;/code&gt; und &lt;code&gt;PDUR_ONLINE&lt;/code&gt; beschränkt ist, unterscheidet die Spezifikation hier strikt zwischen dem uninitialisierten Ausgangszustand und dem Zustand nach erfolgreicher Initialisierung. Zusätzliche Zwischenstufen, Teilbetriebsmodi oder spezifische Fehlerzustände sind im Wertebereich von &lt;code&gt;PduR_StateType&lt;/code&gt; nicht vorgesehen.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Automatisch generierter Nutzungshinweis auf Basis der AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -229,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d156b5ee4ccc…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>9763b14fa079…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 11 <span class="dossier-meta-sub">(11 neu · 5 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 11 Belege dazugekommen (5 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(12 neu · 5 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 12 Belege dazugekommen (5 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -266,8 +286,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">12</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">14</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">13</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -304,7 +324,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 11 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 12 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -367,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PduR_00742","k":"type","d":"AUTOSAR","t":"","n":"PduR_StateType"}],"inbound":[{"i":"SWS_PduR_00324","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PduR_00324].","n":"SWS_PduR_00324"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/7c3beb79daf351e6.json?v=7d0136c2" data-total="11" data-new="11" data-figures="5" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PduR_00742","k":"type","d":"AUTOSAR","t":"","n":"PduR_StateType"}],"inbound":[{"i":"SWS_PduR_00324","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_PduR_00324].","n":"SWS_PduR_00324"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/7c3beb79daf351e6.json?v=f3d15bd5" data-total="12" data-new="12" data-figures="5" data-used="0"></script></dialog>

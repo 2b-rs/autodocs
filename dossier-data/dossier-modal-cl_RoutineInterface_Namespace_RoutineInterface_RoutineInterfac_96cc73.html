@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73" class="dossier-modal dossier-workbench" data-dossier-sha="82211226224441fe" aria-labelledby="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73-title">
+<dialog id="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73" class="dossier-modal dossier-workbench" data-dossier-sha="bab35e5ed6b82641" aria-labelledby="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,622 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,144 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für '&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface9&gt;StopOutput' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_96cc73",
@@ -203,37 +222,36 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5744f7a43f9390e3d1e6c9e04e8babedbb2dc8b312d8b7041405140cf0d93115" data-trace-output="82211226224441fef4ef9e6d311a60b631df98c9f4ca4ca86070ada949b2eb7d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="ebb98a15e8c2f952e5e84652fa2de2bc8a5119da59597da848478552e822bab0" data-trace-output="bab35e5ed6b8264195215e9c902841deb864950ecc146d902dd4d05672e7b1c7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt die Ausgabeargumente beim Anhalten einer Diagnose-Routine zur gebündelten Rückgabe der Ergebnisdaten." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The data structure &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; is part of the module &lt;code&gt;diag&lt;/code&gt; within the AUTOSAR Adaptive Platform in release R25-11. According to the model specification, this type acts as a structured data container that bundles the output arguments for stopping a diagnostic routine (&lt;em&gt;Structure wrapping the out arguments for a Stop&lt;/em&gt;).&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt die Ausgabeargumente beim Anhalten einer Diagnose-Routine zur gebündelten Rückgabe der Ergebnisdaten.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; kapselt die Ausgabeargumente für das Stoppen einer Diagnose-Routine im Adaptive-Modul &lt;code&gt;diag&lt;/code&gt;. Sie wird bei der Abarbeitung eines Stop-Befehls erzeugt, um die resultierenden Daten strukturiert an das Diagnosesystem zurückzuliefern. Als reine Datenstruktur besitzt sie keine eigenständige Zustandslogik und wird nach der Übertragung wieder verworfen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; ist Teil des Diagnosemoduls (&lt;code&gt;diag&lt;/code&gt;) der AUTOSAR Adaptive Platform im Release R25-11. Gemäß der Beschreibung dient sie als Datenstruktur, welche die Ausgabeargumente für eine Stop-Operation kapselt (&lt;em&gt;„Structure wrapping the out arguments for a Stop“&lt;/em&gt;). Im Rahmen der Diagnose-Kommunikation für Routinensteuerung wird diese Struktur vermutlich verwendet, um die von einer Routine beim Anhalten zurückgelieferten Ergebnisdaten gebündelt an den Aufrufer oder das Diagnosesystem zurückzugeben.&lt;/p&gt;
 
-&lt;p&gt;In vehicle-related diagnostic communication, routines are typically started, monitored, and selectively stopped via defined diagnostic requests. In addition to potential input data, the interface of a diagnostic routine defines the output data for stopping that must be transmitted back to the requesting diagnostic entity after execution of the stop functionality. At this point, &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; assumes the role of a standardized output type. Interpretation: The structure presumably serves as a data transfer object (Data Transfer Object) that aggregates the model-specifically generated output parameters of the stop operation and provides them to the Adaptive Platform diagnostic framework in typed C++ form.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als Datenstruktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; einen einfachen Wertobjekt-Lebenszyklus. Sie wird typischerweise innerhalb der Implementierung einer Diagnose-Routine instanziiert, wenn ein Stop-Kommando abgearbeitet wird. Die Ausgabedaten werden in den Elementen der Struktur abgelegt, woraufhin die Instanz per Rückgabewert oder asynchron über ein Future an das Diagnose-Framework übergeben wird. Nach der Übertragung oder Weiterverarbeitung der enthaltenen Argumente wird die Instanz wieder zerstört. Eine komplexe interne Zustandsverwaltung oder ein eigenständiger Lebenszyklus über mehrere Aufrufe hinweg existiert für diesen reinen Datenträger aller Voraussicht nach nicht.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a pure data structure (&lt;code&gt;struct&lt;/code&gt;), &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; has a simple lifetime oriented toward standard calling conventions. It serves solely to encapsulate result values and has no internal state management of its own.&lt;/p&gt;
-
-&lt;p&gt;Interpretation: Instantiation of the structure presumably takes place directly by the implementing application logic as soon as the command to stop the diagnostic routine has been successfully executed. In doing so, the object is created in the local context and populated with the determined result values.&lt;/p&gt;
-
-&lt;p&gt;Since it is a pure value type, the structure is passed to the diagnostic framework after creation. Following conversion or serialization of the contained fields into the diagnostic response protocol, the lifetime of the instance ends and the reserved resources are automatically released. Concurrent accesses generally do not take place at the structure level, as each termination operation of a routine creates and processes its own isolated output object.&lt;/p&gt;
-
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical usage path of &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; proceeds within the scope of processing a diagnostic request to stop a diagnostic routine:&lt;/p&gt;
-
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Ein typischer Nutzungspfad umfasst die folgenden Schritte:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Request reception:&lt;/strong&gt; The module &lt;code&gt;diag&lt;/code&gt; receives the request to stop the active diagnostic routine and forwards it to the registered software component.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Execution of routine logic:&lt;/strong&gt; The application-specific logic performs the necessary actions to terminate routine operation in a controlled manner and captures the resulting output data.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Creation and population:&lt;/strong&gt; The application instantiates &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; and sets the determined return values in the member variables provided for this purpose. Interpretation: The structure likely has system-specifically exactly those attributes that were declared in the interface data model for the output parameters of the stop service.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Result transfer:&lt;/strong&gt; The populated structure is passed to the diagnostic runtime environment as the result of the operation.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Response generation:&lt;/strong&gt; The framework converts the data into the positive diagnostic response and sends the response message to the diagnostic tester.&lt;/li&gt;
+&lt;li&gt;Empfang einer Aufforderung zum Stoppen einer Routine durch den Diagnose-Service.&lt;/li&gt;
+&lt;li&gt;Erzeugung einer Instanz von &lt;code&gt;&amp;lt;RoutineInterface9&amp;gt;StopOutput&lt;/code&gt; durch die Routinen-Implementierung.&lt;/li&gt;
+&lt;li&gt;Befüllen der strukturierten Ausgabefelder mit den aktuellen Ergebnis- und Statusdaten der beendeten Routine.&lt;/li&gt;
+&lt;li&gt;Rückgabe der Struktur an den Aufrufer, wo die enthaltenen Ausgabeargumente interpretiert und in die entsprechende Diagnoseantwort eingepackt werden.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Through this separation of pure data storage and protocol processing, the diagnostic application interacts exclusively via a type-safe C++ interface.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Da es sich um eine passive Ausgabestruktur handelt, löst der Typ selbst vermutlich keine Ausnahmen aus. Schlägt das Stoppen einer Routine fachlich fehl oder treten ungültige Zustände auf, dürfte dies nicht über die Werte dieser Struktur allein, sondern über den zugehörigen Rückgabekanal (beispielsweise über Fehlercodes eines Result-Typs) signalisiert werden. Vorbedingung für die sinnvolle Verwendung ist die erfolgreiche oder zumindest definierte Ausführung der Stop-Aktion, sodass die Ausgabefelder mit validen Daten befüllt werden können.&lt;/p&gt;
 
-&lt;p class="ai-note"&gt;This guide is based on the formal declaration of the structure in the diag module for the Adaptive Platform (Release R25-11).&lt;/p&gt;
-&lt;!-- annahmen: 1) Die Struktur dient vermutlich als Datenübertragungsobjekt (Data Transfer Object), welches modellspezifisch generierte Ausgabeparameter aggregiert. – Begründung: Der Payload beschreibt die Klasse als "Structure wrapping the out arguments for a Stop", spezifiziert jedoch keine Member-Variablen.
-2) Die Instanziierung erfolgt vermutlich direkt durch die Anwendungslogik bei der Beendigung der Routine und wird als Ergebnisobjekt an das Framework übergeben. – Begründung: Der Payload weist eine C++-struct ohne spezifische Fabrik- oder Erzeugungsmethoden aus.
-3) Die Struktur dürfte systemspezifisch über genau die Attribute verfügen, die im Datenmodell für die Stop-Ausgabeparameter deklariert wurden. – Begründung: Bezeichner mit Platzhaltern wie &lt;RoutineInterface&gt; kennzeichnen Schnittstellen-Templates, deren konkrete Felder modellbasiert generiert werden. --&gt;
+&lt;!-- annahmen: 1) Interpretation: Die Struktur dient der Kapselung und Rückgabe von Ausgabedaten einer Routinen-Stop-Aktion im Diagnose-Stack an den Aufrufer. – Begründung: Der Payload beschreibt die Struktur als „Structure wrapping the out arguments for a Stop“ im Modul diag, enthält jedoch keine detaillierten Member-Spezifikationen. 2) Interpretation: Das Objekt besitzt einen passiven Wertobjekt-Lebenszyklus ohne eigene Zustandsmaschine und wird per Value/Future übergeben. – Begründung: Es handelt sich um ein reines struct zur Argumentkapselung. 3) Interpretation: Fachliche Fehler beim Stoppen werden über den übergeordneten Aufrufmechanismus signalisiert. – Begründung: Reine Argument-Wrapper-Strukturen enthalten typischerweise keine eigene Fehlerbehandlungslogik. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der AUTOSAR-Spezifikationsdatenbank für R25-11 kuratiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -275,7 +293,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>5744f7a43f93…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ebb98a15e8c2…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

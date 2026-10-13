@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_nm_ara_nm_a7c4d1" class="dossier-modal dossier-workbench" data-dossier-sha="76d620c05f415b03" aria-labelledby="dossier-modal-ns_nm_ara_nm_a7c4d1-title">
+<dialog id="dossier-modal-ns_nm_ara_nm_a7c4d1" class="dossier-modal dossier-workbench" data-dossier-sha="15fc5b731946645b" aria-labelledby="dossier-modal-ns_nm_ara_nm_a7c4d1-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_nm_ara_nm_a7c4d1-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_nm_ara_nm_a7c4d1)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,922 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,444 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace ara::nm' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -222,36 +241,101 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="9b0c5080b0ee7f59514ab4cbd29b1a1a5567fff42434e31fe58c25426b670a75" data-trace-output="76d620c05f415b0362c2cedcd28d1c0a2fb4c9b9889c1cba20990697020a7479" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="602561c10e10b8c0b3475b38baa92e28e16adb7d5b51683f4eab0e41a8ea43a1" data-trace-output="15fc5b731946645b87f253f5bb2d470b41d219f805d59ab95afa26d60952a17a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die Kontrolle des angeforderten und effektiven Netzstatus sowie eine standardisierte Fehlerbehandlung." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The namespace &lt;code&gt;ara::nm&lt;/code&gt; provides the central interface of Network Management (NM) within the AUTOSAR Adaptive Platform for Release R25-11. The primary task of the module consists in coordinated control and monitoring of the network status in order to keep communication networks active on demand and to bring about orderly sleep or low-power states in the absence of activity.&lt;/p&gt;
-&lt;p&gt;The central interaction component of the namespace is formed by the class &lt;code&gt;NetworkHandle&lt;/code&gt;, which provides application-compliant access to both the requested and the effective network status. To ensure diagnosability and fault tolerance in accordance with Adaptive Platform guidelines, the namespace binds tightly to the error architecture of &lt;code&gt;ara::core&lt;/code&gt;. The class &lt;code&gt;NmErrorDomain&lt;/code&gt; defines the module-specific error domain for this purpose, whose global instance can be obtained via the function &lt;code&gt;GetNmDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt;. The associated error states are mapped via the enumeration &lt;code&gt;NmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt; and the factory function &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt;, whereas &lt;code&gt;NmException&lt;/code&gt; enables error states to be passed on via the C++ exception mechanism.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die Kontrolle des angeforderten und effektiven Netzstatus sowie eine standardisierte Fehlerbehandlung.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::nm&lt;/code&gt; stellt mit &lt;code&gt;NetworkHandle&lt;/code&gt; Schnittstellen für den kontrollierten Zugriff auf den angeforderten und effektiven Netzwerkstatus der AUTOSAR Adaptive Platform bereit. Mögliche Fehlersituationen im Betriebsablauf werden über die standardisierten Fehlercodes der Enumeration &lt;code&gt;NmErrc&lt;/code&gt; wie &lt;code&gt;kServiceNotAvailable&lt;/code&gt; oder &lt;code&gt;kInvalidHandler&lt;/code&gt; abgebildet &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;. Zur strukturierten Fehlerbehandlung erzeugt &lt;code&gt;MakeErrorCode&lt;/code&gt; thread-sicher Fehlercodes für die Fehlerdomäne &lt;code&gt;NmErrorDomain&lt;/code&gt;, welche über &lt;code&gt;GetNmDomain&lt;/code&gt; referenziert wird &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt;. Anwendungen müssen vor Aufrufen die Erreichbarkeit des Netzwerkmanagement-Dienstes berücksichtigen, um Ausfälle bei Statusabfragen zu vermeiden.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::nm&lt;/code&gt; stellt auf der AUTOSAR Adaptive Platform die Kernschnittstellen für das funktionale Network Management bereit. Die primäre funktionale Schnittstelle bildet die Klasse &lt;code&gt;NetworkHandle&lt;/code&gt;, welche den kontrollierten Zugang sowohl zum angeforderten als auch zum effektiven Netzwerkstatus kapselt. Über diesen Abstraktionsmechanismus können funktionale Anwendungen und Plattformdienste den aktuellen Betriebszustand des zugrunde liegenden Kommunikationsnetzwerks überwachen und Statusänderungen initiieren.&lt;/p&gt;
+&lt;p&gt;Für eine konsistente und robuste Fehlerbehandlung stellt &lt;code&gt;ara::nm&lt;/code&gt; standardisierte Typen und Hilfsfunktionen bereit, die in die Fehlerarchitektur von AUTOSAR Adaptive eingebunden sind. Hierzu gehören die Fehlerdomäne &lt;code&gt;NmErrorDomain&lt;/code&gt;, die Ausnahme-Klasse &lt;code&gt;NmException&lt;/code&gt; sowie die domainspezifische Aufzählung &lt;code&gt;NmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;. Ergänzend stehen die thread-sicheren Funktionen &lt;code&gt;GetNmDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt; und &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt; zur Verfügung, welche die instanziierungs- und typkonforme Handhabung von Fehlerzuständen gewährleisten.&lt;/p&gt;
+&lt;div class="diagram" id="diag-nm-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 418.22 166.80" style="max-width:558px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 152.4)"&gt;
+&lt;title&gt;diag_nm_kontext&lt;/title&gt;
+&lt;!-- Anwendung --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Anwendung&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M57.77,-90C57.77,-90 12,-90 12,-90 6,-90 0,-84 0,-78 0,-78 0,-66 0,-66 0,-60 6,-54 12,-54 12,-54 57.77,-54 57.77,-54 63.77,-54 69.77,-60 69.77,-66 69.77,-66 69.77,-78 69.77,-78 69.77,-84 63.77,-90 57.77,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="34.89" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Anwendung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- NetworkHandle --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;NetworkHandle&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M201.13,-138C201.13,-138 138.88,-138 138.88,-138 132.88,-138 126.88,-132 126.88,-126 126.88,-126 126.88,-114 126.88,-114 126.88,-108 132.88,-102 138.88,-102 138.88,-102 201.13,-102 201.13,-102 207.13,-102 213.13,-108 213.13,-114 213.13,-114 213.13,-126 213.13,-126 213.13,-132 207.13,-138 201.13,-138"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="170.01" y="-116.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_nm_NetworkHandle_4a11c2.html" href="../classes/cl_ara_nm_NetworkHandle_4a11c2.html"&gt;NetworkHandle&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;NetworkHandle --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;NetworkHandle&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M70.17,-84.36C84.05,-89.37 100.41,-95.27 115.78,-100.81"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="114.59,-104.1 125.18,-104.2 116.96,-97.51 114.59,-104.1"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="98.32" y="-100.44" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- NmErrorDomain --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;NmErrorDomain&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M377.42,-106C377.42,-106 310.28,-106 310.28,-106 304.28,-106 298.28,-100 298.28,-94 298.28,-94 298.28,-82 298.28,-82 298.28,-76 304.28,-70 310.28,-70 310.28,-70 377.42,-70 377.42,-70 383.42,-70 389.42,-76 389.42,-82 389.42,-82 389.42,-94 389.42,-94 389.42,-100 383.42,-106 377.42,-106"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="343.85" y="-84.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_nm_NmErrorDomain_9b71d3.html" href="../classes/cl_ara_nm_NmErrorDomain_9b71d3.html"&gt;NmErrorDomain&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;NmErrorDomain --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;NmErrorDomain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M70.2,-73.71C105.9,-75.5 163.44,-78.4 213.13,-81 237.11,-82.26 263.57,-83.68 286.31,-84.91"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="285.99,-88.4 296.17,-85.44 286.37,-81.41 285.99,-88.4"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="170.01" y="-84" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;prüft&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- NmException --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;NmException&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M196.55,-36C196.55,-36 143.46,-36 143.46,-36 137.46,-36 131.46,-30 131.46,-24 131.46,-24 131.46,-12 131.46,-12 131.46,-6 137.46,0 143.46,0 143.46,0 196.55,0 196.55,0 202.55,0 208.55,-6 208.55,-12 208.55,-12 208.55,-24 208.55,-24 208.55,-30 202.55,-36 196.55,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="170.01" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_nm_NmException_6e2f84.html" href="../classes/cl_ara_nm_NmException_6e2f84.html"&gt;NmException&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;NmException --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;NmException&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M70.19,-54.01C76,-51.2 82.01,-48.42 87.77,-46 98.08,-41.66 109.31,-37.47 120.05,-33.7"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="121.1,-37.04 129.43,-30.48 118.83,-30.42 121.1,-37.04"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="98.32" y="-49" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;fängt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- NetworkHandle&amp;#45;&amp;gt;NmErrorDomain --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;NetworkHandle-&amp;gt;NmErrorDomain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M213.48,-112.09C235.52,-107.99 262.73,-102.92 286.5,-98.49"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="287.03,-101.95 296.22,-96.68 285.75,-95.07 287.03,-101.95"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="255.71" y="-111.74" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;verweist auf&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel von Anwendung, NetworkHandle und Fehlerarchitektur in ara::nm. Quellen: &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The functional lifecycle of network management follows the creation, usage, and release of resources for influencing the network. Applications request the operational state of communication channels or observe their status via instances of &lt;code&gt;NetworkHandle&lt;/code&gt;. Interpretation: &lt;code&gt;NetworkHandle&lt;/code&gt; is likely to follow the RAII pattern, such that the lifetime of the object directly determines the validity of the network request and the corresponding request is automatically revoked upon destruction of the handle.&lt;/p&gt;
-&lt;p&gt;With regard to concurrency and initialization, the error handling mechanisms of the namespace operate completely statelessly and inherently thread-safely: The function &lt;code&gt;GetNmDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt; is defined as &lt;code&gt;constexpr&lt;/code&gt;, &lt;code&gt;noexcept&lt;/code&gt;, and thread-safe. It returns a const reference to the singleton of &lt;code&gt;NmErrorDomain&lt;/code&gt;, meaning that no dynamic instantiation or synchronization is required during the operational phase. Likewise, the helper function &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt; is specified as &lt;code&gt;constexpr&lt;/code&gt;, &lt;code&gt;noexcept&lt;/code&gt;, and thread-safe, ensuring concurrent and deterministic error creation at any point in the program lifecycle.&lt;/p&gt;
-
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;A typical use case in the module &lt;code&gt;ara::nm&lt;/code&gt; comprises status determination, the network request, and structured error handling along the following steps:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Initialization and access:&lt;/strong&gt; The application creates or obtains a &lt;code&gt;NetworkHandle&lt;/code&gt; to verify the current effective network status of the assigned communication channel.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Network request:&lt;/strong&gt; Via the &lt;code&gt;NetworkHandle&lt;/code&gt;, the application signals its communication need to prevent the network from shutting down or to cause its activation.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Monitoring:&lt;/strong&gt; The application monitors the effective state of the network until it signals operational readiness.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Error identification:&lt;/strong&gt; If the provisioning of the network management service fails or an invalid parameter is present, the corresponding state is reported back to the application via error codes of the enumeration &lt;code&gt;NmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Error encapsulation:&lt;/strong&gt; For forwarding within the error handling chain of &lt;code&gt;ara::core&lt;/code&gt;, a standardized &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; is created by means of &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt;, bundling the enumeration value and optional auxiliary data.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;The standardized error states for Adaptive Network Management are defined in the header &lt;code&gt;ara/nm/nm_error_domain.h&lt;/code&gt; and specified in the enumeration &lt;code&gt;NmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;, which is based on &lt;code&gt;ara::core::ErrorDomain::CodeType&lt;/code&gt;:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;In einem typischen Einsatzszenario interagiert eine Adaptive Application mit dem Namespace &lt;code&gt;ara::nm&lt;/code&gt;, um den Status des Netzwerks zu kontrollieren und auf Laufzeitereignisse zu reagieren. Die Interaktionsabfolge gliedert sich in folgende Schritte:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;NmErrc::kServiceNotAvailable&lt;/code&gt; (value 1): Occurs when the underlying Network Management service is not available, not yet initialized, or temporarily unreachable. Calls cannot be acknowledged successfully in this state.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;NmErrc::kInvalidHandler&lt;/code&gt; (value 2): Interpretation: This error code is likely to signal that a callback handler, state handler, or registration identifier passed to the API is invalid, incorrectly configured, or cannot be found.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Statuszugriff initiieren:&lt;/strong&gt; Die Anwendung nutzt ein &lt;code&gt;NetworkHandle&lt;/code&gt;, um den angeforderten oder den gegenwärtig effektiven Netzstatus abzufragen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlererkennung:&lt;/strong&gt; Kann die Netzanforderung nicht ordnungsgemäß bedient werden, signalisiert die Schnittstelle ein entsprechendes Fehlerereignis. Interpretation: Bei Ausfällen der zugrunde liegenden Netzwerkdienste dürfte &lt;code&gt;NetworkHandle&lt;/code&gt; intern Fehlercodes auf Basis von &lt;code&gt;NmErrc&lt;/code&gt; erzeugen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlercode erzeugen:&lt;/strong&gt; Die Hilfsfunktion &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt; nimmt einen Wert aus &lt;code&gt;NmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt; sowie anwendungsspezifische Zusatzdaten (&lt;code&gt;ara::core::ErrorDomain::SupportDataType&lt;/code&gt;) entgegen und generiert daraus einen vollwertigen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;. Die Funktion ist als &lt;code&gt;constexpr&lt;/code&gt; und &lt;code&gt;noexcept&lt;/code&gt; spezifiziert und garantiert vollständige Thread-Sicherheit &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlerdomäne verifizieren:&lt;/strong&gt; Die aufrufende Komponente kann über &lt;code&gt;GetNmDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt; eine thread-sichere Referenz auf die globale &lt;code&gt;NmErrorDomain&lt;/code&gt; abrufen, um die Fehlerdomäne des zurückgegebenen Codes zu prüfen und domainspezifische Fehlerbeschreibungen aufzulösen.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Errors are primarily transported via &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; instances, which are constructed via &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt; by assigning the &lt;code&gt;NmErrorDomain&lt;/code&gt; referenced via &lt;code&gt;GetNmDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt;. For architectural scenarios that rely on C++ exceptions, the type &lt;code&gt;NmException&lt;/code&gt; is available. Interpretation: &lt;code&gt;NmException&lt;/code&gt; is likely derived from &lt;code&gt;ara::core::Exception&lt;/code&gt; and is presumably used when interfaces propagate call errors directly as an exception instead of &lt;code&gt;ara::core::Result&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-nm-nutzung"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 459" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Ablauf der Netzstatusinteraktion und Fehlerbehandlung&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="445" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="445" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="445" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_nm_NetworkHandle_4a11c2.html" href="../classes/cl_ara_nm_NetworkHandle_4a11c2.html"&gt;NetworkHandle&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_nm_NmErrorDomain_9b71d3.html" href="../classes/cl_ara_nm_NmErrorDomain_9b71d3.html"&gt;NmErrorDomain&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="150" width="610" height="275" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Netzstatus anfordern&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 40 150 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="165" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="165" font-size="11" font-style="italic" fill="#28251d"&gt;Dienst nicht verfügbar&lt;/text&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;MakeErrorCode(NmErrc::kServiceNotAvailable, ...)
+[SWS_ANM_01110]&lt;/title&gt;&lt;text x="450.0" y="190" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_nm_ara_nm_a7c4d1.html#SWS_ANM_01110" href="../namespaces/ns_nm_ara_nm_a7c4d1.html#SWS_ANM_01110"&gt;MakeErrorCode&lt;/a&gt;(NmErrc::kServiceNotAvailable, ...)&lt;/text&gt;&lt;line x1="345" y1="196" x2="555" y2="196" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;text x="450.0" y="224" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorCode_538b08.html" href="../classes/cl_ara_core_ErrorCode_538b08.html"&gt;ara::core::ErrorCode&lt;/a&gt;&lt;/text&gt;&lt;line x1="555" y1="230" x2="345" y2="230" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;Fehlercode zurückgeben
+[SWS_ANM_01111]&lt;/title&gt;&lt;text x="240.0" y="258" text-anchor="middle" font-size="11" fill="#28251d"&gt;Fehlercode zurückgeben&lt;/text&gt;&lt;line x1="345" y1="264" x2="135" y2="264" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;g class="seq-tip"&gt;&lt;title&gt;GetNmDomain() zur Validierung
+[SWS_ANM_01109]&lt;/title&gt;&lt;text x="345.0" y="292" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_nm_ara_nm_a7c4d1.html#SWS_ANM_01109" href="../namespaces/ns_nm_ara_nm_a7c4d1.html#SWS_ANM_01109"&gt;GetNmDomain&lt;/a&gt;() zur Validierung&lt;/text&gt;&lt;line x1="135" y1="298" x2="555" y2="298" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;/g&gt;&lt;text x="345.0" y="326" text-anchor="middle" font-size="11" fill="#28251d"&gt;const &lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorDomain_a538fe.html" href="../classes/cl_ara_core_ErrorDomain_a538fe.html"&gt;ara::core::ErrorDomain&lt;/a&gt;&amp;amp;&lt;/text&gt;&lt;line x1="555" y1="332" x2="135" y2="332" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="354" x2="650" y2="354" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="369" font-size="11" font-style="italic" fill="#28251d"&gt;Normalbetrieb&lt;/text&gt;&lt;text x="240.0" y="397" text-anchor="middle" font-size="11" fill="#28251d"&gt;Effektiven Netzstatus liefern&lt;/text&gt;&lt;line x1="345" y1="403" x2="135" y2="403" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Ablauf der Netzstatusabfrage und Fehlerauflösung über ara::nm. Quellen: &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;!-- annahmen: 1) NetworkHandle dürfte über das RAII-Muster oder Methoden zur Anforderung und Freigabe verfügen, um den Netzwerkzustand deterministisch zu binden. – Begründung: Der Payload beschreibt NetworkHandle summarisch als Zugang zum angeforderten und effektiven Netzstatus, spezifiziert jedoch keine individuellen Elementfunktionen. 2) NmErrc::kInvalidHandler dürfte signalisieren, dass ein übergebener Callback-Handler oder Registrierungsbezeichner ungültig oder nicht registriert ist. – Begründung: [SWS_ANM_01111] definiert das Enum-Literal kInvalidHandler, erläutert jedoch die genaue Semantik im Payload-Auszug nicht. 3) NmException dürfte von ara::core::Exception abgeleitet sein und wird vermutlich verwendet, wenn Schnittstellen Fehler über C++-Ausnahmen statt Result/ErrorCode melden. – Begründung: Der Payload führt NmException als Exception-Typ für ara::nm auf, ohne Details zur Klassenhierarchie oder Auslösebedingungen bereitzustellen. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive Platform Release R25-11 specification for the nm module.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die standardisierten Fehlercodes des Moduls sind in der Enumeration &lt;code&gt;NmErrc&lt;/code&gt; gebündelt, die auf &lt;code&gt;ara::core::ErrorDomain::CodeType&lt;/code&gt; basiert &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;. Das Modul unterscheidet folgende Fehlerfälle:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;NmErrc::kServiceNotAvailable&lt;/code&gt; (Code 1): Dieser Fehler kennzeichnet, dass der für die Netzwerkverwaltung erforderliche Dienst zur Laufzeit nicht erreichbar oder betriebsbereit ist &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;. Aufrufer müssen in diesem Fall mit Wiederholungsversuchen oder Rückfallstrategien reagieren.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;NmErrc::kInvalidHandler&lt;/code&gt; (Code 2): Tritt auf, wenn bei einer Operation ein ungültiger oder nicht registrierter Handler übergeben oder referenziert wurde &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;. Dies deutet in der Regel auf einen Konfigurations- oder Initialisierungsfehler im Aufrufer hin.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Vorbedingungen für robuste Aufrufe sind eine initialisierte Dienstinfrastruktur sowie gültige Parameter beim Zugriff auf &lt;code&gt;NetworkHandle&lt;/code&gt;, um &lt;code&gt;NmErrc::kServiceNotAvailable&lt;/code&gt; oder &lt;code&gt;NmErrc::kInvalidHandler&lt;/code&gt; zu vermeiden &lt;a class="spec-record-ref" data-req="SWS_ANM_01111" href="../spec/record.html?id=SWS_ANM_01111"&gt;[SWS_ANM_01111]&lt;/a&gt;. Alle Kernfunktionen der Fehlerbehandlung wie &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01110" href="../spec/record.html?id=SWS_ANM_01110"&gt;[SWS_ANM_01110]&lt;/a&gt; und &lt;code&gt;GetNmDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ANM_01109" href="../spec/record.html?id=SWS_ANM_01109"&gt;[SWS_ANM_01109]&lt;/a&gt; werfen selbst keine Ausnahmen (&lt;code&gt;noexcept&lt;/code&gt;). Interpretation: Für Applikationen, die eine ausnahmebasierte Kontrollstruktur bevorzugen, dürfte die Exception-Klasse &lt;code&gt;NmException&lt;/code&gt; als Träger fungieren, um Fehlerzustände strukturiert durch den Callstack zu propagieren.&lt;/p&gt;
+&lt;!-- annahmen: 1) NetworkHandle erzeugt intern Fehlercodes auf Basis von NmErrc – Begründung: Der Payload belegt NmErrc als standardisierte Fehlercodes und NetworkHandle als Zugang zum Netzstatus, spezifiziert aber keine separaten internen Fehlerquellen. 2) NmException dient der ausnahmebasierten Weiterleitung von Fehlern aus NmErrc – Begründung: Der Payload führt NmException als Exception-Typ für ara::nm auf, ohne die exakten Auslösemechanismen zu dokumentieren. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der Spezifikation von AUTOSAR Adaptive (Release R25-11) erstellt.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -293,7 +377,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9b0c5080b0ee…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>602561c10e10…</code></div>
               <div><strong>Konstituierende Records:</strong> 3</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

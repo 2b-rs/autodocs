@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00988" class="dossier-modal dossier-workbench" data-dossier-sha="1da554ec53319d26" aria-labelledby="dossier-modal-SWS_Dcm_00988-title">
+<dialog id="dossier-modal-SWS_Dcm_00988" class="dossier-modal dossier-workbench" data-dossier-sha="70edf9a54ff4f2db" aria-labelledby="dossier-modal-SWS_Dcm_00988-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00988-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00988)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,939 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,394 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_ProgConditionsType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -192,28 +210,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="2c5fbdefb74a332df6cd18678800fb6842f899c16013c847bbf11f1dfc9d47de" data-trace-output="1da554ec53319d2625238932e6f5d3f8031604bcd122c693ee5b8eb22b579dca" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="23558f0992c8ca7fc88df11d8d88740be9b272a1bb83b010ee84d687e28d2b2e" data-trace-output="70edf9a54ff4f2db7f96583a9a532f30ede62ad9686a8849053ef2dd972fe8db" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Speichert Verbindungs- und Statusdaten für den Wechsel zwischen Applikation und Bootloader vor Steuergeräte-Resets." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die Struktur &lt;code&gt;Dcm_ProgConditionsType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;) dient dem Austausch von Kontext- und Zustandsdaten beim Übergang zwischen Applikation und Bootloader, beispielsweise infolge einer Umprogrammierung oder eines Steuergeräteresets (&lt;code&gt;ECUReset&lt;/code&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;Dcm_ProgConditionsType&lt;/code&gt; dient dem Austausch von Zustands- und Kontextdaten zwischen Applikation und Bootloader bei Programmierabläufen oder einem Steuergeräte-Reset &lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;. Sie bündelt Verbindungsinformationen wie &lt;code&gt;ConnectionId&lt;/code&gt; und &lt;code&gt;TesterAddress&lt;/code&gt;, Diagnoseidentifikatoren wie &lt;code&gt;Sid&lt;/code&gt; und &lt;code&gt;SubFncId&lt;/code&gt; sowie Steuerflags wie &lt;code&gt;ReprogramingRequest&lt;/code&gt;, &lt;code&gt;ApplUpdated&lt;/code&gt; und &lt;code&gt;ResponseRequired&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Verwendung und Schnittstellen&lt;/h4&gt;
-  &lt;p&gt;Die Struktur wird in zwei zentralen Schnittstellen verwendet:&lt;/p&gt;
+  &lt;p&gt;Die Verwendung erfolgt über zwei zentrale Schnittstellen:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Vor dem Sprung:&lt;/strong&gt; Die asynchrone, nicht-reentrante Funktion &lt;code&gt;Dcm_SetProgConditions()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;) nimmt einen Zeiger &lt;code&gt;const Dcm_ProgConditionsType* ProgConditions&lt;/code&gt; entgegen, um die relevanten Bedingungen vor dem Wechsel in den Bootloader zu sichern.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Nach dem Neustart:&lt;/strong&gt; Der synchrone Callout &lt;code&gt;Dcm_GetProgConditions()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00544" href="../../spec/record.html?id=SWS_Dcm_00544"&gt;[SWS_Dcm_00544]&lt;/a&gt;) befüllt den Ausgabeparameter &lt;code&gt;ProgConditions&lt;/code&gt; bei der Initialisierung des DCM, um den Startmodus zu ermitteln und auszuwerten, ob eine ausstehende Diagnoseantwort versendet werden muss.&lt;/li&gt;
+    &lt;li&gt;Vor dem Sprung in den Bootloader oder bei einem Reset übergibt der DCM die Struktur an die asynchrone, nicht reentrante Funktion &lt;code&gt;Dcm_SetProgConditions()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;. Mögliche Rückgabewerte sind &lt;code&gt;E_OK&lt;/code&gt;, &lt;code&gt;E_NOT_OK&lt;/code&gt;, &lt;code&gt;DCM_E_PENDING&lt;/code&gt; sowie &lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt; bei Anforderung einer Response-Pending-Nachricht (NRC 0x78) &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Nach dem Neustart ruft der DCM während seiner Initialisierung den synchronen, nicht reentranten Callout &lt;code&gt;Dcm_GetProgConditions()&lt;/code&gt; auf, um die gespeicherten Bedingungen auszulesen und den &lt;code&gt;Dcm_EcuStartModeType&lt;/code&gt; zu ermitteln &lt;a class="spec-record-ref" data-req="SWS_Dcm_00544" href="../../spec/record.html?id=SWS_Dcm_00544"&gt;[SWS_Dcm_00544]&lt;/a&gt;. Die Ablage dieser Daten durch den Integrator dürfte typischerweise über resetfesten RAM oder nichtflüchtigen Speicher erfolgen (Interpretation).&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Strukturfelder und Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;Die Strukturfelder steuern das weitere Verhalten der Diagnosekommunikation:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;ConnectionId&lt;/code&gt; und &lt;code&gt;TesterAddress&lt;/code&gt;: Identifizieren die Verbindung und die Quelladresse des Testers (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Sid&lt;/code&gt; und &lt;code&gt;SubFncId&lt;/code&gt;: Kennzeichnen Service- und Subfunktions-Identifier der empfangenen Anforderung. Meldet ComM volle Kommunikation, sendet das DCM die Antwort für die hinterlegte &lt;code&gt;Sid&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00767" href="../../spec/record.html?id=SWS_Dcm_00767"&gt;[SWS_Dcm_00767]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ResponseRequired&lt;/code&gt;: Legt fest, ob Flashloader oder Applikation nach dem Wechsel eine Bestätigung (z.&amp;nbsp;B. Response &lt;code&gt;$50&lt;/code&gt; oder &lt;code&gt;$51&lt;/code&gt;) senden müssen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00544" href="../../spec/record.html?id=SWS_Dcm_00544"&gt;[SWS_Dcm_00544]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ReprogramingRequest&lt;/code&gt;: Signalisiert die Anforderung zur Neuprogrammierung des Steuergeräts (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ApplUpdated&lt;/code&gt;: Zeigt an, ob die Applikation per Flash-Download aktualisiert wurde. Ist dies nach einem Sprung aus dem Bootloader der Fall (&lt;code&gt;ApplUpdated == True&lt;/code&gt;), benachrichtigt das DCM den BswM mittels &lt;code&gt;BswM_Dcm_ApplicationUpdated()&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00768" href="../../spec/record.html?id=SWS_Dcm_00768"&gt;[SWS_Dcm_00768]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
+  &lt;p&gt;Im weiteren Systemzusammenspiel wertet der DCM die Struktur aus: Sobald das ComM die volle Kommunikationsfähigkeit meldet, versendet der DCM die ausstehende Diagnoseantwort für die in &lt;code&gt;Sid&lt;/code&gt; hinterlegte Dienstkennung &lt;a class="spec-record-ref" data-req="SWS_Dcm_00767" href="../../spec/record.html?id=SWS_Dcm_00767"&gt;[SWS_Dcm_00767]&lt;/a&gt;. Signalisiert &lt;code&gt;ApplUpdated == True&lt;/code&gt; nach einem Bootloader-Sprung eine erfolgte Aktualisierung per Flash-Download, benachrichtigt der DCM über &lt;code&gt;BswM_Dcm_ApplicationUpdated()&lt;/code&gt; das BswM &lt;a class="spec-record-ref" data-req="SWS_Dcm_00768" href="../../spec/record.html?id=SWS_Dcm_00768"&gt;[SWS_Dcm_00768]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Die Speicherung der Strukturfelder vor dem Reset dürfte über resetfesten RAM oder nichtflüchtigen Speicher erfolgen. – Begründung: SWS_Dcm_00988 und SWS_Dcm_00543 definieren das Sichern relevanter Informationen vor dem Bootloader-Sprung, spezifizieren jedoch das konkrete physikalische Speichermedium nicht. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert generiert und basiert ausschließlich auf den Spezifikationen der AUTOSAR-Version R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -253,7 +264,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2c5fbdefb74a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>23558f0992c8…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -391,4 +402,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00988","k":"type","d":"AUTOSAR","t":"","n":"Dcm_ProgConditionsType"}],"inbound":[{"i":"SWS_Dcm_00543","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00543].","n":"SWS_Dcm_00543"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/0ee0e1c86d4372cf.json?v=935fcfb3" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00988","k":"type","d":"AUTOSAR","t":"","n":"Dcm_ProgConditionsType"}],"inbound":[{"i":"SWS_Dcm_00543","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00543].","n":"SWS_Dcm_00543"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/0ee0e1c86d4372cf.json?v=450f7531" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>

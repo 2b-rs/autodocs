@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_core_std_193df4" class="dossier-modal dossier-workbench" data-dossier-sha="02c47b3662945bb5" aria-labelledby="dossier-modal-ns_core_std_193df4-title">
+<dialog id="dossier-modal-ns_core_std_193df4" class="dossier-modal dossier-workbench" data-dossier-sha="9320cb26024e1a4d" aria-labelledby="dossier-modal-ns_core_std_193df4-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_core_std_193df4-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_core_std_193df4)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,802 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,325 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace std' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -214,37 +233,81 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="d4118ec6f578e3b6b31070de84f01d61dcc91fa80bf5a792047e604d7849e31b" data-trace-output="02c47b3662945bb5cd48a3c343a82af2c4c456f8af8ba8e3557268575722d228" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="e52b54851dc1be8a08b0ccee267d98968091dda92212dbc5699e9e24bd2b442c" data-trace-output="9320cb26024e1a4d3cd884c221f2183b4fcff18b63d28ef50fa2c392bf164694" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die Integration von ara::core-Typen in Standard-Container und Sprachmittel der C++-Standardbibliothek." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;In AUTOSAR Adaptive module &lt;code&gt;core&lt;/code&gt; (Release R25-11), namespace &lt;code&gt;namespace std&lt;/code&gt; occupies a special architectural position. While platform-specific data types and interfaces are declared in namespace &lt;code&gt;ara::core&lt;/code&gt;, the extension of &lt;code&gt;std&lt;/code&gt; acts as a standards-compliant integration layer into the type and template system of the C++ standard library. According to the provisions of the ISO C++ language standard, extending the standard namespace is permitted exclusively for explicit template specializations of user-defined types.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die Integration von ara::core-Typen in Standard-Container und Sprachmittel der C++-Standardbibliothek.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namensraum &lt;code&gt;std&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; Template-Spezialisierungen von &lt;code&gt;std::hash&lt;/code&gt;, &lt;code&gt;std::tuple_size&lt;/code&gt; und &lt;code&gt;std::tuple_element&lt;/code&gt; für Datentypen der AUTOSAR Adaptive Platform bereit. Dies ermöglicht den direkten Einsatz von Typen wie &lt;code&gt;ara::core::String&lt;/code&gt;, &lt;code&gt;ara::core::Optional&lt;/code&gt;, &lt;code&gt;ara::core::Variant&lt;/code&gt;, &lt;code&gt;ara::core::Vector&lt;/code&gt; und &lt;code&gt;ara::core::Array&lt;/code&gt; in Standard-Containern und mit C++-Tuple-Sprachmitteln. Randbedingung ist, dass bei geschachtelten Typen die enthaltenen Datentypen zur Kompilierzeit ebenfalls über gültige Spezialisierungen verfügen müssen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform dient der Namensraum &lt;code&gt;std&lt;/code&gt; der nahtlosen Einbindung plattformspezifischer Basistypen in die C++-Standardbibliothek. Anstatt neue Typen einzuführen, stellt der Namensraum gezielte Template-Spezialisierungen standardisierter Hilfsklassen bereit. Die Interaktionspartner umfassen drei wesentliche Komponenten: die generischen Typen der C++-Standardbibliothek (insbesondere ungeordnete assoziative Container und Tuple-Hilfsmittel), die Template-Spezialisierungen innerhalb von &lt;code&gt;std&lt;/code&gt; sowie die im Modul &lt;code&gt;core&lt;/code&gt; definierten Datentypen &lt;code&gt;ara::core::Array&lt;/code&gt;, &lt;code&gt;ara::core::Monostate&lt;/code&gt;, &lt;code&gt;ara::core::Optional&lt;/code&gt;, &lt;code&gt;ara::core::String&lt;/code&gt;, &lt;code&gt;ara::core::StringView&lt;/code&gt;, &lt;code&gt;ara::core::Variant&lt;/code&gt; und &lt;code&gt;ara::core::Vector&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-std-context"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 783.47 76.40" style="max-width:1045px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 62)"&gt;
+&lt;title&gt;std_context&lt;/title&gt;
+&lt;!-- app --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;app&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M212.04,-41.8C212.04,-41.8 12,-41.8 12,-41.8 6,-41.8 0,-35.8 0,-29.8 0,-29.8 0,-17.8 0,-17.8 0,-11.8 6,-5.8 12,-5.8 12,-5.8 212.04,-5.8 212.04,-5.8 218.04,-5.8 224.04,-11.8 224.04,-17.8 224.04,-17.8 224.04,-29.8 224.04,-29.8 224.04,-35.8 218.04,-41.8 212.04,-41.8"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="112.02" y="-27.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Standard-Container und Sprachmittel&lt;/text&gt;
+&lt;text text-anchor="middle" x="112.02" y="-13.9" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(z. B. std::unordered_map, Structured Binding)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- std_spec --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;std_spec&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M486.28,-41.8C486.28,-41.8 292.04,-41.8 292.04,-41.8 286.04,-41.8 280.04,-35.8 280.04,-29.8 280.04,-29.8 280.04,-17.8 280.04,-17.8 280.04,-11.8 286.04,-5.8 292.04,-5.8 292.04,-5.8 486.28,-5.8 486.28,-5.8 492.28,-5.8 498.28,-11.8 498.28,-17.8 498.28,-17.8 498.28,-29.8 498.28,-29.8 498.28,-35.8 492.28,-41.8 486.28,-41.8"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="389.16" y="-27.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Spezialisierungen in namespace &lt;a class="diag-ref" data-ref="namespaces/ns_core_std_193df4.html" href="../namespaces/ns_core_std_193df4.html"&gt;std&lt;/a&gt;&lt;/text&gt;
+&lt;text text-anchor="middle" x="389.16" y="-13.9" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(&lt;a class="diag-ref" data-ref="classes/cl_std_hash_ara_core_Monostate_a73c80.html" href="../classes/cl_std_hash_ara_core_Monostate_a73c80.html"&gt;std::hash&lt;/a&gt;, &lt;a class="diag-ref" data-ref="classes/cl_std_tuple_size_ara_core_Array_T_c75763.html" href="../classes/cl_std_tuple_size_ara_core_Array_T_c75763.html"&gt;std::tuple_size&lt;/a&gt;, &lt;a class="diag-ref" data-ref="classes/cl_std_tuple_element_I_ara_core_Array_T_N_e90135.html" href="../classes/cl_std_tuple_element_I_ara_core_Array_T_N_e90135.html"&gt;std::tuple_element&lt;/a&gt;)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- app&amp;#45;&amp;gt;std_spec --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;app-&amp;gt;std_spec&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M224.53,-23.8C238.87,-23.8 253.61,-23.8 268.08,-23.8"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="267.95,-27.3 277.95,-23.8 267.95,-20.3 267.95,-27.3"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="252.04" y="-26.8" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- ara_types --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;ara_types&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M742.67,-47.6C742.67,-47.6 585.99,-47.6 585.99,-47.6 579.99,-47.6 573.99,-41.6 573.99,-35.6 573.99,-35.6 573.99,-12 573.99,-12 573.99,-6 579.99,0 585.99,0 585.99,0 742.67,0 742.67,0 748.67,0 754.67,-6 754.67,-12 754.67,-12 754.67,-35.6 754.67,-35.6 754.67,-41.6 748.67,-47.6 742.67,-47.6"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="664.33" y="-33.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/core.html" href="../modules/core.html"&gt;ara::core&lt;/a&gt; Datentypen&lt;/text&gt;
+&lt;text text-anchor="middle" x="664.33" y="-20.5" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Array, Optional, String, StringView,&lt;/text&gt;
+&lt;text text-anchor="middle" x="664.33" y="-7.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Variant, Vector, Monostate)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- std_spec&amp;#45;&amp;gt;ara_types --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;std_spec-&amp;gt;ara_types&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M498.52,-23.8C519.51,-23.8 541.43,-23.8 562.17,-23.8"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="561.9,-27.3 571.9,-23.8 561.9,-20.3 561.9,-27.3"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="536.14" y="-26.8" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;bindet ein&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel von Standard-Containern, den Spezialisierungen in std und den ara::core-Typen. Quellen: Payload-Deklarationen des Moduls core&lt;/p&gt;
+&lt;p&gt;Die Spezialisierungen von &lt;code&gt;std::hash&lt;/code&gt; ermöglichen es, adaptive Kern-Datentypen direkt als Schlüssel in Standard-Containern wie &lt;code&gt;std::unordered_map&lt;/code&gt; oder &lt;code&gt;std::unordered_set&lt;/code&gt; einzusetzen. Parallel dazu erweitern die Spezialisierungen &lt;code&gt;std::tuple_size&lt;/code&gt; und &lt;code&gt;std::tuple_element&lt;/code&gt; für &lt;code&gt;ara::core::Array&lt;/code&gt; die Unterstützung für standardisierte Metaprogrammierungs-Schnittstellen und Sprachmittel.&lt;/p&gt;
 
-&lt;p&gt;The specializations contained in module &lt;code&gt;core&lt;/code&gt; cover two major interface areas of the C++ standard library:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Ein typischer Nutzungspfad beginnt mit der Verwendung eines &lt;code&gt;ara::core&lt;/code&gt;-Datentyps in generischem C++-Code. Beispielsweise deklariert eine Anwendung eine Hash-Tabelle mit Schlüsseln des Typs &lt;code&gt;ara::core::String&lt;/code&gt; oder &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt;. Beim Einfügen, Löschen oder Nachschlagen greift der Container implizit auf &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; bzw. &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; zu, um den Schlüssel-Hashwert zu bestimmen.&lt;/p&gt;
+&lt;p&gt;Die Spezialisierungen decken unterschiedliche Datenstrukturen ab:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Hashing infrastructure:&lt;/strong&gt; Specializations of function template &lt;code&gt;std::hash&lt;/code&gt; for central AUTOSAR classes. These include the elementary base types &lt;code&gt;ara::core::Monostate&lt;/code&gt;, &lt;code&gt;ara::core::String&lt;/code&gt;, and &lt;code&gt;ara::core::StringView&lt;/code&gt;, as well as the generic wrappers and containers &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt;, &lt;code&gt;ara::core::Variant&amp;lt;...&amp;gt;&lt;/code&gt;, and &lt;code&gt;ara::core::Vector&amp;lt;T, Allocator&amp;gt;&lt;/code&gt;. Presumably, these specializations serve to make data types from &lt;code&gt;ara::core&lt;/code&gt; directly usable as keys in unordered associative standard containers such as &lt;code&gt;std::unordered_map&lt;/code&gt; or &lt;code&gt;std::unordered_set&lt;/code&gt; without manually implementing custom functors.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Tuple protocol:&lt;/strong&gt; Specializations of templates &lt;code&gt;std::tuple_size&lt;/code&gt; and &lt;code&gt;std::tuple_element&lt;/code&gt; for the sequential container type &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt;. These specializations are likely primarily intended to enable the structural decomposition of arrays via the standardized tuple interface, thereby supporting language mechanisms such as structured bindings.&lt;/li&gt;
+&lt;li&gt;Zeichenketten und Sichten: &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; und &lt;code&gt;std::hash&amp;lt;ara::core::StringView&amp;gt;&lt;/code&gt; berechnen Hashwerte über die enthaltene Zeichenfolge.&lt;/li&gt;
+&lt;li&gt;Zusammengesetzte Typen: &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;, &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;...&amp;gt;&amp;gt;&lt;/code&gt; und &lt;code&gt;std::hash&amp;lt;ara::core::Vector&amp;lt;T, Allocator&amp;gt;&amp;gt;&lt;/code&gt; ermöglichen das Hashing komplexer Typstrukturen. Interpretation: Die Spezialisierungen für &lt;code&gt;ara::core::Optional&lt;/code&gt; und &lt;code&gt;ara::core::Variant&lt;/code&gt; dürften sich am semantischen Verhalten der standardisierten Vorbilder orientieren und für leere oder unbesetzte Zustände deterministische Werte erzeugen.&lt;/li&gt;
+&lt;li&gt;Zustandslose Typen: &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; stellt eine Hashfunktion für leere Zustände bereit, wie sie typischerweise in Varianten eingesetzt werden.&lt;/li&gt;
+&lt;li&gt;Tuple-Protokoll: Für feste Datenfelder stellt &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; zur Kompilierzeit die Elementanzahl bereit, während &lt;code&gt;std::tuple_element&amp;lt;I, ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; den Datentyp der Position &lt;code&gt;I&lt;/code&gt; ermittelt. Interpretation: Die Spezialisierungen von &lt;code&gt;std::tuple_size&lt;/code&gt; und &lt;code&gt;std::tuple_element&lt;/code&gt; dürften damit die Verwendung von &lt;code&gt;ara::core::Array&lt;/code&gt; mit strukturierten Bindungen (Structured Bindings) ermöglichen.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;These specializations ensure that the vocabulary types of the Adaptive Platform interoperate seamlessly with standard algorithms and STL infrastructures without forcing interface breaks.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The specializations within &lt;code&gt;namespace std&lt;/code&gt; are typically not used in application programs via direct, imperative method calls. Instead, they act as declarative customization points that are resolved automatically in the context of generic code and template instantiations. A typical usage flow encompasses the interaction of several components:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Instantiation of AUTOSAR core classes:&lt;/strong&gt; An application or system component instantiates concrete data structures, for example a &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt;, a string type &lt;code&gt;ara::core::String&lt;/code&gt;, or a generic state carrier &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Passing to generic standard library containers:&lt;/strong&gt; The types are declared as key types in standard containers. When defining a hash table, the standard container implicitly uses specialization &lt;code&gt;std::hash&amp;lt;ara::core::String&amp;gt;&lt;/code&gt; or &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Evaluation of the hash function:&lt;/strong&gt; At runtime, the function call operator &lt;code&gt;operator()&lt;/code&gt; of the respective &lt;code&gt;std::hash&lt;/code&gt; specialization is executed. From the state of the passed object, it calculates a hash value of type &lt;code&gt;std::size_t&lt;/code&gt;. For composite types such as &lt;code&gt;ara::core::Vector&amp;lt;T, Allocator&amp;gt;&lt;/code&gt; or &lt;code&gt;ara::core::Variant&amp;lt;...&amp;gt;&lt;/code&gt;, the calculation is performed taking into account the contained elements or the active type.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Metaprogramming and deconstruction:&lt;/strong&gt; When using &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt;, the compiler queries the fixed number of array elements via &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;::value&lt;/code&gt;. In parallel, the exact element type at position &lt;code&gt;I&lt;/code&gt; is determined at compile time via &lt;code&gt;std::tuple_element&amp;lt;I, ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;::type&lt;/code&gt;, which permits type-safe decomposition.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Since the functionality of the namespace relies on template specializations, error and edge-case scenarios manifest predominantly at compile time as well as during specific runtime states:&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Da es sich bei den Elementen im Namensraum &lt;code&gt;std&lt;/code&gt; ausschließlich um Template-Spezialisierungen handelt, treten Fehlerszenarien vorrangig zur Übersetzungszeit auf. Typische Problemkonstellationen umfassen:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Lack of hash capability of inner data types:&lt;/strong&gt; For parametric specializations such as &lt;code&gt;std::hash&amp;lt;ara::core::Optional&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt; or &lt;code&gt;std::hash&amp;lt;ara::core::Vector&amp;lt;T, Allocator&amp;gt;&amp;gt;&lt;/code&gt;, the calculation presumably requires that a valid specialization of &lt;code&gt;std::hash&lt;/code&gt; also exists for the contained data type &lt;code&gt;T&lt;/code&gt;. If this is missing for a user-defined type, compilation aborts with an instantiation error.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Out-of-bounds error for tuple index:&lt;/strong&gt; If specialization &lt;code&gt;std::tuple_element&amp;lt;I, ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; is instantiated with an index &lt;code&gt;I &amp;gt;= N&lt;/code&gt;, the compilation process fails. In accordance with the standard semantics for arrays, no type alias is defined for indices outside the array bounds.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Uniform distribution and hash collisions:&lt;/strong&gt; As with all specializations of &lt;code&gt;std::hash&lt;/code&gt;, the interface merely guarantees consistency (identical objects yield identical hashes), but neither collision resistance nor cryptographic security. Applications must therefore not use hash values for security-relevant identity checks or for keys that persist across program invocations.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Behavior for empty states:&lt;/strong&gt; For types with optional or variable occupancy such as &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; or &lt;code&gt;ara::core::Variant&amp;lt;...&amp;gt;&lt;/code&gt;, the hash calculation must also be well-defined for empty states. The specialization for &lt;code&gt;ara::core::Monostate&lt;/code&gt; yields a constant hash value that acts as a well-defined base state and prevents undefined behavior.&lt;/li&gt;
+&lt;li&gt;Fehlende Hashing-Fähigkeit der Basistypen: Wird &lt;code&gt;std::hash&lt;/code&gt; für einen geschachtelten Typ wie &lt;code&gt;ara::core::Optional&amp;lt;T&amp;gt;&lt;/code&gt; oder &lt;code&gt;ara::core::Vector&amp;lt;T, Allocator&amp;gt;&lt;/code&gt; instanziiert, muss für den Elementtyp &lt;code&gt;T&lt;/code&gt; ebenfalls eine gültige Spezialisierung von &lt;code&gt;std::hash&lt;/code&gt; vorhanden sein. Fehlt diese, führt dies zu einem Kompilierfehler.&lt;/li&gt;
+&lt;li&gt;Ungültige Indexierung im Tuple-Protokoll: Der Zugriff auf &lt;code&gt;std::tuple_element&amp;lt;I, ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; mit einem Index &lt;code&gt;I &amp;gt;= N&lt;/code&gt; verletzt die Vorbedingung des Templates und bricht den Übersetzungsvorgang ab.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;!-- annahmen: 1) Interoperabilität mit STL-Containern – Begründung: Der Payload führt std::hash-Spezialisierungen für diverse ara::core-Typen auf, spezifiziert jedoch keine konkreten Einsatzszenarien für Standard-Container. 2) Tuple-Protokoll für Structured Bindings – Begründung: Der Payload verweist bei tuple_size und tuple_element für ara::core::Array auf [array], ohne spezifische Sprachmechanismen wie Structured Bindings explizit zu benennen. 3) Rekursive Hash-Anforderungen für Container-Elemente – Begründung: Der Payload führt generische Container wie Optional und Vector an, ohne formale Anforderungen an deren Template-Parameter T zu spezifizieren. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated by an AI system based on the AUTOSAR Adaptive Platform specification Release R25-11 (module core).&lt;/p&gt;
+&lt;p&gt;Interpretation: Fehlerszenarien dürften sich im Wesentlichen auf Kompilierzeitfehler bei unvollständigen Typspezialisierungen oder statischen Bereichsverletzungen beschränken, da der Spezifikationsauszug keine Laufzeit-Fehlercodes oder Ausnahmeschnittstellen definiert.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Spezialisierungen von std::hash für zusammengesetzte Typen wie Optional und Variant dürften sich am semantischen Verhalten der entsprechenden C++-Standardtypen orientieren. – Begründung: Der Payload enthält nur Klassendeklarationen, spezifiziert jedoch keine abweichende Hash-Semantik. 2) Die Spezialisierungen von std::tuple_size und std::tuple_element für ara::core::Array dürften die Nutzung strukturierter Bindungen ermöglichen. – Begründung: Der Payload verweist explizit auf die entsprechende Nutzung in [array]. 3) Fehlerszenarien dürften sich auf Kompilierzeitfehler beschränken. – Begründung: Im Payload sind weder Exception-Spezifikationen noch ara::core::ErrorCode-Werte für std-Spezialisierungen dokumentiert. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den deklarierten Klassenspezialisierungen des Moduls core für Release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -286,7 +349,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d4118ec6f578…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e52b54851dc1…</code></div>
               <div><strong>Konstituierende Records:</strong> 8</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

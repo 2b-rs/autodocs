@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_com__SI_Namespace_skeleton_triggers_9545e4" class="dossier-modal dossier-workbench" data-dossier-sha="bd034c316a95b767" aria-labelledby="dossier-modal-ns_com__SI_Namespace_skeleton_triggers_9545e4-title">
+<dialog id="dossier-modal-ns_com__SI_Namespace_skeleton_triggers_9545e4" class="dossier-modal dossier-workbench" data-dossier-sha="2afc158ff8363800" aria-labelledby="dossier-modal-ns_com__SI_Namespace_skeleton_triggers_9545e4-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_com__SI_Namespace_skeleton_triggers_9545e4-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_com__SI_Namespace_skeleton_triggers_9545e4)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,658 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,180 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace &lt;SI-Namespace&gt;::skeleton::triggers' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -207,22 +226,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="e15834861d24fefcc1f281845be2bc56bdc432f1305991df033a053b7564b187" data-trace-output="bd034c316a95b767b8dce95743d3136e91549a4765898417a33263e17fcf5da2" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="09dd27a23c8e97395d9df5ec85f264cf23203605f6af3437bcafd886dd5e6fcf" data-trace-output="2afc158ff83638009af3961d8eac38aca2d5944ce6845d7262f143216b85db8f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht Service-Skeletons das Auslösen definierter Trigger zur Benachrichtigung verbundener Service-Clients." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The C++ namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; is a generated part of the service-oriented communication architecture (module &lt;code&gt;com&lt;/code&gt;) of the AUTOSAR Adaptive Platform in Release R25-11. Here, identifier &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;&lt;/code&gt; acts as a placeholder for the fully qualified C++ namespace derived from the respective &lt;code&gt;ServiceInterface&lt;/code&gt; defined in the system design. Within the service architecture of &lt;code&gt;ara::com&lt;/code&gt;, AUTOSAR strictly distinguishes between the consumer side (proxy) and the provider side (skeleton). While consumers discover and consume services via proxies, service providers implement the server-side logic via the generated skeleton classes.&lt;/p&gt;
-&lt;p&gt;Within this structure, namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; encapsulates the provider-side trigger classes. For each identifier declared in &lt;code&gt;ServiceInterface&lt;/code&gt; in the role of a trigger, exactly one type-generated class &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; is provided in this namespace. In AUTOSAR, a trigger represents a signaling element for flow control. In contrast to regular events, which transmit payload data to subscribers, or methods, which represent synchronous or asynchronous request-response communication with parameters, a trigger primarily serves for activation or signaling without payload data transmission. The classes in this namespace thus form the interface through which the developer of a service implementation can initiate external reactions or execution stimuli via the communication infrastructure.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht Service-Skeletons das Auslösen definierter Trigger zur Benachrichtigung verbundener Service-Clients.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; stellt für Service-Skeletons im Kommunikationsmodul &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform spezifische Klassen zur Verfügung, um im &lt;code&gt;ServiceInterface&lt;/code&gt; definierte Trigger serverseitig anzusprechen. Für jeden deklarierten Trigger in der Rolle &lt;code&gt;trigger&lt;/code&gt; wird eine Instanz der Klasse &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; bereitgestellt, über die Dienstanbieter Ereignissignale an verbundene Clients auslösen können. Vermutlich ist die Lebensdauer dieser Trigger-Klassen fest an das übergeordnete Skeleton-Objekt gebunden, weshalb deren Nutzung die vorherige Initialisierung und das Anbieten des jeweiligen Dienstes voraussetzt. Dienstanbieter müssen zudem berücksichtigen, dass gleichzeitige Trigger-Aufrufe aus mehreren Threads eine applikationsseitige Synchronisation erfordern dürften.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; ist ein spezialisierter Namensraum des Kommunikationsmoduls &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11). Innerhalb der serviceorientierten Architektur (SOA) bildet das &lt;code&gt;ServiceInterface&lt;/code&gt; die formale Schnittstellenspezifikation, die den Funktionsumfang und die Kommunikationsmuster zwischen Dienstanbietern (Skeletons) und Dienstkonsumenten (Proxies) festlegt. Neben Methoden für synchrone oder asynchrone Funktionsaufrufe, Events zur Datenübertragung und Fields für zustandsbehaftete Eigenschaften können Service-Interfaces auch Trigger enthalten. Für jeden in einem &lt;code&gt;ServiceInterface&lt;/code&gt; in der Rolle &lt;code&gt;trigger&lt;/code&gt; deklarierten Trigger stellt der Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; eine eigene Service-Skeleton-Trigger-Klasse &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; bereit.&lt;/p&gt;
+&lt;p&gt;Die zentrale Rolle dieser Klassen besteht darin, der Server-Applikation eine dedizierte Abstraktion zur Signalisierung von Steuerungs- oder Benachrichtigungsimpulsen bereitzustellen. Im Gegensatz zu klassischen Events, die primär dem kontinuierlichen oder ereignisgesteuerten Datentransport dienen, signalisiert ein Trigger typischerweise das Eintreten eines definierten Ereignisses oder Zustandswechsels. Zu den zentralen Interaktionspartnern der Trigger-Klassen gehören die anbietende Applikationslogik, das aggregierende Service-Skeleton sowie die Kommunikations-Middleware von &lt;code&gt;com&lt;/code&gt;, welche die Weiterleitung der Signale über das jeweilige Transport-Binding übernimmt.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle of the &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; classes defined in namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; is tightly coupled to the lifecycle of the higher-level service skeleton. The respective &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; class is likely instantiated as an instance element of the generated service skeleton and binds its lifetime to the enclosing skeleton. When the skeleton class is created, the internal members for the triggers modeled in the service interface are also constructed and prepared for connection to the communication layer.&lt;/p&gt;
-&lt;p&gt;With regard to operating states, the effectiveness of a trigger is linked to the publication status of the service. Before a service provider can meaningfully actuate a trigger, the skeleton typically must be offered via the platform by the service provider application. If the service is stopped or the offer is withdrawn, the communication channels for the triggers are deactivated. Upon destruction of the skeleton, all associated trigger resources are released in an orderly manner. In the context of concurrency and multithreading, it must be ensured that calls to instances of &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; are synchronized with the lifecycle of the skeleton, so that no signal triggering occurs on communication structures that are already being torn down.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus der Trigger-Klassen im Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; ist unmittelbar an das übergeordnete Service-Skeleton gekoppelt. Vermutlich wird für jeden im &lt;code&gt;ServiceInterface&lt;/code&gt; definierten Trigger genau eine Instanz der Klasse &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; bei der Erzeugung des Service-Skeletons instantiiert und durch dieses verwaltet. Eine isolierte Erzeugung oder Zerstörung durch die Dienstanwendung findet üblicherweise nicht statt.&lt;/p&gt;
+&lt;p&gt;In der Betriebsphase gliedert sich die Nutzung in drei charakteristische Phasen: die Initialisierungsphase, die aktive Sendephase und die Beendigungsphase. Während der Initialisierung richtet die Kommunikationsschicht die erforderlichen Bindings und Ressourcen für den Trigger ein. Sobald der Dienstanbieter den Dienst über das Skeleton offiziell im System anbietet, geht der Trigger in den betriebsbereiten Zustand über. In dieser Phase kann die Anwendungslogik wiederholt Auslösevorgänge anstoßen. Endet das Dienstangebot oder wird der Skeleton freigegeben, werden auch die zugeordneten Trigger-Ressourcen bereinigt. Hinsichtlich der Nebenläufigkeit dürfte bei gleichzeitiger Trigger-Betätigung aus mehreren Threads eine applikationsseitige Synchronisation erforderlich sein, sofern das zugrundeliegende Kommunikations-Framework keine inhärente Thread-Sicherheit für gleichzeitige Trigger-Aufrufe zusichert.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;Interaction with the classes of namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; follows a defined sequence on the provider side of an Adaptive application. First, the application implements the service class derived from the generated skeleton and creates an instance of this implementation at runtime. The service is then offered via the communication platform so that consumers can interact with the service.&lt;/p&gt;
-&lt;p&gt;As soon as the service is active, the application logic accesses the corresponding trigger element, which is available via the skeleton interface as an instance of the generated class &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt;. The functional call to activate the trigger is presumably parameterless, since trigger roles do not provide for payload data transmission, unlike events or fields. Through the call, the skeleton causes the communication layer to forward the corresponding trigger signal via the middleware to connected peers. Possible execution or communication errors during forwarding of the trigger are likely reported back via a platform-specific error mechanism of module com (such as &lt;code&gt;ara::core::Result&lt;/code&gt;), so that the service application can react to failures or resource bottlenecks if necessary. After stopping operation, the application withdraws the service offer and destroys the skeleton instance, which also releases the trigger objects.&lt;/p&gt;
-
-&lt;!-- annahmen: 1) Bindung der Lebensdauer an das Skeleton als Instanz-Member – Begründung: Der Payload beschreibt &lt;Trigger&gt; als Service-Skeleton-Klasse im Namespace &lt;SI-Namespace&gt;::skeleton::triggers, spezifiziert jedoch nicht die genaue Allokationsform. 2) Parameterlose Trigger-Aktivierung – Begründung: Der Payload definiert lediglich die Trigger-Rolle im ServiceInterface ohne Signatur- oder Datenelementangaben. 3) Verwendung von Fehlerbehandlungsmechanismen wie ara::core::Result – Begründung: Der Payload enthält keine spezifischen Fehlercodes oder Member-Requirements für die Klassen dieses Namespace. --&gt;
-&lt;p class="ai-note"&gt;This guide was created by an AI assistant based on the AUTOSAR Adaptive Platform specification (Release R25-11, module com).&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad für die Klassen aus &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; umfasst den gesamten Ablauf von der Schnittstellendefinition bis zur Deaktivierung des Dienstes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Schnittstellendesign und Codegenerierung:&lt;/strong&gt; Im Software-Modell wird ein &lt;code&gt;ServiceInterface&lt;/code&gt; definiert, das mindestens einen Trigger in der Rolle &lt;code&gt;trigger&lt;/code&gt; enthält. Der Plattform-Codegenerator erzeugt daraus den Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::triggers&lt;/code&gt; und die zugehörige Klasse &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Instanziierung des Skeletons:&lt;/strong&gt; Die Server-Anwendung instanziiert die konkrete Implementierung des Service-Skeletons. Interpretation: Der Zugriff auf die Instanz von &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt; wird dem Dienstanbieter über die Member-Schnittstelle des Skeletons offengelegt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Dienstbereitstellung:&lt;/strong&gt; Das Service-Skeleton initiiert das Dienstangebot im Netzwerk, sodass Client-Proxies den Dienst finden und sich auf Trigger-Benachrichtigungen registrieren können.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Trigger-Auslösung:&lt;/strong&gt; Sobald in der Anwendungslogik eine Trigger-Bedingung erfüllt ist, ruft die Server-Software die Auslösemethode am &lt;code&gt;&amp;lt;Trigger&amp;gt;&lt;/code&gt;-Objekt auf. Die Plattform überträgt das Signal an alle registrierten Konsumenten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Außerbetriebnahme:&lt;/strong&gt; Die Server-Anwendung zieht das Dienstangebot zurück und zerstört die Skeleton-Instanz, womit auch die Trigger-Objekte deterministisch deallokiert werden.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Vermutlich wird eine Instanz von &lt;Trigger&gt; pro deklariertem Trigger als Member des Service-Skeleton instantiiert und teilt dessen Lebenszyklus. – Begründung: Der Payload definiert &lt;Trigger&gt; als Service-Skeleton-Klasse für jeden im ServiceInterface definierten Trigger.
+2) Hinsichtlich der Nebenläufigkeit dürfte bei gleichzeitiger Betätigung aus mehreren Threads eine Synchronisation erforderlich sein. – Begründung: Adaptive-Plattform-Anwendungen laufen in Multithreading-POSIX-Umgebungen und der Payload spezifiziert keine Thread-Sicherheitsgarantien.
+3) Interpretation: Der Zugriff auf die Trigger-Instanz erfolgt über die Member-Schnittstelle des Skeletons, um Benachrichtigungen an Konsumenten auszulösen. – Begründung: Dies entspricht dem Standardmuster von ara::com für ServiceInterface-Elemente auf Skeleton-Seite. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine künstliche Intelligenz auf Basis der AUTOSAR-Adaptive-Spezifikation für das Release R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -264,7 +298,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e15834861d24…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>09dd27a23c8e…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

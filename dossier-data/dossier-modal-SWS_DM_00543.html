@@ -1,0 +1,458 @@
+<dialog id="dossier-modal-SWS_DM_00543" class="dossier-modal dossier-workbench" data-dossier-sha="599a764efa86f9e3" aria-labelledby="dossier-modal-SWS_DM_00543-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-SWS_DM_00543-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_DM_00543)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~4,793 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="SWS_DM_00543" data-fragment="classes/cl_ara_diag_Monitor_5df579.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse einen fundierten Nutzungshinweis (&lt;div class="ai usage"&gt;) für das adaptive-Element 'ReportMonitorAction' (function) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt weglassen):
+1. Verwendung: Aufrufkontext, Parameter, Rückgabewerte, synchrone/asynchrone Semantik.
+2. Fehlerbehandlung: spezifische Fehlercodes, DET-/DEM-Meldungen, Verhalten im Fehlerfall.
+3. Nebenläufigkeit und Einschränkungen: Reentranz, Aufrufkontext, Reihenfolgebedingungen.
+4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
+Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
+
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
+=== USER PROMPT ===
+Erstelle den Nutzungshinweis für 'ReportMonitorAction'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P68_015",
+   "page": 68,
+   "text": "[SWS_DM_00514] [SWS_DM_00515]\n[SWS_DM_00516] [SWS_DM_00517]\n[SWS_DM_00518] [SWS_DM_00519]\n[SWS_DM_00520] [SWS_DM_00521]\n[SWS_DM_00522] [SWS_DM_00523]\n[SWS_DM_00524] [SWS_DM_00525]\n[SWS_DM_00526] [SWS_DM_00527]\n[SWS_DM_00528] [SWS_DM_00529]\n[SWS_DM_00530] [SWS_DM_00531]\n[SWS_DM_00532] [SWS_DM_00533]\n[SWS_DM_00534] [SWS_DM_00535]\n[SWS_DM_00536] [SWS_DM_00537]\n[SWS_DM_00543] [SWS_DM_00554]\n[SWS_DM_00555] [SWS_DM_00556]\n[SWS_DM_00557] [SWS_DM_00559]\n[SWS_DM_00560] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00618] [SWS_DM_00619]\n[SWS_DM_00636] [SWS_DM_00637]\n[SWS_DM_00638] [SWS_DM_00653]\n[SWS_DM_00671] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00764]\n[SWS_DM_00765] [SWS_DM_00766]\n[SWS_DM_00774] [SWS_DM_00776]\n[SWS_DM_00789] [SWS_DM_00790]\n[SWS_DM_00791] [SWS_DM_00792]\n[SWS_DM_00799] [SWS_DM_00800]\n[SWS_DM_00801] [SWS_DM_00802]\n[SWS_DM_00808] [SWS_DM_00809]\n[SWS_DM_00836] [SWS_DM_00985]\n[SWS_DM_00986] [SWS_DM_00987]\n[SWS_DM_00988] [SWS_DM_00989]\n[SWS_DM_00990] [SWS_DM_00991]\n[SWS_DM_00992] [SWS_DM_00993]\n[SWS_DM_00994] [SWS_DM_00995]\n[SWS_DM_00996] [SWS_DM_00997]\n[SWS_DM_00998] [SWS_DM_00999]\n[SWS_DM_01000] [SWS_DM_01001]\n[SWS_DM_01002] [SWS_DM_01003]\n[SWS_DM_01004] [SWS_DM_01005]\n[SWS_DM_01006] [SWS_DM_01016]\n[SWS_DM_01088] [SWS…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P70_025",
+   "page": 70,
+   "text": "[SWS_DM_00543] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00619] [SWS_DM_00638]\n[SWS_DM_00649] [SWS_DM_00650]\n[SWS_DM_00653] [SWS_DM_00654]\n[SWS_DM_00655] [SWS_DM_00656]\n[SWS_DM_00666] [SWS_DM_00667]\n[SWS_DM_00668] [SWS_DM_00669]\n[SWS_DM_00670] [SWS_DM_00671]\n[SWS_DM_00672] [SWS_DM_00673]\n[SWS_DM_00674] [SWS_DM_00692]\n[SWS_DM_00694] [SWS_DM_00695]\n[SWS_DM_00696] [SWS_DM_00697]\n[SWS_DM_00698] [SWS_DM_00699]\n[SWS_DM_00700] [SWS_DM_00714]\n[SWS_DM_00715] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00744]\n[SWS_DM_00745] [SWS_DM_00755]\n[SWS_DM_00766] [SWS_DM_00776]\n[SWS_DM_00792] [SWS_DM_00802]\n[SWS_DM_00809] [SWS_DM_00918]\n[SWS_DM_00919] [SWS_DM_01016]\n[SWS_DM_01088] [SWS_DM_01102]\n[SWS_DM_01367] [SWS_DM_01698]\n[SWS_DM_01699] [SWS_DM_01707]\n[SWS_DM_01708] [SWS_DM_01709]\n[SWS_DM_01710] [SWS_DM_01711]\n[SWS_DM_01728] [SWS_DM_01729]\n▽"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P81_070",
+   "page": 81,
+   "text": "[SWS_DM_00540] [SWS_DM_00541]\n[SWS_DM_00542] [SWS_DM_00543]\n[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00965]\n[SWS_DM_01694] [SWS_DM_01695]\n[SWS_DM_01696] [SWS_DM_01697]\n[SWS_DM_01698] [SWS_DM_01702]\n[SWS_DM_01732] [SWS_DM_01972]\n[SWS_DM_01973] [SWS_DM_01987]\n[SWS_DM_02062] [SWS_DM_02121]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P229_270",
+   "page": 229,
+   "text": "[SWS_DM_01094] Monitor initialization for enable condition re-enabling reason\nand ControlDTCSetting set to On\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04159, RS_Diag_04270\n⌈\nIn case an\nenable condition\nmapped to the\ndiagnostic event\nwas changed\nto fulfilled and in this way all related\nenable conditions\nof the event were ful-\nfilled and DTC-setting is re-enabled via the\nUDS service\nrequest ControlDTCSetting\n- 0x85 set to On (see ISO 14229-1[1]), the DM shall call the registered notifier method\nara::diag::Monitor::Monitor::initMonitor with the parameter\nara::diag::InitMoni-\ntorReason\nset to\nkReenabled\n.\n⌋\n[SWS_DM_01095] Monitor initialization for enable condition not fulfilled or Con-\ntrolDTCSetting set to Off\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04192, RS_Diag_04159\n⌈\nIn case an\nenable condition\nmapped to the\ndiagnostic event\nwas changed\nto not fulfilled or DTC-setting is disabled via the\nUDS service\nrequest ControlDTC-\nSetting - 0x85 set to Off (see ISO 14229-1[1]), the DM shall call the registered noti-\nfier method ara::diag::Monitor::Monitor::initMonitor with the parameter\nara::diag::\nInitMonitorReason\nset to\nkDisabled\n.\n⌋\nPer\ndiagnostic monitor\nan instance of the class\nara::diag::Monitor\nis cre-\nated by the appli…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P231_273",
+   "page": 231,
+   "text": "⌋\n[SWS_DM_01988] Unexpected monitor action handling\nUpstream requirements:\nRS_AP_00142\n⌈\nIf\nara::diag::Monitor::ReportMonitorAction\nis called with a parameter \"\naction\n\" value that is not supported by the used debouncing method as per the\n[SWS_DM_01987], the DM shall trigger a violation according to [SWS_CORE_00003]\nin the process of the corresponding\nara::diag::Monitor\ninterface.\n⌋"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P236_279",
+   "page": 236,
+   "text": "records and only a chronological order of\nevents\nnot of the individual records is pro-\nvided.\n[SWS_DM_01116] Reporting order of snapshot and extended data records\nUpstream requirements:\nRS_Diag_04200\n⌈\nIf\nDiagnosticCommonProps.typeOfEventCombinationSupported\nis\nset to\neventCombinationOnRetrieval\nand\nDiagnosticCommonProps.\neventCombinationReportingBehavior\nis set to\nreportingInChronolog-\nicalOrderOldestFirst\nand the DM is reporting snapshot records or extended\ndata records and for one record number multiple\nevents\nhave data, the DM shall\nreport the stored event data in chronological order of the event data storage with the\noldest entry first.\n⌋\n7.3.4.1.4 EnableConditions\nThe DM provides also\nEnable Conditions\nto ignore a certain call of\nara::diag::\nMonitor::ReportMonitorAction\nin required situations.\nDiagnosticEnableCondition\ns are mapped to\nDiagnosticEvent\ns by\nDiag-\nnosticEventToEnableConditionGroupMapping\ns.\nEnable Conditions\nare controlled via the function\nara::diag::Condition::\nSetCondition\n. There current corresponding status, either ’\nkConditionFalse\n’\nor\nkConditionTrue\ncan be retrieved via ’\nara::diag::Condition::GetCondi-\ntion\n’.\n[SWS_DM_00568] Handling of\nenable conditions\nUpstream requirements:\nRS_Diag_04192\n⌈\nIf the fu…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P240_283",
+   "page": 240,
+   "text": "[SWS_DM_00875] Internal debounce counter incrementation\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04068\n⌈\nThe DM shall increment the event’s internal debounce counter by the con-\nfigured step-size value of\nDiagEventDebounceCounterBased.counterIncre-\nmentStepSize\n, when the related\nmonitor\ncalls the method\nara::diag::Moni-\ntor::ReportMonitorAction\nwith the parameter\naction\nset to\nkPrefailed\n. If\nafter the incrementation the debounce counter value is greater than the threshold\nDi-\nagEventDebounceCounterBased.counterFailedThreshold\n, the DM shall set\nthe debounce counter value equal to the threshold.\n⌋\n[SWS_DM_00024] Qualified failed event using counter-based debouncing\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04068\n⌈\nIf the internal debounce counter is greater or equal to\nDiagEventDebounceCoun-\nterBased.counterFailedThreshold\nthe DM shall process the event as\nkFinal-\nlyDefective\n.\n⌋\n[SWS_DM_00876] Internal debounce counter decrementation\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04068\n⌈\nThe DM shall decrement the event’s internal debounce counter by the con-\nfigured step-size value of\nDiagEventDebounceCounterBased.counterDecre-\nmentStepSize\n, when the related\nmonitor\ncalls the method\nara::diag::Moni-\ntor::ReportMonitor…"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P243_285",
+   "page": 243,
+   "text": "7.3.4.1.5.2 Time-based debouncing\nTime-based debouncing is done on a per\nevent\nbased counting policy of reported\nkPrepassed\nor\nkPrefailed\nfrom\ndiagnostic monitors\n. Per\nevent\nan internal\ndebounce timer value is used. The\nEvent status\nbit \"\nkTestFailed\n\" for\nevents\nare calculated by evaluating configured thresholds of the internal debounce timers.\n[SWS_DM_00015] Use of timer based debouncing for events\nUpstream requirements:\nRS_Diag_04225\n⌈\nThe existence of a\nDiagnosticEventToDebounceAlgorithmMapping\nwith an\naggregation of\nDiagEventDebounceTimeBased\nby the referenced\nDiagnos-\nticDebounceAlgorithmProps.debounceAlgorithm\nshall activate a time-based\ndebouncing for this\nevent\n.\n⌋\n[SWS_DM_00085] Internal debounce timer init\nUpstream requirements:\nRS_Diag_04225\n⌈\nThe DM shall initialize the event’s internal debounce timer to ’0’ upon start-up.\n⌋\nNote: debounceCounterStorage is not supported for time-based debouncing\n[SWS_DM_00030] Calculation of the FDC based on the internal debounce timer\nUpstream requirements:\nRS_Diag_04225, RS_Diag_04190\n⌈\nThe DM shall calculate the FDC according to ISO 14229-1, based on the value and\nrange of the internal debounce timer by linear mapping in order to achieve a value\nrange of -128 ... +127.\n⌋\nThe debo…"
+  }
+ ],
+ "element": {
+  "description": "Function to report the status information being relevant for error monitoring paths.",
+  "id": "SWS_DM_00543",
+  "kind": "function",
+  "name": "ReportMonitorAction",
+  "signature": "void ReportMonitorAction (MonitorAction action) noexcept;",
+  "spezifikation": "function ReportMonitorAction [SWS_DM_00543] Upstream: RS_Diag_04179 , RS_AP_00139 , RS_AP_00119 void ReportMonitorAction ( MonitorAction action) noexcept; Function to report the status information being relevant for error monitoring paths. Header-Datei #include \"ara/diag/monitor.h\" class mono Scope class ara::diag::Monitor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit not thread-safe class mono Verletzungen (Violations) UnexpectedMoni- ara::diag::Monitor::ReportMonitorAction is called with torActionHan- a parameter action value that is not supported by the used dlingViolation debouncing method. class mono Parameter (in) th Parameter th Beschreibung td action td Contains either the last (un-)qualified test result of the diagnostic monitor or commands to control the debouncing or to force a prestorage. Rückgabewert th Typ th Beschreibung td None td"
+ },
+ "module": "dm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "verwandte_requirements": [
+  {
+   "id": "SWS_DM_00514",
+   "text": "enumeration DiagErrc [SWS_DM_00514] Upstream: RS_AP_00119 , RS_AP_00125 enum class DiagErrc : ara::core::ErrorDomain::CodeType {...}; Specifies the types of internal errors that can occur upon calling Offer or ReportMonitorAction. Header-Datei #include \"ara/diag/diag_error_domain.h\" class mono Forwarding-Header #include \"ara/diag/diag_fwd.h\" class mono Scope namespace ara::diag class mono Symbol DiagErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kAlreadyOffered td = 101 The service is already offered . td kConfigurationMismatch td = 102 Configuration does not match DEXT . td kDebouncingConfigurationInconsistent td = 103 monitor debouncing configuration invalid, e.g. passed threshold larger than failed threshold ... td kReportIgnored td = 104 Enable Conditions disabled, OC not started, ... . td kInvalidArgument td = 105 e.g. kP…"
+  },
+  {
+   "id": "SWS_DM_00526",
+   "text": "enumeration DiagUdsNrcErrc [SWS_DM_00526] Upstream: RS_AP_00119 , RS_AP_00125 enum class DiagUdsNrcErrc : ara::core::ErrorDomain::CodeType {...}; Specifies the types of internal errors that can occur upon calling Offer or ReportMonitorAction. The error codes described are defined in ISO 14229-1:2020 [1] , Table A.1 \"Negative Response Codes\". In AUTOSAR, the three negative response code ranges, 0x00, 0x01-0x7F and 0x80-0xFF are respected, however, the value 0xFF is used to internally indicate, that there is no further processing and no response handling foreseen. Literaturverzeichnis SWS Diagnostics: [1] ISO 14229-1(2020) – Unified diagnostic services (UDS) – Part 1: Application layer (Release 2020-02) – www.iso.org Header-Datei #include \"ara/diag/diag_uds_nrc_error_domain.h\" class mono Forwarding-Header #include \"ara/diag/diag_fwd.h\" class mono Scope namespace ara::diag class mono Symbo…"
+  },
+  {
+   "id": "SWS_DM_01698",
+   "text": "function ReportMonitorAction [SWS_DM_01698] Upstream: RS_Diag_04179 , RS_AP_00139 , RS_AP_00119 void ReportMonitorAction ( MonitorHandleType monitorHandle, Monitor Action action) noexcept; Function to report the status information being relevant for error monitoring paths. Calls with invalid monitorHandle are ignored. Header-Datei #include \"ara/diag/multiple_monitor.h\" class mono Scope class ara::diag::MultipleMonitor class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit conditional whether the function has to be implemented thread safe or non-thread safe is determined by the ConcurrencyType given in the constructor class mono Parameter (in) th Parameter th Beschreibung td monitorHandle td Identifies the requested monitor td action td Contains either the last (un-)qualified test result of the diagnostic monitor or commands to control the debouncing or to force a pr…"
+  }
+ ]
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8334da733b5583e19665edab9896f765f3cd842c1dc4bbfd75fb96dc5abc89e5" data-trace-output="599a764efa86f9e3a3df18b4ff25d23d8fe5526b173e4ac1e876d4dd605e0a5a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet Testergebnisse und Steuerbefehle zur Entprellung eines Diagnosemonitors synchron an das Fehlermonitoring." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
+
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Methode &lt;code&gt;ReportMonitorAction&lt;/code&gt; der Klasse &lt;code&gt;ara::diag::Monitor&lt;/code&gt; meldet Status- und Überwachungsinformationen einer Diagnoseprüfung an das Fehlermonitoring des Diagnostic Management Daemons &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Über den Parameter &lt;code&gt;action&lt;/code&gt; vom Typ &lt;code&gt;MonitorAction&lt;/code&gt; übergibt die Anwendung entweder ein qualifiziertes bzw. unqualifiziertes Testergebnis oder Steuerbefehle zur Steuerung der Entprellung sowie zur Auslösung einer Vorspeicherung (Prestorage) &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Die Funktion liefert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) und ist als &lt;code&gt;noexcept&lt;/code&gt; sowie ausnahmesicher deklariert &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;p&gt;Wird &lt;code&gt;ReportMonitorAction&lt;/code&gt; mit einem Wert für &lt;code&gt;action&lt;/code&gt; aufgerufen, der von dem konfigurierten Entprellverfahren des Diagnose-Events nicht unterstützt wird, löst der Diagnostic Manager eine Prozessverletzung aus &lt;a class="spec-record-ref" data-req="SWS_DM_01988" href="../spec/record.html?id=SWS_DM_01988"&gt;[SWS_DM_01988]&lt;/a&gt;. Zudem definiert das System interne Fehlercodes im Typ &lt;code&gt;DiagErrc&lt;/code&gt;, beispielsweise &lt;code&gt;kReportIgnored&lt;/code&gt; für Situationen, in denen Freigabebedingungen nicht erfüllt sind &lt;a class="spec-record-ref" data-req="SWS_DM_00514" href="../spec/record.html?id=SWS_DM_00514"&gt;[SWS_DM_00514]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;p&gt;Für die Integration und Nebenläufigkeit gelten folgende Randbedingungen:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;Thread-Sicherheit:&lt;/strong&gt; Die Funktion ist nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_DM_00543" href="../spec/record.html?id=SWS_DM_00543"&gt;[SWS_DM_00543]&lt;/a&gt;. Parallele Aufrufe auf derselben Monitor-Instanz müssen aufruferseitig synchronisiert werden (im Unterschied zu &lt;code&gt;MultipleMonitor&lt;/code&gt;, wo die Threadsicherheit über den Konstruktor konfigurierbar ist &lt;a class="spec-record-ref" data-req="SWS_DM_01698" href="../spec/record.html?id=SWS_DM_01698"&gt;[SWS_DM_01698]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Freigabebedingungen:&lt;/strong&gt; Ist eine dem Diagnose-Event zugeordnete Enable Condition nicht erfüllt, wird der Aufruf von &lt;code&gt;ReportMonitorAction&lt;/code&gt; ignoriert &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=236"&gt;SWS Diagnostics §7.3.4.1.4 „EnableConditions“&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Entprellung:&lt;/strong&gt; Gemeldete Aktionen wie &lt;code&gt;kPrefailed&lt;/code&gt; verändern den internen Entprellzähler gemäß konfigurierter Schrittweite &lt;a class="spec-record-ref" data-req="SWS_DM_00875" href="../spec/record.html?id=SWS_DM_00875"&gt;[SWS_DM_00875]&lt;/a&gt;, bis bei Erreichen des Schwellenwerts der Fehler als &lt;code&gt;kFinallyDefective&lt;/code&gt; eingestuft wird &lt;a class="spec-record-ref" data-req="SWS_DM_00024" href="../spec/record.html?id=SWS_DM_00024"&gt;[SWS_DM_00024]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR AP R25-11 erstellt.&lt;/p&gt;
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8334da733b55…</code></div>
+              <div><strong>Konstituierende Records:</strong> 1</div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">9 von 9 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (1 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 0 seit der Generierung zugeordnet)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_00543","k":"function","d":"AUTOSAR","t":"","n":"ReportMonitorAction"}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P68_015","d":"AUTOSAR_AP_SWS_Diagnostics","p":68,"t":"[SWS_DM_00514] [SWS_DM_00515]\n[SWS_DM_00516] [SWS_DM_00517]\n[SWS_DM_00518] [SWS_DM_00519]\n[SWS_DM_00520] [SWS_DM_00521]\n[SWS_DM_00522] [SWS_DM_00523]\n[SWS_DM_00524] [SWS_DM_00525]\n[SWS_DM_00526] [SWS_DM_00527]\n[SWS_DM_00528] [SWS_DM_00529]\n[SWS_DM_00530] [SWS_DM_00531]\n[SWS_DM_00532] [SWS_DM_00533]\n[SWS_DM_00534] [SWS_DM_00535]\n[SWS_DM_00536] [SWS_DM_00537]\n[SWS_DM_00543] [SWS_DM_00554]\n[SWS_DM_00555] [SWS_DM_00556]\n[SWS_DM_00557] [SWS_DM_00559]\n[SWS_DM_00560] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00618] [SWS_DM_00619]\n[SWS_DM_00636] [SWS_DM_00637]\n[SWS_DM_00638] [SWS_DM_00653]\n[SWS_DM_00671] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00764]\n[SWS_DM_00765] [SWS_DM_00766]\n[SWS_DM_00774] [SWS_DM_00776]\n[SWS_DM_00789] [SWS_DM_00790]\n[SWS_DM_00791] [SWS_DM_00792]\n[SWS_DM_00799] [SWS_DM_00800]\n[SWS_DM_00801] [SWS_DM_00802]\n[SWS_DM_00808] [SWS_DM_00809]\n[SWS_DM_00836] [SWS_DM_00985]\n[SWS_DM_00986] [SWS_DM_00987]\n[SWS_DM_00988] [SWS_DM_00989]\n[SWS_DM_00990] [SWS_DM_00991]\n[SWS_DM_00992] [SWS_DM_00993]\n[SWS_DM_00994] [SWS_DM_00995]\n[SWS_DM_00996] [SWS_DM_00997]\n[SWS_DM_00998] [SWS_DM_00999]\n[SWS_DM_01000] [SWS_DM_01001]\n[SWS_DM_01002] [SWS_DM_01003]\n[SWS_DM_01004] [SWS_DM_01005]\n[SWS_DM_01006] [SWS_DM_01016]\n[SWS_DM_01088] [SWS…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P70_025","d":"AUTOSAR_AP_SWS_Diagnostics","p":70,"t":"[SWS_DM_00543] [SWS_DM_00594]\n[SWS_DM_00597] [SWS_DM_00599]\n[SWS_DM_00619] [SWS_DM_00638]\n[SWS_DM_00649] [SWS_DM_00650]\n[SWS_DM_00653] [SWS_DM_00654]\n[SWS_DM_00655] [SWS_DM_00656]\n[SWS_DM_00666] [SWS_DM_00667]\n[SWS_DM_00668] [SWS_DM_00669]\n[SWS_DM_00670] [SWS_DM_00671]\n[SWS_DM_00672] [SWS_DM_00673]\n[SWS_DM_00674] [SWS_DM_00692]\n[SWS_DM_00694] [SWS_DM_00695]\n[SWS_DM_00696] [SWS_DM_00697]\n[SWS_DM_00698] [SWS_DM_00699]\n[SWS_DM_00700] [SWS_DM_00714]\n[SWS_DM_00715] [SWS_DM_00725]\n[SWS_DM_00735] [SWS_DM_00744]\n[SWS_DM_00745] [SWS_DM_00755]\n[SWS_DM_00766] [SWS_DM_00776]\n[SWS_DM_00792] [SWS_DM_00802]\n[SWS_DM_00809] [SWS_DM_00918]\n[SWS_DM_00919] [SWS_DM_01016]\n[SWS_DM_01088] [SWS_DM_01102]\n[SWS_DM_01367] [SWS_DM_01698]\n[SWS_DM_01699] [SWS_DM_01707]\n[SWS_DM_01708] [SWS_DM_01709]\n[SWS_DM_01710] [SWS_DM_01711]\n[SWS_DM_01728] [SWS_DM_01729]\n▽"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P81_070","d":"AUTOSAR_AP_SWS_Diagnostics","p":81,"t":"[SWS_DM_00540] [SWS_DM_00541]\n[SWS_DM_00542] [SWS_DM_00543]\n[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00965]\n[SWS_DM_01694] [SWS_DM_01695]\n[SWS_DM_01696] [SWS_DM_01697]\n[SWS_DM_01698] [SWS_DM_01702]\n[SWS_DM_01732] [SWS_DM_01972]\n[SWS_DM_01973] [SWS_DM_01987]\n[SWS_DM_02062] [SWS_DM_02121]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P229_270","d":"AUTOSAR_AP_SWS_Diagnostics","p":229,"t":"[SWS_DM_01094] Monitor initialization for enable condition re-enabling reason\nand ControlDTCSetting set to On\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04159, RS_Diag_04270\n⌈\nIn case an\nenable condition\nmapped to the\ndiagnostic event\nwas changed\nto fulfilled and in this way all related\nenable conditions\nof the event were ful-\nfilled and DTC-setting is re-enabled via the\nUDS service\nrequest ControlDTCSetting\n- 0x85 set to On (see ISO 14229-1[1]), the DM shall call the registered notifier method\nara::diag::Monitor::Monitor::initMonitor with the parameter\nara::diag::InitMoni-\ntorReason\nset to\nkReenabled\n.\n⌋\n[SWS_DM_01095] Monitor initialization for enable condition not fulfilled or Con-\ntrolDTCSetting set to Off\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04192, RS_Diag_04159\n⌈\nIn case an\nenable condition\nmapped to the\ndiagnostic event\nwas changed\nto not fulfilled or DTC-setting is disabled via the\nUDS service\nrequest ControlDTC-\nSetting - 0x85 set to Off (see ISO 14229-1[1]), the DM shall call the registered noti-\nfier method ara::diag::Monitor::Monitor::initMonitor with the parameter\nara::diag::\nInitMonitorReason\nset to\nkDisabled\n.\n⌋\nPer\ndiagnostic monitor\nan instance of the class\nara::diag::Monitor\nis cre-\nated by the appli…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P231_273","d":"AUTOSAR_AP_SWS_Diagnostics","p":231,"t":"⌋\n[SWS_DM_01988] Unexpected monitor action handling\nUpstream requirements:\nRS_AP_00142\n⌈\nIf\nara::diag::Monitor::ReportMonitorAction\nis called with a parameter \"\naction\n\" value that is not supported by the used debouncing method as per the\n[SWS_DM_01987], the DM shall trigger a violation according to [SWS_CORE_00003]\nin the process of the corresponding\nara::diag::Monitor\ninterface.\n⌋"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P236_279","d":"AUTOSAR_AP_SWS_Diagnostics","p":236,"t":"records and only a chronological order of\nevents\nnot of the individual records is pro-\nvided.\n[SWS_DM_01116] Reporting order of snapshot and extended data records\nUpstream requirements:\nRS_Diag_04200\n⌈\nIf\nDiagnosticCommonProps.typeOfEventCombinationSupported\nis\nset to\neventCombinationOnRetrieval\nand\nDiagnosticCommonProps.\neventCombinationReportingBehavior\nis set to\nreportingInChronolog-\nicalOrderOldestFirst\nand the DM is reporting snapshot records or extended\ndata records and for one record number multiple\nevents\nhave data, the DM shall\nreport the stored event data in chronological order of the event data storage with the\noldest entry first.\n⌋\n7.3.4.1.4 EnableConditions\nThe DM provides also\nEnable Conditions\nto ignore a certain call of\nara::diag::\nMonitor::ReportMonitorAction\nin required situations.\nDiagnosticEnableCondition\ns are mapped to\nDiagnosticEvent\ns by\nDiag-\nnosticEventToEnableConditionGroupMapping\ns.\nEnable Conditions\nare controlled via the function\nara::diag::Condition::\nSetCondition\n. There current corresponding status, either ’\nkConditionFalse\n’\nor\nkConditionTrue\ncan be retrieved via ’\nara::diag::Condition::GetCondi-\ntion\n’.\n[SWS_DM_00568] Handling of\nenable conditions\nUpstream requirements:\nRS_Diag_04192\n⌈\nIf the fu…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P240_283","d":"AUTOSAR_AP_SWS_Diagnostics","p":240,"t":"[SWS_DM_00875] Internal debounce counter incrementation\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04068\n⌈\nThe DM shall increment the event’s internal debounce counter by the con-\nfigured step-size value of\nDiagEventDebounceCounterBased.counterIncre-\nmentStepSize\n, when the related\nmonitor\ncalls the method\nara::diag::Moni-\ntor::ReportMonitorAction\nwith the parameter\naction\nset to\nkPrefailed\n. If\nafter the incrementation the debounce counter value is greater than the threshold\nDi-\nagEventDebounceCounterBased.counterFailedThreshold\n, the DM shall set\nthe debounce counter value equal to the threshold.\n⌋\n[SWS_DM_00024] Qualified failed event using counter-based debouncing\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04068\n⌈\nIf the internal debounce counter is greater or equal to\nDiagEventDebounceCoun-\nterBased.counterFailedThreshold\nthe DM shall process the event as\nkFinal-\nlyDefective\n.\n⌋\n[SWS_DM_00876] Internal debounce counter decrementation\nUpstream requirements:\nRS_Diag_04125, RS_Diag_04068\n⌈\nThe DM shall decrement the event’s internal debounce counter by the con-\nfigured step-size value of\nDiagEventDebounceCounterBased.counterDecre-\nmentStepSize\n, when the related\nmonitor\ncalls the method\nara::diag::Moni-\ntor::ReportMonitor…"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P243_285","d":"AUTOSAR_AP_SWS_Diagnostics","p":243,"t":"7.3.4.1.5.2 Time-based debouncing\nTime-based debouncing is done on a per\nevent\nbased counting policy of reported\nkPrepassed\nor\nkPrefailed\nfrom\ndiagnostic monitors\n. Per\nevent\nan internal\ndebounce timer value is used. The\nEvent status\nbit \"\nkTestFailed\n\" for\nevents\nare calculated by evaluating configured thresholds of the internal debounce timers.\n[SWS_DM_00015] Use of timer based debouncing for events\nUpstream requirements:\nRS_Diag_04225\n⌈\nThe existence of a\nDiagnosticEventToDebounceAlgorithmMapping\nwith an\naggregation of\nDiagEventDebounceTimeBased\nby the referenced\nDiagnos-\nticDebounceAlgorithmProps.debounceAlgorithm\nshall activate a time-based\ndebouncing for this\nevent\n.\n⌋\n[SWS_DM_00085] Internal debounce timer init\nUpstream requirements:\nRS_Diag_04225\n⌈\nThe DM shall initialize the event’s internal debounce timer to ’0’ upon start-up.\n⌋\nNote: debounceCounterStorage is not supported for time-based debouncing\n[SWS_DM_00030] Calculation of the FDC based on the internal debounce timer\nUpstream requirements:\nRS_Diag_04225, RS_Diag_04190\n⌈\nThe DM shall calculate the FDC according to ISO 14229-1, based on the value and\nrange of the internal debounce timer by linear mapping in order to achieve a value\nrange of -128 ... +127.\n⌋\nThe debo…"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/96caac598117d789.json?v=a7a3b8c5" data-total="0" data-new="0" data-figures="0" data-used="8"></script></dialog>

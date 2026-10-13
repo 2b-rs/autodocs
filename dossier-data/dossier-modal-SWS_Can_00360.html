@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Can_00360" class="dossier-modal dossier-workbench" data-dossier-sha="5e2029f6d219e2d5" aria-labelledby="dossier-modal-SWS_Can_00360-title">
+<dialog id="dossier-modal-SWS_Can_00360" class="dossier-modal dossier-workbench" data-dossier-sha="64c0f57e5b9ded4d" aria-labelledby="dossier-modal-SWS_Can_00360-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Can_00360-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Can_00360)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,183 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,638 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Can_CheckWakeup'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [
@@ -237,18 +255,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="1e7164bea4c57e22bffe69c6e148e3d3a005834ef8987dfb08469786b6440c75" data-trace-output="5e2029f6d219e2d51d0b5f858ecd56f053ed4cc5379c5f104884427af7c5f2e3" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="720a4fc64f2afb67e53ee61efaa04b93898f965984a03f21f0118768ed97baf1" data-trace-output="64c0f57e5b9ded4d2981bc609017c567b113d11ee11c43242a17ba96c87cb0e6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Prüft synchron, ob für einen angegebenen CAN-Controller ein Wake-up-Ereignis am Bus erkannt wurde." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-&lt;p&gt;The synchronous function &lt;code&gt;Can_CheckWakeup&lt;/code&gt; checks for a specified CAN controller (parameter &lt;code&gt;Controller&lt;/code&gt;) whether a wakeup event was detected by the hardware (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=48"&gt;AUTOSAR_SWS_CANDriver p. 48&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=67"&gt;AUTOSAR_SWS_CANDriver p. 67&lt;/a&gt;). The call returns as &lt;code&gt;Std_ReturnType&lt;/code&gt; either &lt;code&gt;E_OK&lt;/code&gt; upon successful acceptance of the call or &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;). The availability of the function is pre-compile-time configurable: The service is added to or removed from the source code via a configuration parameter (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=67"&gt;AUTOSAR_SWS_CANDriver p. 67&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=97"&gt;AUTOSAR_SWS_CANDriver p. 97&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Verhalten&lt;/h4&gt;
+  &lt;p&gt;Die synchrone Funktion &lt;code&gt;Can_CheckWakeup&lt;/code&gt; prüft für einen bestimmten CAN-Controller, ob ein Wake-up-Ereignis erkannt wurde (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=48"&gt;AUTOSAR_SWS_CANDriver S. 48&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=67"&gt;AUTOSAR_SWS_CANDriver S. 67&lt;/a&gt;). Sie ist über die Header-Datei &lt;code&gt;Can.h&lt;/code&gt; verfügbar und besitzt die Service-ID &lt;code&gt;0x0b&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;).&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;Parameter:&lt;/strong&gt; &lt;code&gt;Controller&lt;/code&gt; (in) bezeichnet die Kennung des CAN-Controllers, dessen Zustand auf ein Wake-up geprüft werden soll (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Rückgabewert:&lt;/strong&gt; Gibt &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück. Der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; signalisiert, dass der API-Aufruf akzeptiert wurde, während &lt;code&gt;E_NOT_OK&lt;/code&gt; die Ablehnung anzeigt (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) definiert (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;h4&gt;Concurrency and Error Handling&lt;/h4&gt;
-&lt;p&gt;According to the functional specification, &lt;code&gt;Can_CheckWakeup&lt;/code&gt; is defined as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Can_00360" href="../../spec/record.html?id=SWS_Can_00360"&gt;[SWS_Can_00360]&lt;/a&gt;). Before the call, the CAN driver must be properly initialized; if the function is called in the uninitialized state, the driver reports the error &lt;code&gt;CAN_E_UNINIT&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=67"&gt;AUTOSAR_SWS_CANDriver p. 67&lt;/a&gt;).&lt;/p&gt;
+  &lt;h4&gt;Konfiguration und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Die Verfügbarkeit der Funktion ist zur Vorkompilierzeit konfigurierbar; der Service &lt;code&gt;Can_CheckWakeup&lt;/code&gt; kann darüber in den Code eingebunden oder aus ihm entfernt werden (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=67"&gt;AUTOSAR_SWS_CANDriver S. 67&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=97"&gt;AUTOSAR_SWS_CANDriver S. 97&lt;/a&gt;). Wird die Funktion aufgerufen, bevor der CAN-Treiber initialisiert wurde, meldet sie den Fehler &lt;code&gt;CAN_E_UNINIT&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=67"&gt;AUTOSAR_SWS_CANDriver S. 67&lt;/a&gt;).&lt;/p&gt;
 
-&lt;h4&gt;Interaction in the Overall System&lt;/h4&gt;
-&lt;p&gt;The invocation of &lt;code&gt;Can_CheckWakeup&lt;/code&gt; is performed by the CAN Interface (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=48"&gt;AUTOSAR_SWS_CANDriver p. 48&lt;/a&gt;). If wakeup support is activated in the overall system (&lt;a class="spec-record-ref" data-req="SWS_CANIF_00180" href="../../spec/record.html?id=SWS_CANIF_00180"&gt;[SWS_CANIF_00180]&lt;/a&gt;), the service &lt;code&gt;CanIf_CheckWakeup&lt;/code&gt; is called upon a wakeup event (for example, during the execution of &lt;code&gt;EcuM_CheckWakeup&lt;/code&gt;) (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANInterface&amp;amp;page=55"&gt;AUTOSAR_SWS_CANInterface §7.18.4.1 p. 55&lt;/a&gt;). The CAN Interface then queries the configured CAN drivers via &lt;code&gt;Can_CheckWakeup&lt;/code&gt; to determine which exact CAN hardware triggered the bus wakeup (&lt;a class="spec-record-ref" data-req="SWS_CANIF_00395" href="../../spec/record.html?id=SWS_CANIF_00395"&gt;[SWS_CANIF_00395]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANInterface&amp;amp;page=55"&gt;AUTOSAR_SWS_CANInterface §7.18.4.1 p. 55&lt;/a&gt;).&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specifications for Release R20-11.&lt;/p&gt;
+  &lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Der Aufruf von &lt;code&gt;Can_CheckWakeup&lt;/code&gt; wird typischerweise durch das CAN-Interface ausgelöst (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANDriver&amp;amp;page=48"&gt;AUTOSAR_SWS_CANDriver S. 48&lt;/a&gt;). Im Falle eines Wake-up-Ereignisses am Bus kann &lt;code&gt;CanIf_CheckWakeup&lt;/code&gt; während der Abarbeitung von &lt;code&gt;EcuM_CheckWakeup&lt;/code&gt; aufgerufen werden (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANInterface&amp;amp;page=55"&gt;AUTOSAR_SWS_CANInterface §7.18.4.1 „Wake-up detection“&lt;/a&gt;). Gemäß &lt;a class="spec-record-ref" data-req="SWS_CANIF_00395" href="../../spec/record.html?id=SWS_CANIF_00395"&gt;[SWS_CANIF_00395]&lt;/a&gt; fragt &lt;code&gt;CanIf&lt;/code&gt; hierbei über &lt;code&gt;Can_CheckWakeup()&lt;/code&gt; oder &lt;code&gt;CanTrcv_CheckWakeup()&lt;/code&gt; ab, welches konkrete Hardwaregerät den Bus-Wake-up ausgelöst hat (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=AUTOSAR_SWS_CANInterface&amp;amp;page=55"&gt;AUTOSAR_SWS_CANInterface S. 55&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert erstellt und basiert ausschließlich auf den Spezifikationen des AUTOSAR-Releases R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -288,9 +312,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1e7164bea4c5…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>720a4fc64f2a…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -325,8 +349,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">10</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">9</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -363,7 +387,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 2 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -426,4 +450,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Can_00360","k":"function","d":"AUTOSAR","t":"","n":"Can_CheckWakeup"}],"inbound":[{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P48_129","d":"AUTOSAR_SWS_CANDriver","p":48,"t":"the Can Interface, resulting in a call to Can_CheckWakeup."},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P48_131","d":"AUTOSAR_SWS_CANDriver","p":48,"t":"Can_CheckWakeup will check if there was a wakeup detected by a Can controlle"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_203","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall check if the requested"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_204","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall be pre compile time"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_206","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall raise the error CAN_E_UNINIT if the driver is"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_207","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall raise the error"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P97_294","d":"AUTOSAR_SWS_CANDriver","p":97,"t":"Adds / removes the service Can_CheckWakeup() from the code."},{"i":"SNIP_Can_AUTOSAR_SWS_CANI_P55_383","d":"AUTOSAR_SWS_CANInterface","p":55,"t":"7.18.4.1 Wake-up detection\nIf\nwake-up support\nis enabled (see [SWS_CANIF_00180])\nCanIf\nis notified by the\nIntegration Code about a detected CAN wake-up by the service\nCanIf_CheckWakeup\n()\n(see CAN Wakeup Sequences of [13]).\nIn case of a CAN bus \"\nwake-up\n\" event the function\nCanIf_CheckWakeup(Wakeup-\nSource)\nmay be called during execution of\nEcuM_CheckWakeup(WakeupSource)\n(see wake-up sequence diagrams of\nEcuM\n).\nCanIf\nin turn checks by configured input\nreference to\nEcuMWakeupSource\nin\nCanDrvs\n, which\nCanDrvs\nhave to be checked.\nCanIf\ngets this information via reference\nCanIfCtrlCanCtrlRef\n.\nThe Communication Service, which is called, belongs to the service defined during\nconfiguration (see\nCanIfDispatchCfg\n). In this way\nEcuM\nas well as\nCanSm\nare able\nto change CAN Controller States and to control the system behavior concerning the\nBusOff recovery\nor\nwake-up procedure\n.\n[SWS_CANIF_00395]\n⌈\nWhen\nCanIf_CheckWakeup(EcuM_WakeupSourceType\nWakeupSource)\nis invoked,\nCanIf\nshall query\nCanDrvs\n/\nCanTrcvs\nvia\nCanTrcv_-\nCheckWakeup()\nor\nCan_CheckWakeup()\n, which exact CAN hardware device\ncaused the bus wake-up.\n⌋\n()\nNote: It is implementation specific, which controllers and transceivers are queried.\nCanIf\njust has to find out the exact CAN…"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/9d8b443bb6008f3f.json?v=77bcf07a" data-total="3" data-new="2" data-figures="0" data-used="8"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Can_00360","k":"function","d":"AUTOSAR","t":"","n":"Can_CheckWakeup"}],"inbound":[{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P48_129","d":"AUTOSAR_SWS_CANDriver","p":48,"t":"the Can Interface, resulting in a call to Can_CheckWakeup."},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P48_131","d":"AUTOSAR_SWS_CANDriver","p":48,"t":"Can_CheckWakeup will check if there was a wakeup detected by a Can controlle"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_203","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall check if the requested"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_204","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall be pre compile time"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_206","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall raise the error CAN_E_UNINIT if the driver is"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P67_207","d":"AUTOSAR_SWS_CANDriver","p":67,"t":"The function Can_CheckWakeup shall raise the error"},{"i":"SNIP_Can_AUTOSAR_SWS_CAND_P97_294","d":"AUTOSAR_SWS_CANDriver","p":97,"t":"Adds / removes the service Can_CheckWakeup() from the code."},{"i":"SNIP_Can_AUTOSAR_SWS_CANI_P55_383","d":"AUTOSAR_SWS_CANInterface","p":55,"t":"7.18.4.1 Wake-up detection\nIf\nwake-up support\nis enabled (see [SWS_CANIF_00180])\nCanIf\nis notified by the\nIntegration Code about a detected CAN wake-up by the service\nCanIf_CheckWakeup\n()\n(see CAN Wakeup Sequences of [13]).\nIn case of a CAN bus \"\nwake-up\n\" event the function\nCanIf_CheckWakeup(Wakeup-\nSource)\nmay be called during execution of\nEcuM_CheckWakeup(WakeupSource)\n(see wake-up sequence diagrams of\nEcuM\n).\nCanIf\nin turn checks by configured input\nreference to\nEcuMWakeupSource\nin\nCanDrvs\n, which\nCanDrvs\nhave to be checked.\nCanIf\ngets this information via reference\nCanIfCtrlCanCtrlRef\n.\nThe Communication Service, which is called, belongs to the service defined during\nconfiguration (see\nCanIfDispatchCfg\n). In this way\nEcuM\nas well as\nCanSm\nare able\nto change CAN Controller States and to control the system behavior concerning the\nBusOff recovery\nor\nwake-up procedure\n.\n[SWS_CANIF_00395]\n⌈\nWhen\nCanIf_CheckWakeup(EcuM_WakeupSourceType\nWakeupSource)\nis invoked,\nCanIf\nshall query\nCanDrvs\n/\nCanTrcvs\nvia\nCanTrcv_-\nCheckWakeup()\nor\nCan_CheckWakeup()\n, which exact CAN hardware device\ncaused the bus wake-up.\n⌋\n()\nNote: It is implementation specific, which controllers and transceivers are queried.\nCanIf\njust has to find out the exact CAN…"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/9d8b443bb6008f3f.json?v=8ea454f6" data-total="1" data-new="1" data-figures="0" data-used="8"></script></dialog>

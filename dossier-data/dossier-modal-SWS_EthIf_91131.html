@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91131" class="dossier-modal dossier-workbench" data-dossier-sha="ff22a1dd58be2d11" aria-labelledby="dossier-modal-SWS_EthIf_91131-title">
+<dialog id="dossier-modal-SWS_EthIf_91131" class="dossier-modal dossier-workbench" data-dossier-sha="668c3370f82afd6d" aria-labelledby="dossier-modal-SWS_EthIf_91131-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91131-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91131)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,449 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,904 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_RunPortCableDiagnostic'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,31 +198,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="2f579452a21ecc0540cf113dfb1fb877bdc56ad2f1a6533e2b002f47f68eda22" data-trace-output="ff22a1dd58be2d117aa1a246cc5c87fffde85c00192ce7c9b5441581563b0b19" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="71c8b4be21c91b269de27a1ee10e29f04f881303098c03959881ce336f89176e" data-trace-output="668c3370f82afd6d87123ed8f7e823a3d16153846929c4b5abaf7599a989880b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Startet asynchron die Kabeldiagnose an einem Ethernet-Switch-Port, sofern der zugehörige Controller aktiv ist." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The function &lt;code&gt;EthIf_RunPortCableDiagnostic&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;) initiates cable diagnostics asynchronously on a defined port of an Ethernet switch.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die asynchrone Schnittstelle &lt;code&gt;EthIf_RunPortCableDiagnostic&lt;/code&gt; stößt eine Kabeldiagnose für einen ausgewählten Port eines Ethernet-Switches an &lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;. Beim Aufruf werden die Parameter &lt;code&gt;SwitchIdx&lt;/code&gt; (Index des Switches im Kontext des Ethernet-Switch-Treibers) und &lt;code&gt;PortIdx&lt;/code&gt; (Index des adressierten Ports am Switch) übergeben. Die Funktion liefert &lt;code&gt;E_OK&lt;/code&gt; zurück, sobald der Trigger für die Kabeldiagnose angenommen wurde; wird der Anstoß abgewiesen, erfolgt die Rückgabe von &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Usage and Parameters&lt;/h4&gt;
-  &lt;p&gt;Addressing of the destination port takes place via two transfer parameters:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt;: Index of the Ethernet switch in the context of the Ethernet Switch Driver (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;PortIdx&lt;/code&gt;: Index of the port on the addressed switch (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; indicates whether the request was accepted (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The trigger to execute cable diagnostics was accepted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The trigger to execute cable diagnostics was rejected.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Zusammenspiel und Vorbedingungen&lt;/h4&gt;
+&lt;p&gt;Bei Ausführung von &lt;code&gt;EthIf_RunPortCableDiagnostic&lt;/code&gt; ist &lt;code&gt;EthIf&lt;/code&gt; verpflichtet sicherzustellen, dass sich der korrespondierende &lt;code&gt;EthIfController&lt;/code&gt; im Betriebszustand &lt;code&gt;ETH_MODE_ACTIVE&lt;/code&gt; befindet &lt;a class="spec-record-ref" data-req="SWS_EthIf_00464" href="../../spec/record.html?id=SWS_EthIf_00464"&gt;[SWS_EthIf_00464]&lt;/a&gt;. Unter dieser Bedingung leitet das Ethernet Interface den Aufruf an die Funktion &lt;code&gt;EthSwt_RunPortCableDiagnostic&lt;/code&gt; des zugeordneten Switch-Treibers weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00464" href="../../spec/record.html?id=SWS_EthIf_00464"&gt;[SWS_EthIf_00464]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Interaction and Sequence&lt;/h4&gt;
-  &lt;p&gt;When &lt;code&gt;EthIf_RunPortCableDiagnostic&lt;/code&gt; is called, &lt;code&gt;EthIf&lt;/code&gt; must ensure according to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00464" href="../../spec/record.html?id=SWS_EthIf_00464"&gt;[SWS_EthIf_00464]&lt;/a&gt; that the associated &lt;code&gt;EthIfController&lt;/code&gt; is in state &lt;code&gt;ETH_MODE_ACTIVE&lt;/code&gt;. If this condition is met, the module forwards the call to the driver function &lt;code&gt;EthSwt_RunPortCableDiagnostic&lt;/code&gt; of the corresponding Ethernet Switch Driver (&lt;code&gt;EthIfSwitchIdx&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00464" href="../../spec/record.html?id=SWS_EthIf_00464"&gt;[SWS_EthIf_00464]&lt;/a&gt;). Execution of the cable diagnostics itself ultimately takes place via calling &lt;code&gt;EthTrcv_RunCableDiagnostic&lt;/code&gt; on the referenced Ethernet transceiver (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;Regarding reentrancy, the function is reentrant for calls with different values of &lt;code&gt;SwitchIdx&lt;/code&gt; and &lt;code&gt;PortIdx&lt;/code&gt;. For the same switch and the same port, however, the call is non-reentrant (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;Since this is an asynchronous service, &lt;code&gt;E_OK&lt;/code&gt; only acknowledges acceptance of the trigger, not completion of the measurement. If the condition of an active controller (&lt;code&gt;ETH_MODE_ACTIVE&lt;/code&gt; according to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00464" href="../../spec/record.html?id=SWS_EthIf_00464"&gt;[SWS_EthIf_00464]&lt;/a&gt;) is not met, the call is presumably rejected with &lt;code&gt;E_NOT_OK&lt;/code&gt;. Specific DET or DEM error codes are not defined for this service.&lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Rückgabe von E_NOT_OK bei inaktivem Controller – Begründung: SWS_EthIf_00464 verlangt ETH_MODE_ACTIVE für die Weiterleitung an den Switch-Treiber, definiert aber keinen separaten Fehlercode. --&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist reentrant für voneinander abweichende Werte von &lt;code&gt;SwitchIdx&lt;/code&gt; und &lt;code&gt;PortIdx&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91131" href="../../spec/record.html?id=SWS_EthIf_91131"&gt;[SWS_EthIf_91131]&lt;/a&gt;. Für identische Paare aus Switch- und Port-Index ist der Aufruf hingegen als nicht reentrant spezifiziert, weshalb parallele Ausführungen auf demselben Port vermieden werden müssen.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -244,9 +250,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2f579452a21e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>71c8b4be21c9…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -281,8 +287,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -319,7 +325,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -382,4 +388,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91131","k":"function","d":"AUTOSAR","t":"","n":"EthIf_RunPortCableDiagnostic"}],"inbound":[{"i":"SWS_EthIf_00464","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00464].","n":"SWS_EthIf_00464"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b99845742fb96710.json?v=8f41d2ed" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91131","k":"function","d":"AUTOSAR","t":"","n":"EthIf_RunPortCableDiagnostic"}],"inbound":[{"i":"SWS_EthIf_00464","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00464].","n":"SWS_EthIf_00464"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b99845742fb96710.json?v=9a3a0d9a" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

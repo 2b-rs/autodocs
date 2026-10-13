@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_FrIf_05005" class="dossier-modal dossier-workbench" data-dossier-sha="c59fdf748304396b" aria-labelledby="dossier-modal-SWS_FrIf_05005-title">
+<dialog id="dossier-modal-SWS_FrIf_05005" class="dossier-modal dossier-workbench" data-dossier-sha="6079aaf5b9ef1879" aria-labelledby="dossier-modal-SWS_FrIf_05005-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_FrIf_05005-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_FrIf_05005)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,301 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,756 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'FrIf_StartCommunication'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,36 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="f2b9e147bea288d173c87a822e8b93a5034d609309ca69b34f0a5a65bd0da72d" data-trace-output="c59fdf748304396be8e20e74d5270f86d3fc03e6495080d51f27ac98688bb45f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ba57cfeb6d86148e996322c6f9ec2cfcf7d0a5b74a65ea8eafce8e0f27f44421" data-trace-output="6079aaf5b9ef1879a00bd7470897f0b237aa10808fd9458d84f7acbf0d57e136" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Startet asynchron die FlexRay-Kommunikation auf einem angegebenen Controller über den zugrunde liegenden Treiber." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;FrIf_StartCommunication&lt;/code&gt; encapsulates the call to the driver function &lt;code&gt;Fr_StartCommunication()&lt;/code&gt; of the FlexRay driver (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;). Execution of the service (service ID &lt;code&gt;0x04&lt;/code&gt;) is asynchronous (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;). The interface is available via the header file &lt;code&gt;FrIf.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Parameters:&lt;/strong&gt; The index of the FlexRay Communication Controller to be addressed is passed via &lt;code&gt;FrIf_CtrlIdx&lt;/code&gt; (type &lt;code&gt;uint8&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Return values:&lt;/strong&gt; Returns a status of type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;):
-      &lt;ul&gt;
-        &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The call to the API service in the FlexRay driver returned &lt;code&gt;E_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;).&lt;/li&gt;
-        &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The driver call failed (return &lt;code&gt;E_NOT_OK&lt;/code&gt;) or an error was detected in development mode (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;).&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;FrIf_StartCommunication&lt;/code&gt; fungiert als Kapselung der FlexRay-Treiberfunktion &lt;code&gt;Fr_StartCommunication()&lt;/code&gt; und stößt die Kommunikationsaufnahme eines adressierten FlexRay-Kommunikationscontrollers an &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;
-    If an error is detected during execution in development mode (Development Mode) or if the underlying FlexRay driver reports an error, the service aborts and signals this via the return value &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle ist über den Header &lt;code&gt;FrIf.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x04&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;. Der Aufruf wird asynchron abgewickelt &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;. Als einziger Eingabeparameter dient &lt;code&gt;FrIf_CtrlIdx&lt;/code&gt; (Typ &lt;code&gt;uint8&lt;/code&gt;), welcher den Index des anzusteuernden FlexRay-Kommunikationscontrollers festlegt; Ein-/Ausgangs- oder reine Ausgabeparameter existieren nicht &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Reentrancy&lt;/h4&gt;
-  &lt;p&gt;
-    The function is non-reentrant for the same controller index (&lt;code&gt;non reentrant for identical values of FrIf_CtrlIdx&lt;/code&gt;), but reentrant for calls with different indices (&lt;code&gt;reentrant for different values of FrIf_CtrlIdx&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;). Simultaneous calls for the same controller instance must therefore be synchronized by the caller.
-  &lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Die Funktion gibt einen Statuscode vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Aufruf des zugrunde liegenden API-Dienstes im FlexRay-Treiber verlief erfolgreich und lieferte &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Der API-Dienst des Treibers hat &lt;code&gt;E_NOT_OK&lt;/code&gt; gemeldet oder es wurde während der Ausführung im Entwicklungsmodus (Development Mode) ein Fehler erkannt &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;p class="ai-note"&gt;This usage note was created automatically based on the specification SWS_FrIf_05005 (AUTOSAR CP R20-11).&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Bezüglich der Reentranz ist &lt;code&gt;FrIf_StartCommunication&lt;/code&gt; reentrant für voneinander abweichende Controller-Indizes (&lt;code&gt;FrIf_CtrlIdx&lt;/code&gt;), jedoch nicht reentrant für identische Controller-Werte &lt;a class="spec-record-ref" data-req="SWS_FrIf_05005" href="../../spec/record.html?id=SWS_FrIf_05005"&gt;[SWS_FrIf_05005]&lt;/a&gt;. Aufrufende Module müssen daher bei gleichzeitigen Zugriffen sicherstellen, dass keine nebenläufigen Aufrufe für denselben Controller erfolgen.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -244,7 +251,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>f2b9e147bea2…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ba57cfeb6d86…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -382,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrIf_05005","k":"function","d":"AUTOSAR","t":"","n":"FrIf_StartCommunication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ef5cc789f4ffa0be.json?v=ddb04024" data-total="10" data-new="10" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrIf_05005","k":"function","d":"AUTOSAR","t":"","n":"FrIf_StartCommunication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ef5cc789f4ffa0be.json?v=4e9b443e" data-total="10" data-new="10" data-figures="0" data-used="0"></script></dialog>

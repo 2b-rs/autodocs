@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_std_tuple_size_ara_core_Array_T_c75763" class="dossier-modal dossier-workbench" data-dossier-sha="faf731f984e529ea" aria-labelledby="dossier-modal-cl_std_tuple_size_ara_core_Array_T_c75763-title">
+<dialog id="dossier-modal-cl_std_tuple_size_ara_core_Array_T_c75763" class="dossier-modal dossier-workbench" data-dossier-sha="86b0210bad665c6b" aria-labelledby="dossier-modal-cl_std_tuple_size_ara_core_Array_T_c75763-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_std_tuple_size_ara_core_Array_T_c75763-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_std_tuple_size_ara_core_Array_T_c75763)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,610 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,132 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'std::tuple_size&lt; ara::core::Array&lt; T,' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_std_tuple_size_ara_core_Array_T_c75763",
@@ -203,26 +222,45 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="ff076c309a051655995194074bc2dfe16b59ce8c5ed47117a8b505c57814bffd" data-trace-output="faf731f984e529ea572d1031391c6de54d660ddf39d991a2e8ac53fd3078a612" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="185a4123c33083bb1f724f215498dda499cb78019067e9a68f69c1a0926f6943" data-trace-output="86b0210bad665c6b61155de5d724ee3f1799edf19ee39f358e74214de3aa4761" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Stellt die Elementanzahl fester Array-Container zur Übersetzungszeit für das C++-Tuple-Protokoll bereit." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The template specialization &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; anchors the fixed-size container type &lt;code&gt;ara::core::Array&lt;/code&gt; within the standardized C++ tuple protocol. As part of the foundation module &lt;code&gt;core&lt;/code&gt; of the AUTOSAR Adaptive Platform, this structure adapts the behavior of the standard library by inheriting directly from &lt;code&gt;std::integral_constant&amp;lt;size_t, N&amp;gt;&lt;/code&gt;. Through this, it provides the element count of an array as a static constant at compile time.&lt;/p&gt;
-&lt;p&gt;In modern C++ architectures, this specialization acts as an indispensable interface for generic algorithms and language features. Interpretation: The specialization of &lt;code&gt;std::tuple_size&lt;/code&gt; likely serves primarily to seamlessly integrate &lt;code&gt;ara::core::Array&lt;/code&gt; into standards-compliant metaprogramming libraries and modern language constructs such as structured bindings. Developers and metaprogramming components can thereby query cardinality uniformly via &lt;code&gt;std::tuple_size&lt;/code&gt;, regardless of whether a standard tuple, a standard array, or AUTOSAR's own &lt;code&gt;ara::core::Array&lt;/code&gt; is passed.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Stellt die Elementanzahl fester Array-Container zur Übersetzungszeit für das C++-Tuple-Protokoll bereit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Template-Spezialisierung &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; stellt die statische Elementanzahl des AUTOSAR-Containers &lt;code&gt;ara::core::Array&lt;/code&gt; zur Übersetzungszeit für das C++-Standard-Tuple-Protokoll bereit. Sie leitet öffentlich von &lt;code&gt;integral_constant&amp;lt;size_t, N&amp;gt;&lt;/code&gt; ab und erlaubt generischen Algorithmen sowie dem Compiler bei strukturierten Bindungen den direkten Zugriff auf die Dimensionierungsgröße. Da die Auswertung rein statisch während der Kompilierung erfolgt, existiert kein dynamischer Laufzeit-Lebenszyklus und Fehler treten ausschließlich als Übersetzungsfehler auf. Interpretation: Der primäre Einsatzzweck dürfte in der nahtlosen Integration von &lt;code&gt;ara::core::Array&lt;/code&gt; in moderne C++-Sprachmechanismen liegen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klassentemplate-Spezialisierung &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; bindet den statischen Feld-Container &lt;code&gt;ara::core::Array&lt;/code&gt; des Moduls &lt;code&gt;core&lt;/code&gt; innerhalb der Adaptive Platform an die Metaprogrammierungsmechanismen der C++-Standardbibliothek an. Der Typ &lt;code&gt;ara::core::Array&lt;/code&gt; bildet einen typsicheren Speicherbereich mit fester Elementanzahl ab. Durch die Bereitstellung dieser Spezialisierung des Standardtraits &lt;code&gt;std::tuple_size&lt;/code&gt; im Namensraum &lt;code&gt;std&lt;/code&gt; wird dem Compiler die feste Elementanzahl &lt;code&gt;N&lt;/code&gt; auf Compile-Time-Ebene verfügbar gemacht. Dies versetzt generische Algorithmen und Template-Bibliotheken in die Lage, die Kapazität des Containers einheitlich abzufragen, ohne Details über die konkrete Implementierung von &lt;code&gt;ara::core::Array&lt;/code&gt; vorauszusetzen. Interpretation: Die Spezialisierung dürfte primär dazu dienen, &lt;code&gt;ara::core::Array&lt;/code&gt; vollständig an das Tuple-Protokoll der C++-Standardbibliothek anzubinden und damit moderne Sprachfeatures wie strukturierte Bindungen (Structured Bindings) nahtlos zu unterstützen.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;Because &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; is designed as a pure type trait or metaprogramming construct, its handling differs fundamentally from stateful runtime classes. Interpretation: As a pure compile-time construct without data members or dynamic state, no classical runtime lifecycle exists for this structure regarding dynamic instantiation, ownership transfer, or destruction.&lt;/p&gt;
-&lt;p&gt;The structure is instantiated during semantic analysis of the source code by the compiler as soon as an evaluation of the type is requested. Because the constant &lt;code&gt;value&lt;/code&gt; is an integral part of the type &lt;code&gt;std::integral_constant&amp;lt;size_t, N&amp;gt;&lt;/code&gt;, no memory allocation takes place and no runtime costs are incurred. Regarding concurrency and multithreading, there are no synchronization requirements whatsoever: Access to the static constant is side-effect-free, completely immutable, and thread-safe across all translation units.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als reiner Compile-Time-Typ besitzt &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; keinen dynamischen Lebenszyklus zur Laufzeit. Es existieren weder dynamische Speicherallokationen noch Konstruktoren oder Destruktoren, die Systemressourcen verwalten müssten. Die Auswertung der Klasse geschieht vollständig während der semantischen Analyse und Template-Instanziierung durch den C++-Compiler. Die Spezialisierung leitet öffentlich von &lt;code&gt;integral_constant&amp;lt;size_t, N&amp;gt;&lt;/code&gt; ab und bindet den ganzzahligen Wert &lt;code&gt;N&lt;/code&gt; unmittelbar an den Typ. Interpretation: Neben dem konstanten statischen Wert &lt;code&gt;value&lt;/code&gt; stellt die Spezialisierung vermutlich über die Basisklasse auch standardisierte Typdefinitionen wie &lt;code&gt;value_type&lt;/code&gt; und &lt;code&gt;type&lt;/code&gt; sowie einen constexpr-Konvertierungsoperator bereit. Da alle Member als statische Compile-Time-Konstanten vorliegen, ist der Zugriff darauf inhärent nebenläufigkeitssicher, zustandslos und frei von Synchronisationsanforderungen.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical usage path of this trait takes place exclusively during compilation. The specialization is typically used in the following scenarios:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der reguläre Nutzungspfad vollzieht sich im Rahmen der Metaprogrammierung, bei statischen Zusicherungen oder bei der Zerlegung von Datenstrukturen. Ein typischer Ablauf gestaltet sich wie folgt:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Direct value query:&lt;/strong&gt; Generic code reads the element count via the static member &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;::value&lt;/code&gt; to control buffer sizes, loop unrolling, or static assertions (&lt;code&gt;static_assert&lt;/code&gt;) at compile time.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Generic interfaces:&lt;/strong&gt; Template functions constrained to tuple-like types via concepts or SFINAE use the presence of &lt;code&gt;std::tuple_size&lt;/code&gt; for signature checking and type deduction.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Structured bindings:&lt;/strong&gt; When decomposing an &lt;code&gt;ara::core::Array&lt;/code&gt; using &lt;code&gt;auto [x, y, z] = meinArray;&lt;/code&gt;, the compiler requires the specialization of &lt;code&gt;std::tuple_size&lt;/code&gt; and &lt;code&gt;std::tuple_element&lt;/code&gt; to formally validate the number of identifiers against the fixed container size.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Header-Einbindung:&lt;/strong&gt; Der Entwickler bindet die Schnittstelle von &lt;code&gt;ara::core::Array&lt;/code&gt; ein. Interpretation: Für die Nutzung der Spezialisierung dürfte zusätzlich die Einbindung des Standard-Headers für Tuples oder Utilities erforderlich sein, sofern dieser nicht transitiv bereitgestellt wird.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Typübergabe an Metaprogramme:&lt;/strong&gt; Ein Template-Konstrukt oder ein generischer Algorithmus empfängt eine Instanz oder einen Typalias von &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Größenabfrage:&lt;/strong&gt; Über den Ausdruck &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;::value&lt;/code&gt; wird die Anzahl der Elemente zur Übersetzungszeit abgefragt, beispielsweise innerhalb eines &lt;code&gt;static_assert&lt;/code&gt; oder zur Dimensionierung abhängiger Puffer.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Automatische Zerlegung:&lt;/strong&gt; Im Rahmen strukturierter Bindungen nutzt der Compiler die Spezialisierung im Hintergrund, um die Anzahl der Bezeichner gegen die tatsächliche Feldgröße &lt;code&gt;N&lt;/code&gt; zu validieren.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Interpretation: For error-free evaluation, the trait requires that &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt; is available as a complete type and that the dimension &lt;code&gt;N&lt;/code&gt; is known as a constant expression; runtime errors or exceptions are ruled out by design.&lt;/p&gt;
-&lt;!-- annahmen: 1) Interpretation: Dient primär der nahtlosen Integration in C++-Metaprogrammierung und Structured Bindings – Begründung: Ableitung von integral_constant und Verweis auf std::array-Verhalten im Payload. 2) Interpretation: Kein Laufzeit-Lebenszyklus – Begründung: Reines Compile-Time-Trait ohne Laufzeitzustand oder dynamische Ressourcen. 3) Interpretation: Voraussetzung ist vollständiger Typ und constexpr N ohne Ausnahmerisiko – Begründung: C++-Typensystem und Template-Metaprogrammierungsregeln. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated automatically based on specification metadata for AUTOSAR Adaptive Platform release R25-11.&lt;/p&gt;
+&lt;p&gt;Dieser Pfad erfordert keine explizite Instanziierung von Objekten der Struktur zur Laufzeit, da sämtliche Informationen im Typsystem verankert sind.&lt;/p&gt;
+
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Da &lt;code&gt;std::tuple_size&amp;lt;ara::core::Array&amp;lt;T, N&amp;gt;&amp;gt;&lt;/code&gt; ausschließlich zur Übersetzungszeit evaluiert wird, treten Laufzeitfehler, Fehlercodes der Klasse &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; oder Ausnahmebedingungen definitionsgemäß nicht auf. Fehlerszenarien beschränken sich auf die Compile-Phase:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Mismatches bei strukturierter Bindung:&lt;/strong&gt; Stimmt die Anzahl der deklarierten Bezeichner einer strukturierten Bindung nicht exakt mit dem durch &lt;code&gt;std::tuple_size&lt;/code&gt; gemeldeten Wert &lt;code&gt;N&lt;/code&gt; überein, bricht der Übersetzungsvorgang mit einem Compilerfehler ab.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fehlende Spezialisierung bei abweichenden Typen:&lt;/strong&gt; Wird &lt;code&gt;std::tuple_size&lt;/code&gt; auf Typen angewendet, die nicht dem Muster &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt; entsprechen, führt der Zugriff auf &lt;code&gt;::value&lt;/code&gt; zu einem Übersetzungsfehler wegen unvollständiger oder undefinierter Typen.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Die Vorbedingung für die korrekte Verwendung besteht darin, dass &lt;code&gt;ara::core::Array&amp;lt;T, N&amp;gt;&lt;/code&gt; als vollständiger Template-Typ mit gültigem Elementtyp &lt;code&gt;T&lt;/code&gt; und ganzzahliger Dimension &lt;code&gt;N&lt;/code&gt; deklariert ist.&lt;/p&gt;
+&lt;!-- annahmen:
+1) Die Spezialisierung von std::tuple_size dient primär der vollständigen Unterstützung des C++-Tuple-Protokolls und strukturierter Bindungen für ara::core::Array. – Begründung: Der Payload verweist auf das Verhalten gemäß [array], spezifiziert jedoch keine weiteren Anwendungsfälle.
+2) Neben dem statischen Datenmember value stellt die Spezialisierung über integral_constant auch Typaliase wie value_type und type sowie einen Konvertierungsoperator bereit. – Begründung: Die Syntax deklariert die Vererbung von integral_constant&lt;size_t, N&gt;, deren genaue Elementdefinition im Payload nicht aufgeführt ist.
+3) Für die Nutzung der Spezialisierung dürfte die Einbindung des Standard-Headers für Tuples erforderlich sein, sofern dieser nicht transitiv bereitgestellt wird. – Begründung: Der Header-Pfad ist in den Metadaten des Payloads nicht explizit benannt.
+--&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden basiert auf der Spezifikation der AUTOSAR Adaptive Platform für das Modul core und fasst die Eigenschaften der Spezialisierung für Entwickler zusammen.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -264,7 +302,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>ff076c309a05…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>185a4123c330…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

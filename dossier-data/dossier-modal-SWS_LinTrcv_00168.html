@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinTrcv_00168" class="dossier-modal dossier-workbench" data-dossier-sha="5a2cfb0ecd35f078" aria-labelledby="dossier-modal-SWS_LinTrcv_00168-title">
+<dialog id="dossier-modal-SWS_LinTrcv_00168" class="dossier-modal dossier-workbench" data-dossier-sha="3ac00f0b5634d399" aria-labelledby="dossier-modal-SWS_LinTrcv_00168-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinTrcv_00168-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinTrcv_00168)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,148 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,603 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinTrcv_TrcvModeType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,23 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="7322fd66da24b3d3e150ef20a51843a23b833fad1368a5632cfac6d0b2d3aee4" data-trace-output="5a2cfb0ecd35f0788425c775a3224a55918069b4b4ab78efb0bbd33a08e9ed44" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="304001f922be0bda6e160affe61628cdc5f17256530dffb93a7f1532316d1489" data-trace-output="3ac00f0b5634d3997017e954e6297aafd4e9a39fa7c89559a741dee0695d0d0d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Betriebsmodi Normal, Standby und Sleep für den LIN-Transceiver-Treiber." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;, enumeration type &lt;code&gt;LinTrcv_TrcvModeType&lt;/code&gt; defines the operating modes of the LIN Transceiver Driver (&lt;em&gt;Operating modes of the LIN Transceiver Driver&lt;/em&gt;). The type definition is provided via header &lt;code&gt;Lin_GeneralTypes.h&lt;/code&gt; and specifies the standardized operating states of the transceiver hardware &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;, the range of values comprises the following three modes:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;LINTRCV_TRCV_MODE_NORMAL&lt;/code&gt;: Transceiver mode &lt;em&gt;NORMAL&lt;/em&gt; for regular bus and transmission operation &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;LINTRCV_TRCV_MODE_STANDBY&lt;/code&gt;: Transceiver mode &lt;em&gt;STANDBY&lt;/em&gt; as an intermediate or standby state &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;LINTRCV_TRCV_MODE_SLEEP&lt;/code&gt;: Transceiver mode &lt;em&gt;SLEEP&lt;/em&gt; for power-saving deactivation of the transceiver &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Interaction and Constraints&lt;/h4&gt;
-&lt;p&gt;As a pure enumeration type, &lt;code&gt;LinTrcv_TrcvModeType&lt;/code&gt; has no call parameters, execution times, or synchronous/asynchronous call semantics of its own. The literals are likely used in higher-level driver interfaces of module &lt;code&gt;LinTrcv&lt;/code&gt; to command operating mode changes or query the current transceiver state. Specific error codes, DET or DEM messages, and requirements for reentrancy or concurrency do not exist for the type itself, but are associated with the respective API functions that process values of this type.&lt;/p&gt;
-
-&lt;!-- annahmen: 1) Die Enumerationswerte dürften als Parameter für Moduswechsel- und Statusabfragefunktionen des Treibers LinTrcv dienen – Begründung: Der Typ beschreibt die Betriebsmodi des LIN-Transceiver-Treibers, konkrete Funktionssignaturen sind im vorliegenden Payload jedoch nicht enthalten. --&gt;
-&lt;p class="ai-note"&gt;This usage note was generated by an AI based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Aufzählungstyp &lt;code&gt;LinTrcv_TrcvModeType&lt;/code&gt; definiert die Betriebsmodi für den LIN-Transceiver-Treiber gemäß &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;. Die Typdefinition ist in der Header-Datei &lt;code&gt;Lin_GeneralTypes.h&lt;/code&gt; hinterlegt und steht damit übergeordneten Software-Schichten zur Verfügung &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Der Wertebereich umfasst drei standardisierte Zustände für den Transceiver &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;LINTRCV_TRCV_MODE_NORMAL&lt;/code&gt;: Kennzeichnet den regulären Betriebsmodus (Transceiver mode NORMAL) des LIN-Transceivers &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;LINTRCV_TRCV_MODE_STANDBY&lt;/code&gt;: Repräsentiert den Standby-Modus (Transceiver mode STANDBY) des Transceivers &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;LINTRCV_TRCV_MODE_SLEEP&lt;/code&gt;: Beschreibt den Schlafmodus (Transceiver mode SLEEP) für den LIN-Transceiver &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;In Bezug auf die Verwendung und das funktionale Zusammenspiel dient dieser Enumerationstyp der einheitlichen Modellierung von Transceiver-Zuständen &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;. Vermutlich wird der Typ als Parameter oder Rückgabewert in Treiberfunktionen verwendet, um gezielte Zustandswechsel zwischen Normalbetrieb, Bereitschaft und stromsparendem Schlafzustand anzufordern oder abzufragen. Spezifische Aufrufkontexte, Fehlercodes sowie Nebenläufigkeits- und Reentranzeigenschaften sind nicht an diesem Datentyp selbst verankert, sondern hängen von den jeweiligen APIs des Transceiver-Treibers ab &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00168" href="../../spec/record.html?id=SWS_LinTrcv_00168"&gt;[SWS_LinTrcv_00168]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Vermutlich wird der Typ als Parameter oder Rückgabewert in Steuerungsfunktionen für Zustandswechsel verwendet – Begründung: Der Typ modelliert die Betriebsmodi des Treibers, konkrete Funktionssignaturen fehlen jedoch im Payload. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient der technischen Orientierung.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -231,7 +246,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>7322fd66da24…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>304001f922be…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -369,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinTrcv_00168","k":"type","d":"AUTOSAR","t":"","n":"LinTrcv_TrcvModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/e195050bb727b03b.json?v=9f76a3fb" data-total="3" data-new="3" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinTrcv_00168","k":"type","d":"AUTOSAR","t":"","n":"LinTrcv_TrcvModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/e195050bb727b03b.json?v=f10e5abb" data-total="3" data-new="3" data-figures="2" data-used="0"></script></dialog>

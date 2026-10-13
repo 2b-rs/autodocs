@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_phm_apext_phm_c44d23" class="dossier-modal dossier-workbench" data-dossier-sha="667cf0371fc6f000" aria-labelledby="dossier-modal-ns_phm_apext_phm_c44d23-title">
+<dialog id="dossier-modal-ns_phm_apext_phm_c44d23" class="dossier-modal dossier-workbench" data-dossier-sha="cc71dc7480c0ca66" aria-labelledby="dossier-modal-ns_phm_apext_phm_c44d23-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_phm_apext_phm_c44d23-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_phm_apext_phm_c44d23)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,645 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,168 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace apext::phm' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -207,51 +226,34 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="d66ea0eb10b9fb7f4d24fc1e21d2c2224310474ab09e4ff2fb1017371d14e7a7" data-trace-output="667cf0371fc6f000b82f5b6f4213a7815b8db02ce8ad2ce3f8521bea0a2255e9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="e6223b6ddeae64e5ccf4e15cc8d7434d4ad28b352e3a8c46afddaa6c19b4083a" data-trace-output="cc71dc7480c0ca66028cbecb6b4d5da72f3373572075aa8f64f87df7b658adf0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Plattform-Erweiterung zur hardwarenahen Anbindung und zyklischen Triggerung physischer Watchdogs." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    Namespace &lt;code&gt;apext::phm&lt;/code&gt; belongs to the AUTOSAR Adaptive Platform and is assigned to the functional area of Platform Health Management (&lt;code&gt;phm&lt;/code&gt;) in release R25-11. The namespace serves as a container for platform-specific extensions (Platform Extensions) that define functional interfaces at the boundary between standardized platform services and hardware-related functionality.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The central element of this namespace documented in the dataset is class &lt;code&gt;WatchdogInterface&lt;/code&gt;. This class is explicitly identified as an interface to a hardware watchdog (&lt;em&gt;interface to hardware watchdog&lt;/em&gt;). Although the construct is identifiable in program code as an interface, it is formally maintained as a platform extension (&lt;em&gt;PlatformExtension&lt;/em&gt;). Interpretation: Interface &lt;code&gt;WatchdogInterface&lt;/code&gt; is likely to act as a hardware-related link between the higher-level monitoring mechanisms of Platform Health Management and a physical hardware watchdog unit to transition the overall system into a safe state in the event of an error.
-  &lt;/p&gt;
-  &lt;p&gt;
-    In architectural interaction, &lt;code&gt;apext::phm&lt;/code&gt; distinguishes itself from the purely standardized interfaces of the Adaptive Platform. Because hardware watchdogs in automotive electronic control units have vendor-specific registers, SPI protocols, or discrete control lines, this namespace encapsulates the hardware-dependent interaction. Interpretation: As a declared platform extension (&lt;em&gt;PlatformExtension&lt;/em&gt;), the concrete implementation of &lt;code&gt;WatchdogInterface&lt;/code&gt; is likely to be provided by the respective platform or hardware integrator, while core module &lt;code&gt;phm&lt;/code&gt; accesses the uniformly defined interface.
-  &lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als Plattform-Erweiterung zur hardwarenahen Anbindung und zyklischen Triggerung physischer Watchdogs.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::phm&lt;/code&gt; stellt im Modul Platform Health Management der AUTOSAR Adaptive Platform (Release R25-11) mit &lt;code&gt;WatchdogInterface&lt;/code&gt; eine plattformspezifische Erweiterung zur Anbindung physischer Hardware-Watchdogs bereit. Die Schnittstelle dient der zyklischen Übermittlung von Triggersignalen nach erfolgreicher interner Systemüberwachung. Bleiben die periodischen Signale infolge von Fehlern aus, führt dies interpretationsgemäß zum Auslösen des Hardware-Watchdogs und zu einem kontrollierten System-Reset. Eine wesentliche Randbedingung ist die Einstufung als PlatformExtension, wodurch hardwarenahe Details außerhalb des standardisierten Anwendungskerns verbleiben.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::phm&lt;/code&gt; stellt plattformnahe Erweiterungen für das Modul Platform Health Management (&lt;code&gt;phm&lt;/code&gt;) innerhalb der AUTOSAR Adaptive Platform im Release R25-11 bereit. Zentraler Bestandteil dieses Namespace ist die Klasse &lt;code&gt;WatchdogInterface&lt;/code&gt;, welche als Schnittstelle zur physischen Hardware-Überwachung (Hardware Watchdog) fungiert. Während Standard-Schnittstellen der Plattform primär die logische Überwachung von Applikationen und Prozessen adressieren, bildet &lt;code&gt;WatchdogInterface&lt;/code&gt; das Bindeglied zur unterlagernden Hardware-Ebene. Gemäß den Spezifikationshinweisen ist &lt;code&gt;WatchdogInterface&lt;/code&gt; im Code syntaktisch und semantisch als Interface identifizierbar, wird jedoch architektonisch explizit als PlatformExtension eingestuft. Interpretation: Diese Erweiterung dürfte dazu dienen, hardwarenahe Watchdog-Treiber oder Board-Support-Packages an das standardisierte Health Management anzubinden, ohne die herstellerunabhängigen Schnittstellen des Kernmoduls mit hardwareabhängigen Details zu belasten.&lt;/p&gt;
 
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    The lifecycle of the components provided in &lt;code&gt;apext::phm&lt;/code&gt; is closely linked to the operational phases of the underlying hardware monitoring. No isolated state machines or standalone initialization functions are recorded for the namespace in the dataset.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Interpretation: The lifecycle of an instance of &lt;code&gt;WatchdogInterface&lt;/code&gt; is likely typically coupled to the global initialization and monitoring routine of the overall system. This means that the interface must be instantiated and configured as early as an early boot phase of the Adaptive Platform before safety-critical monitoring functions of &lt;code&gt;phm&lt;/code&gt; are actively triggered.
-  &lt;/p&gt;
-  &lt;p&gt;
-    With regard to ownership and concurrency, a hardware watchdog usually represents an exclusive resource of the target ECU. An implementation of &lt;code&gt;WatchdogInterface&lt;/code&gt; must therefore ensure that accesses occur in a thread-safe manner or are controlled sequentially by a central coordination instance within &lt;code&gt;phm&lt;/code&gt; in order to eliminate race conditions during cyclic triggering or reinitialization of the watchdog. Destruction or termination of the interface occurs only during a controlled shutdown or restart of the ECU.
-  &lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus der im Namespace &lt;code&gt;apext::phm&lt;/code&gt; definierten Komponenten ist eng an die Überwachungsphasen der Plattform gekoppelt. Interpretation: Eine Instanz von &lt;code&gt;WatchdogInterface&lt;/code&gt; dürfte typischerweise während der frühen Startphase des Platform Health Management Daemons erzeugt und initialisiert werden. Während des regulären Betriebs verbleibt die Schnittstelle dauerhaft aktiv, um zyklische Triggersignale an den Hardware-Watchdog weiterzuleiten. Die Zerstörung bzw. Freigabe der Schnittstelle erfolgt erst bei einem kontrollierten Herunterfahren der Plattform oder beim Deaktivieren der Watchdog-Funktionalität. Da hardwarenahe Watchdogs üblicherweise strikte Zeitfenster für Lebenszeichen vorgeben, dürfte die Interaktion mit &lt;code&gt;WatchdogInterface&lt;/code&gt; einer deterministischen Ausführung unterliegen und muss nebenläufigen Zugriffen aus unterschiedlichen Überwachungskontexten standhalten.&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    The regular usage path of the interface in &lt;code&gt;apext::phm&lt;/code&gt; is divided into a provisioning phase and a cyclic operational phase. Because no fine-grained method identifiers are declared in the present dataset, the path results from the functional role of &lt;code&gt;WatchdogInterface&lt;/code&gt; as a hardware watchdog interface.
-  &lt;/p&gt;
-  &lt;p&gt;
-    In the provisioning phase, the platform-specific implementation of &lt;code&gt;WatchdogInterface&lt;/code&gt; is instantiated. The system checks the availability of the hardware unit and sets up time windows and threshold values for external monitoring. Once initialization is complete, Platform Health Management assumes control.
-  &lt;/p&gt;
-  &lt;p&gt;
-    During ongoing operation, cyclic servicing of the watchdog takes place. Platform Health Management monitors internal processes, alive states, and logical program flows. Provided all checked criteria are met, the system initiates timely resetting (triggering or servicing) of the hardware watchdog via &lt;code&gt;WatchdogInterface&lt;/code&gt;. If this signal fails to appear or the monitoring reports a critical error state, servicing is omitted, causing the hardware watchdog to trigger the intended fault reaction (such as a hardware reset).
-  &lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;WatchdogInterface&lt;/code&gt; umfasst die Bereitstellung, Konfiguration und periodische Bedienung der Hardware-Watchdog-Schnittstelle durch das Platform Health Management:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Das Überwachungssystem instanziiert oder bindet die konkrete Implementierung von &lt;code&gt;WatchdogInterface&lt;/code&gt; an, wobei Zeitintervalle und Schwellenwerte für die physische Überwachung konfiguriert werden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Zyklische Bestätigung:&lt;/strong&gt; Nach erfolgreicher Auswertung der internen logischen Überwachungsregeln (wie Alive-, Deadline- oder Logical Supervision) wird über &lt;code&gt;WatchdogInterface&lt;/code&gt; das Lebenszeichen an das Hardware-Watchdog-Gerät abgesetzt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reaktionssteuerung:&lt;/strong&gt; Bleiben interne Prüfungen negativ oder meldet das System kritische Fehlerzustände, unterbleibt die Ansteuerung des Hardware-Watchdogs gezielt oder es wird ein deterministisches Fehlersignal übertragen.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
-  &lt;p&gt;
-    In the context of the hardware watchdog connection via &lt;code&gt;apext::phm&lt;/code&gt;, error states are primarily tied to hardware communication and compliance with defined time windows. If the hardware cannot be addressed properly via &lt;code&gt;WatchdogInterface&lt;/code&gt;—for example, due to a bus error, faulty register accesses, or invalid hardware configurations—this state must be detected immediately.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Error scenarios also include timeouts during cyclic triggering. If a precondition for updating the watchdog cannot be met, for example because &lt;code&gt;phm&lt;/code&gt; detects a violated deadline in a monitored application, the interface architecture prevents inadvertent continued clocking of the watchdog. Specific error codes or exception types are not separately listed in the present specification excerpt; however, robust implementations must ensure that invocation errors do not lead to an unnoticed failure of the safety architecture.
-  &lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Anbindung an physische Hardware – Begründung: Die Klasse WatchdogInterface ist laut Payload als Schnittstelle zu einem Hardware-Watchdog ausgewiesen. 2) Bereitstellung durch Plattformintegrator – Begründung: Die Kennzeichnung als Platform Extension unter apext verweist auf plattformspezifische Erweiterungen. 3) Koppelung an PHM-Lebenszyklus – Begründung: Der Namespace gehört zum Modul phm (Platform Health Management), spezifische Lebenszyklusmethoden sind im Payload jedoch nicht detailliert. --&gt;
-  &lt;p class="ai-note"&gt;This guide is based on the specification data of AUTOSAR release R25-11 for the namespace apext::phm.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Fehlerszenarien im Umfeld von &lt;code&gt;apext::phm&lt;/code&gt; betreffen primär den Verlust der Hardware-Konnektivität oder das Verpassen kritischer Zeitschranken. Wenn die Kommunikation über &lt;code&gt;WatchdogInterface&lt;/code&gt; mit der Hardware fehlschlägt oder das Watchdog-Gerät nicht mehr antwortet, kann das Platform Health Management die physische Absicherung der Plattform nicht mehr gewährleisten. Interpretation: Ein Ausbleiben des zyklischen Triggersignals an den Hardware-Watchdog dürfte deterministisch zum Ablauf des Hardware-Timers und damit zu einem hardwareseitigen Reset oder einem sicheren Systemzustand der ECU führen. Vorbedingungen für Aufrufe an &lt;code&gt;WatchdogInterface&lt;/code&gt; umfassen einen erfolgreich initialisierten Hardwaretreiber, während Nachbedingungen eine bestätigte Signalabgabe innerhalb des definierten Zeittoleranzfensters erfordern.&lt;/p&gt;
+&lt;!-- annahmen: 1) Anbindung von Hardware-Treibern – Begründung: WatchdogInterface ist als PlatformExtension für Hardware-Watchdogs deklariert, Details zur Treiberarchitektur fehlen im Payload. 2) Instanziierung im PHM-Daemon – Begründung: Hardware-Watchdog-Anbindung setzt zentralen Betrieb voraus, Instanziierungsort ist nicht spezifiziert. 3) Hardware-Reset bei Ausbleiben – Begründung: Standardfunktion von Hardware-Watchdogs, konkretes Reset-Verhalten wird im Payload nicht weiter ausgeführt. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf den Spezifikationsdaten des AUTOSAR-Releases R25-11 für den Namespace apext::phm.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -293,7 +295,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d66ea0eb10b9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e6223b6ddeae…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

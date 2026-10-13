@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_01271" class="dossier-modal dossier-workbench" data-dossier-sha="bc78896b0ec7016d" aria-labelledby="dossier-modal-SWS_Dcm_01271-title">
+<dialog id="dossier-modal-SWS_Dcm_01271" class="dossier-modal dossier-workbench" data-dossier-sha="391f383e12dfbb38" aria-labelledby="dossier-modal-SWS_Dcm_01271-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_01271-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_01271)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,276 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,731 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_ReadDidRangeDataLength'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,25 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d24c19f4bf65f388e1b553815c99e8e3e736a0d702f42c825f8a5103a8d04140" data-trace-output="bc78896b0ec7016d261c596999fc8174e0ab73da9b45de96e15dc085360a09e1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c6168b2bb63313ee33acc6a4d1b3c4147dfc3cc49f66e7e2082b64c777a1d525" data-trace-output="391f383e12dfbb382e1a70fed13c3fa4d2412b22752286c13e21f38c54cbe7e4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert die Applikation asynchron zur Rückgabe der Datenlänge eines DID-Bereichs auf." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung&lt;/h4&gt;
-  &lt;p&gt;Die Funktion &lt;code&gt;Xxx_ReadDidRangeDataLength&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;) wird verwendet, um von der Applikation die Datenlänge für einen DID-Bereich (DID Range) abzufragen. Die Schnittstelle wird über den Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt und führt die Service-ID &lt;code&gt;0x5e&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;Die Übergabeparameter umfassen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Xxx_ReadDidRangeDataLength&lt;/code&gt; dient dazu, die Anwendungssoftware zur Rückgabe der Datenlänge für einen DID-Bereich (DID Range) aufzufordern &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;. Sie ist Bestandteil des AUTOSAR-Moduls &lt;code&gt;Dcm&lt;/code&gt;, besitzt die Service-ID &lt;code&gt;0x5e&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;Dcm_Externals.h&lt;/code&gt; zur Verfügung gestellt &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Der Aufruf erfolgt mit asynchroner Semantik (&lt;code&gt;Asynchronous&lt;/code&gt;) über die folgenden Schnittstellenparameter &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;DID&lt;/code&gt; (In): Daten-ID-Wert des abzufragenden Bereichs.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;OpStatus&lt;/code&gt; (In): Status der laufenden Operation (z.&amp;nbsp;B. für aufeinanderfolgende Aufrufe).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DataLength&lt;/code&gt; (Out): Zeiger zur Rückgabe der ermittelten Datenlänge für den Lese- oder Schreibvorgang.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DID&lt;/code&gt; (IN, &lt;code&gt;uint16&lt;/code&gt;): Kennzeichnet den konkreten Daten-Identifier (Data ID value) des angefragten DID-Bereichs &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;OpStatus&lt;/code&gt; (IN, &lt;code&gt;Dcm_OpStatusType&lt;/code&gt;): Gibt den aktuellen Verarbeitungsstatus der laufenden Operation an &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DataLength&lt;/code&gt; (OUT, &lt;code&gt;uint16*&lt;/code&gt;): Zeiger auf die Länge der Daten, die gelesen oder geschrieben werden sollen &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;Das Ausführungsverhalten ist asynchron (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;). Kann die Datenlänge nicht unmittelbar bereitgestellt werden, gibt die Funktion &lt;code&gt;DCM_E_PENDING&lt;/code&gt; zurück; die Operation ist dann noch nicht beendet und erfordert weitere Aufrufe zur Fertigstellung (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;). Bei erfolgreichem Abschluss liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;War die Abfrage nicht erfolgreich, wird &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;). Spezifische Benachrichtigungen über DET oder DEM sind in den Spezifikationsdaten nicht ausgewiesen.&lt;/p&gt;
-
-  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
-  &lt;p&gt;Gemäß Spezifikation ist die Funktion als nicht reentrant (Non Reentrant) eingestuft (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;). Aufrufe dürfen daher nicht nebenläufig überlappen.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis des AUTOSAR-R20-11-Spezifikationsstands generiert.&lt;/p&gt;
+  &lt;p&gt;Der Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; signalisiert das Ergebnis der Längenabfrage &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Anfrage war erfolgreich und die ermittelte Länge liegt bereit &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage war nicht erfolgreich &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Die Ausführung ist noch nicht abgeschlossen und erfordert weitere Folgeaufrufe zur Fertigstellung &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;Bezüglich der Nebenläufigkeit ist die Schnittstelle als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) festgelegt &lt;a class="spec-record-ref" data-req="SWS_Dcm_01271" href="../../spec/record.html?id=SWS_Dcm_01271"&gt;[SWS_Dcm_01271]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Nutzungshinweis generiert auf Basis der Spezifikation von DCM in AUTOSAR Classic R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -233,7 +251,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d24c19f4bf65…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c6168b2bb633…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -371,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_01271","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ReadDidRangeDataLength"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/389b13cc6a2a1bf7.json?v=984da36a" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_01271","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ReadDidRangeDataLength"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/389b13cc6a2a1bf7.json?v=3a0a66f6" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

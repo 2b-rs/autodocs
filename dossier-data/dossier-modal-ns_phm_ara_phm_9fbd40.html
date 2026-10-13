@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_phm_ara_phm_9fbd40" class="dossier-modal dossier-workbench" data-dossier-sha="adf8edc9a987c4e4" aria-labelledby="dossier-modal-ns_phm_ara_phm_9fbd40-title">
+<dialog id="dossier-modal-ns_phm_ara_phm_9fbd40" class="dossier-modal dossier-workbench" data-dossier-sha="ee88d991bfc8f0a8" aria-labelledby="dossier-modal-ns_phm_ara_phm_9fbd40-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_phm_ara_phm_9fbd40-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_phm_ara_phm_9fbd40)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,882 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,404 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace ara::phm' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -235,124 +254,208 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="2dbc936761fb64b98a9037f5e9f9ab5cef60d528e14abcc64ef715a78921ef83" data-trace-output="adf8edc9a987c4e41c3a797151bc26a7e6d0712e1e9ec4162917bbbc99f85417" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="15fb5e97ed21f7adca00ec56155d3f982fdbec5ad58124a228858cae5a1fbfaa" data-trace-output="ee88d991bfc8f0a82e5d5ba6a52f5d01aba8f289020fbfa080cabc3d70e9f3fa" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die funktionale Laufzeitüberwachung von Software-Instanzen und koordiniert Fehlerreaktionen im System." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The namespace &lt;code&gt;ara::phm&lt;/code&gt; provides the programming interface for Platform Health Management (PHM) in the AUTOSAR Adaptive Platform. Its core responsibility lies in the functional monitoring of processes and applications with regard to aliveness, timing deadlines, and logical program flows, as well as in the coordination of error reactions.&lt;/p&gt;
-&lt;p&gt;The architecture in the namespace relies on four central classes:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SupervisedEntity&lt;/code&gt;: Represents the monitored software entity within an application that reports status information.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RecoveryAction&lt;/code&gt;: Abstract base class for recovery actions executed when errors are detected.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmErrorDomain&lt;/code&gt;: Defines the error domain for error messages of the subsystem.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PhmException&lt;/code&gt;: Standard exception type for exceptional cases in Platform Health Management.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The supervision methods are specified via the enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. The platform distinguishes between &lt;code&gt;kAliveSupervision&lt;/code&gt; (alive supervision), &lt;code&gt;kDeadlineSupervision&lt;/code&gt; (compliance with defined time intervals), and &lt;code&gt;kLogicalSupervision&lt;/code&gt; (checking the correct order of control flow points). PHM interacts closely with the PHM daemon and the State Management of the Adaptive Platform.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die funktionale Laufzeitüberwachung von Software-Instanzen und koordiniert Fehlerreaktionen im System.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::phm&lt;/code&gt; stellt Mechanismen zur Laufzeitüberwachung von Software-Entitäten bezüglich Lebenszeichen, Fristen und Kontrollfluss auf der Adaptive Platform bereit &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Erkannte Anomalien durchlaufen eine mehrstufige Fehlerqualifizierung von der Entprellung bis zur Systemstilllegung &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. Bei nicht durch das State Management auflösbaren Fehlern übernimmt das Modul die Fehlerreaktion und steuert den System-Watchdog an &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::phm&lt;/code&gt; stellt die C++-Schnittstelle des Platform Health Managements (PHM) innerhalb der AUTOSAR Adaptive Platform dar. Seine zentrale Aufgabe ist die funktionale Überwachung von Software-Einheiten zur Gewährleistung der Systemintegrität. Als primäre Entitäten fungieren &lt;code&gt;SupervisedEntity&lt;/code&gt;, welche überwachte funktionale Abläufe repräsentieren, sowie die abstrakte Klasse &lt;code&gt;RecoveryAction&lt;/code&gt;, über die applikative Wiederherstellungsmaßnahmen definiert werden können. Die Überwachung wird über die Enumeration &lt;code&gt;TypeOfSupervision&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt; in drei grundlegende Mechanismen unterteilt: die zyklische Lebenszeichenprüfung (&lt;code&gt;kAliveSupervision&lt;/code&gt;), die Einhaltung zeitlicher Grenzen zwischen Kontrollpunkten (&lt;code&gt;kDeadlineSupervision&lt;/code&gt;) sowie die Überprüfung der korrekten Ausführungsreihenfolge (&lt;code&gt;kLogicalSupervision&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;Im Gesamtsystem interagiert &lt;code&gt;ara::phm&lt;/code&gt; nicht nur mit den anwendenden Prozessen, sondern kommuniziert eng mit dem PHM-Daemon und dem State Management (SM). Kann das State Management eine notwendige Wiederherstellung nicht durchführen, eskaliert das Platform Health Management die Fehlerbehebung direkt an den Hardware- oder System-Watchdog &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-phm-context"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 604.24 172.80" style="max-width:806px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 158.4)"&gt;
+&lt;title&gt;diag_phm_context&lt;/title&gt;
+&lt;!-- SupervisedEntity --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;SupervisedEntity&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M79.77,-90C79.77,-90 12,-90 12,-90 6,-90 0,-84 0,-78 0,-78 0,-66 0,-66 0,-60 6,-54 12,-54 12,-54 79.77,-54 79.77,-54 85.77,-54 91.77,-60 91.77,-66 91.77,-66 91.77,-78 91.77,-78 91.77,-84 85.77,-90 79.77,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="45.89" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_phm_SupervisedEntity_c46882.html" href="../classes/cl_ara_phm_SupervisedEntity_c46882.html"&gt;SupervisedEntity&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PHMDaemon --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;PHMDaemon&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M297.62,-90C297.62,-90 219.18,-90 219.18,-90 213.18,-90 207.18,-84 207.18,-78 207.18,-78 207.18,-66 207.18,-66 207.18,-60 213.18,-54 219.18,-54 219.18,-54 297.62,-54 297.62,-54 303.62,-54 309.62,-60 309.62,-66 309.62,-66 309.62,-78 309.62,-78 309.62,-84 303.62,-90 297.62,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="258.4" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/phm.html" href="../modules/phm.html"&gt;ara::phm&lt;/a&gt; (Daemon)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- SupervisedEntity&amp;#45;&amp;gt;PHMDaemon --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;SupervisedEntity-&amp;gt;PHMDaemon&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M92.05,-72C122.2,-72 162.25,-72 195.38,-72"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="195.11,-75.5 205.11,-72 195.11,-68.5 195.11,-75.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="149.48" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Überwachungsdaten&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- StateManagement --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;StateManagement&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M563.44,-144C563.44,-144 489.28,-144 489.28,-144 483.28,-144 477.28,-138 477.28,-132 477.28,-132 477.28,-120 477.28,-120 477.28,-114 483.28,-108 489.28,-108 489.28,-108 563.44,-108 563.44,-108 569.44,-108 575.44,-114 575.44,-120 575.44,-120 575.44,-132 575.44,-132 575.44,-138 569.44,-144 563.44,-144"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="526.36" y="-122.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/sm.html" href="../modules/sm.html"&gt;State Management&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PHMDaemon&amp;#45;&amp;gt;StateManagement --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;PHMDaemon-&amp;gt;StateManagement&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M310.02,-84.11C315.94,-85.46 321.91,-86.78 327.62,-88 373.83,-97.85 426.36,-107.9 465.66,-115.18"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="464.79,-118.58 475.26,-116.95 466.06,-111.69 464.79,-118.58"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="393.45" y="-116.13" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Wiederherstellungsanforderung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Watchdog --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;Watchdog&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M544.96,-90C544.96,-90 507.76,-90 507.76,-90 501.76,-90 495.76,-84 495.76,-78 495.76,-78 495.76,-66 495.76,-66 495.76,-60 501.76,-54 507.76,-54 507.76,-54 544.96,-54 544.96,-54 550.96,-54 556.96,-60 556.96,-66 556.96,-66 556.96,-78 556.96,-78 556.96,-84 550.96,-90 544.96,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="526.36" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Watchdog&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PHMDaemon&amp;#45;&amp;gt;Watchdog --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;PHMDaemon-&amp;gt;Watchdog&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M310.05,-72C360.52,-72 437.07,-72 484,-72"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="483.88,-75.5 493.88,-72 483.88,-68.5 483.88,-75.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="393.45" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Auslösung bei SM-Fehlannahme&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- RecoveryAction --&gt;
+&lt;g id="node5" class="node"&gt;
+&lt;title&gt;RecoveryAction&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M558.4,-36C558.4,-36 494.32,-36 494.32,-36 488.32,-36 482.32,-30 482.32,-24 482.32,-24 482.32,-12 482.32,-12 482.32,-6 488.32,0 494.32,0 494.32,0 558.4,0 558.4,0 564.4,0 570.4,-6 570.4,-12 570.4,-12 570.4,-24 570.4,-24 570.4,-30 564.4,-36 558.4,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="526.36" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_phm_RecoveryAction_8b27fd.html" href="../classes/cl_ara_phm_RecoveryAction_8b27fd.html"&gt;RecoveryAction&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- PHMDaemon&amp;#45;&amp;gt;RecoveryAction --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;PHMDaemon-&amp;gt;RecoveryAction&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M310.02,-59.89C315.94,-58.54 321.91,-57.22 327.62,-56 375.85,-45.71 430.98,-35.22 470.75,-27.88"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="471.22,-31.35 480.42,-26.1 469.95,-24.47 471.22,-31.35"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="393.45" y="-59" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Wiederherstellungsaktion&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel von SupervisedEntity, PHM-Daemon, State Management, RecoveryAction und Watchdog. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The supervision lifecycle is represented by multi-stage status queries and transitions. At the lowest level, &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; defines the state of an individual supervision function &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;kDeactivated&lt;/code&gt;: The elementary supervision is inactive.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kOK&lt;/code&gt;: The supervision is active and no error is present.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kFailed&lt;/code&gt;: An error has been registered, but is still within the tolerance or debouncing window.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;kExpired&lt;/code&gt;: An error has been finally qualified after the tolerance window expired.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;To assess the overall state, &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; aggregates the results of corresponding elementary supervisions &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;. The global state changes from &lt;code&gt;kDeactivated&lt;/code&gt; to &lt;code&gt;kOK&lt;/code&gt; as soon as at least one elementary supervision is actively error-free. If errors occur, the status escalates via &lt;code&gt;kFailed&lt;/code&gt; and &lt;code&gt;kExpired&lt;/code&gt; up to &lt;code&gt;kStopped&lt;/code&gt; if the grace period after error qualification is exceeded.&lt;/p&gt;
-&lt;div class="diagram" id="diag-global-supervision"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 468.70 64.80" style="max-width:625px"&gt;
-&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
-&lt;title&gt;GlobalSupervisionStatus&lt;/title&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Das Lebenszyklus- und Zustandsmodell des Platform Health Managements ist zweistufig aufgebaut und unterscheidet zwischen elementaren und globalen Überwachungszuständen. Eine einzelne Überwachungsfunktion nimmt Zustände gemäß &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt; an: Im inaktiven Zustand verbleibt sie in &lt;code&gt;kDeactivated&lt;/code&gt;, nach der Aktivierung ohne Fehler in &lt;code&gt;kOK&lt;/code&gt;. Tritt eine Anomalie auf, wechselt sie zunächst in &lt;code&gt;kFailed&lt;/code&gt;, solange der Fehler noch innerhalb konfigurierter Toleranzen oder Entprellungszeiten (Debouncing) liegt. Erst nach Ablauf der Entprellung gilt der Fehler als qualifiziert und der Status wechselt nach &lt;code&gt;kExpired&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Gesamtbewertung mehrerer elementarer Überwachungen wird in &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt; aggregiert. Sind sämtliche zugeordneten Überwachungen inaktiv, befindet sich der globale Zustand in &lt;code&gt;kDeactivated&lt;/code&gt;. Sobald mindestens eine Überwachung &lt;code&gt;kOK&lt;/code&gt; meldet und keine fehlerhaft ist, ist der Gesamtstatus &lt;code&gt;kOK&lt;/code&gt;. Befindet sich mindestens eine Überwachung in &lt;code&gt;kFailed&lt;/code&gt; und keine in &lt;code&gt;kExpired&lt;/code&gt;, spiegelt sich dies im globalen Zustand &lt;code&gt;kFailed&lt;/code&gt; wider. Erreicht eine Überwachung den qualifizierten Fehlerzustand &lt;code&gt;kExpired&lt;/code&gt;, verbleibt der globale Status in &lt;code&gt;kExpired&lt;/code&gt;, solange die definierte Toleranzzeit nicht verstrichen ist. Nach Ablauf dieser Toleranzfrist geht das System in den finalen Zustand &lt;code&gt;kStopped&lt;/code&gt; über &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-global-supervision"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 638.25 400.80" style="max-width:851px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 386.4)"&gt;
+&lt;title&gt;diag_global_supervision&lt;/title&gt;
 &lt;!-- kDeactivated --&gt;
 &lt;g id="node1" class="node"&gt;
 &lt;title&gt;kDeactivated&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M62.02,-36C62.02,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 62.02,0 62.02,0 68.02,0 74.02,-6 74.02,-12 74.02,-12 74.02,-24 74.02,-24 74.02,-30 68.02,-36 62.02,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="37.01" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kDeactivated&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M267.16,-372C267.16,-372 217.14,-372 217.14,-372 211.14,-372 205.14,-366 205.14,-360 205.14,-360 205.14,-348 205.14,-348 205.14,-342 211.14,-336 217.14,-336 217.14,-336 267.16,-336 267.16,-336 273.16,-336 279.16,-342 279.16,-348 279.16,-348 279.16,-360 279.16,-360 279.16,-366 273.16,-372 267.16,-372"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="242.15" y="-350.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kDeactivated&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kOK --&gt;
 &lt;g id="node2" class="node"&gt;
 &lt;title&gt;kOK&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M152.02,-36C152.02,-36 122.02,-36 122.02,-36 116.02,-36 110.02,-30 110.02,-24 110.02,-24 110.02,-12 110.02,-12 110.02,-6 116.02,0 122.02,0 122.02,0 152.02,0 152.02,0 158.02,0 164.02,-6 164.02,-12 164.02,-12 164.02,-24 164.02,-24 164.02,-30 158.02,-36 152.02,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="137.02" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kOK&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M156.15,-288C156.15,-288 126.15,-288 126.15,-288 120.15,-288 114.15,-282 114.15,-276 114.15,-276 114.15,-264 114.15,-264 114.15,-258 120.15,-252 126.15,-252 126.15,-252 156.15,-252 156.15,-252 162.15,-252 168.15,-258 168.15,-264 168.15,-264 168.15,-276 168.15,-276 168.15,-282 162.15,-288 156.15,-288"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="141.15" y="-266.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kOK&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kDeactivated&amp;#45;&amp;gt;kOK --&gt;
 &lt;g id="edge1" class="edge"&gt;
 &lt;title&gt;kDeactivated-&amp;gt;kOK&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M74.51,-11.45C82.24,-11.2 90.42,-11.18 98.2,-11.41"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="97.79,-14.89 107.94,-11.86 98.11,-7.9 97.79,-14.89"&gt;&lt;/polygon&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M237.33,-335.55C233.89,-325.82 228.39,-314.07 220.15,-306 208.9,-294.98 193.6,-287.12 179.46,-281.67"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="180.63,-278.37 170.04,-278.36 178.31,-284.98 180.63,-278.37"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="277.92" y="-309" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Aktivierung ohne Fehler&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kOK&amp;#45;&amp;gt;kDeactivated --&gt;
-&lt;g id="edge6" class="edge"&gt;
+&lt;g id="edge7" class="edge"&gt;
 &lt;title&gt;kOK-&amp;gt;kDeactivated&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M109.6,-24.07C102.27,-24.54 94.07,-24.77 85.92,-24.75"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="86.23,-21.25 76.17,-24.58 86.11,-28.25 86.23,-21.25"&gt;&lt;/polygon&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M113.9,-288.05C103.15,-296.91 95.02,-307.96 102.85,-318 114.1,-332.42 158.16,-341.8 193.76,-347.19"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="192.92,-350.6 203.32,-348.56 193.92,-343.67 192.92,-350.6"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="159.5" y="-309" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Alle Überwachungen inaktiv&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kFailed --&gt;
 &lt;g id="node3" class="node"&gt;
 &lt;title&gt;kFailed&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M242.02,-36C242.02,-36 212.02,-36 212.02,-36 206.02,-36 200.02,-30 200.02,-24 200.02,-24 200.02,-12 200.02,-12 200.02,-6 206.02,0 212.02,0 212.02,0 242.02,0 242.02,0 248.02,0 254.02,-6 254.02,-12 254.02,-12 254.02,-24 254.02,-24 254.02,-30 248.02,-36 242.02,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="227.02" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kFailed&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M290.15,-204C290.15,-204 260.15,-204 260.15,-204 254.15,-204 248.15,-198 248.15,-192 248.15,-192 248.15,-180 248.15,-180 248.15,-174 254.15,-168 260.15,-168 260.15,-168 290.15,-168 290.15,-168 296.15,-168 302.15,-174 302.15,-180 302.15,-180 302.15,-192 302.15,-192 302.15,-198 296.15,-204 290.15,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="275.15" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kFailed&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kOK&amp;#45;&amp;gt;kFailed --&gt;
 &lt;g id="edge2" class="edge"&gt;
 &lt;title&gt;kOK-&amp;gt;kFailed&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M164.43,-11.75C171.91,-11.3 180.21,-11.15 188.22,-11.31"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="187.85,-14.8 197.98,-11.69 188.12,-7.8 187.85,-14.8"&gt;&lt;/polygon&gt;
-&lt;/g&gt;
-&lt;!-- kFailed&amp;#45;&amp;gt;kOK --&gt;
-&lt;g id="edge5" class="edge"&gt;
-&lt;title&gt;kFailed-&amp;gt;kOK&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M199.64,-24.24C192.16,-24.7 183.86,-24.85 175.85,-24.69"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="176.22,-21.2 166.09,-24.31 175.95,-28.2 176.22,-21.2"&gt;&lt;/polygon&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M136.45,-251.54C134.94,-241.8 135.09,-230.05 141.75,-222 167.31,-191.11 191.63,-215.12 230.15,-204 232.41,-203.35 234.71,-202.64 237.02,-201.88"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="237.91,-205.28 246.21,-198.68 235.61,-198.67 237.91,-205.28"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="198.95" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Fehler erkannt (Entprellung)&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kExpired --&gt;
 &lt;g id="node4" class="node"&gt;
 &lt;title&gt;kExpired&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M334.34,-36C334.34,-36 302.02,-36 302.02,-36 296.02,-36 290.02,-30 290.02,-24 290.02,-24 290.02,-12 290.02,-12 290.02,-6 296.02,0 302.02,0 302.02,0 334.34,0 334.34,0 340.34,0 346.34,-6 346.34,-12 346.34,-12 346.34,-24 346.34,-24 346.34,-30 340.34,-36 334.34,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="318.18" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kExpired&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M191.31,-120C191.31,-120 158.99,-120 158.99,-120 152.99,-120 146.99,-114 146.99,-108 146.99,-108 146.99,-96 146.99,-96 146.99,-90 152.99,-84 158.99,-84 158.99,-84 191.31,-84 191.31,-84 197.31,-84 203.31,-90 203.31,-96 203.31,-96 203.31,-108 203.31,-108 203.31,-114 197.31,-120 191.31,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="175.15" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kExpired&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kOK&amp;#45;&amp;gt;kExpired --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;kOK-&amp;gt;kExpired&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M132.32,-251.78C123.07,-231.33 111.19,-196.41 121.42,-168 126.7,-153.32 136.89,-139.61 146.99,-128.59"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="149.35,-131.18 153.81,-121.57 144.33,-126.3 149.35,-131.18"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="180.28" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Fehler unentprellt qualifiziert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kFailed&amp;#45;&amp;gt;kDeactivated --&gt;
+&lt;g id="edge8" class="edge"&gt;
+&lt;title&gt;kFailed-&amp;gt;kDeactivated&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M302.46,-197.1C313.43,-202.67 324.93,-210.77 331.15,-222 351.83,-259.32 355.17,-282.74 331.15,-318 321.82,-331.69 306.25,-340.03 290.71,-345.1"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="289.77,-341.73 281.09,-347.8 291.67,-348.47 289.77,-341.73"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="404.59" y="-267" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Alle Überwachungen inaktiv&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kFailed&amp;#45;&amp;gt;kOK --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;kFailed-&amp;gt;kOK&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M272.01,-204.34C269.36,-214.28 264.59,-226.28 256.15,-234 235.38,-253.01 204.56,-261.7 180.05,-265.67"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="179.67,-262.19 170.25,-267.04 180.63,-269.13 179.67,-262.19"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="296.14" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Fehler behoben&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kFailed&amp;#45;&amp;gt;kExpired --&gt;
-&lt;g id="edge3" class="edge"&gt;
+&lt;g id="edge4" class="edge"&gt;
 &lt;title&gt;kFailed-&amp;gt;kExpired&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M254.29,-18C261.75,-18 270.03,-18 278.07,-18"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="277.89,-21.5 287.89,-18 277.89,-14.5 277.89,-21.5"&gt;&lt;/polygon&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M253.94,-167.61C239.76,-155.98 220.88,-140.5 205.16,-127.61"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="207.57,-125.06 197.61,-121.42 203.13,-130.47 207.57,-125.06"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="267.09" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Fehler qualifiziert&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kExpired&amp;#45;&amp;gt;kDeactivated --&gt;
+&lt;g id="edge9" class="edge"&gt;
+&lt;title&gt;kExpired-&amp;gt;kDeactivated&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M146.63,-110.18C90.91,-125.83 -24.52,-167.05 4.85,-234 27.01,-284.49 47.49,-292.07 96.15,-318 126.41,-334.12 164.12,-342.92 193.63,-347.66"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="192.86,-351.08 203.27,-349.09 193.9,-344.16 192.86,-351.08"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="61.5" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Alle Überwachungen inaktiv&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kStopped --&gt;
 &lt;g id="node5" class="node"&gt;
 &lt;title&gt;kStopped&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M427.9,-36C427.9,-36 394.34,-36 394.34,-36 388.34,-36 382.34,-30 382.34,-24 382.34,-24 382.34,-12 382.34,-12 382.34,-6 388.34,0 394.34,0 394.34,0 427.9,0 427.9,0 433.9,0 439.9,-6 439.9,-12 439.9,-12 439.9,-24 439.9,-24 439.9,-30 433.9,-36 427.9,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="411.12" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kStopped&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M318.93,-36C318.93,-36 285.37,-36 285.37,-36 279.37,-36 273.37,-30 273.37,-24 273.37,-24 273.37,-12 273.37,-12 273.37,-6 279.37,0 285.37,0 285.37,0 318.93,0 318.93,0 324.93,0 330.93,-6 330.93,-12 330.93,-12 330.93,-24 330.93,-24 330.93,-30 324.93,-36 318.93,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="302.15" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kStopped&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- kExpired&amp;#45;&amp;gt;kStopped --&gt;
-&lt;g id="edge4" class="edge"&gt;
+&lt;g id="edge6" class="edge"&gt;
 &lt;title&gt;kExpired-&amp;gt;kStopped&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M346.47,-18C353.99,-18 362.31,-18 370.38,-18"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="370.25,-21.5 380.25,-18 370.25,-14.5 370.25,-21.5"&gt;&lt;/polygon&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M202.08,-83.61C220.61,-71.65 245.42,-55.63 265.71,-42.53"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="267.35,-45.63 273.86,-37.27 263.56,-39.75 267.35,-45.63"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="298.59" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Toleranzzeit überschritten&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- kStopped&amp;#45;&amp;gt;kDeactivated --&gt;
+&lt;g id="edge10" class="edge"&gt;
+&lt;title&gt;kStopped-&amp;gt;kDeactivated&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M331.19,-18.62C385.31,-19.6 496.15,-30.25 496.15,-101 496.15,-271 496.15,-271 496.15,-271 496.15,-313.67 364.72,-337.38 290.95,-347.33"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="290.74,-343.83 281.28,-348.59 291.65,-350.77 290.74,-343.83"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="552.8" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Alle Überwachungen inaktiv&lt;/text&gt;
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;State diagram: Aggregated monitoring states and probable transitions in the global monitoring cycle. Sources: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Zustandsdiagramm: Zustandsübergänge der globalen Überwachung in Abhängigkeit von Fehlererkennung und Toleranzzeiten. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical sequence for safeguarding an adaptive application comprises several successive phases:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Configuration and connection:&lt;/strong&gt; The application instantiates a &lt;code&gt;SupervisedEntity&lt;/code&gt; for each of the components to be monitored. In doing so, the monitoring parameters are assigned to the modes from &lt;code&gt;TypeOfSupervision&lt;/code&gt; (&lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt;, or &lt;code&gt;kLogicalSupervision&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Cyclic execution and reporting:&lt;/strong&gt; During regular operation, the entity reports checkpoints to the subsystem. As long as the requirements are met, &lt;code&gt;ElementarySupervisionStatus&lt;/code&gt; and &lt;code&gt;GlobalSupervisionStatus&lt;/code&gt; remain in status &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Response handling:&lt;/strong&gt; If a monitoring error is qualified (transition to &lt;code&gt;kExpired&lt;/code&gt; or &lt;code&gt;kStopped&lt;/code&gt;), a derived instance of &lt;code&gt;RecoveryAction&lt;/code&gt; is used to initiate corrective actions such as restarts or state changes.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;In einer typischen Integrationsreihenfolge bindet eine Anwendung die Klassen des Namespace über &lt;code&gt;#include "ara/phm/supervised_entity.h"&lt;/code&gt; oder den Weiterleitungs-Header &lt;code&gt;#include "ara/phm/phm_fwd.h"&lt;/code&gt; ein &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;. Die Anwendung instanziiert und verwaltet ein Objekt von &lt;code&gt;SupervisedEntity&lt;/code&gt;, das die zu sichernde Funktionsausführung abbildet. Interpretation: Über dieses Objekt meldet die Anwendung im regulären Betrieb ihre Lebenszeichen oder Kontrollflussereignisse an das Platform Health Management.&lt;/p&gt;
+&lt;p&gt;Der PHM-Daemon gleicht die gemeldeten Ereignisse kontinuierlich mit den parametrierten Kriterien für &lt;code&gt;kAliveSupervision&lt;/code&gt;, &lt;code&gt;kDeadlineSupervision&lt;/code&gt; oder &lt;code&gt;kLogicalSupervision&lt;/code&gt; ab &lt;a class="spec-record-ref" data-req="SWS_PHM_01138" href="../spec/record.html?id=SWS_PHM_01138"&gt;[SWS_PHM_01138]&lt;/a&gt;. Solange alle Signale frist- und regelgerecht eingehen, verbleibt die Auswertung im Zustand &lt;code&gt;kOK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01358" href="../spec/record.html?id=SWS_PHM_01358"&gt;[SWS_PHM_01358]&lt;/a&gt;. Werden Grenzwerte verletzt, durchläuft die Überwachung die Fehlerqualifizierung und leitet bei Erreichen von &lt;code&gt;kExpired&lt;/code&gt; oder &lt;code&gt;kStopped&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01137" href="../spec/record.html?id=SWS_PHM_01137"&gt;[SWS_PHM_01137]&lt;/a&gt; die konfigurierte Wiederherstellung ein. Hierbei kommt die Schnittstelle &lt;code&gt;RecoveryAction&lt;/code&gt; zum Einsatz, vermutlich um anwendungsindividuelle Gegenmaßnahmen strukturiert auszuführen, bevor eine Eskalation an das State Management erfolgt.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Error states and exception conditions in namespace &lt;code&gt;ara::phm&lt;/code&gt; are handled via standardized error structures:&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Spezifische Fehlerzustände innerhalb des Moduls werden über die Fehlerdomäne &lt;code&gt;PhmErrorDomain&lt;/code&gt; sowie die Enumeration &lt;code&gt;PhmErrc&lt;/code&gt; standardisiert &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;. Die Enumeration definiert folgende Fehlercodes:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;The error domain can be obtained via the free function &lt;code&gt;GetPhmDomain()&lt;/code&gt;; the call is thread-safe and does not throw exceptions &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Specific error causes are typed via the enumeration &lt;code&gt;PhmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;:
-  &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;kOfferFailed&lt;/code&gt;: The service could not be offered because the connection to the PHM daemon failed.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kSMCanNotHandleRecovery&lt;/code&gt;: State Management cannot perform the recovery; Platform Health Management takes over the escalation and controls the watchdog.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;kServiceNotReady&lt;/code&gt;: A concurrent enable or disable operation is already being processed.&lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;With the helper function &lt;code&gt;MakeErrorCode()&lt;/code&gt;, error messages of type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; are created by combining a &lt;code&gt;PhmErrc&lt;/code&gt; and vendor-specific additional data &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. In the event of severe errors that require exception handling, &lt;code&gt;PhmException&lt;/code&gt; is thrown.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrc::kOfferFailed&lt;/code&gt; (= 2): Der Dienst konnte aufgrund fehlgeschlagener Kommunikation mit dem PHM-Daemon nicht angeboten werden &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrc::kSMCanNotHandleRecovery&lt;/code&gt; (= 3): Das State Management kann die geforderte Wiederherstellung nicht bewältigen; das Platform Health Management übernimmt daraufhin die Wiederherstellung und löst den Watchdog aus &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PhmErrc::kServiceNotReady&lt;/code&gt; (= 4): Eine Anforderung kann nicht ausgeführt werden, da bereits eine Aktivierungs- oder Deaktivierungsanfrage (Enable/Disable) aktiv ist &lt;a class="spec-record-ref" data-req="SWS_PHM_01240" href="../spec/record.html?id=SWS_PHM_01240"&gt;[SWS_PHM_01240]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;!-- annahmen: 1) Die Übergänge zwischen den Zuständen in diag-global-supervision leiten sich plausibel aus den Bedingungen der Enumerationswerte in SWS_PHM_01137 ab – Begründung: Der SWS-Payload beschreibt die Zustandsbedingungen, enthält jedoch kein separates Zustandsübergangsdiagramm. --&gt;
-&lt;p class="ai-note"&gt;This guide is based exclusively on the specification AUTOSAR Adaptive Platform Release R25-11.&lt;/p&gt;
+&lt;p&gt;Zur Erzeugung passender Fehlerobjekte stellt der Namespace die Hilfsfunktion &lt;code&gt;MakeErrorCode&lt;/code&gt; bereit, welche aus einem &lt;code&gt;PhmErrc&lt;/code&gt; und herstellerspezifischen Zusatzdaten ein &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; konstruiert &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;. Die Referenz auf die globale Fehlerdomäne kann über &lt;code&gt;GetPhmDomain&lt;/code&gt; bezogen werden &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;. Beide Funktionen sind als &lt;code&gt;constexpr&lt;/code&gt; und &lt;code&gt;noexcept&lt;/code&gt; deklariert und garantieren Ausnahme- sowie Threadsicherheit &lt;a class="spec-record-ref" data-req="SWS_PHM_01244" href="../spec/record.html?id=SWS_PHM_01244"&gt;[SWS_PHM_01244]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PHM_01251" href="../spec/record.html?id=SWS_PHM_01251"&gt;[SWS_PHM_01251]&lt;/a&gt;. Im synchronen Fehlerfall oder bei Ausnahmen im Modul kommt zudem der Ausnahmetyp &lt;code&gt;PhmException&lt;/code&gt; zur Anwendung.&lt;/p&gt;
+&lt;!-- annahmen: 1) SupervisedEntity dient anwendenden Prozessen als Schnittstelle zur Übermittlung von Alive-, Deadline- und Kontrollflussdaten an den PHM-Daemon. – Begründung: Der Klassenname SupervisedEntity korrespondiert mit TypeOfSupervision in SWS_PHM_01138, konkrete Aufrufmethoden sind im Payload jedoch nicht enthalten. 2) RecoveryAction fungiert als Basisklasse für anwendungsspezifische Wiederherstellungsroutinen. – Begründung: RecoveryAction ist als abstrakte Klasse deklariert und SWS_PHM_01240 beschreibt Eskalationsszenarien bei Wiederherstellungsfehlern. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einem KI-Kurations-Assistenten auf Basis der AUTOSAR-Spezifikation R25-11 für Platform Health Management generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -394,9 +497,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2dbc936761fb…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>15fb5e97ed21…</code></div>
               <div><strong>Konstituierende Records:</strong> 6</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 48 <span class="dossier-meta-sub">(48 neu · 26 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 48 Belege dazugekommen (26 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -431,8 +534,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">54</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">48</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">4</span></button>
               </div>
@@ -469,7 +572,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 48 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -532,4 +635,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PHM_01358","k":"enumeration","d":"PHM","t":"enumeration ElementarySupervisionStatus [SWS_PHM_01358] Upstream: RS_HM_09237 enum class ElementarySupervisionStatus : std::uint32_t {...}; Enumeration of elementary supervision status. Scoped Enumeration of uint32_t. Header-Datei #include \"ara/phm/supervised_entity.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol ElementarySupervisionStatus class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kOK td =0 Supervision is active and no failure is present. td kFailed td =1 A failure was detected but still within tolerance/debouncing. td kExpired td =2 A failure was detected and qualified. td kDeactivated td =4 Supervision is not active.","n":"ElementarySupervisionStatus"},{"i":"SWS_PHM_01137","k":"enumeration","d":"PHM","t":"enumeration GlobalSupervisionStatus [SWS_PHM_01137] Upstream: RS_HM_09237 enum class GlobalSupervisionStatus : std::uint32_t {...}; Enumeration of global supervision status. Scoped Enumeration of uint32_t. Header-Datei #include \"ara/phm/supervised_entity.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol GlobalSupervisionStatus class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kOK td =0 At least one Elementary Supervision corresponding to the Global Supervision is in status kOK and none in status kFailed or kExpired. td kFailed td =1 At least one Elementary Supervision corresponding to the Global Supervision is in status kFailed but none in status kExpired. td kExpired td =2 At least one Elementary Supervision corresponding to the Global Supervision is in status kExpired but the time elapsed since reaching kExpired has not exceeded the tolerance. td kStopped td =3 At least one Elementary Supervision corresponding to the Global Supervision is in status kExpired and the time elapsed since reaching kExpired has exceeded the tolerance. td kDeactivated td =4 All Elementary Supervisions corresponding to the Global Supervision are in status kDeactivated.","n":"GlobalSupervisionStatus"},{"i":"SWS_PHM_01240","k":"enumeration","d":"PHM","t":"enumeration PhmErrc [SWS_PHM_01240] Upstream: RS_AP_00119 enum class PhmErrc : ara::core::ErrorDomain::CodeType {...}; Defines an enumeration class for the Platform Health Management error codes. Header-Datei #include \"ara/phm/phm_error_domain.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol PhmErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kOfferFailed td =2 Service could not be offered due to failure of communication with Phm daemon td kSMCanNotHandleRecovery td =3 State Management cannot handle the recovery and PlatformHealth Management will take over by firing the watchdog. td kServiceNotReady td =4 There is already an ongoing Enable or Disable request.","n":"PhmErrc"},{"i":"SWS_PHM_01138","k":"enumeration","d":"PHM","t":"enumeration TypeOfSupervision [SWS_PHM_01138] Upstream: RS_HM_09159 enum class TypeOfSupervision : std::uint32_t {...}; Enumeration of type of supervision. Scoped Enumeration of uint32_t. Header-Datei #include \"ara/phm/recovery_action.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol TypeOfSupervision class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kAliveSupervision td =0 Supervision is of type AliveSupervision. td kDeadlineSupervision td =1 Supervision is of type DeadlineSupervision. td kLogicalSupervision td =2 Supervision is of type LogicalSupervision.","n":"TypeOfSupervision"},{"i":"SWS_PHM_01251","k":"function","d":"PHM","t":"function GetPhmDomain [SWS_PHM_01251] Upstream: RS_AP_00119 , RS_AP_00159 constexpr const ara::core::ErrorDomain & GetPhmDomain () noexcept; Returns the global PhmErrorDomain object. Header-Datei #include \"ara/phm/phm_error_domain.h\" class mono Scope namespace ara::phm class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain & td The global PhmErrorDomain object.","n":"GetPhmDomain"},{"i":"SWS_PHM_01244","k":"function","d":"PHM","t":"function MakeErrorCode [SWS_PHM_01244] Upstream: RS_AP_00119 , RS_AP_00159 constexpr ara::core::ErrorCode MakeErrorCode ( PhmErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an error code. Header-Datei #include \"ara/phm/phm_error_domain.h\" class mono Scope namespace ara::phm class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error. Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ErrorCode object.","n":"MakeErrorCode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/c9f108a8525c1276.json?v=5ed167a1" data-total="48" data-new="48" data-figures="26" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PHM_01358","k":"enumeration","d":"PHM","t":"enumeration ElementarySupervisionStatus [SWS_PHM_01358] Upstream: RS_HM_09237 enum class ElementarySupervisionStatus : std::uint32_t {...}; Enumeration of elementary supervision status. Scoped Enumeration of uint32_t. Header-Datei #include \"ara/phm/supervised_entity.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol ElementarySupervisionStatus class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kOK td =0 Supervision is active and no failure is present. td kFailed td =1 A failure was detected but still within tolerance/debouncing. td kExpired td =2 A failure was detected and qualified. td kDeactivated td =4 Supervision is not active.","n":"ElementarySupervisionStatus"},{"i":"SWS_PHM_01137","k":"enumeration","d":"PHM","t":"enumeration GlobalSupervisionStatus [SWS_PHM_01137] Upstream: RS_HM_09237 enum class GlobalSupervisionStatus : std::uint32_t {...}; Enumeration of global supervision status. Scoped Enumeration of uint32_t. Header-Datei #include \"ara/phm/supervised_entity.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol GlobalSupervisionStatus class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kOK td =0 At least one Elementary Supervision corresponding to the Global Supervision is in status kOK and none in status kFailed or kExpired. td kFailed td =1 At least one Elementary Supervision corresponding to the Global Supervision is in status kFailed but none in status kExpired. td kExpired td =2 At least one Elementary Supervision corresponding to the Global Supervision is in status kExpired but the time elapsed since reaching kExpired has not exceeded the tolerance. td kStopped td =3 At least one Elementary Supervision corresponding to the Global Supervision is in status kExpired and the time elapsed since reaching kExpired has exceeded the tolerance. td kDeactivated td =4 All Elementary Supervisions corresponding to the Global Supervision are in status kDeactivated.","n":"GlobalSupervisionStatus"},{"i":"SWS_PHM_01240","k":"enumeration","d":"PHM","t":"enumeration PhmErrc [SWS_PHM_01240] Upstream: RS_AP_00119 enum class PhmErrc : ara::core::ErrorDomain::CodeType {...}; Defines an enumeration class for the Platform Health Management error codes. Header-Datei #include \"ara/phm/phm_error_domain.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol PhmErrc class mono Basistyp ara::core::ErrorDomain::CodeType class mono Werte th Enumerator th Beschreibung td kOfferFailed td =2 Service could not be offered due to failure of communication with Phm daemon td kSMCanNotHandleRecovery td =3 State Management cannot handle the recovery and PlatformHealth Management will take over by firing the watchdog. td kServiceNotReady td =4 There is already an ongoing Enable or Disable request.","n":"PhmErrc"},{"i":"SWS_PHM_01138","k":"enumeration","d":"PHM","t":"enumeration TypeOfSupervision [SWS_PHM_01138] Upstream: RS_HM_09159 enum class TypeOfSupervision : std::uint32_t {...}; Enumeration of type of supervision. Scoped Enumeration of uint32_t. Header-Datei #include \"ara/phm/recovery_action.h\" class mono Forwarding-Header #include \"ara/phm/phm_fwd.h\" class mono Scope namespace ara::phm class mono Symbol TypeOfSupervision class mono Basistyp std::uint32_t class mono Werte th Enumerator th Beschreibung td kAliveSupervision td =0 Supervision is of type AliveSupervision. td kDeadlineSupervision td =1 Supervision is of type DeadlineSupervision. td kLogicalSupervision td =2 Supervision is of type LogicalSupervision.","n":"TypeOfSupervision"},{"i":"SWS_PHM_01251","k":"function","d":"PHM","t":"function GetPhmDomain [SWS_PHM_01251] Upstream: RS_AP_00119 , RS_AP_00159 constexpr const ara::core::ErrorDomain & GetPhmDomain () noexcept; Returns the global PhmErrorDomain object. Header-Datei #include \"ara/phm/phm_error_domain.h\" class mono Scope namespace ara::phm class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Rückgabewert th Typ th Beschreibung td const ara::core::ErrorDomain & td The global PhmErrorDomain object.","n":"GetPhmDomain"},{"i":"SWS_PHM_01244","k":"function","d":"PHM","t":"function MakeErrorCode [SWS_PHM_01244] Upstream: RS_AP_00119 , RS_AP_00159 constexpr ara::core::ErrorCode MakeErrorCode ( PhmErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an error code. Header-Datei #include \"ara/phm/phm_error_domain.h\" class mono Scope namespace ara::phm class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Parameter (in) th Parameter th Beschreibung td code td Error code number. td data td Vendor defined data associated with the error. Rückgabewert th Typ th Beschreibung td ara::core::ErrorCode td An ErrorCode object.","n":"MakeErrorCode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/c9f108a8525c1276.json?v=e7491eb7" data-total="2" data-new="2" data-figures="2" data-used="0"></script></dialog>

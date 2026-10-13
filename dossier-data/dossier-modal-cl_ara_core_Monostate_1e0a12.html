@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_Monostate_1e0a12" class="dossier-modal dossier-workbench" data-dossier-sha="de91c3135fa173ac" aria-labelledby="dossier-modal-cl_ara_core_Monostate_1e0a12-title">
+<dialog id="dossier-modal-cl_ara_core_Monostate_1e0a12" class="dossier-modal dossier-workbench" data-dossier-sha="8cc8d5be1e06c29b" aria-labelledby="dossier-modal-cl_ara_core_Monostate_1e0a12-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_Monostate_1e0a12-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_Monostate_1e0a12)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,560 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,082 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::Monostate' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_Monostate_1e0a12",
@@ -203,56 +222,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="b22ce7de55b730ee369384666b1096e6a9d4b56f5f2e55ddc0acd6ed53d83b2b" data-trace-output="de91c3135fa173accf498c66a3a1d072f50aef34adc8321f4c870e679c99014f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="db93f7b8a6e10163a0a92dd8eda44aceff1beb0c4c2efe1facfa4a013675a300" data-trace-output="8cc8d5be1e06c29bbc858452e6a4a048bfcdeeb2d7705372d8452d7297c7e893" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als leerer Stellvertretertyp in Varianten, um einen unbesetzten oder initialen Leerzustand abzubilden." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    The type &lt;code&gt;ara::core::Monostate&lt;/code&gt; represents a stateless unit type in the module &lt;code&gt;core&lt;/code&gt; of the AUTOSAR Adaptive Platform. According to the specification description, the structure is intended for corresponding use in conjunction with variant types (&lt;code&gt;[variant]&lt;/code&gt;). In typed unions or sum types such as variant structures, a dedicated type is needed when a state that carries no payload data is to be represented.
-  &lt;/p&gt;
-  &lt;p&gt;
-    As a core component of the basic system, &lt;code&gt;ara::core::Monostate&lt;/code&gt; interacts primarily with generic data structures for type selection. Interpretation: The definition as &lt;code&gt;struct Monostate final&lt;/code&gt; is likely to ensure that this type is used exclusively as a distinct placeholder type and that no derived specializations are permitted. Through its existence, it enables generic interfaces to explicitly model an empty alternative at the type level without having to resort to pointer-based null values or unchecked sentinel values.
-  &lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als leerer Stellvertretertyp in Varianten, um einen unbesetzten oder initialen Leerzustand abzubilden.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::core::Monostate&lt;/code&gt; dient im Modul &lt;code&gt;core&lt;/code&gt; gemäß ihrem Bezug zu &lt;code&gt;[variant]&lt;/code&gt; als zustandsloser Stellvertretertyp zur Darstellung eines leeren Zustands in varianten Datenstrukturen. Interpretation: Sie dürfte als Pendant zu &lt;code&gt;std::monostate&lt;/code&gt; fungieren, um &lt;code&gt;ara::core::Variant&lt;/code&gt; standardkonstruierbar zu machen, wenn alternative Nutztypen keinen Standardkonstruktor bereitstellen. Da die Struktur als &lt;code&gt;final&lt;/code&gt; definiert ist und keine Datenfelder enthält, erfolgen alle Lebenszyklusoperationen trivial und ohne dynamische Ressourcenbindung. Die Instanzen werden vorwiegend als Standardalternative genutzt und können ohne Synchronisationsaufwand nebenläufig eingesetzt werden.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::core::Monostate&lt;/code&gt; stellt einen elementaren Grundbaustein innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform dar. Die Deklaration als &lt;code&gt;struct Monostate final&lt;/code&gt; definiert einen zustandslosen Unit-Typ, dessen primäre Verantwortung darin besteht, das Fehlen eines nutzbaren Wertes innerhalb typisierter Summentypen abzubilden. Hinsichtlich ihrer formalen Semantik und Zweckbestimmung verweist die Spezifikation auf die korrespondierende Nutzung in &lt;code&gt;[variant]&lt;/code&gt;. Interpretation: Hieraus lässt sich ableiten, dass &lt;code&gt;ara::core::Monostate&lt;/code&gt; als direktes Pendant zu &lt;code&gt;std::monostate&lt;/code&gt; aus dem C++-Standard fungiert und eng mit &lt;code&gt;ara::core::Variant&lt;/code&gt; interagiert, um Varianten mit einer explizit leeren Zustandsalternative auszustatten.&lt;/p&gt;
+&lt;p&gt;In standardkonformen C++-Schnittstellen erfordert ein typisiertes Varianten-Konstrukt für die parameterlose Konstruktion, dass die an erster Stelle aufgeführte Typalternative standardkonstruierbar ist. Sofern keiner der fachlichen Nutztypen einen Standardkonstruktor bereitstellt oder eine Variante initial explizit keinen fachlichen Zustand repräsentieren soll, übernimmt &lt;code&gt;ara::core::Monostate&lt;/code&gt; an erster Position der Typenliste die Rolle eines wohlgeformten Platzhalters. Durch diese Entkopplung von Varianten-Initialisierung und der tatsächlichen Bereitstellung von Fachdaten gewährleistet die Klasse, dass variantenbasierte Schnittstellen und Funktionsergebnisse innerhalb deterministischer Steuergeräte-Software stets typsicher, wohldefiniert und speichereffizient initialisiert werden können.&lt;/p&gt;
 
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    The lifecycle of &lt;code&gt;ara::core::Monostate&lt;/code&gt; is trivial and bound to the lifetime of the context in which the structure is embedded. Since it is an empty data structure, an instance occupies at runtime only the minimal memory required by the C++ object model to maintain a unique object address, but transports no dynamic state.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Regarding creation and destruction, the following properties apply:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Creation:&lt;/strong&gt; Instances can be constructed without additional parameters. They possess neither resources nor pointers to external components.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;State model:&lt;/strong&gt; There are no internal state transitions. All instances of this type are equivalent to one another, as no internal status exists that could deviate from each other.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Ownership:&lt;/strong&gt; &lt;code&gt;ara::core::Monostate&lt;/code&gt; does not manage any dynamically allocated resources. Ownership always lies directly with the surrounding data structure or on the caller's stack.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Concurrency:&lt;/strong&gt; Since instances possess no mutable state, read and copy operations are thread-safe, provided there are no data races on the higher-level memory areas.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    The behavior of the type is presumably completely modeled after &lt;code&gt;std::monostate&lt;/code&gt; known from the C++ standard in order to interact seamlessly with move and copy semantics of generic containers. Destruction requires no cleanup actions and occurs trivially.
-  &lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus von &lt;code&gt;ara::core::Monostate&lt;/code&gt; zeichnet sich durch maximale Zustandslosigkeit und minimale Komplexität aus. Da die Struktur als &lt;code&gt;final&lt;/code&gt; deklariert ist und keine Datenelemente kapselt, besitzt eine Instanz keine veränderlichen internen Zustände, Phasen oder Zustandsübergänge. Interpretation: Als final deklarierter Stellvertretertyp ohne eigene Zustandsdaten dürfte &lt;code&gt;ara::core::Monostate&lt;/code&gt; trivial konstruierbar, kopierbar, verschiebbar und zerstörbar sein, sodass sämtliche Lebenszyklusoperationen ohne dynamische Speicherallokationen, ohne Ausnahmegefahr und mit vernachlässigbarem Laufzeitaufwand ausgeführt werden.&lt;/p&gt;
+&lt;p&gt;Die Instanziierung erfolgt in der Regel implizit bei der Default-Konstruktion einer umschließenden Variante oder explizit bei der Zuweisung eines leeren Status. Die Zerstörung erfordert keinerlei Bereinigungsaktionen, da keine Betriebssystem- oder Speicherressourcen gebunden werden. In Bezug auf Besitzverhältnisse und Nebenläufigkeit verhält sich die Klasse wie ein rein elementarer Werttyp: Instanzen können nebenläufig auf unterschiedlichen Ausführungspfaden erzeugt, kopiert oder ausgewertet werden, ohne dass Synchronisationsmechanismen oder Datenrennen auf Klassenebene auftreten können. Die Lebensdauer einer Instanz ist dabei strikt an den lokalen Gültigkeitsbereich oder an das umschließende Behältnis gebunden.&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    The typical sequence when using &lt;code&gt;ara::core::Monostate&lt;/code&gt; is guided by the modeling of optional states or default constructibility in variants:
-  &lt;/p&gt;
-  &lt;ol&gt;
-    &lt;li&gt;&lt;strong&gt;Type definition:&lt;/strong&gt; A variant structure is typed such that &lt;code&gt;ara::core::Monostate&lt;/code&gt; is declared as the first alternative when the default constructor of the variant is intended to map an empty or inactive state.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Initialization:&lt;/strong&gt; Upon default construction of the variant, it assumes the state of &lt;code&gt;ara::core::Monostate&lt;/code&gt; without requiring payload data to be initialized for this purpose.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;State check:&lt;/strong&gt; Prior to processing, the processing logic checks whether the variant currently holds the type &lt;code&gt;ara::core::Monostate&lt;/code&gt;, which functionally indicates the absence of a concrete payload value.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Overwriting:&lt;/strong&gt; As soon as a functional value is available, the variant is populated with the corresponding payload type, thereby leaving the monostate state.&lt;/li&gt;
-  &lt;/ol&gt;
-  &lt;p&gt;
-    Interpretation: The type is likely to be used primarily when the remaining alternatives of a variant do not possess a parameterless constructor, making an explicit empty form of initialization mandatory.
-  &lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;ara::core::Monostate&lt;/code&gt; ist untrennbar mit der Deklaration und Handhabung von &lt;code&gt;ara::core::Variant&lt;/code&gt; verknüpft. Bei der Definition einer Variante wird &lt;code&gt;ara::core::Monostate&lt;/code&gt; an erster Position angegeben, um einen leeren Initialzustand zuzulassen. Wird die Variante anschließend über ihren Standardkonstruktor erzeugt, nimmt sie automatisch diesen leeren Zustand an, ohne dass fachliche Typen instanziiert werden müssen.&lt;/p&gt;
+&lt;p&gt;Im weiteren Verlauf der Programmausführung prüft der Verwender über Typabfragen oder Visitor-Muster, ob die Variante derzeit den Typ &lt;code&gt;ara::core::Monostate&lt;/code&gt; enthält, was einen inaktiven oder unbesetzten Zustand signalisiert. Sobald Nutzdaten vorliegen, wird die Variante mit dem entsprechenden fachlichen Wert überschrieben. Ein Zurücksetzen auf den unbesetzten Zustand erfolgt durch erneute Zuweisung von &lt;code&gt;ara::core::Monostate{}&lt;/code&gt;. Interpretation: Für &lt;code&gt;ara::core::Monostate&lt;/code&gt; existieren vermutlich Gleichheits- und Vergleichsoperatoren, sodass Vergleiche zweier Instanzen stets Gleichheit ergeben und der relationale Vergleich von Varianten im Leerzustand deterministisch ausgewertet werden kann.&lt;/p&gt;
 
-  &lt;!-- annahmen:
-    1) Die Kennzeichnung als final dürfte Erweiterungen verhindern und den Zweck als reiner Indikatortyp festschreiben. – Begründung: Syntax 'struct Monostate final' im Payload ohne Member/Vererbung.
-    2) Das funktionale Verhalten ist vermutlich analog zu std::monostate ausgelegt. – Begründung: Payload-Beschreibung verweist direkt auf 'corresponding usage in [variant]'.
-    3) Der primäre Nutzen dürfte in der Ermöglichung der Default-Konstruierbarkeit von Varianten liegen. – Begründung: Standardkonvention in modernen C++-Variantenarchitekturen gemäß [variant]-Kontext.
-  --&gt;
-
-  &lt;p class="ai-note"&gt;
-    This guide is based on the structural metadata and type descriptions of AUTOSAR Adaptive Platform Release R25-11.
-  &lt;/p&gt;
+&lt;!-- annahmen: 1) Analogie zu std::monostate und ara::core::Variant – Begründung: Der Payload verweist bezüglich der Verwendung auf [variant]. 2) Triviale Lebenszyklus-Operationen – Begründung: Die Syntax deklariert 'struct Monostate final {...}' als zustandslosen Typ ohne Datenelemente. 3) Vorhandensein relationaler Vergleichsoperatoren – Begründung: Ein vollständiger Unit-Typ erfordert konsistente Gleichheitsprüfungen bei der Einbettung in Varianten. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der Klassendeklaration von ara::core::Monostate und dem Verweis auf [variant] im Release R25-11 der AUTOSAR Adaptive Platform; weitergehende Aspekte wurden regelkonform als Interpretation gekennzeichnet.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -294,7 +287,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>b22ce7de55b7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>db93f7b8a6e1…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

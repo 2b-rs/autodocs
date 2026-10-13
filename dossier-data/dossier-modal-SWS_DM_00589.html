@@ -1,0 +1,421 @@
+<dialog id="dossier-modal-SWS_DM_00589" class="dossier-modal dossier-workbench" data-dossier-sha="5f36e5065bbe313f" aria-labelledby="dossier-modal-SWS_DM_00589-title">
+  <div class="dossier-modal-head">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <h3 id="dossier-modal-SWS_DM_00589-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_DM_00589)</h3>
+      <div class="dossier-mode-switcher" role="tablist" aria-label="Dossier-Ansichtsmodus">
+        <button type="button" class="dossier-mode-tab is-active" data-view-mode="prompt" role="tab" aria-selected="true" title="Originaler 1:1 LLM-Prompt (System- + User-Prompt) als Text (Default)">📝 Plaintext Prompt</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="output" role="tab" aria-selected="false" title="Aktueller Output, Modell-Vorschau und Side-by-Side-Vergleich">🔄 Output &amp; Vergleich</button>
+        <button type="button" class="dossier-mode-tab" data-view-mode="editor" role="tab" aria-selected="false" title="Interaktiver Kurations-Editor">🛠️ Kurations-Editor</button>
+      </div>
+      <button type="button" class="btn-toggle-workbench-chat" id="btn-toggle-workbench-chat" title="KI-Diskussionsfenster ein-/ausblenden" hidden>
+        💬 Diskussion <span class="header-chat-badge" id="header-chat-badge" hidden>0</span>
+      </button>
+    </div>
+    <button type="button" class="dossier-close-btn" aria-label="Schließen">✕</button>
+  </div>
+  <div class="dossier-modal-body">
+    <!-- Ansicht 1: Plaintext Prompt (Exklusiv) -->
+    <div class="dossier-view-mode dossier-view-prompt" id="dossier-view-prompt">
+      <div class="raw-pane-toolbar">
+        <div class="raw-prompt-help">
+          Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,487 Tokens</span>
+          <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
+          <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
+        </div>
+      </div>
+      <textarea id="raw-prompt-textarea" class="raw-prompt-text raw-prompt-textarea" spellcheck="false" data-module="SWS_DM_00589" data-fragment="classes/cl_RoutineInterface_Namespace_RoutineInterface_e99be1.html" style="width:100%; height:100%; min-height:460px; font-family:var(--font-mono, monospace); font-size:0.85em; line-height:1.5; padding:12px; border:1px solid var(--border-default, #ccc); border-radius:6px; box-sizing:border-box; background:var(--bg-canvas, #fafafa); color:var(--color-ink, #222);">=== SYSTEM PROMPT ===
+Du bist der KI-Kurations-Assistent des Dokumentationssystems autodocs (AUTOSAR).
+Verfasse einen fundierten Nutzungshinweis (&lt;div class="ai usage"&gt;) für das adaptive-Element '&amp;lt;RoutineInterface&amp;gt;' (function) im Release R25-11.
+
+RICHTLINIEN (bindend):
+# Richtlinien für KI-generierte Erklärungen
+
+Diese Datei wird von den Prompt-Rezepten (`_src/tools/prompt_recipes.py`)
+wörtlich in jeden Prompt eingebettet. Jede Änderung ändert daher alle
+Prompt-Hashes; bestehende KI-Texte gelten dann als veraltet und werden neu
+erzeugt. Herkunft und Ablage der Ausgaben regelt `_src/lib_ai_store.py`.
+
+## Sprache
+
+- Kanonische Sprache ist Deutsch. Die Übersetzung ist ein nachgelagerter Schritt
+  und nie Teil der Generierung.
+- API-Bezeichner, Typnamen, Enum-Werte, Code und Kennungen wie `[SWS_…]` bleiben
+  unverändert.
+
+## Struktur
+
+- Jedes Fragment ist genau ein `&lt;div class="ai …"&gt;` (Varianten: `ai usage` für
+  Verwendungshinweise an einem Spezifikationselement, `ai module-guide` für
+  Modul-Leitfäden) und endet mit genau einem `&lt;p class="ai-note"&gt;` (KI-Hinweis).
+- Erlaubte Elemente im Fragment: `div`, `p`, `h4`, `ul`, `ol`, `li`, `code`,
+  `strong`, `em`, `a`, `span`, `table`, `thead`, `tbody`, `tr`, `th`, `td`.
+  Keine Skripte, keine Stile, keine Bilder, kein `&lt;svg&gt;` (Diagramme siehe unten).
+- Alle Tags korrekt geschlossen und verschachtelt.
+
+## Belegpflicht
+
+- Jede fachliche Aussage ist zu belegen. Belege stammen ausschließlich aus dem
+  Payload des Prompts; nichts darf aus anderem Wissen als Beleg ausgegeben werden.
+- Verweis auf ein Spezifikationselement oder Requirement (nur IDs, die im
+  Payload vorkommen):
+  `&lt;a class="spec-record-ref" data-req="SWS_…"&gt;[SWS_…]&lt;/a&gt;` — ohne `href`; den
+  Link setzt der Generator.
+- Verweis auf eine Dokumentstelle (nur Dokument/Seite aus dem Payload):
+  `&lt;span class="docref" data-doc="&lt;Dokument-ID&gt;" data-page="&lt;Seite&gt;"&gt;Kurzname §x.y „Titel“&lt;/span&gt;`.
+- Niemals URLs ausgeben, insbesondere keine PDF-URLs.
+
+## Annahmen (Wissenslücken)
+
+- Wo die Quellen schweigen, sind höchstens 3 Annahmen je Text und 2 je
+  Diagramm erlaubt.
+- Jede Annahme ist im Text als Interpretation erkennbar („dürfte“, „vermutlich“,
+  „Interpretation:“) und wird am Ende des Fragments in einem Kommentar
+  `&lt;!-- annahmen: 1) … – Begründung: … --&gt;` aufgezählt.
+- Reicht das Budget nicht, wird der Aspekt weggelassen — niemals unmarkiert
+  spekulieren.
+
+## Diagramme
+
+Ein Diagramm nur, wenn es gegenüber dem Text Mehrwert bietet:
+
+- Sequenzdiagramm: Abläufe ab 3 Schritten oder mit nicht offensichtlicher
+  Reihenfolge/Asynchronität.
+- Kontext-/Kollaborationsdiagramm: ab 3 beteiligten Komponenten.
+- Zustandsdiagramm: Lebenszyklen und Zustandsmaschinen.
+- Aktivitätsdiagramm: Entscheidungs- oder Verarbeitungsabläufe mit Verzweigung.
+- Keine Trivialdiagramme (einzelne Aufrufe, Getter/Setter, Zweierbeziehungen).
+
+Beschriftungen deutsch, Bezeichner unverändert. Jedes Diagramm steht im
+Fragment als Platzhalter `&lt;div class="diagram" id="diag-&lt;kurzname&gt;"&gt;&lt;/div&gt;`,
+direkt gefolgt von `&lt;p class="diagram-note"&gt;&lt;Diagrammart&gt;: &lt;Kernaussage&gt;.
+Quellen: &lt;Belege&gt;&lt;/p&gt;`. Die Diagrammquelle wird separat ausgegeben (Format
+legt der Prompt fest).
+
+INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt weglassen):
+1. Verwendung: Aufrufkontext, Parameter, Rückgabewerte, synchrone/asynchrone Semantik.
+2. Fehlerbehandlung: spezifische Fehlercodes, DET-/DEM-Meldungen, Verhalten im Fehlerfall.
+3. Nebenläufigkeit und Einschränkungen: Reentranz, Aufrufkontext, Reihenfolgebedingungen.
+4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
+Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
+
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
+AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
+&lt;&lt;&lt;FRAGMENT
+&lt;div class="…"&gt; … &lt;/div&gt;
+FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
+=== USER PROMPT ===
+Erstelle den Nutzungshinweis für '&amp;lt;RoutineInterface&amp;gt;'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
+Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
+{
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P70_023",
+   "page": 70,
+   "text": "[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00631] [SWS_DM_00633]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_01364]\n[SWS_DM_01695] [SWS_DM_01696]\n[SWS_DM_01697] [SWS_DM_01702]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01972] [SWS_DM_01973]\n[SWS_DM_02121] [SWS_DM_02158]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P72_030",
+   "page": 72,
+   "text": "[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_00831]\n[SWS_DM_01010] [SWS_DM_01124]\n[SWS_DM_01193] [SWS_DM_01325]\n[SWS_DM_01364] [SWS_DM_01480]\n[SWS_DM_01489] [SWS_DM_01695]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01823] [SWS_DM_01847]\n[SWS_DM_01864] [SWS_DM_01910]\n[SWS_DM_01962] [SWS_DM_01972]"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P316_426",
+   "page": 316,
+   "text": "[SWS_DM_00589] Definition of API function\n{&lt;routine-interface-hierarchical-namespace-list&gt;}::{&lt;routine-interface-\nname-x&gt;}::{&lt;routine-interface-name-1&gt;}"
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_Diagnostics",
+   "figure": false,
+   "id": "SNIP_diag_AUTOSAR_AP_SWS_D_P566_946",
+   "page": 566,
+   "text": "8.30.2.2.1.8 {&lt;routine-interface-name-1&gt;}\n[SWS_DM_00589] Definition of API function\n{&lt;routine-interface-\nhierarchical-namespace-list&gt;}\n::\n{&lt;routine-interface-name-x&gt;}\n::\n{&lt;routine-interface-name-1&gt;}\nUpstream requirements:\nRS_AP_00137, RS_AP_00170, RS_AP_00171, RS_AP_00172, RS_-\nAP_00173\n⌈"
+  }
+ ],
+ "element": {
+  "description": "Construct a DiagnosticRoutine from an ara::core::InstanceSpecifier",
+  "id": "SWS_DM_00589",
+  "kind": "function",
+  "name": "&amp;lt;RoutineInterface&amp;gt;",
+  "signature": "&amp;lt;RoutineInterface1&amp;gt; (ara::core::InstanceSpecifier instance Spec, ara::diag::ConcurrencyType concurrencyType) noexcept;",
+  "spezifikation": "function &amp;lt;RoutineInterface&amp;gt; [SWS_DM_00589] Upstream: RS_AP_00137 , RS_AP_00170 , RS_AP_00171 , RS_AP_00172 , RS_AP_00173 &amp;lt;RoutineInterface1&amp;gt; ( ara::core::InstanceSpecifier instance Spec, ara::diag::ConcurrencyType concurrencyType) noexcept; Construct a DiagnosticRoutine from an ara::core::InstanceSpecifier Header-Datei #include \"&amp;lt;RoutineInterfaceDirectoryPath&amp;gt;/&amp;lt;RoutineInterfaceShortname&amp;gt;.h\" class mono Scope class &amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt; class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Verletzungen (Violations) InstanceSpeci- InstanceSpecifier either cannot be resolved in the model in the fierMappingIn- context of your executable, or it refers to a model element other tegrityViolation than a PortPrototype. PortInterfaceMap- A PortPrototype that is typed by a pingViolation DiagnosticRoutineInterface needs to be referenced by a DiagnosticServiceGenericMapping. ProcessMappingVio- Matching InstanceRef exists, but no matching (modelled) Process lation found that matches the (runtime) process. InstanceSpecifier- Violation message that is sent in case a constructor in the ara AlreadyInUseViola- framework was called with an InstanceSpecifier already in use in tion this process. class mono Parameter (in) th Parameter th Beschreibung td instanceSpec td The specifier of a specific instance of a service. td concurrencyType td Specifies if the interface is implemented as thread safe ( kConcurrent) or non-thread safe (kNotConcurrent)."
+ },
+ "module": "dm",
+ "platform": "adaptive",
+ "release": "R25-11",
+ "verwandte_requirements": []
+}
+</textarea>
+    </div>
+
+    <!-- Ansicht 2: Output & Vergleich mit Unter-Reiter-Konzept -->
+    <div class="dossier-view-mode dossier-view-output" id="dossier-view-output" hidden>
+      <div class="raw-subtab-bar" role="tablist" aria-label="Output- und Vergleichs-Reiter">
+        <div class="raw-subtab is-active" data-subtab="current" role="tab" id="subtab-btn-current" aria-selected="true">
+          <span class="subtab-click-area" data-action="select-subtab" data-subtab="current" title="Bisheriger Stand (Ist-Zustand des Fragments)">
+            <span class="subtab-icon">📄</span>
+            <span class="subtab-title">Aktueller Output</span>
+          </span>
+          <button type="button" class="btn-compare-tab" data-compare-id="current" title="Diesen Stand vergleichen" aria-label="Aktuellen Output vergleichen">
+            <span class="compare-icon">⚖️</span>
+          </button>
+        </div>
+        <div class="raw-preview-tabs-list" id="raw-preview-tabs-list" style="display:contents;">
+          <div class="raw-subtab raw-subtab-preview" data-subtab="preview-1" data-preview-id="1" data-state="idle" role="tab" id="subtab-preview-1" aria-selected="false">
+            <span class="subtab-click-area" data-action="select-subtab" data-subtab="preview-1" title="Vorschau-Ergebnis anzeigen / starten">
+              <span class="subtab-icon">⚡</span>
+              <span class="subtab-title">Vorschau</span>
+            </span>
+            <div class="subtab-controls" id="subtab-controls-preview-1">
+              <select class="subtab-select-model" title="Modell auswählen">
+                <option value="local|agy|gemini-3.8-flash" data-source="local" data-provider="agy" data-model="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
+                <option value="local|cursor|composer-2.5" data-source="local" data-provider="cursor" data-model="composer-2.5">Cursor Composer 2.5</option>
+              </select>
+              <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
+                <option value="medium" selected>med</option>
+                <option value="low">low</option>
+                <option value="high">high</option>
+              </select>
+              <button type="button" class="btn-subtab-start" data-preview-id="1" title="Generierung starten">⚡ Start</button>
+            </div>
+            <button type="button" class="btn-compare-tab" data-compare-id="preview-1" title="Diesen Stand vergleichen" style="display:none;" aria-label="Vergleichen">
+              <span class="compare-icon">⚖️</span>
+            </button>
+            <button type="button" class="btn-subtab-close" data-preview-id="1" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
+          </div>
+        </div>
+        <div class="raw-tab-link-badge" id="raw-tab-link-badge" style="display:none;" title="Vergleich aktiv — Klick kehrt zur Einzelansicht zurück">
+          <span class="link-symbol-icon">⇄</span>
+          <span class="link-label" id="raw-tab-link-label">Verknüpft</span>
+          <span class="link-close-icon">✕</span>
+        </div>
+      </div>
+      <div class="raw-compare-hint-bar" id="raw-compare-hint-bar" style="display:none;">
+        <span id="raw-compare-hint-text">💡 Klicke nun auf einen zweiten Reiter, um den Side-by-Side-Vergleich zu öffnen.</span>
+        <button type="button" class="btn-cancel-compare-pick" id="btn-cancel-compare-pick" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;">Abbrechen</button>
+      </div>
+      <div class="raw-subtab-content-area" id="raw-subtab-content-area">
+        <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="344fff7b3f6c1ed3fae43de634cd556bb279b10a0711c83af936b5e86985ea8c" data-trace-output="5f36e5065bbe313f08c8f23b51eb030877b17c611cbd6c305c258d80e1cedda7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Erzeugt eine diagnostische Routine-Schnittstelle anhand eines Instanzbezeichners mit konfigurierbarer Threadsicherheit." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
+
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Konstruktorfunktion &lt;a class="spec-record-ref" data-req="SWS_DM_00589" href="../spec/record.html?id=SWS_DM_00589"&gt;[SWS_DM_00589]&lt;/a&gt; dient der Instanziierung einer Routine-Schnittstelle (&lt;code&gt;DiagnosticRoutine&lt;/code&gt;) über einen Instanzbezeichner. Die Deklaration ist als &lt;code&gt;noexcept&lt;/code&gt; spezifiziert und gilt als ausnahmesicher (&lt;em&gt;exception safe&lt;/em&gt;) sowie threadsicher (&lt;em&gt;thread-safe&lt;/em&gt;) &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=566"&gt;SWS Diagnostics §8.30.2.2.1.8 „{&amp;lt;routine-interface-name-1&amp;gt;}“&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Parameter und Aufruf&lt;/h4&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;instanceSpec&lt;/code&gt; (&lt;code&gt;ara::core::InstanceSpecifier&lt;/code&gt;): Bezeichner der spezifischen Service-Instanz, die an einen passenden Modell-Port gebunden ist.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;concurrencyType&lt;/code&gt; (&lt;code&gt;ara::diag::ConcurrencyType&lt;/code&gt;): Legt fest, ob die Schnittstelle nebenläufig bzw. threadsicher ausgeführt wird (&lt;code&gt;kConcurrent&lt;/code&gt;) oder nicht threadsicher ist (&lt;code&gt;kNotConcurrent&lt;/code&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;h4&gt;Laufzeit- und Modellprüfungen&lt;/h4&gt;
+  &lt;p&gt;Während der Konstruktion prüft das Framework die Modell- und Prozesskonfiguration. Bei fehlerhaften Zuordnungen oder Mehrfachverwendungen werden spezifische Verletzungen (&lt;em&gt;Violations&lt;/em&gt;) ausgelöst &lt;a class="spec-record-ref" data-req="SWS_DM_00589" href="../spec/record.html?id=SWS_DM_00589"&gt;[SWS_DM_00589]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;InstanceSpecifierMappingIntegrityViolation&lt;/code&gt;: Der &lt;code&gt;InstanceSpecifier&lt;/code&gt; lässt sich im Kontext des Executables nicht auflösen oder verweist nicht auf einen &lt;code&gt;PortPrototype&lt;/code&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;PortInterfaceMappingViolation&lt;/code&gt;: Ein durch &lt;code&gt;DiagnosticRoutineInterface&lt;/code&gt; typisierter &lt;code&gt;PortPrototype&lt;/code&gt; wird nicht von einem &lt;code&gt;DiagnosticServiceGenericMapping&lt;/code&gt; referenziert.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;ProcessMappingViolation&lt;/code&gt;: Zur vorhandenen Instanzreferenz existiert kein passender modellierter Prozess zur Laufzeit.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;InstanceSpecifierAlreadyInUseViolation&lt;/code&gt;: Der angegebene &lt;code&gt;InstanceSpecifier&lt;/code&gt; wird innerhalb des aktuellen Prozesses bereits von einer bestehenden Instanz verwendet.&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
+&lt;/div&gt;</pre>
+        </div>
+        <div class="raw-preview-panes-container" id="raw-preview-panes-container">
+          <div class="raw-content-pane raw-pane-preview" id="raw-pane-preview-1" style="display:none;">
+            <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
+              <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
+              <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
+              <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+              <button type="button" class="btn-subtab-start-pane" data-preview-id="1" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
+            </div>
+          </div>
+        </div>
+        <div class="raw-pane-compare-diff" id="raw-pane-compare-diff" style="display:none;">
+          <div class="raw-diff-compare-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-subtle, #f0f0ee); border:1px solid var(--border-default, #ddd); border-radius:8px 8px 0 0; margin-bottom:-1px;">
+            <div class="raw-diff-titles" style="display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700;">
+              <span class="diff-icon" aria-hidden="true">⚖️</span>
+              <span class="diff-tag-left" id="diff-tag-left" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">Basis: Aktueller Output</span>
+              <span class="diff-tag-arrow" style="color:var(--color-ink-muted, #888); font-weight:bold;">⇄</span>
+              <span class="diff-tag-right" id="diff-tag-right" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:4px;">Ziel: Vorschau</span>
+            </div>
+            <button type="button" class="btn-unlink-compare" id="btn-unlink-compare" title="Vergleich beenden und zur Einzelansicht zurückkehren" style="background:none; border:1px solid var(--border-default, #ccc); border-radius:4px; padding:3px 8px; font-size:0.78rem; cursor:pointer; color:var(--color-ink-muted, #666);">✕ Vergleich beenden</button>
+          </div>
+          <div class="raw-diff-body" id="raw-diff-body" style="background:var(--bg-surface, #fff); border:1px solid var(--border-default, #ddd); border-top:none; border-radius:0 0 8px 8px; padding:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansicht 3: Kurations-Editor & Workbench -->
+    <div class="dossier-view-mode dossier-view-editor" id="dossier-view-editor" hidden>
+      <div class="dossier-workbench-layout">
+        <div class="dossier-viewer-pane">
+          <div class="dossier-header">
+            <p class="ai-note"><strong>Agenten-Kontext &amp; Nachweis-Dossier (Audit-Trail)</strong>: 
+            Dieser verifizierte Kontext wurde dem Agenten für die Kommentargenerierung vorgegeben. 
+            Sowohl konstituierende Records als auch Inbound-Snippets können im Volltext kuratiert und mit der KI diskutiert werden.</p>
+            <div class="dossier-meta-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0 16px; font-size: 0.88em; background: #f8f6f0; padding: 12px; border-radius: 6px; border: 1px solid #e2ded4;">
+              <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
+              <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
+              <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>344fff7b3f6c…</code></div>
+              <div><strong>Konstituierende Records:</strong> 1</div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 4</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+            </div>
+          </div>
+
+          <!-- Multiselection Batch Action Bar -->
+          <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>
+            <div class="selection-info">
+              <span class="selection-indicator" aria-hidden="true">☑</span>
+              <strong id="selection-count">0</strong> <span id="selection-label">Elemente ausgewählt</span>
+              <span class="selection-key-hint">(Ctrl+Klick: Umschalten · Shift+Klick: Bereich)</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" class="curation-btn btn-confirm" id="btn-batch-confirm" title="Alle ausgewählten Elemente bestätigen">
+                <span class="vote-icon">👍</span> <span>Bestätigen</span> (<span class="batch-count" id="batch-confirm-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-dismiss" id="btn-batch-dismiss" title="Alle ausgewählten Elemente beanstanden">
+                <span class="vote-icon">👎</span> <span>Beanstanden</span> (<span class="batch-count" id="batch-dismiss-count">0</span>)
+              </button>
+              <button type="button" class="curation-btn btn-discuss" id="btn-batch-discuss" title="Alle ausgewählten Elemente gemeinsam mit KI diskutieren">
+                <span class="vote-icon">💬</span> <span>Mit KI diskutieren</span> (<span class="batch-count" id="batch-discuss-count">0</span>)
+              </button>
+              <button type="button" class="btn-clear-selection" id="btn-clear-selection" title="Auswahl aufheben">✕ Auswahl aufheben</button>
+            </div>
+          </div>
+
+          <!-- Sticky Filter- & Ansichts-Toolbar -->
+          <div class="dossier-toolbar" id="dossier-toolbar">
+            <div class="dossier-search-bar">
+              <span class="dossier-search-icon" aria-hidden="true">🔍</span>
+              <input type="search" class="dossier-search-input" id="dossier-search-input" placeholder="Nach Name, SWS-ID, Modul, Dokument oder Text filtern…" autocomplete="off" aria-label="Dossier-Elemente filtern">
+              <button type="button" class="btn-clear-dossier-search" id="btn-clear-dossier-search" title="Suche leeren" hidden>&times;</button>
+            </div>
+            <div class="dossier-filter-row">
+              <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
+                <span class="filter-group-label">Art:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
+              </div>
+              <div class="dossier-filter-group" role="group" aria-label="Nach Kurationsstatus filtern">
+                <span class="filter-group-label">Status:</span>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-status="all">Alle</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="unrated">Unbewertet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="confirmed">👍 Bestätigt</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="dismissed">👎 Beanstandet</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="queued">⏳ Im Paket</button>
+                <button type="button" class="dossier-filter-pill" data-filter-status="in-discussion">💬 In Diskussion</button>
+              </div>
+              <div class="dossier-view-toggle-group">
+                <button type="button" class="dossier-toggle-btn is-active" id="btn-view-compact" title="Kompakte Einzeiler-Ansicht">☰ Kompakt</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-view-detailed" title="Volltext-Detailansicht">☷ Detailliert</button>
+                <button type="button" class="dossier-toggle-btn" id="btn-toggle-all-expand" title="Alle Elemente aus- oder einklappen">⊞ Alle ausklappen</button>
+              </div>
+              <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
+            </div>
+            <div class="dossier-filter-summary">
+              <span id="dossier-visible-count">5 von 5 Elementen angezeigt</span>
+              <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
+            </div>
+          </div>
+
+          <!-- 1. Konstituierende Spezifikations-Records -->
+          <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">
+            <h3>📋 Konstituierende Spezifikations-Records (1 Elemente)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden.</p>
+          </div>
+          <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+
+          <!-- 2. Inbound-Snippets & Dokumentstellen -->
+          <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
+            <h3>Inbound-Snippets &amp; Schaubilder (4 im Prompt · 1 seit der Generierung zugeordnet)</h3>
+            <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
+          </div>
+          <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
+          </div>
+        </div>
+
+        <!-- Companion Chat Pane -->
+        <aside class="dossier-chat-pane" id="dossier-chat-pane" hidden>
+          <div class="chat-pane-head">
+            <div class="chat-pane-title-group">
+              <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #01696f; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> KI-Kurations-Diskussion
+              </h4>
+              <span class="chat-attached-count" id="chat-attached-count">0 Elemente im Fokus</span>
+            </div>
+            <button type="button" class="btn-chat-pane-close" id="btn-close-chat-pane" title="Diskussions-Fenster schließen" aria-label="Diskussions-Fenster schließen">✕</button>
+          </div>
+          <div class="chat-pane-access" data-aia-slot></div>
+          <div class="chat-attached-bar" id="chat-attached-bar">
+            <div class="chat-attached-label">Fokus:</div>
+            <div class="chat-attached-chips" id="chat-attached-chips">
+              <span class="chat-attached-empty-hint">Kein Element ausgewählt (klicke bei einem Element auf „💬 Mit KI diskutieren“)</span>
+            </div>
+            <button type="button" class="btn-clear-attached" id="btn-clear-attached" title="Alle Elemente aus Diskussion lösen" hidden>✕ Alle lösen</button>
+          </div>
+          <div class="chat-pane-thread" id="chat-pane-thread" role="log" aria-live="polite">
+            <div class="chat-bubble bubble-assistant" id="chat-thread-initial-msg">
+              Hallo! Wähle Elemente (Inbound-Snippets oder konstituierende Records) mit <strong>„💬 Mit KI diskutieren“</strong> aus, oder suche bzw. filtere links: Alle Treffer gehen dann in die Diskussion ein und lassen sich oben einzeln wieder herausnehmen. So kannst du Herkunft, Schnittstellenbezug oder Beanstandungen gemeinsam analysieren.
+            </div>
+          </div>
+          <div class="chat-pane-chips" id="chat-pane-chips">
+            <button type="button" class="workbench-prompt-chip" data-prompt="Woher stammen die ausgewählten Elemente genau und in welchem Kontext stehen sie?">📌 Herkunft analysieren</button>
+            <button type="button" class="workbench-prompt-chip" data-prompt="Welcher Schnittstellenbezug und welche Relevanz besteht zwischen den ausgewählten Elementen für dieses Modul?">⚖️ Schnittstellenbezug prüfen</button>
+            <button type="button" class="workbench-prompt-chip chip-criticism" data-prompt="Ich beanstande die Zuordnung der ausgewählten Elemente mit folgender fachlicher Begründung: ">⚠️ Beanstandung begründen</button>
+          </div>
+          <form class="chat-pane-form" id="chat-pane-form">
+            <input type="text" class="chat-pane-input" id="chat-pane-input" placeholder="Begründung oder Frage zur Prüfung an die KI senden…" maxlength="1000" autocomplete="off">
+            <button type="submit" class="chat-pane-send-btn" id="chat-pane-send-btn">Senden</button>
+          </form>
+          <div class="chat-pane-proposal-box" id="chat-pane-proposal-box" hidden>
+            <div class="proposal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #01696f;">💡 Von KI geprüfter Kurationsvorschlag</span>
+              <button type="button" class="btn-dismiss-proposal" id="btn-dismiss-proposal" title="Vorschlag verwerfen" aria-label="Vorschlag verwerfen" style="background:none; border:none; font-size:14px; cursor:pointer; color:#777;">✕</button>
+            </div>
+            <div class="proposal-card-body" id="chat-pane-proposal-text" style="font-size: 12.5px; margin: 8px 0; background: #fff8e1; padding: 10px; border-radius: 4px; border-left: 3px solid #ffb300; white-space: pre-wrap;"></div>
+            <div class="proposal-exit-section" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dcd7ce;">
+              <div class="proposal-exit-title" style="font-size: 11.5px; font-weight: 700; color: #555; margin-bottom: 6px;">Wähle den Übernahmeweg:</div>
+              <div class="proposal-card-actions" style="display: flex; flex-direction: column; gap: 6px;">
+                <button type="button" class="btn-proposal-exit btn-exit-queue" id="btn-submit-workbench-proposal" title="In das globale Review-Paket für GitHub-Issue / offiziellen PR übernehmen">
+                  📦 Exit 1: In Curation-Queue einreihen (Review-Paket)
+                </button>
+                <button type="button" class="btn-proposal-exit btn-exit-local" id="btn-apply-justified-locally" title="Direkt im lokalen Audit-Dossier als 'begründet beanstandet' vermerken">
+                  ✓ Exit 2: Direkt als „begründet“ im Dossier vermerken
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_00589","k":"function","d":"AUTOSAR","t":"","n":"&lt;RoutineInterface&gt;"}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P70_023","d":"AUTOSAR_AP_SWS_Diagnostics","p":70,"t":"[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00631] [SWS_DM_00633]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_01364]\n[SWS_DM_01695] [SWS_DM_01696]\n[SWS_DM_01697] [SWS_DM_01702]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01972] [SWS_DM_01973]\n[SWS_DM_02121] [SWS_DM_02158]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P72_030","d":"AUTOSAR_AP_SWS_Diagnostics","p":72,"t":"[SWS_DM_00548] [SWS_DM_00549]\n[SWS_DM_00550] [SWS_DM_00552]\n[SWS_DM_00585] [SWS_DM_00587]\n[SWS_DM_00589] [SWS_DM_00616]\n[SWS_DM_00634] [SWS_DM_00647]\n[SWS_DM_00664] [SWS_DM_00712]\n[SWS_DM_00722] [SWS_DM_00732]\n[SWS_DM_00742] [SWS_DM_00752]\n[SWS_DM_00762] [SWS_DM_00772]\n[SWS_DM_00787] [SWS_DM_00797]\n[SWS_DM_00806] [SWS_DM_00831]\n[SWS_DM_01010] [SWS_DM_01124]\n[SWS_DM_01193] [SWS_DM_01325]\n[SWS_DM_01364] [SWS_DM_01480]\n[SWS_DM_01489] [SWS_DM_01695]\n[SWS_DM_01705] [SWS_DM_01727]\n[SWS_DM_01823] [SWS_DM_01847]\n[SWS_DM_01864] [SWS_DM_01910]\n[SWS_DM_01962] [SWS_DM_01972]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P316_426","d":"AUTOSAR_AP_SWS_Diagnostics","p":316,"t":"[SWS_DM_00589] Definition of API function\n{\u003croutine-interface-hierarchical-namespace-list>}::{\u003croutine-interface-\nname-x>}::{\u003croutine-interface-name-1>}"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P566_946","d":"AUTOSAR_AP_SWS_Diagnostics","p":566,"t":"8.30.2.2.1.8 {\u003croutine-interface-name-1>}\n[SWS_DM_00589] Definition of API function\n{\u003croutine-interface-\nhierarchical-namespace-list>}\n::\n{\u003croutine-interface-name-x>}\n::\n{\u003croutine-interface-name-1>}\nUpstream requirements:\nRS_AP_00137, RS_AP_00170, RS_AP_00171, RS_AP_00172, RS_-\nAP_00173\n⌈"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/7d2c32751b9e89ba.json?v=5cee65d8" data-total="1" data-new="1" data-figures="1" data-used="4"></script></dialog>

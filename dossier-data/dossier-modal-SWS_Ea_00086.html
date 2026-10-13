@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Ea_00086" class="dossier-modal dossier-workbench" data-dossier-sha="bf3436ca8d915286" aria-labelledby="dossier-modal-SWS_Ea_00086-title">
+<dialog id="dossier-modal-SWS_Ea_00086" class="dossier-modal dossier-workbench" data-dossier-sha="73a86189247aa3a5" aria-labelledby="dossier-modal-SWS_Ea_00086-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Ea_00086-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Ea_00086)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,285 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,740 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Ea_Read'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,34 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="faf75cd353ef06ef9050dc6c4e2b59c91e9bfc3fd14dbe3e5512a3a723ed9c89" data-trace-output="bf3436ca8d9152861f690d650b13c2389bd2ea64baa0bd01073173982abcb460" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="43bc307f124381b105e6bf19063462160aa7b7dab29ac82f7eccf48173c37e72" data-trace-output="73a86189247aa3a528a8e5164f9ecde8d5e9404bf5e263e764597f5bd9f526c7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liest Datenbereiche eines logischen EEPROM-Blocks asynchron in einen Zielpuffer ein." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
   &lt;p&gt;
-    The function &lt;code&gt;Ea_Read&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;) reads data from the EEPROM Abstraction module (EA) and is provided via the header file &lt;code&gt;Ea.h&lt;/code&gt; with the service ID &lt;code&gt;0x02&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The logical block (&lt;code&gt;Block Number&lt;/code&gt;), the start offset within the block (&lt;code&gt;Block Offset&lt;/code&gt;), the number of bytes to read (&lt;code&gt;Length&lt;/code&gt;), and the destination buffer (&lt;code&gt;Data Buffer Ptr&lt;/code&gt;) are passed via the parameters (&lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Asynchronous semantics:&lt;/strong&gt; &lt;code&gt;Ea_Read&lt;/code&gt; is executed asynchronously. Returning &lt;code&gt;E_OK&lt;/code&gt; merely signals that the requested read job has been accepted by the EA module (&lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Error handling:&lt;/strong&gt; If the EA module cannot accept the read job, the function returns &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    The function is specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;). Parallel calls must therefore be avoided by the caller.
+    Die Funktion &lt;code&gt;Ea_Read&lt;/code&gt; dient dem Auslesen von Nutzdaten aus einem spezifizierten logischen EEPROM-Block über den Header &lt;code&gt;Ea.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;. Über den Parameter &lt;code&gt;Block Number&lt;/code&gt; wird der logische Block adressiert, welcher zugleich dessen Startadresse im EEPROM bestimmt &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;. Der Parameter &lt;code&gt;Block Offset&lt;/code&gt; legt den relativen Leseversatz innerhalb des Blocks fest, während &lt;code&gt;Length&lt;/code&gt; die Anzahl der zu lesenden Bytes definiert &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;. Die Zieldaten werden in den durch &lt;code&gt;Data Buffer Ptr&lt;/code&gt; referenzierten Puffer geschrieben &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;.
   &lt;/p&gt;
   &lt;p&gt;
-    Due to the asynchronous job processing, the destination buffer &lt;code&gt;Data Buffer Ptr&lt;/code&gt; will probably have to remain reserved and valid without modification for the caller until the read operation has completed entirely.
+    Der Aufruf verhält sich asynchron (&lt;em&gt;Asynchronous&lt;/em&gt;): Der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; signalisiert ausschließlich, dass das EA-Modul die Auftragsanforderung akzeptiert hat, wohingegen &lt;code&gt;E_NOT_OK&lt;/code&gt; eine Zurückweisung des Auftrags anzeigt &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;. Interpretation: Da die Datenübertragung asynchron im Hintergrund erfolgt, dürfte der referenzierte Puffer bis zur vollständigen Ausführung des Auftrags unverändert und gültig bereitgestellt werden müssen.
   &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically for release R20-11 based on specification element &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;.
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;
+    Die Schnittstelle ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Ea_00086" href="../../spec/record.html?id=SWS_Ea_00086"&gt;[SWS_Ea_00086]&lt;/a&gt;. Parallele Aufrufe aus unterschiedlichen Ausführungskontexten heraus sind folglich nicht zulässig und müssen aufruferseitig synchronisiert werden.
   &lt;/p&gt;
-  &lt;!-- annahmen: 1) Der Zielpuffer Data Buffer Ptr dürfte bis zum Abschluss des asynchronen Lesevorgangs reserviert und gültig bleiben müssen. – Begründung: SWS_Ea_00086 spezifiziert Ea_Read als asynchronen Dienst mit Ausgabepuffer, definiert im Payload jedoch keine explizite Lebensdauer für den übergebenen Speicherbereich. --&gt;
+  &lt;!-- annahmen: 1) Pufferlebensdauer: Da Ea_Read asynchron arbeitet und die Daten erst nach Funktionsrückkehr in Data Buffer Ptr übertragen werden, dürfte der Puffer bis zum Auftragsende gültig gehalten werden müssen – Begründung: Die Spezifikation beschreibt die asynchrone Annahme via E_OK, trifft jedoch keine explizite Aussage zur Pufferhaltung durch den Aufrufer. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation R20-11 erzeugt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -242,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>faf75cd353ef…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>43bc307f1243…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -279,8 +286,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -317,7 +324,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 4 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -380,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Ea_00086","k":"function","d":"AUTOSAR","t":"","n":"Ea_Read"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f7fa88259a5df249.json?v=3ab32b51" data-total="3" data-new="3" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Ea_00086","k":"function","d":"AUTOSAR","t":"","n":"Ea_Read"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f7fa88259a5df249.json?v=5876d99b" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>

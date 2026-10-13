@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_01316" class="dossier-modal dossier-workbench" data-dossier-sha="c8768756f7e945a3" aria-labelledby="dossier-modal-SWS_Dcm_01316-title">
+<dialog id="dossier-modal-SWS_Dcm_01316" class="dossier-modal dossier-workbench" data-dossier-sha="031b380a025d010a" aria-labelledby="dossier-modal-SWS_Dcm_01316-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_01316-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_01316)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,956 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,411 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_ShortTermAdjustment'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,39 +198,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="823f5a236630dd4d659ef992ef43b26b622a143b9b1cd4fcc0856099e5cc24fe" data-trace-output="c8768756f7e945a38bfb456013676fb56e7e3b65a4ae66fa7aac034f178fc185" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="bd9ccbb9314402bd8fd13fe231fc33b0b7b441ff24b2aad3dd4389ad407aae26" data-trace-output="031b380a025d010ae60af0b5d0be81692e1114a6a6c3e549e88eb8a8f3c60b13" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert die Anwendung asynchron dazu auf, den Zustand eines Ein- oder Ausgangssignals temporär anzupassen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion &lt;a class="spec-record-ref" data-req="SWS_Dcm_01316" href="../../spec/record.html?id=SWS_Dcm_01316"&gt;[SWS_Dcm_01316]&lt;/a&gt; (Service-ID &lt;code&gt;0x55&lt;/code&gt;, bereitgestellt über &lt;code&gt;Dcm_Externals.h&lt;/code&gt;) fordert die Applikation asynchron auf, ein I/O-Signal im Rahmen des Diagnose-Dienstes &lt;em&gt;InputOutputControlByIdentifier&lt;/em&gt; temporär anzupassen.
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;ControlStateInfo&lt;/code&gt;: Zeiger auf die Steuerinformationen aus dem Parameter &lt;code&gt;ControlOptionRecord&lt;/code&gt; der Diagnoseanfrage.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DataLength&lt;/code&gt;: Länge der zu schreibenden Nutzdaten in Byte.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;OpStatus&lt;/code&gt;: Status der aktuellen asynchronen Operation.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;controlMask&lt;/code&gt; bzw. &lt;code&gt;controlMask2&lt;/code&gt;: Abhängig von der Konfiguration der externen Maskengröße (&lt;code&gt;DcmDspDidControlMaskSize&lt;/code&gt;) wird bei einer Größe &amp;le; 4 Byte &lt;code&gt;controlMask&lt;/code&gt; übergeben, bei einer Größe &amp;ge; 5 Byte &lt;code&gt;controlMask2&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ErrorCode&lt;/code&gt;: Ausgabeparameter für den Negative Response Code (NRC).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Als Rückgabewert liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ausführung, &lt;code&gt;E_NOT_OK&lt;/code&gt; bei einem Fehler oder &lt;code&gt;DCM_E_PENDING&lt;/code&gt;, falls die Operation noch nicht abgeschlossen ist und weitere Aufrufe zur Fertigstellung erfordert.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;a class="spec-record-ref" data-req="SWS_Dcm_01316" href="../../spec/record.html?id=SWS_Dcm_01316"&gt;[SWS_Dcm_01316]&lt;/a&gt; wird vom Diagnostic Communication Manager (DCM) aufgerufen und über &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt. Sie fordert die Applikation asynchron dazu auf, ein IO-Signal im Rahmen des Diagnosedienstes &lt;code&gt;InputOutputControlByIdentifier&lt;/code&gt; anzupassen. Die Steuerdaten werden über den Zeiger &lt;code&gt;ControlStateInfo&lt;/code&gt; (aus dem Parameter &lt;code&gt;ControlOptionRecord&lt;/code&gt;) übergeben, ergänzt um die Bytelänge &lt;code&gt;DataLength&lt;/code&gt;. Der Ablauf wird über &lt;code&gt;OpStatus&lt;/code&gt; gesteuert: Solange die Anpassung andauert, gibt die Anwendung &lt;code&gt;DCM_E_PENDING&lt;/code&gt; zurück; nach erfolgreichem Abschluss meldet sie &lt;code&gt;E_OK&lt;/code&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;
-    Schlägt die Anforderung fehl, gibt die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück. In diesem Fall muss über den Zeiger &lt;code&gt;ErrorCode&lt;/code&gt; ein spezifischer NRC gesetzt werden, welcher vom DCM in der negativen Antwortnachricht übertragen wird.
-  &lt;/p&gt;
+&lt;h4&gt;Varianten und Maskenparameter&lt;/h4&gt;
+&lt;p&gt;Bei externer Konfiguration der Kontrollmaske (&lt;code&gt;DCM_CONTROLMASK_EXTERNAL&lt;/code&gt;) werden zusätzliche Parameter übergeben &lt;a class="spec-record-ref" data-req="SWS_Dcm_01316" href="../../spec/record.html?id=SWS_Dcm_01316"&gt;[SWS_Dcm_01316]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Ist die Maskengröße kleiner oder gleich 4 Byte, wird &lt;code&gt;controlMask&lt;/code&gt; vom Typ &lt;code&gt;Dcm_ControlMask_{DID}Type&lt;/code&gt; übergeben.&lt;/li&gt;
+&lt;li&gt;Beträgt die Maskengröße mindestens 5 Byte, wird stattdessen &lt;code&gt;controlMask2&lt;/code&gt; als Zeiger auf &lt;code&gt;uint8&lt;/code&gt; übergeben.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) und asynchron (&lt;code&gt;Asynchronous&lt;/code&gt;) definiert. Der Aufrufer muss den Zustand &lt;code&gt;DCM_E_PENDING&lt;/code&gt; handhaben und Folgeschritte über den Parameter &lt;code&gt;OpStatus&lt;/code&gt; steuern.
-  &lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Schlägt die Signalsteuerung fehl, liefert die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück und setzt über den Zeiger &lt;code&gt;ErrorCode&lt;/code&gt; den negativen Antwortcode (NRC), welchen der DCM in der negativen Antwort übermittelt &lt;a class="spec-record-ref" data-req="SWS_Dcm_01316" href="../../spec/record.html?id=SWS_Dcm_01316"&gt;[SWS_Dcm_01316]&lt;/a&gt;. Die Funktion ist als nicht-reentrant spezifiziert.&lt;/p&gt;
 
-  &lt;h4&gt;Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion &lt;a class="spec-record-ref" data-req="SWS_Dcm_01316" href="../../spec/record.html?id=SWS_Dcm_01316"&gt;[SWS_Dcm_01316]&lt;/a&gt; kommt bei asynchroner Schnittstellenkonfiguration (&lt;code&gt;USE_DATA_ASYNCH_FNC&lt;/code&gt; oder &lt;code&gt;USE_DATA_ASYNCH_FNC_ERROR&lt;/code&gt;) in Verbindung mit dem Datentyp &lt;code&gt;UINT8_DYN&lt;/code&gt; zum Einsatz. Sie unterscheidet sich von der synchronen Variante &lt;a class="spec-record-ref" data-req="SWS_Dcm_00802" href="../../spec/record.html?id=SWS_Dcm_00802"&gt;[SWS_Dcm_00802]&lt;/a&gt; (Service-ID &lt;code&gt;0x50&lt;/code&gt;), welche für synchrone Schnittstellen (&lt;code&gt;USE_DATA_SYNCH_FNC&lt;/code&gt;) und statische Datentypen vorgesehen ist.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert anhand der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Abgrenzung&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle wird genutzt, wenn der DID-Datenport auf &lt;code&gt;USE_DATA_ASYNCH_FNC&lt;/code&gt; oder &lt;code&gt;USE_DATA_ASYNCH_FNC_ERROR&lt;/code&gt; und der Datentyp auf &lt;code&gt;UINT8_DYN&lt;/code&gt; konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_01316" href="../../spec/record.html?id=SWS_Dcm_01316"&gt;[SWS_Dcm_01316]&lt;/a&gt;. Sie unterscheidet sich von der synchronen Variante &lt;a class="spec-record-ref" data-req="SWS_Dcm_00802" href="../../spec/record.html?id=SWS_Dcm_00802"&gt;[SWS_Dcm_00802]&lt;/a&gt;, welche weder &lt;code&gt;OpStatus&lt;/code&gt; noch &lt;code&gt;DataLength&lt;/code&gt; verwendet und für synchrone Ports bei statischen Datentypen bestimmt ist.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde automatisch von einem KI-Kurations-Assistenten auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -252,7 +257,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>823f5a236630…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>bd9ccbb93144…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -390,4 +395,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_01316","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ShortTermAdjustment"}],"inbound":[{"i":"SWS_Dcm_00802","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00802].","n":"SWS_Dcm_00802"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/468196338ccaebf9.json?v=9d19a474" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_01316","k":"function","d":"AUTOSAR","t":"","n":"Xxx_ShortTermAdjustment"}],"inbound":[{"i":"SWS_Dcm_00802","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00802].","n":"SWS_Dcm_00802"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/468196338ccaebf9.json?v=91a150aa" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>

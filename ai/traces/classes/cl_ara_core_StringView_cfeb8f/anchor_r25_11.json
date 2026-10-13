@@ -1,13 +1,32 @@
 {
  "annahmen": [
-  "1) Lebensdauermanagement der referenzierten Zeichendaten liegt vollständig beim Aufrufer – Begründung: StringView allokiert keinen Speicher und ist eine nicht-besitzende Sicht.",
-  "2) Die Signalisierung von IsoStdOutOfRangeViolation erfolgt über den AUTOSAR-Verletzungsmechanismus anstelle regulärer C++-Exceptions – Begründung: Die betroffenen Methoden sind explizit als noexcept markiert, ersetzen aber funktional std::out_of_range."
+  "1) Concurrency: Da alle lesenden Elementfunktionen const sind, dürfte der nebenläufige lesende Zugriff auf dieselbe StringView-Instanz threadsicher sein, während modifizierende Operationen extern synchronisiert werden müssen. – Begründung: Der AUTOSAR-Payload enthält keine expliziten Mutex-Vorgaben für StringView.",
+  "2) Zeigergültigkeit: ara::core::StringView führt vermutlich keine Laufzeitprüfung durch, ob der referenzierte Zeichenspeicher noch allokiert ist, sodass der Aufrufer für dessen Lebensdauer bürgt. – Begründung: Aus dem nicht-besitzenden Zeigeransatz (SWS_CORE_02102) folgt das Fehlen eines Speicherverwaltungsmechanismus."
  ],
- "diagrams": [],
+ "diagrams": [
+  {
+   "art": "seq",
+   "id": "diag-nutzungspfad",
+   "quelle": "anchor_r25_11.diag-nutzungspfad.seq.json"
+  }
+ ],
  "fragment": "content/ai/classes/cl_ara_core_StringView_cfeb8f/anchor_r25_11.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-nutzungspfad"
+  ],
+  "oneliner_chars": 112,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 45,
+   "3": 217,
+   "4": 656
+  }
+ },
  "lint": [],
- "output_sha256": "a6ce9aff8543c5b03efb2ac3fe566b1c21a712da58d37ac28a40dc8288bb978d",
- "output_store": "ai/store/outputs/a6/a6ce9aff8543c5b03efb2ac3fe566b1c21a712da58d37ac28a40dc8288bb978d.html",
+ "output_sha256": "ecb7bd572d3903cc02a444999a35871615db58155b22ba720215d79167e218ed",
+ "output_store": "ai/store/outputs/ec/ecb7bd572d3903cc02a444999a35871615db58155b22ba720215d79167e218ed.html",
  "params": {
   "class_id": "cl_ara_core_StringView_cfeb8f",
   "platform": "adaptive",
@@ -33,9 +52,9 @@
   "top_p": null
  },
  "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "5ddd63c607b80116c459e7c473842adf3614b6cdffe2b439f2bec5b1b5c63500",
- "prompt_store": "ai/store/prompts/5d/5ddd63c607b80116c459e7c473842adf3614b6cdffe2b439f2bec5b1b5c63500.txt",
- "recipe": "class-guide@2",
+ "prompt_hash": "7c1acb6c91942eb1f541ecab1e54bd57658a67d1e84f1955eddebdbe85b0cfbc",
+ "prompt_store": "ai/store/prompts/7c/7c1acb6c91942eb1f541ecab1e54bd57658a67d1e84f1955eddebdbe85b0cfbc.txt",
+ "recipe": "class-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -47,17 +66,18 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T08:12:02Z",
-   "duration_seconds": 28.007149,
+   "created_at": "2026-10-13T03:49:38Z",
+   "duration_seconds": 45.841995847,
+   "prompt_transport": "argv -p",
    "route": "agy-cli-print",
-   "run_id": "7642deda-4324-410d-8648-eb0113b86088",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/7642deda-4324-410d-8648-eb0113b86088.jsonl",
+   "run_id": "23b40056-089c-4766-bfb4-671e3e177234",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/23b40056-089c-4766-bfb4-671e3e177234.jsonl",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 24580,
-    "output_tokens": 12822,
-    "thinking_tokens": 8741,
-    "total_tokens": 37402
+    "cache_read_tokens": 8162,
+    "input_tokens": 16530,
+    "output_tokens": 19796,
+    "thinking_tokens": 13906,
+    "total_tokens": 36326
    }
   }
  ],

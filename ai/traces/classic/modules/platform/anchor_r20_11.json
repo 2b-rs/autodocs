@@ -1,14 +1,24 @@
 {
  "annahmen": [
-  "1) Platform_Types.h hat kein Laufzeit-Fehlerverhalten – Begründung: Das Modul definiert laut Requirements nur Typen und Symbole; Fehlercodes oder Fehlerberichte werden nirgends genannt.",
-  "2) Die hinterlegten typedef-Deklarationen sind compilerspezifische Abbildungen; normativ ist nur die Breite – Begründung: Die Requirements beschreiben ausschließlich Bitbreiten und Bereiche, die Plattformsymbole sind ausdrücklich „according to the platform“ festzulegen.",
-  "3) Falsch gesetzte Endianness-Symbole führen zu falsch zusammengesetzten Mehrbyte-Werten – Begründung: Die Spezifikation beschreibt die Byteablage je Symbol, die Folgen einer Fehlbelegung aber nicht."
+  "1) Die C-Typedefs im API-Katalog (z. B. unsigned long für uint32) sind typische Abbildungen und kein normativer Basistyp – Begründung: Die Requirements legen nur Bitbreite und Wertebereich fest.",
+  "2) Endianness-Umrechnungen anderer Module stützen sich in Implementierungen auf CPU_BYTE_ORDER – Begründung: Der Bedarf ist belegt (SOME/IP, COM), die Verknüpfung mit dem Symbol nicht.",
+  "3) Das Modul kennt kein Laufzeit-Fehlerverhalten – Begründung: reine Header-Spezifikation; im Payload sind keine Funktionen und keine Fehlercodes enthalten."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-kontext",
-   "quelle": "anchor_r20_11.diag-kontext.dot"
+   "id": "diag-einbettung",
+   "quelle": "anchor_r20_11.diag-einbettung.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-boolean-regeln",
+   "quelle": "anchor_r20_11.diag-boolean-regeln.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-pufferuebergabe",
+   "quelle": "anchor_r20_11.diag-pufferuebergabe.seq.json"
   },
   {
    "art": "dot",
@@ -17,23 +27,18 @@
   },
   {
    "art": "dot",
-   "id": "diag-boolean",
-   "quelle": "anchor_r20_11.diag-boolean.dot"
-  },
-  {
-   "art": "dot",
    "id": "diag-cpu-symbole",
    "quelle": "anchor_r20_11.diag-cpu-symbole.dot"
   },
   {
    "art": "dot",
-   "id": "diag-byte-ablage",
-   "quelle": "anchor_r20_11.diag-byte-ablage.dot"
+   "id": "diag-bitordnung",
+   "quelle": "anchor_r20_11.diag-bitordnung.dot"
   },
   {
-   "art": "seq",
-   "id": "diag-puffer",
-   "quelle": "anchor_r20_11.diag-puffer.seq.json"
+   "art": "dot",
+   "id": "diag-byteordnung",
+   "quelle": "anchor_r20_11.diag-byteordnung.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/platform/anchor_r20_11.html",
@@ -41,25 +46,12 @@
   "ausgelassen": {
    "budget": [
     "FIG-017c4529ddc82629",
-    "FIG-190bfe002cc2cde1",
-    "FIG-44cea4aba6802a59",
+    "FIG-1c9a00706978c45c",
     "FIG-5e49565c221093e3",
-    "FIG-680da2f81b528e39",
     "FIG-8e0eec1fdd2d4bd0",
-    "FIG-97b4f60549222840",
-    "FIG-988a28fda6aee7a2",
-    "FIG-a18e765ca002efec",
-    "FIG-aa00c0630a86758d",
     "FIG-bdc172181714def4",
-    "FIG-c2ace51ca1f6ba76",
-    "FIG-cfebc6be27fb2711",
-    "FIG-db05f8697793ebae",
     "FIG-dc3662d817e9e96a",
-    "FIG-dcaf9a712f35585f",
-    "FIG-e9c09eedcc825409",
-    "SNIP_CLASSIC_CAN_FIGURE_Figure_6_77_E2EPROTOCOL",
-    "SNIP_CLASSIC_CAN_FIGURE_Figure_6_79_E2EPROTOCOL",
-    "SNIP_CLASSIC_OS_SECTION_4_3_3_Software_Module_Design_Requirements",
+    "FIG-e73af3dbe3db147e",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_10_1",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_11_15",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_11_17",
@@ -103,6 +95,7 @@
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_31_TIMINGEXTENSIONS",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_34_ECUCONFIGURATION",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_3_METHODOLOGY",
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_4_GENERICSTRUCTURETEMPLATE",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_57",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_5_ECUCONFIGURATION",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_2_61",
@@ -128,6 +121,7 @@
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_38_MANIFESTSPECIFICATION",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_39",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_3_SAFETYOVERVIEW",
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_40_GENERALBLUEPRINTSSUPPLEMENT",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_40_MANIFESTSPECIFICATION",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_41",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_3_42",
@@ -180,6 +174,7 @@
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_17",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_18",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_19_TIMINGEXTENSIONS",
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_1_IDENTITYANDACCESSMANAGEMENT",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_1_MANIFESTSPECIFICATION",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_1_PLATFORMDESIGN",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_1_SOFTWARECOMPONENTTEMPLATE",
@@ -188,6 +183,7 @@
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_35",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_36",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_3_BSWMODULEDESCRIPTIONTEMPLATE",
+    "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_3_IDENTITYANDACCESSMANAGEMENT",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_3_MANIFESTSPECIFICATION",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_40",
     "SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_41",
@@ -359,6 +355,7 @@
     "SNIP_CLASSIC_PLATFORM_SECTION_2_4_8_7_Function_Pointers",
     "SNIP_CLASSIC_PLATFORM_SECTION_2_6_Hardware_Category_Definition",
     "SNIP_CLASSIC_PLATFORM_SECTION_2_8_9_Function_Pointers",
+    "SNIP_CLASSIC_PLATFORM_SECTION_2_Acronyms_and_Abbreviations_BFXLIBRARY",
     "SNIP_CLASSIC_PLATFORM_SECTION_2_Acronyms_and_Abbreviations_IFLLIBRARY",
     "SNIP_CLASSIC_PLATFORM_SECTION_2_Acronyms_and_Abbreviations_MFLLIBRARY",
     "SNIP_CLASSIC_PLATFORM_SECTION_2_TIMEX_occurs_reference_TD_EVENT_VARIABLE_DATA_PROTOTYPE_Example_Expression_E1",
@@ -376,6 +373,7 @@
     "SNIP_CLASSIC_PLATFORM_SECTION_3_FUNC_void_Controller_CODE_controllerRE_func_void",
     "SNIP_CLASSIC_PLATFORM_SECTION_40_Rte_IWrite_plantRE_PlantTemperaturePPP_T_lTPlant",
     "SNIP_CLASSIC_PLATFORM_SECTION_4_3_2_2_Table_Conversion",
+    "SNIP_CLASSIC_PLATFORM_SECTION_4_3_3_Software_Module_Design_Requirements",
     "SNIP_CLASSIC_PLATFORM_SECTION_5_2_1_1_Mapping_of_Variable_Data_Prototypes_with_primitive_datatypes_on_System",
     "SNIP_CLASSIC_PLATFORM_SECTION_5_2_1_2_Mapping_of_Variable_Data_Prototypes_with_composite_datatypes_SenderReceiver_Communication",
     "SNIP_CLASSIC_PLATFORM_SECTION_5_2_2_2_3_DataTapeMap_exists_on_the_level_of_the_record_element",
@@ -415,7 +413,6 @@
     "SNIP_CLASSIC_PLATFORM_SECTION_7_11_2_3_Access_DTCs_and_Status_Information",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_12_Variation_Point_Proxy",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_1_18_2_2_Boolean_type",
-    "SNIP_CLASSIC_PLATFORM_SECTION_7_1_3_Safety_Mechanisms",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_1_4_1_Basic_Datatypes",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_1_4_3_Structured_Datatypes_and_Arguments_with_Identifier_and_optional_Members",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_1_5_2_1_2_Handling_of_double_tagged_Ethernet_frames",
@@ -430,7 +427,6 @@
     "SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_3_Using_Library_API_EFXLIBRARY",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_3_Using_Library_API_IFXLIBRARY",
-    "SNIP_CLASSIC_PLATFORM_SECTION_7_4_1_5_2_Stream_Cipher",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_4_Library_implementation",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_5_1_Definition_of_components_and_dependencies",
     "SNIP_CLASSIC_PLATFORM_SECTION_7_5_Monitored_Component_Definition",
@@ -879,14 +875,63 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 194,
-  "im_prompt_schaubilder": 75,
-  "kandidaten": 1024,
+  "im_prompt": 193,
+  "im_prompt_schaubilder": 74,
+  "kandidaten": 1014,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "eeaec013be8407926feb30ab72289b335e7e4c9c062d4fa9c745a40b6db9daa3",
- "output_store": "ai/store/outputs/ee/eeaec013be8407926feb30ab72289b335e7e4c9c062d4fa9c745a40b6db9daa3.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-typwahl",
+   "diag-cpu-symbole"
+  ],
+  "oneliner_chars": 115,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 77,
+   "3": 282,
+   "4": 1662
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_2012_Standard: SRS_BSWGeneral S. 88 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_2_Byte_Ordering_Memory: SWS_PlatformTypes S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_21_STANDARDIZATIONTEMPLATE: AUTOSAR_FO_TPS_StandardizationTemplate S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_21_STANDARDIZATIONTEMPLATE: AUTOSAR_FO_TPS_StandardizationTemplate S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_4_3_Bfx_GetBit: SWS_BFXLibrary S. 19 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_1_InterResult_Crc_CalculateCRC32_Array12345678_0_4_0xFFFFFFFF_TRUE: SWS_CRCLibrary S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_2_3_Bmc_AtomicFlagType: SWS_BSWMulticoreLibrary S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_3_7_3_CanSM_SetEcuPassive: SWS_CANStateManager S. 83 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_1_InterResult_Crc_CalculateCRC32_Array12345678_0_4_0xFFFFFFFF_TRUE: SWS_CRCLibrary S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_4_2_4_General_Requirements: RS_COM S. 14 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_5_Boolean_data_type: SWS_PlatformTypes S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_4_3_Bfx_GetBit: SWS_BFXLibrary S. 19 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_2_18_VoidPtr: SWS_PlatformTypes S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_2_19_ConstVoidPtr: SWS_PlatformTypes S. 28 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_8_2_10_KeyM_CertDataType: SWS_KeyManager S. 97 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Operation_successful_CRYPTOSERVICEMANAGER: SWS_CryptoServiceManager S. 124 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_2_Byte_Ordering_Memory: SWS_PlatformTypes S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_4_3_On_Wire_Representation: AUTOSAR_FO_RS_SOMEIPProtocol S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_5_Boolean_data_type: SWS_PlatformTypes S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_7_2_PLATFORMTYPES: SWS_PlatformTypes S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_21_STANDARDIZATIONTEMPLATE: AUTOSAR_FO_TPS_StandardizationTemplate S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_5_Boolean_data_type: SWS_PlatformTypes S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "86add5bb93884bb1262615dbf375c400e40689e1c03fd5350150dfa02085d05c",
+ "output_store": "ai/store/outputs/86/86add5bb93884bb1262615dbf375c400e40689e1c03fd5350150dfa02085d05c.html",
  "params": {
   "module": "platform",
   "platform": "classic",
@@ -915,9 +960,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "83f35ac374cd1a829533c997a3a1fde001c292e64abaaf1d61ad06ceaf869bc3",
- "prompt_store": "ai/store/prompts/83/83f35ac374cd1a829533c997a3a1fde001c292e64abaaf1d61ad06ceaf869bc3.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "7e73f6d7bb3184ab9f85bd172d3ad16f29cddd14eb7c620d4a0ce320ce2d2b6f",
+ "prompt_store": "ai/store/prompts/7e/7e73f6d7bb3184ab9f85bd172d3ad16f29cddd14eb7c620d4a0ce320ce2d2b6f.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -930,14 +975,49 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.149884,
-   "cost_usd_reported": 1.1498840000000001,
-   "created_at": "2026-10-09T07:25:07Z",
-   "duration_api_seconds": 245.44,
-   "duration_seconds": 245.72,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.279208,
+   "cost_usd_reported": 1.2792080000000001,
+   "created_at": "2026-10-13T03:14:23Z",
+   "duration_api_seconds": 291.366,
+   "duration_seconds": 292.895,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_2012_Standard: SRS_BSWGeneral S. 88 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_2_Byte_Ordering_Memory: SWS_PlatformTypes S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_21_STANDARDIZATIONTEMPLATE: AUTOSAR_FO_TPS_StandardizationTemplate S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_21_STANDARDIZATIONTEMPLATE: AUTOSAR_FO_TPS_StandardizationTemplate S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_4_3_Bfx_GetBit: SWS_BFXLibrary S. 19 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_1_InterResult_Crc_CalculateCRC32_Array12345678_0_4_0xFFFFFFFF_TRUE: SWS_CRCLibrary S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_2_3_Bmc_AtomicFlagType: SWS_BSWMulticoreLibrary S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_3_7_3_CanSM_SetEcuPassive: SWS_CANStateManager S. 83 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_1_InterResult_Crc_CalculateCRC32_Array12345678_0_4_0xFFFFFFFF_TRUE: SWS_CRCLibrary S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_4_2_4_General_Requirements: RS_COM S. 14 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_5_Boolean_data_type: SWS_PlatformTypes S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_4_3_Bfx_GetBit: SWS_BFXLibrary S. 19 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_2_18_VoidPtr: SWS_PlatformTypes S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_2_19_ConstVoidPtr: SWS_PlatformTypes S. 28 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_8_2_10_KeyM_CertDataType: SWS_KeyManager S. 97 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Operation_successful_CRYPTOSERVICEMANAGER: SWS_CryptoServiceManager S. 124 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_2_Byte_Ordering_Memory: SWS_PlatformTypes S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_4_3_On_Wire_Representation: AUTOSAR_FO_RS_SOMEIPProtocol S. 21 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_5_Boolean_data_type: SWS_PlatformTypes S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_0_E_OK_Service_data_operation_successfully_accepted: SWS_KeyManager S. 111 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_7_2_PLATFORMTYPES: SWS_PlatformTypes S. 16 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_4_21_STANDARDIZATIONTEMPLATE: AUTOSAR_FO_TPS_StandardizationTemplate S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_4_Optimized_integer_data_types: SWS_PlatformTypes S. 17 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_5_Boolean_data_type: SWS_PlatformTypes S. 18 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_1_Bit_Ordering_Register: SWS_PlatformTypes S. 15 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -946,19 +1026,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.1498840000000001,
-     "inputTokens": 126351,
+     "costUSD": 1.2792080000000001,
+     "inputTokens": 128092,
      "maxOutputTokens": 128000,
-     "outputTokens": 32224,
+     "outputTokens": 38342,
      "provider": "firstParty",
-     "thinkingTokens": 16320,
+     "thinkingTokens": 17355,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "5dc7227b-0da4-4c30-aa41-f2fd7fdb0577",
+   "run_id": "37772420-5ad1-4170-bfae-f82761e1a9e3",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/5dc7227b-0da4-4c30-aa41-f2fd7fdb0577.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/37772420-5ad1-4170-bfae-f82761e1a9e3.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -967,11 +1047,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 126351,
-    "output_tokens": 32224,
+    "inference_geo": "global",
+    "input_tokens": 128092,
+    "output_tokens": 38342,
     "output_tokens_details": {
-     "thinking_tokens": 16320
+     "thinking_tokens": 17355
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -983,11 +1063,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 126351,
-    "output": 32224,
-    "thinking": 16320
+    "input_uncached": 128092,
+    "output": 38342,
+    "thinking": 17355
    },
-   "wall_seconds": 248.659
+   "wall_seconds": 294.392
   }
  ],
  "schema": "ai-trace@2",

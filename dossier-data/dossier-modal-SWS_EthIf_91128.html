@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91128" class="dossier-modal dossier-workbench" data-dossier-sha="ab64da6dc425703f" aria-labelledby="dossier-modal-SWS_EthIf_91128-title">
+<dialog id="dossier-modal-SWS_EthIf_91128" class="dossier-modal dossier-workbench" data-dossier-sha="3492644c984a7cf0" aria-labelledby="dossier-modal-SWS_EthIf_91128-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91128-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91128)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,388 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,843 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SetPortLoopbackMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,26 +198,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="cc0c6c3e88a8b5e8d55e84db4e576d2de5b3cfe7f80cdcff8b3241d0fca2edad" data-trace-output="ab64da6dc425703fe57a0dc47c8708dfc9e4d91c4dc7ce60cee0bf6f05740454" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="618d1a1fe6882e6fae01167375b1725ebcda7c9174c3c8c42adda742dace3ee5" data-trace-output="3492644c984a7cf0f842aa3703e2fe189d3795daa5968169b6163e04e04bbd1b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktiviert synchron einen Test-Loopback-Modus an einem spezifizierten Port eines Ethernet-Switches." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;EthIf_SetPortLoopbackMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;) serves to activate a test loopback mode for an indexed port of an Ethernet switch. Execution is synchronous. As call parameters, the interface expects the switch index (&lt;code&gt;SwitchIdx&lt;/code&gt;) in the context of the switch driver, the port index (&lt;code&gt;PortIdx&lt;/code&gt;) on the addressed switch, and the mode to be activated (&lt;code&gt;Mode&lt;/code&gt; of type &lt;code&gt;EthTrcv_PhyLoopbackModeType&lt;/code&gt;). The function is declared via the header file &lt;code&gt;EthIf.h&lt;/code&gt; with the Service ID &lt;code&gt;0x5e&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-&lt;p&gt;The function returns a status value of type &lt;code&gt;Std_ReturnType&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EthIf_SetPortLoopbackMode&lt;/code&gt; dient dazu, einen vorgegebenen Test-Loopback-Modus für einen indizierten Port eines Ethernet-Switches zu aktivieren &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;. Die Deklaration wird über die Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;. Beim Aufruf werden folgende Eingangsparameter übergeben:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The loopback mode for the specified Ethernet switch port was activated successfully.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Activation failed, for example if the addressed switch port is not available (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt;: Index des Ethernet-Switches innerhalb des Kontexts des Ethernet-Switch-Treibers &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PortIdx&lt;/code&gt;: Index des betroffenen Ports am zuvor adressierten Switch &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Mode&lt;/code&gt;: Zu aktivierender Loopback-Modus vom Typ &lt;code&gt;EthTrcv_PhyLoopbackModeType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;According to the specification, &lt;code&gt;EthIf_SetPortLoopbackMode&lt;/code&gt; is specified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;). Callers presumably may not call this function concurrently from different contexts without external protection.&lt;/p&gt;
-
-&lt;h4&gt;Interaction&lt;/h4&gt;
-&lt;p&gt;According to requirement &lt;a class="spec-record-ref" data-req="SWS_EthIf_00458" href="../../spec/record.html?id=SWS_EthIf_00458"&gt;[SWS_EthIf_00458]&lt;/a&gt;, &lt;code&gt;EthIf_SetPortLoopbackMode&lt;/code&gt; forwards the call directly to function &lt;code&gt;EthSwt_SetPortLoopbackMode&lt;/code&gt; of the corresponding Ethernet switch driver, which is addressed via &lt;code&gt;SwitchIdx&lt;/code&gt;.&lt;/p&gt;
-
-&lt;!-- annahmen: 1) Die Auszeichnung als Non Reentrant erfordert vermutlich einen synchronisierten bzw. exklusiven Aufrufkontext auf Applikations- oder Treiberebene. – Begründung: Die Spezifikation kennzeichnet die Funktion ohne weitere Einschränkungen als Non Reentrant. --&gt;
-&lt;p class="ai-note"&gt;This usage note is based on the specification AUTOSAR Classic Release R20-11.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Weiterleitung&lt;/h4&gt;
+&lt;p&gt;Die Funktion führt die Konfiguration nicht selbstständig auf Hardwareebene durch. Stattdessen leitet &lt;code&gt;EthIf_SetPortLoopbackMode&lt;/code&gt; den Aufruf direkt an die Funktion &lt;code&gt;EthSwt_SetPortLoopbackMode&lt;/code&gt; des zugehörigen Ethernet-Switch-Treibers weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00458" href="../../spec/record.html?id=SWS_EthIf_00458"&gt;[SWS_EthIf_00458]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Der Rückgabewert ist vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Loopback-Modus wurde für den indizierten Port des Ethernet-Switches erfolgreich aktiviert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Aktivierung schlug fehl, beispielsweise wenn der indizierte Ethernet-Switch-Port nicht verfügbar ist &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Spezifische Fehlercodes für DET oder DEM werden in der Spezifikation für diesen Dienst nicht aufgeführt.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Ausführung erfolgt vollständig synchron, und die Funktion ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91128" href="../../spec/record.html?id=SWS_EthIf_91128"&gt;[SWS_EthIf_91128]&lt;/a&gt;. Parallele Aufrufe müssen durch den Aufrufer unterbunden werden. Interpretation: Da es sich um das Schalten von Testmodi handelt, dürfte der Aufruf typischerweise im Rahmen von Initialisierungs-, Test- oder Diagnosesequenzen auf Task-Ebene erfolgen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Ein Aufruf dürfte typischerweise im Rahmen von Initialisierungs-, Test- oder Diagnosesequenzen auf Task-Ebene erfolgen – Begründung: Der genaue Aufrufkontext ist im Payload nicht spezifiziert; die Einstufung als nicht reentrant und synchron sowie die Zweckbestimmung als Test-Loopback-Modus legen diesen Kontext nahe. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -239,7 +261,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>cc0c6c3e88a8…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>618d1a1fe688…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -377,4 +399,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91128","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SetPortLoopbackMode"}],"inbound":[{"i":"SWS_EthIf_00458","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00458].","n":"SWS_EthIf_00458"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/916d56c77d4f930c.json?v=82a37d85" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91128","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SetPortLoopbackMode"}],"inbound":[{"i":"SWS_EthIf_00458","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00458].","n":"SWS_EthIf_00458"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/916d56c77d4f930c.json?v=f8920950" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

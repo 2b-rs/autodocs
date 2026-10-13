@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_01543" class="dossier-modal dossier-workbench" data-dossier-sha="3ab03946f7fbd885" aria-labelledby="dossier-modal-SWS_Csm_01543-title">
+<dialog id="dossier-modal-SWS_Csm_01543" class="dossier-modal dossier-workbench" data-dossier-sha="fbca9c32b12e80ed" aria-labelledby="dossier-modal-SWS_Csm_01543-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_01543-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_01543)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,425 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,879 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_RandomGenerate'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,36 +193,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="e7e8feca23d9bda36d4d94570dbeac480c3f91390aba5e95a794d0124262657b" data-trace-output="3ab03946f7fbd88548ddb6b71e9d239e5ded5a7c86b76624d3180e6e6d7a3dee" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="bf65b2c7cd7ca9ad9207fae2d6bde112a3d76aab0fb153db21102bf0bc12c693" data-trace-output="fbca9c32b12e80ed69dbaf769acc5663473853827887945c07b857ad41f4c5fd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Erzeugt Zufallszahlen in einem Puffer synchron oder asynchron abhängig von der Konfiguration des Jobs." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;
-The function &lt;code&gt;Csm_RandomGenerate&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;) is used to generate random numbers and stores them in the provided destination memory. Whether the service operates synchronously or asynchronously depends on the configuration of the passed job. The declaration is available via the header &lt;code&gt;Csm.h&lt;/code&gt;.
-&lt;/p&gt;
-&lt;p&gt;The parameter assignment comprises:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Csm_RandomGenerate&lt;/code&gt; dient der Erzeugung von Zufallszahlen und speichert das Ergebnis in dem Speicherbereich, auf den &lt;code&gt;resultPtr&lt;/code&gt; verweist &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+&lt;p&gt;Über den Parameter &lt;code&gt;jobId&lt;/code&gt; wird die Kennung des konfigurieren CSM-Jobs übergeben, der den Dienst nutzt &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;. Der Aufrufer steuert die gewünschte Datenmenge über den Ein- und Ausgangsparameter &lt;code&gt;resultLengthPtr&lt;/code&gt;: Beim Aufruf muss dieser Zeiger auf die Anzahl der zu generierenden Zufallsbytes verweisen, die im Puffer &lt;code&gt;resultPtr&lt;/code&gt; abgelegt werden sollen &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;. Nach Abschluss der Anfrage enthält &lt;code&gt;resultLengthPtr&lt;/code&gt; die tatsächliche Bytelänge des erzeugten Wertes &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;. Die Verarbeitung erfolgt synchron oder asynchron, abhängig von der Konfiguration des jeweiligen Jobs &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Die Funktion liefert einen Status vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;jobId&lt;/code&gt; (in): Identifier of the CSM job using the service.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;resultPtr&lt;/code&gt; (out): Pointer to the memory area that receives the generated random data.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;resultLengthPtr&lt;/code&gt; (inout): Pointer to the length specification in bytes. Upon the call, this value defines the requested number of random bytes to be stored in the buffer &lt;code&gt;resultPtr&lt;/code&gt;. After completion of the request, the memory location contains the actual generated data length.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Anforderung war erfolgreich &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anforderung ist fehlgeschlagen &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Die Anforderung schlug fehl, da der Dienst noch belegt ist &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_ENTROPY_EXHAUSTED&lt;/code&gt;: Die Anforderung schlug fehl, da die Entropie des Zufallszahlengenerators erschöpft ist &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-&lt;p&gt;
-The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals the status of the request:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Request was successful.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Request has failed.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Request failed because the service is currently busy.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_ENTROPY_EXHAUSTED&lt;/code&gt;: Request failed because the entropy of the random number generator is exhausted.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Concurrency&lt;/h4&gt;
-&lt;p&gt;
-According to the specification, the interface is reentrant.
-&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR R20-11.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist reentrant ausgelegt und über den Header &lt;code&gt;Csm.h&lt;/code&gt; mit der Service-ID &lt;code&gt;0x72&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_Csm_01543" href="../../spec/record.html?id=SWS_Csm_01543"&gt;[SWS_Csm_01543]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert erstellt. Verbindlich sind ausschließlich die Spezifikationen des AUTOSAR-Standards.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -244,7 +250,7 @@ According to the specification, the interface is reentrant.
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e7e8feca23d9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>bf65b2c7cd7c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -382,4 +388,4 @@ According to the specification, the interface is reentrant.
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_01543","k":"function","d":"AUTOSAR","t":"","n":"Csm_RandomGenerate"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/413adbbba09abd05.json?v=b57cd0f8" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_01543","k":"function","d":"AUTOSAR","t":"","n":"Csm_RandomGenerate"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/413adbbba09abd05.json?v=6e63406e" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

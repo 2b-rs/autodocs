@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinIf_91007" class="dossier-modal dossier-workbench" data-dossier-sha="06b02b075d462700" aria-labelledby="dossier-modal-SWS_LinIf_91007-title">
+<dialog id="dossier-modal-SWS_LinIf_91007" class="dossier-modal dossier-workbench" data-dossier-sha="93e9cbfe5b855483" aria-labelledby="dossier-modal-SWS_LinIf_91007-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinIf_91007-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinIf_91007)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,878 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,333 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinIf_LinErrorIndication'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -200,36 +218,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="5acdd0eb633406f9b29bb5f9ba8555f23a544752231fa3d8f638adb2caa5e867" data-trace-output="06b02b075d4627000b9d2bae7ff27cdf37890325b41cd2d861ce49d2f52b9853" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d5f182fa17f58a3eeb30b2765e3f86a45baca7966242da3106d528e5be327e1d" data-trace-output="93e9cbfe5b85548331087b95ff8b6982b6a799ce09a2f1b54799a81635a3c769" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet Fehler bei der Header- oder Response-Verarbeitung von LIN-Slave-Knoten synchron an das LIN-Interface." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Call Context&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous callback function &lt;code&gt;LinIf_LinErrorIndication&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;) is called by the LIN driver to report a detected error during header or response processing to the LIN interface. The function is exclusively available on LIN slave nodes and requires that the ECU has at least one LIN slave channel (&lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;). The identifier of the LIN channel (&lt;code&gt;Channel&lt;/code&gt;) and the error cause (&lt;code&gt;ErrorStatus&lt;/code&gt; of type &lt;code&gt;Lin_SlaveErrorType&lt;/code&gt;) are passed; a return value does not exist (&lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;LinIf_LinErrorIndication&lt;/code&gt; wird vom LIN-Treiber aufgerufen, um aufgetretene Fehler während der Verarbeitung von Header oder Response zu melden &lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;. Sie ist ausschließlich für LIN-Slave-Knoten vorgesehen und setzt voraus, dass das Steuergerät über mindestens einen konfigurierten LIN-Slave-Kanal verfügt &lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;. Als Parameter werden die Kanalidentifikation &lt;code&gt;Channel&lt;/code&gt; sowie der aufgetretene Fehlerstatus &lt;code&gt;ErrorStatus&lt;/code&gt; vom Typ &lt;code&gt;Lin_SlaveErrorType&lt;/code&gt; übergeben &lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    The call is reentrant for different channels, but must not be executed concurrently for the same channel (&lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist reentrant für unterschiedliche Kanäle, darf jedoch für denselben Kanal nicht nebenläufig aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_LinIf_91007" href="../../spec/record.html?id=SWS_LinIf_91007"&gt;[SWS_LinIf_91007]&lt;/a&gt;. Beim Aufruf betrachtet das LIN-Interface die Antwort bzw. den übertragenen Frame als verloren und meldet den Laufzeitfehler &lt;code&gt;LINIF_E_RESPONSE&lt;/code&gt; an den Default Error Tracer (DET), es sei denn, der gemeldete Fehlerstatus lautet &lt;code&gt;LIN_ERR_HEADER&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00735" href="../../spec/record.html?id=SWS_LinIf_00735"&gt;[SWS_LinIf_00735]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LinIf_00743" href="../../spec/record.html?id=SWS_LinIf_00743"&gt;[SWS_LinIf_00743]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error Handling and Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    Upon a call of &lt;code&gt;LinIf_LinErrorIndication&lt;/code&gt;, the LIN interface considers the relevant response or the transmitted frame as lost (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00735" href="../../spec/record.html?id=SWS_LinIf_00735"&gt;[SWS_LinIf_00735]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LinIf_00743" href="../../spec/record.html?id=SWS_LinIf_00743"&gt;[SWS_LinIf_00743]&lt;/a&gt;). Unless the error code is &lt;code&gt;LIN_ERR_HEADER&lt;/code&gt;, the module reports the runtime error &lt;code&gt;LINIF_E_RESPONSE&lt;/code&gt; to the Default Error Tracer (DET) (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00735" href="../../spec/record.html?id=SWS_LinIf_00735"&gt;[SWS_LinIf_00735]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_LinIf_00743" href="../../spec/record.html?id=SWS_LinIf_00743"&gt;[SWS_LinIf_00743]&lt;/a&gt;). Irrespective of the specific error code, the active bus idle timer is reset and restarted with each call (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00754" href="../../spec/record.html?id=SWS_LinIf_00754"&gt;[SWS_LinIf_00754]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    If the error occurs in the context of an SRF response (after reception of an SRF header), the LIN interface aborts the transmission and signals this to the upper layer by calling &lt;code&gt;PduR_LinTpTxConfirmation&lt;/code&gt; with status &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00796" href="../../spec/record.html?id=SWS_LinIf_00796"&gt;[SWS_LinIf_00796]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    If bus mirroring is enabled globally (&lt;code&gt;LinIfBusMirroringSupported&lt;/code&gt;) and for the channel via &lt;code&gt;LinIf_EnableBusMirroring()&lt;/code&gt;, the interface forwards all errors except &lt;code&gt;LIN_ERR_HEADER&lt;/code&gt; via &lt;code&gt;Mirror_ReportLinFrame()&lt;/code&gt; with a NULL pointer for the frame content (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00869" href="../../spec/record.html?id=SWS_LinIf_00869"&gt;[SWS_LinIf_00869]&lt;/a&gt;). The error codes are converted into type &lt;code&gt;Lin_StatusType&lt;/code&gt; beforehand (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00870" href="../../spec/record.html?id=SWS_LinIf_00870"&gt;[SWS_LinIf_00870]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;LIN_ERR_RESP_STOPBIT&lt;/code&gt; is mapped to &lt;code&gt;LIN_TX_ERROR&lt;/code&gt; or &lt;code&gt;LIN_RX_ERROR&lt;/code&gt; depending on the current frame direction (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00870" href="../../spec/record.html?id=SWS_LinIf_00870"&gt;[SWS_LinIf_00870]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LIN_ERR_RESP_CHKSUM&lt;/code&gt; and &lt;code&gt;LIN_ERR_INCOMP_RESP&lt;/code&gt; are translated to &lt;code&gt;LIN_RX_ERROR&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00870" href="../../spec/record.html?id=SWS_LinIf_00870"&gt;[SWS_LinIf_00870]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LIN_ERR_NO_RESP&lt;/code&gt; is translated to &lt;code&gt;LIN_RX_NO_RESPONSE&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00870" href="../../spec/record.html?id=SWS_LinIf_00870"&gt;[SWS_LinIf_00870]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LIN_ERR_RESP_DATABIT&lt;/code&gt; is translated to &lt;code&gt;LIN_TX_ERROR&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00870" href="../../spec/record.html?id=SWS_LinIf_00870"&gt;[SWS_LinIf_00870]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR Classic R20-11 specification.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Bus-Überwachung&lt;/h4&gt;
+&lt;p&gt;Unabhängig vom übergebenen Fehlercode lädt das LIN-Interface bei jedem Aufruf von &lt;code&gt;LinIf_LinErrorIndication&lt;/code&gt; den laufenden Bus-Idle-Timer neu &lt;a class="spec-record-ref" data-req="SWS_LinIf_00754" href="../../spec/record.html?id=SWS_LinIf_00754"&gt;[SWS_LinIf_00754]&lt;/a&gt;. Tritt ein Fehler bei einer SRF-Response nach Empfang eines SRF-Headers auf, bricht das LIN-Interface die Übertragung ab und meldet dies der oberen Schicht über &lt;code&gt;PduR_LinTpTxConfirmation&lt;/code&gt; mit dem Ergebnis &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00796" href="../../spec/record.html?id=SWS_LinIf_00796"&gt;[SWS_LinIf_00796]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Ist Bus-Mirroring über &lt;code&gt;LinIfBusMirroringSupported&lt;/code&gt; global aktiv und für den Kanal eingeschaltet, leitet das LIN-Interface Fehler ungleich &lt;code&gt;LIN_ERR_HEADER&lt;/code&gt; über &lt;code&gt;Mirror_ReportLinFrame()&lt;/code&gt; mit einem NULL-Zeiger für den Dateninhalt weiter &lt;a class="spec-record-ref" data-req="SWS_LinIf_00869" href="../../spec/record.html?id=SWS_LinIf_00869"&gt;[SWS_LinIf_00869]&lt;/a&gt;. Hierbei werden die Treiberfehlercodes zuvor in entsprechende Statuswerte des Typs &lt;code&gt;Lin_StatusType&lt;/code&gt; übersetzt &lt;a class="spec-record-ref" data-req="SWS_LinIf_00870" href="../../spec/record.html?id=SWS_LinIf_00870"&gt;[SWS_LinIf_00870]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -269,9 +271,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>5acdd0eb6334…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d5f182fa17f5…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -306,8 +308,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -344,7 +346,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 3 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -407,4 +409,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_91007","k":"function","d":"AUTOSAR","t":"","n":"LinIf_LinErrorIndication"}],"inbound":[{"i":"SWS_LinIf_00735","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_LinIf_00735].","n":"SWS_LinIf_00735"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f7605d24d90f01d9.json?v=1a4922b3" data-total="7" data-new="7" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_91007","k":"function","d":"AUTOSAR","t":"","n":"LinIf_LinErrorIndication"}],"inbound":[{"i":"SWS_LinIf_00735","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_LinIf_00735].","n":"SWS_LinIf_00735"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f7605d24d90f01d9.json?v=8174859e" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

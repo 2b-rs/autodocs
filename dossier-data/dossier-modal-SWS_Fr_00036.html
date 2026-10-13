@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Fr_00036" class="dossier-modal dossier-workbench" data-dossier-sha="d18dbfcbd0c8ab1b" aria-labelledby="dossier-modal-SWS_Fr_00036-title">
+<dialog id="dossier-modal-SWS_Fr_00036" class="dossier-modal dossier-workbench" data-dossier-sha="614d74ebc97eb3b1" aria-labelledby="dossier-modal-SWS_Fr_00036-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Fr_00036-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Fr_00036)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,273 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,727 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Fr_AckAbsoluteTimerIRQ'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,30 +193,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="207980729eea201cef475af0bd34a550cf291724b85d7c713cf2a489ce0fbac7" data-trace-output="d18dbfcbd0c8ab1b38ad96568a124deedf452e8694ca31a8eb7dd6b0222aedcc" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="042d5293cc25a7d3e75c0a29bfba74435da7ead2744c16205a2b96507f978b5e" data-trace-output="614d74ebc97eb3b1f54f7896cdaa61899b318aed6e8a17ec83355ddcc59bfc11" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Setzt die Interrupt-Bedingung eines absoluten Timers für einen FlexRay-Controller synchron zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;Fr_AckAbsoluteTimerIRQ&lt;/code&gt; is used to reset the interrupt condition of an absolute timer (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;). It is provided via the header file &lt;code&gt;Fr.h&lt;/code&gt; and has the service ID &lt;code&gt;0x17&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;Interpretation: The call is typically likely to occur within the interrupt handling of the FlexRay driver (ISR) or directly in the context of a timer event to reset pending hardware interrupt conditions.&lt;/p&gt;
-  &lt;p&gt;The function expects the following input parameters (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Fr_AckAbsoluteTimerIRQ&lt;/code&gt; gehört zum Modul des FlexRay-Treibers (&lt;code&gt;Fr&lt;/code&gt;) in der AUTOSAR-Classic-Plattform und dient dem Zurücksetzen der Interrupt-Bedingung eines absoluten Timers &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;. Die Deklaration der Schnittstelle wird über die Header-Datei &lt;code&gt;Fr.h&lt;/code&gt; bereitgestellt und ist der hexadezimalen Service-ID &lt;code&gt;0x17&lt;/code&gt; zugeordnet &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Zur eindeutigen Adressierung des Timers erwartet die Funktion zwei Eingangsparameter vom Typ &lt;code&gt;uint8&lt;/code&gt;, während keine Ein-/Ausgabe- oder reinen Ausgabeparameter vorhanden sind &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Fr_CtrlIdx&lt;/code&gt;: Index of the FlexRay Communication Controller (CC) in the context of the FlexRay driver (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Fr_AbsTimerIdx&lt;/code&gt;: Index of the absolute timer in the context of the specified FlexRay CC (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;Fr_CtrlIdx&lt;/code&gt;: Übergibt den Index des FlexRay-Communication-Controllers (CC) innerhalb des Kontexts des FlexRay-Treibers &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;Fr_AbsTimerIdx&lt;/code&gt;: Bezeichnet den Index des absoluten Timers innerhalb des Kontexts des jeweiligen FlexRay-Communication-Controllers &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals the result of the service (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The API call was completed successfully (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The API call was aborted due to errors that occurred (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is non-reentrant for the same device (&lt;code&gt;Non Reentrant for the same device&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;). Concurrent calls for the same controller index &lt;code&gt;Fr_CtrlIdx&lt;/code&gt; are therefore impermissible and must be excluded using suitable synchronization measures. Calls for different controllers can be processed in parallel.&lt;/p&gt;
-
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;If an error occurs during processing, the function call is aborted and &lt;code&gt;E_NOT_OK&lt;/code&gt; is returned (&lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;). Specific DET or DEM error messages are not listed in the element description.&lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Aufrufkontext – Begründung: Die Spezifikation nennt keinen Ausführungskontext (Task/ISR), das Quittieren von Timer-Interrupts ('Resets the interrupt condition') erfolgt in AUTOSAR-Treibern jedoch typischerweise in oder nahe der zuständigen ISR. --&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR R20-11.&lt;/p&gt;
+  &lt;p&gt;Das Ergebnis der Funktionsausführung wird über den Statuswert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurückgemeldet. Wurde der Aufruf erfolgreich beendet, gibt die Funktion &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;. Treten während der Ausführung Fehler auf, bricht der Funktionsaufruf vorzeitig ab und liefert stattdessen &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich des Nebenläufigkeitsverhaltens ist der Dienst als nicht reentrant für dasselbe Gerät eingestuft (&lt;em&gt;Non Reentrant for the same device&lt;/em&gt;) &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;. Aufrufe für dieselbe Controller-Instanz müssen daher synchron erfolgen und dürfen nicht nebenläufig überlappend ausgeführt werden &lt;a class="spec-record-ref" data-req="SWS_Fr_00036" href="../../spec/record.html?id=SWS_Fr_00036"&gt;[SWS_Fr_00036]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis basiert auf der Spezifikation SWS_Fr_00036 des FlexRay-Treibers und wurde automatisiert erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,7 +245,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>207980729eea…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>042d5293cc25…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -376,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fr_00036","k":"function","d":"AUTOSAR","t":"","n":"Fr_AckAbsoluteTimerIRQ"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/bd9ab36332a4e456.json?v=5eb0e8e2" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fr_00036","k":"function","d":"AUTOSAR","t":"","n":"Fr_AckAbsoluteTimerIRQ"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/bd9ab36332a4e456.json?v=07be2afc" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_hash_83e629" class="dossier-modal dossier-workbench" data-dossier-sha="0f1f8669a20cfdeb" aria-labelledby="dossier-modal-cl_ara_core_hash_83e629-title">
+<dialog id="dossier-modal-cl_ara_core_hash_83e629" class="dossier-modal dossier-workbench" data-dossier-sha="faa7d2adc28f3e49" aria-labelledby="dossier-modal-cl_ara_core_hash_83e629-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_hash_83e629-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_hash_83e629)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,557 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,079 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::hash' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_hash_83e629",
@@ -203,40 +222,44 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="bdb6fdc52cb7c50128d7a8d0faf2cd4b245fc17e6a8b84aa7bb45d3173a2263c" data-trace-output="0f1f8669a20cfdebb10361fca4e18060a567cb5205ab18d4224f7b7ae89d91b0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="47bc753ad8b5715bc5f396a96dc708ec5e78bf52d8f905135c90e8a778a7dbae" data-trace-output="faa7d2adc28f3e49539e1faf2411e92bd5a92220521c0fd6223b264731744c9e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Erzeugt als generisches Funktionsobjekt deterministische Streuwerte zur Verwendung in assoziativen Datenstrukturen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The template structure &lt;code&gt;ara::core::hash&lt;/code&gt; functions in module &lt;code&gt;core&lt;/code&gt; of the AUTOSAR Adaptive Platform as the primary function object for determining numerical hash values. The specification refers to the corresponding use in the context of &lt;code&gt;bitset&lt;/code&gt;. Interpretation: &lt;code&gt;ara::core::hash&lt;/code&gt; serves as a fundamental interface to provide standardized hash values for Adaptive base types, presumably primarily for efficient integration into associative hash containers as well as for key-based search operations.&lt;/p&gt;
-&lt;p&gt;In the overall system, &lt;code&gt;ara::core::hash&lt;/code&gt; decouples processing algorithms from the internal data structures of the types to be hashed. Appropriate template specializations ensure that complex data structures such as bit sequences and base types can be mapped to integer characteristic values according to a uniform pattern, without higher-level modules having to implement type-specific hash routines.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Erzeugt als generisches Funktionsobjekt deterministische Streuwerte zur Verwendung in assoziativen Datenstrukturen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Template-Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; dient im Modul &lt;code&gt;core&lt;/code&gt; als generisches Funktionsobjekt zur deterministischen Berechnung von Streuwerten, wie in der Spezifikation für &lt;code&gt;[bitset]&lt;/code&gt; beschrieben. Sie stellt eine einheitliche Schnittstelle zur Verfügung, über die Eingabeobjekte mittels Funktionsaufruf in ganzzahlige Hashwerte für die Indizierung in assoziativen Datenstrukturen überführt werden. Da die Struktur als zustandsloses Funktionsobjekt konzipiert sein dürfte, erfolgen Streuwertberechnungen seiteneffektfrei und lassen sich ohne Synchronisationsaufwand nebenläufig ausführen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Template-Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; stellt im Modul &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform (Release R25-11) die standardisierte Schnittstelle zur Generierung von Streuwerten (Hash-Codes) bereit. Die formale Deklaration lautet &lt;code&gt;template &amp;lt;class T&amp;gt; struct hash;&lt;/code&gt;. Laut Spezifikationsbeschreibung orientiert sich das Verhalten an der entsprechenden Verwendung in &lt;code&gt;[bitset]&lt;/code&gt;. Im Systemkontext übernimmt &lt;code&gt;ara::core::hash&lt;/code&gt; vermutlich die Rolle eines standardkonformen Funktionsobjekts nach dem Muster von &lt;code&gt;std::hash&lt;/code&gt;, das Datenstrukturen und Algorithmen einen konsistenten Streuwert für Instanzen des Typs &lt;code&gt;T&lt;/code&gt; liefert.&lt;/p&gt;
+&lt;p&gt;Als zentrales Hilfsmittel interagiert die Struktur typischerweise mit assoziativen Datenstrukturen, Hash-Tabellen sowie generischen Algorithmen. Vordefinierte Spezialisierungen für adaptive Basistypen, wie beispielsweise für Bitmengen, ermöglichen es übergeordneten Komponenten, heterogene Objekte effizient in Hash-basierten Nachschlagetabellen zu organisieren. Die Kernverantwortung der Struktur liegt in der Kapselung des typbezogenen Hash-Algorithmus, wodurch aufrufende Algorithmen unabhängig von der konkreten internen Struktur des Nutzdatentyps operieren können.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The structure &lt;code&gt;ara::core::hash&lt;/code&gt; is designed as a lightweight functor object. Interpretation: Instances of &lt;code&gt;ara::core::hash&lt;/code&gt; are likely to be typically stateless and default-constructible, so that their instantiation and destruction consume no dynamic system resources and generate negligible runtime overhead.&lt;/p&gt;
-&lt;p&gt;With regard to concurrency and lifecycle phases, the statelessness allows flexible handling. Since the function object undergoes no internal state transitions, instances can be copied arbitrarily or instantiated directly as temporary objects at the call site. Multiple threads can execute the call operator without side effects and in parallel, as long as the passed target object is protected against concurrent modifications during the calculation process.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::core::hash&lt;/code&gt; besitzt einen funktionalen Charakter und weist keinen komplexen Lebenszyklus auf. Instanzen der Template-Klasse verwalten nach üblicher Auslegung keine dynamischen Systemressourcen und pflegen keine persistenten internen Zustände. Die Erzeugung eines Funktionsobjekts erfolgt üblicherweise ad hoc am Aufrufpunkt über den Standardkonstruktor oder implizit im Kontext generischer Containerklassen.&lt;/p&gt;
+&lt;p&gt;Da Instanzen von &lt;code&gt;ara::core::hash&lt;/code&gt; als zustandslose Funktionsobjekte ausgelegt sein dürften, existieren weder diskrete Betriebsphasen noch explizite Zustandsübergänge. Die Zerstörung einer Instanz ist trivial und erfordert keine Freigabelogik. Die angenommene Zustandslosigkeit bedingt zudem, dass parallele Ausführungen über mehrere Threads hinweg inhärent nebenläufig und thread-sicher sind: Mehrere Ausführungsstränge können denselben Funktor oder simultan erzeugte Instanzen gleichzeitig aufrufen, ohne dass Synchronisationsmechanismen erforderlich wären.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The regular sequence when interacting with &lt;code&gt;ara::core::hash&lt;/code&gt; is divided into providing the input value, calling the functor, and evaluating the resulting value:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Preparation of the initial value:&lt;/strong&gt; The object to be processed (for example, a bit pattern or a configuration element) is created and set to a valid initial state.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Instantiation of the functor:&lt;/strong&gt; The caller uses the template instance &lt;code&gt;ara::core::hash&amp;lt;T&amp;gt;&lt;/code&gt; for the target type &lt;code&gt;T&lt;/code&gt; or creates an anonymous temporary function object.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Execution of the calculation:&lt;/strong&gt; Via the function call operator, the hash algorithm is executed for the instance, which calculates and returns the integer hash value.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Processing of the result:&lt;/strong&gt; The calling system uses the hash value for index calculation, for identifying buckets in hash tables, or for fast preliminary comparisons.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;In most scenarios, this call does not occur manually, but transparently within generic container and table structures that use &lt;code&gt;ara::core::hash&lt;/code&gt; as the default predicate for key types.&lt;/p&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Since &lt;code&gt;ara::core::hash&lt;/code&gt; acts as a purely computational transformation, functional error states are primarily intercepted via preconditions and design patterns:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Ablauf bei der Verwendung von &lt;code&gt;ara::core::hash&lt;/code&gt; gliedert sich in folgende Schritte:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Missing type support:&lt;/strong&gt; Interpretation: For data types for which no valid specialization of &lt;code&gt;ara::core::hash&lt;/code&gt; exists, the primary template is likely to be incomplete or the call operator deleted, so that erroneous usages are already rejected at compile time.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hash collisions:&lt;/strong&gt; Because a discrete value range is mapped onto an integer hash space, different objects can generate the same hash value. A hash value must therefore not be understood in application design as a cryptographically unique identity; in the event of a match, an additional equality check is always required.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Exception safety:&lt;/strong&gt; In deterministic automotive runtime environments, hashing operations are expected to manage without dynamic allocations and not throw exceptions, in order to prevent delays and undefined states in the control flow.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Typbindung und Instantiierung:&lt;/strong&gt; Der Aufrufer instanziiert das Funktionsobjekt für den gewünschten Zieltyp &lt;code&gt;T&lt;/code&gt; oder deklariert die Struktur als Hash-Funktor in einer übergeordneten Template-Klasse.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Übergabe der Instanz:&lt;/strong&gt; Das Funktionsobjekt wird über seinen Aufrufoperator mit einer konstanten Referenz auf das Zielobjekt (beispielsweise eine Instanz von &lt;code&gt;bitset&lt;/code&gt;) aufgerufen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Verarbeitung des Rückgabewerts:&lt;/strong&gt; Der Aufruf liefert deterministisch einen ganzzahligen Streuwert zurück, der anschließend zur Ermittlung von Tabellenindizes oder Prüfwerten verwendet wird.&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;Für benutzerdefinierte Datentypen kann die Template-Struktur spezialisiert werden, um einen spezifischen Berechnungsalgorithmus bereitzustellen. Unabhängig vom Typ gilt für jede konforme Ausprägung, dass für identische Eingabewerte über die gesamte Laufzeit hinweg reproduzierbar identische Hashwerte erzeugt werden müssen.&lt;/p&gt;
 
-&lt;!-- annahmen:
-1) Interpretation: ara::core::hash dient als Funktionsobjekt zur Berechnung von Hash-Werten für Adaptive-Typen und wird analog zu std::hash primär für assoziative Container und Tabellenstrukturen genutzt. – Begründung: Syntax als Template-Struktur und Bezugnahme auf bitset entsprechen der standardisierten C++-Semantik von Hash-Funktoren.
-2) Interpretation: Exemplare von ara::core::hash dürften zustandslos und standard-konstruierbar sein, wodurch parallele Aufrufe nebenwirkungsfrei und threadsicher sind. – Begründung: Funktionsobjekte für Hash-Operationen sind in modernen C++- und AUTOSAR-Standards regulär frei von veränderlichem Zustand.
-3) Interpretation: Für nicht unterstützte Datentypen ist das Primärtemplate undefiniert oder der Aufrufoperator gelöscht, um ungültige Typen zur Compilezeit abzufangen. – Begründung: Gängige Praxis in generischen C++-Bibliotheken zur statischen Typprüfung.
---&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specification data of Release R25-11. All behaviors not substantiated by the payload are explicitly declared as interpretations.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Aufgrund der deterministischen Natur von Streuwertberechnungen treten bei &lt;code&gt;ara::core::hash&lt;/code&gt; keine Fehlercodes oder Laufzeit-Fehlerzustände auf. Die Auswertung dürfte nach allgemeinem Entwurfsprinzip als ausnahmefreie Operation konzipiert sein. Mögliche Probleme beschränken sich auf statische Entwurfsentscheidungen und inhärente Eigenschaften von Hash-Verfahren:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Fehlende Typ-Spezialisierung:&lt;/strong&gt; Wird &lt;code&gt;ara::core::hash&lt;/code&gt; für einen Typ verwendet, für den keine geeignete Spezialisierung existiert, führt dies zu einem Fehler während der Übersetzungszeit.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Hash-Kollisionen:&lt;/strong&gt; Das Auftreten gleicher Streuwerte für unterschiedliche Eingabewerte stellt eine mathematisch unvermeidbare Eigenschaft dar. Es handelt sich hierbei nicht um einen Fehler des Funktionsobjekts, sondern um einen Normalfall, den die nutzende Datenstruktur durch Kollisionsauflösung abfangen muss.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Vor- und Nachbedingungen:&lt;/strong&gt; Vorbedingung für die Ausführung ist die Gültigkeit des übergebenen Objektreferenzwerts; Nachbedingung ist die Bereitstellung eines stabilen Streuwerts.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Die Template-Struktur fungiert vermutlich als generisches Funktionsobjekt zur Streuwertberechnung analog zu std::hash – Begründung: Die Syntax template &lt;class T&gt; struct hash entspricht der C++-Standarddeklaration für Hash-Funktoren.
+2) Der Verweis auf [bitset] dürfte bedeuten, dass Spezialisierungen für Basistypen wie ara::core::bitset zur Integration in assoziative Container vorliegen – Begründung: Die Spezifikationsbeschreibung nennt explizit das entsprechende Nutzungsverhalten in [bitset].
+3) Die Implementierung von ara::core::hash dürfte zustandslos und somit thread-sicher sein – Begründung: Funktionsobjekte für Hash-Operationen besitzen im Systementwurf üblicherweise keine veränderlichen Zustandsvariablen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf einer KI-gestützten Analyse der AUTOSAR-Adaptive-Spezifikation für das Release R25-11. Er fasst die spezifizierten Eigenschaften neutral zusammen und kennzeichnet Annahmen zu nicht näher ausgeführten Spezifikationsaspekten explizit als Interpretation.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -278,7 +301,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>bdb6fdc52cb7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>47bc753ad8b5…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

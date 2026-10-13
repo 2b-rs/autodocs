@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_00991" class="dossier-modal dossier-workbench" data-dossier-sha="7657fb06ca8d83f5" aria-labelledby="dossier-modal-SWS_SecOC_00991-title">
+<dialog id="dossier-modal-SWS_SecOC_00991" class="dossier-modal dossier-workbench" data-dossier-sha="25f041c3112d29cc" aria-labelledby="dossier-modal-SWS_SecOC_00991-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_00991-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_00991)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,557 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,011 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_OverrideStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,32 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="8c2c7f91487d75787636a222505169453341967c7bbcaa8d648ef5a7360a4fdc" data-trace-output="7657fb06ca8d83f5904328926a6e605b6c9a4c7049f8fc38b3cbd89d254457ec" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a5d2888a2f814f7190dab690bfc49c926abccf2c7d5f9ff94d9670d373b52fe5" data-trace-output="25f041c3112d29cc1834a13c1fc662ecbfd14af67e6bbb95d2f34e88d712d3d5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert Modi zur Übersteuerung, zum Überspringen oder zum Abbruch der Authenticator-Verifikation empfangener I-PDUs." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage of &lt;code&gt;SecOC_OverrideStatusType&lt;/code&gt;&lt;/h4&gt;
-  &lt;p&gt;
-    The enumeration type &lt;code&gt;SecOC_OverrideStatusType&lt;/code&gt; defines the different operating modes for overriding the verification status in the module SecOC according to &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;. The type is provided via the header file &lt;code&gt;Rte_SecOC_Type.h&lt;/code&gt; and controls the behavior during processing and forwarding of I-PDUs to the upper layer.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The enumeration values are structured based on their semantics and validity duration (until revoked or until reaching a counter &lt;em&gt;Number Of Messages To Override&lt;/em&gt;):
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Enumerationstyp &lt;code&gt;SecOC_OverrideStatusType&lt;/code&gt; definiert die verschiedenen Modi zur Übersteuerung des Verifikationsstatus von I-PDUs im Modul SecOC und wird über den Header &lt;code&gt;Rte_SecOC_Type.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Werte des Aufzählungstyps steuern, ob und wie die Verifikation des Authenticators erfolgt und wie mit der eingehenden I-PDU verfahren wird &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Drop:&lt;/strong&gt; In the case of &lt;code&gt;SECOC_OVERRIDE_DROP_UNTIL_NOTICE&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;) and &lt;code&gt;SECOC_OVERRIDE_DROP_UNTIL_LIMIT&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;), no authenticator verification is performed (no CSM call). The affected I-PDU is dropped and the verification result is set to &lt;code&gt;SECOC_NO_VERIFICATION&lt;/code&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Cancel:&lt;/strong&gt; An active override of the verification status is canceled via &lt;code&gt;SECOC_OVERRIDE_CANCEL&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Verify and Forward (Pass):&lt;/strong&gt; For &lt;code&gt;SECOC_OVERRIDE_PASS_UNTIL_NOTICE&lt;/code&gt; (&lt;code&gt;0x40&lt;/code&gt;) and &lt;code&gt;SECOC_OVERRIDE_PASS_UNTIL_LIMIT&lt;/code&gt; (&lt;code&gt;0x42&lt;/code&gt;), the verification takes place and the I-PDU is transmitted to the upper layer regardless of the outcome. In case of error, the result is set to &lt;code&gt;SECOC_VERIFICATIONFAILURE_OVERWRITTEN&lt;/code&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Skip and Forward (Skip):&lt;/strong&gt; For &lt;code&gt;SECOC_OVERRIDE_SKIP_UNTIL_LIMIT&lt;/code&gt; (&lt;code&gt;0x41&lt;/code&gt;) and &lt;code&gt;SECOC_OVERRIDE_SKIP_UNTIL_NOTICE&lt;/code&gt; (&lt;code&gt;0x43&lt;/code&gt;), verification is omitted, the I-PDU is forwarded, and the result is &lt;code&gt;SECOC_NO_VERIFICATION&lt;/code&gt;. If a PDU collection (&lt;code&gt;SecOCRxSecuredPduCollection&lt;/code&gt;) is configured, SecOC processes the &lt;code&gt;SecOCRxAuthenticPdu&lt;/code&gt; directly without waiting for the &lt;code&gt;SecOCRxCryptographicPdu&lt;/code&gt;.
-    &lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SECOC_OVERRIDE_DROP_UNTIL_NOTICE&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Die Verifikation entfällt ohne CSM-Aufruf, die I-PDU wird verworfen und das Verifikationsergebnis auf &lt;code&gt;SECOC_NO_VERIFICATION&lt;/code&gt; gesetzt &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SECOC_OVERRIDE_DROP_UNTIL_LIMIT&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): Wie zuvor wird die Verifikation ausgesetzt und die I-PDU verworfen, jedoch begrenzt, bis die konfigurierte Anzahl zu übersteuernder Nachrichten erreicht ist &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SECOC_OVERRIDE_CANCEL&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;): Bricht die aktive Übersteuerung des Verifikationsstatus ab und stellt das reguläre Verhalten wieder her &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SECOC_OVERRIDE_PASS_UNTIL_NOTICE&lt;/code&gt; (&lt;code&gt;0x40&lt;/code&gt;) und &lt;code&gt;SECOC_OVERRIDE_PASS_UNTIL_LIMIT&lt;/code&gt; (&lt;code&gt;0x42&lt;/code&gt;): Die Authenticator-Verifikation wird ausgeführt und die I-PDU unabhängig vom Ergebnis an die obere Schicht weitergeleitet; schlägt die Verifikation fehl, wird das Ergebnis auf &lt;code&gt;SECOC_VERIFICATIONFAILURE_OVERWRITTEN&lt;/code&gt; gesetzt (entweder bis auf Weiteres oder zählerbegrenzt) &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SECOC_OVERRIDE_SKIP_UNTIL_LIMIT&lt;/code&gt; (&lt;code&gt;0x41&lt;/code&gt;) und &lt;code&gt;SECOC_OVERRIDE_SKIP_UNTIL_NOTICE&lt;/code&gt; (&lt;code&gt;0x43&lt;/code&gt;): Die Verifikation entfällt, das Ergebnis lautet &lt;code&gt;SECOC_NO_VERIFICATION&lt;/code&gt;, und die I-PDU wird an die obere Schicht übergeben. Ist &lt;code&gt;SecOCRxSecuredPduCollection&lt;/code&gt; konfiguriert, verarbeitet SecOC die &lt;code&gt;SecOCRxAuthenticPdu&lt;/code&gt; direkt, ohne auf die &lt;code&gt;SecOCRxCryptographicPdu&lt;/code&gt; zu warten &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p class="ai-note"&gt;
-    Note: This usage note is based on the definitions of specification &lt;a class="spec-record-ref" data-req="SWS_SecOC_00991" href="../../spec/record.html?id=SWS_SecOC_00991"&gt;[SWS_SecOC_00991]&lt;/a&gt; in AUTOSAR Release R20-11.
-  &lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,9 +246,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8c2c7f91487d…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a5d2888a2f81…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -277,8 +283,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -315,7 +321,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 3 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -378,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00991","k":"type","d":"AUTOSAR","t":"","n":"SecOC_OverrideStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/458b4b5752e1be51.json?v=d4517ead" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00991","k":"type","d":"AUTOSAR","t":"","n":"SecOC_OverrideStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/458b4b5752e1be51.json?v=9fcb1044" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

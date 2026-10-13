@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EcuM_04129" class="dossier-modal dossier-workbench" data-dossier-sha="21e4dd11e2672263" aria-labelledby="dossier-modal-SWS_EcuM_04129-title">
+<dialog id="dossier-modal-SWS_EcuM_04129" class="dossier-modal dossier-workbench" data-dossier-sha="96353c1a2a546aaa" aria-labelledby="dossier-modal-SWS_EcuM_04129-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EcuM_04129-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EcuM_04129)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,516 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,971 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EcuM_ReleasePOST_RUN'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,25 +198,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="54268a2b2cf97fde5a67c1d3d280157c0d850da4ac842c27f637b05131bee3f7" data-trace-output="21e4dd11e267226356f43a5f379557e9f2fb291b8ccb5d716942c083add27d60" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="5beb0fd73cda723c4a9ead9c27116cb4a0699e83ec5431a19b387dbabd9f86e1" data-trace-output="96353c1a2a546aaa8464a59271b43c961a6d7794717cdef9dd905412a13d9c49" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Gibt eine zuvor angeforderte Nachlaufphase des Steuergeräts für einen Benutzer frei." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;EcuM_ReleasePOST_RUN&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;) serves to release a POST-RUN phase of the ECU previously requested via &lt;code&gt;EcuM_RequestPOST_RUN&lt;/code&gt;. The interface is declared in the header file &lt;code&gt;EcuM.h&lt;/code&gt; and is intended in particular for the implementation of AUTOSAR ports.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;EcuM_ReleasePOST_RUN&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;) dient der Freigabe einer zuvor mittels &lt;code&gt;EcuM_RequestPOST_RUN&lt;/code&gt; gesetzten POST-RUN-Anforderung. Über den Eingabeparameter &lt;code&gt;user&lt;/code&gt; vom Typ &lt;code&gt;EcuM_UserType&lt;/code&gt; wird die Kennung der Entität übergeben, welche den POST-RUN-Status wieder freigibt. Die Schnittstelle ist über die Header-Datei &lt;code&gt;EcuM.h&lt;/code&gt; verfügbar und primär für die Realisierung von AUTOSAR-Ports ausgelegt (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Die Funktion liefert den Status &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;):&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Call context &amp;amp; Synchronicity:&lt;/strong&gt; The call is synchronous and is specified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Parameters:&lt;/strong&gt; &lt;code&gt;user&lt;/code&gt; (type &lt;code&gt;EcuM_UserType&lt;/code&gt;) is passed, which represents the unique user ID of the entity releasing the POST-RUN state.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Return value:&lt;/strong&gt; The service provides a return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt;. The value &lt;code&gt;E_OK&lt;/code&gt; indicates that the release request was accepted by the ECU State Manager; &lt;code&gt;E_NOT_OK&lt;/code&gt; indicates that the request was rejected.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Freigabeanforderung wurde vom ECU State Manager erfolgreich akzeptiert.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Freigabeanforderung wurde abgewiesen. Interpretation: Eine Abweisung mit &lt;code&gt;E_NOT_OK&lt;/code&gt; dürfte vorliegen, wenn für den angegebenen Benutzer keine aktive Anforderung registriert war oder ein ungültiger Benutzerbezeichner übergeben wurde.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-&lt;p&gt;In case of an error, &lt;code&gt;E_NOT_OK&lt;/code&gt; is returned. Specific DET or DEM notifications are not specified in element &lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;. A rejection with &lt;code&gt;E_NOT_OK&lt;/code&gt; is likely to occur if no active POST-RUN request is registered for the passed user ID or if the parameter is invalid.&lt;/p&gt;
-&lt;p&gt;Due to its property as a reentrant function, &lt;code&gt;EcuM_ReleasePOST_RUN&lt;/code&gt; can be called concurrently. As a functional sequence condition, the call requires that the same entity previously executed &lt;code&gt;EcuM_RequestPOST_RUN&lt;/code&gt; successfully.&lt;/p&gt;
-
-&lt;h4&gt;Interaction&lt;/h4&gt;
-&lt;p&gt;The service forms the counterpart to the POST-RUN request and, during port realization, interacts with the internal behavior of the ECU State Manager, whose runnable entities and RTE configuration are described in &lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification requirements of AUTOSAR R20-11.&lt;/p&gt;
-&lt;!-- annahmen: 1) Eine Ablehnung mit E_NOT_OK dürfte vermutlich bei ungültigem Benutzer oder nicht aktiver Anforderung auftreten – Begründung: In SWS_EcuM_04129 werden die Rückgabewerte E_OK und E_NOT_OK benannt, konkrete Ablehnungsursachen jedoch nicht explizit aufgeführt. --&gt;
+&lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Der Dienst ist als reentrant spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;), sodass zeitgleiche Aufrufe durch mehrere Entitäten zulässig sind. Die Funktion ist Bestandteil des internen Verhaltens des Moduls EcuM (&lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;). Der Aufruf setzt logisch voraus, dass die Entität zuvor die Phase POST RUN angefordert hat (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04129" href="../../spec/record.html?id=SWS_EcuM_04129"&gt;[SWS_EcuM_04129]&lt;/a&gt;). Interpretation: Typischerweise dürfte der Aufruf aus Software-Komponenten über RTE-Ports erfolgen, sobald deren Nachlaufaktivitäten vor dem Abschalten abgeschlossen sind.&lt;/p&gt;
+&lt;!-- annahmen: 1) Ablehnung mit E_NOT_OK dürfte bei ungültigem Benutzer oder fehlender Voranforderung auftreten – Begründung: Spezifikation SWS_EcuM_04129 nennt keine spezifischen DET-Fehlercodes; 2) Aufruf dürfte typischerweise aus Software-Komponenten nach Abschluss der Nachlaufaktivitäten erfolgen – Begründung: Der Dienst dient laut SWS_EcuM_04129 der Implementierung von AUTOSAR-Ports. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis des AUTOSAR-Spezifikationsstands R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,9 +255,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>54268a2b2cf9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>5beb0fd73cda…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -275,8 +292,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -313,7 +330,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 5 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -376,4 +393,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_04129","k":"function","d":"AUTOSAR","t":"","n":"EcuM_ReleasePOST_RUN"}],"inbound":[{"i":"SWS_EcuM_03018","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_03018].","n":"SWS_EcuM_03018"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1cdc23aef64e1c31.json?v=a0b17358" data-total="7" data-new="7" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_04129","k":"function","d":"AUTOSAR","t":"","n":"EcuM_ReleasePOST_RUN"}],"inbound":[{"i":"SWS_EcuM_03018","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_03018].","n":"SWS_EcuM_03018"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1cdc23aef64e1c31.json?v=4462928a" data-total="5" data-new="5" data-figures="1" data-used="0"></script></dialog>

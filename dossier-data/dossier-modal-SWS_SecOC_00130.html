@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_00130" class="dossier-modal dossier-workbench" data-dossier-sha="4feb50db3226ee6c" aria-labelledby="dossier-modal-SWS_SecOC_00130-title">
+<dialog id="dossier-modal-SWS_SecOC_00130" class="dossier-modal dossier-workbench" data-dossier-sha="aa284a04bf5ed68a" aria-labelledby="dossier-modal-SWS_SecOC_00130-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_00130-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_00130)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,576 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,031 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_StartReception'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,29 +193,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="49ad057787fb46d690acc442a4721f9b5b68d72b79bcb78ceeee5698cf12d673" data-trace-output="4feb50db3226ee6c8d656181977ca323044451ed3c1ad30024756a58a31721bd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="e711d8ef8bcc1f3aa0d8407fddd775396b317cec36134f09e98a5a2b58621d46" data-trace-output="aa284a04bf5ed68ae57ffc5040e9a2682a0dcb8846454bcbb49f85a538683927" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Initiiert den N-SDU-Empfang und meldet die verfügbare Puffergröße an das Transportprotokoll." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The synchronous and reentrant function &lt;code&gt;SecOC_StartReception&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;) is called at the start of receiving an N-SDU. The N-SDU may be present as a single frame (SF) or fragmented across multiple N-PDUs via a transport protocol (First Frame followed by Consecutive Frames) (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;SecOC_StartReception&lt;/code&gt; wird zu Beginn des Empfangs einer N-SDU aufgerufen, um die Verbindung zu prüfen und den nötigen Empfangspuffer bereitzustellen &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;. Die N-SDU kann dabei als Einzelframe (Single Frame, SF) oder fragmentiert über mehrere N-PDUs (First Frame, FF, gefolgt von Consecutive Frames, CF) empfangen werden &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;. Die Deklaration ist über den Header &lt;code&gt;SecOC.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Parameters and Buffer Query&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;id&lt;/code&gt;: Identifier of the received I-PDU (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;info&lt;/code&gt;: Pointer to a &lt;code&gt;PduInfoType&lt;/code&gt; structure containing payload data and length of the first frame or single frame as well as associated metadata. If neither frame data nor metadata is available, this parameter must be set to &lt;code&gt;NULL_PTR&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;TpSduLength&lt;/code&gt;: Total length of the N-SDU to be received. If the function is called with the value &lt;code&gt;0&lt;/code&gt;, the service provides the currently maximum available buffer size (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;bufferSizePtr&lt;/code&gt;: Output parameter for the buffer size available in the receiving module; this value is used in the transport protocol module to calculate the block size (BS) (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Parameter und Pufferabfrage&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;id&lt;/code&gt;: Identifikation der empfangenen I-PDU &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;info&lt;/code&gt;: Zeiger auf eine &lt;code&gt;PduInfoType&lt;/code&gt;-Struktur mit den Nutzdaten des ersten bzw. einzelnen Frames sowie Metadaten; stehen weder Daten noch Metadaten zur Verfügung, wird &lt;code&gt;NULL_PTR&lt;/code&gt; übergeben &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TpSduLength&lt;/code&gt;: Gesamtlänge der zu empfangenden N-SDU. Wird der Parameter mit dem Wert 0 übergeben, liefert der Dienst die aktuell maximal verfügbare Puffergröße zurück &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;bufferSizePtr&lt;/code&gt;: Ausgabeparameter für den verfügbaren Empfangspuffer, der vom Transportprotokollmodul zur Berechnung der Block Size (BS) herangezogen wird &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Return Values and Error Behavior&lt;/h4&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;BufReq_ReturnType&lt;/code&gt; determines the continuation of reception (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_OK&lt;/code&gt;: The connection is accepted and reception is continued. &lt;code&gt;bufferSizePtr&lt;/code&gt; indicates the available buffer size; if no buffer of the requested size is available, the size &lt;code&gt;0&lt;/code&gt; is returned via &lt;code&gt;bufferSizePtr&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt;: The connection is rejected and reception is aborted. The content of &lt;code&gt;bufferSizePtr&lt;/code&gt; remains unchanged (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_E_OVFL&lt;/code&gt;: No buffer of the required total length can be provided; reception is aborted and &lt;code&gt;bufferSizePtr&lt;/code&gt; remains unchanged (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p&gt;The interface is provided via the header file &lt;code&gt;SecOC.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note is based on the specification data from SWS_SecOC_00130.&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;BUFREQ_OK&lt;/code&gt;: Die Verbindung wurde akzeptiert und der Empfang wird fortgesetzt; &lt;code&gt;bufferSizePtr&lt;/code&gt; weist die verfügbare Puffergröße aus (ist kein Puffer der geforderten Größe verfügbar, wird 0 gemeldet) &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt;: Die Verbindung wurde abgewiesen und der Empfang wird abgebrochen; &lt;code&gt;bufferSizePtr&lt;/code&gt; bleibt unverändert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;BUFREQ_E_OVFL&lt;/code&gt;: Es kann kein Puffer in der geforderten Länge bereitgestellt werden; der Empfang bricht ab und &lt;code&gt;bufferSizePtr&lt;/code&gt; bleibt unverändert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00130" href="../../spec/record.html?id=SWS_SecOC_00130"&gt;[SWS_SecOC_00130]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis von AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -237,9 +254,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>49ad057787fb…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e711d8ef8bcc…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -274,8 +291,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -312,7 +329,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 4 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -375,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00130","k":"function","d":"AUTOSAR","t":"","n":"SecOC_StartReception"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/324a30e6b363dbdc.json?v=66210b2f" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00130","k":"function","d":"AUTOSAR","t":"","n":"SecOC_StartReception"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/324a30e6b363dbdc.json?v=ce227f02" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

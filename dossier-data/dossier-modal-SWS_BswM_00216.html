@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_BswM_00216" class="dossier-modal dossier-workbench" data-dossier-sha="b2a8d59c024dc834" aria-labelledby="dossier-modal-SWS_BswM_00216-title">
+<dialog id="dossier-modal-SWS_BswM_00216" class="dossier-modal dossier-workbench" data-dossier-sha="b80f34278c54e6c6" aria-labelledby="dossier-modal-SWS_BswM_00216-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_BswM_00216-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_BswM_00216)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,114 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,569 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'BswM_UserType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,18 +193,18 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="0ec49799bfc7d550fd7ecbdebab1f66a26fe2984c20a794e1f456ee3d6743df6" data-trace-output="b2a8d59c024dc8347433be9a315a4ef344521b3c08fa66db6dcc6fdaab30d667" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4d6cdb259f49a16db710ebd1becd72a929f1eb47f917211942fadb49208f7036" data-trace-output="b80f34278c54e6c69933d66e3eb0942600eebd413f14ec34706d9f4d4e7eb71d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient der eindeutigen Identifikation von Benutzern, die Modusanforderungen an den BswM stellen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt;, the data type &lt;code&gt;BswM_UserType&lt;/code&gt; serves to uniquely identify a BswM user (BswM User) that issues mode requests (Mode Requests) to the module &lt;code&gt;BswM&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Usage and Value Range&lt;/h4&gt;
-  &lt;p&gt;According to specification &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt;, the type is defined as standard integer type &lt;code&gt;uint16&lt;/code&gt; and covers the value range from 0 to 65535. Software entities that interact with the BswM as callers or mode users pass values of this type to interfaces of the module to identify the origin of a mode request. The declaration of &lt;code&gt;BswM_UserType&lt;/code&gt; is provided via the header &lt;code&gt;BswM.h&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-  &lt;p&gt;The specification in &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt; defines no dedicated error codes, DET or DEM notifications, or specific reentrancy or synchronization requirements for &lt;code&gt;BswM_UserType&lt;/code&gt;. Because this is a pure type definition, the conditions regarding call context and concurrency apply to the respective BswM functions that receive this type as a parameter. The concrete numerical values in the system are likely to be configured user IDs (interpretation: assignment of configured identifiers).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was created automatically based on the specification status for BswM in AUTOSAR Classic R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Die Zahlenwerte des Typs dürften im Integrationskontext vorkonfigurierten Kennungen der anfragenden Benutzer entsprechen – Begründung: Der Spezifikationsauszug in SWS_BswM_00216 nennt lediglich den Wertebereich von uint16 ohne feste Enumerationskonstanten. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Typdefinition&lt;/h4&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;BswM_UserType&lt;/code&gt; wird über die Header-Datei &lt;code&gt;BswM.h&lt;/code&gt; bereitgestellt und dient der eindeutigen Identifikation eines BswM-Benutzers, welcher Modusanforderungen an den Basic Software Mode Manager richtet &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt;. Der Typ ist vom Basis-Ganzzahltyp &lt;code&gt;uint16&lt;/code&gt; abgeleitet und umfasst einen Wertebereich von 0 bis 65535 &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Integration&lt;/h4&gt;
+&lt;p&gt;In der Software-Architektur dürfte dieser Typ primär als Übergabeparameter in Modusanforderungs-Schnittstellen fungieren, damit der BswM die eingehende Anforderung der jeweiligen Quelle zuordnen kann. Durch die 16-Bit-Breite bietet die Typdefinition Raum für bis zu 65536 verschiedene Benutzer-Identifikatoren im System &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt;. Die konkreten Instanzwerte der Benutzer werden dabei vermutlich im Rahmen der BSW-Generierung konfigurationsspezifisch erzeugt.&lt;/p&gt;
+&lt;h4&gt;Einschränkungen und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Da es sich um eine elementare Typdefinition handelt, sind im Spezifikationsumfang keine spezifischen Fehlercodes, DET-Meldungen oder Nebenläufigkeitsmechanismen für diesen Typ hinterlegt. Anfordernde Software-Module müssen sicherstellen, dass bei Aufrufen ausschließlich Werte innerhalb des zulässigen Bereichs von 0 bis 65535 übergeben werden &lt;a class="spec-record-ref" data-req="SWS_BswM_00216" href="../../spec/record.html?id=SWS_BswM_00216"&gt;[SWS_BswM_00216]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Typ dürfte primär als Parameter in Modusanforderungs-APIs fungieren – Begründung: Der Payload nennt die Identifikation von Modus-Anforderern als Zweck, enthält jedoch keine konkreten Funktionssignaturen. 2) Die konkreten Benutzerwerte werden vermutlich im Rahmen der BSW-Generierung festgelegt – Begründung: Der Wertebereich ist als 0 bis 65535 ohne explizite symbolische Konstanten angegeben. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI generiert und basiert ausschließlich auf dem Spezifikationselement SWS_BswM_00216 aus AUTOSAR R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -226,7 +244,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>0ec49799bfc7…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4d6cdb259f49…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -364,4 +382,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00216","k":"type","d":"AUTOSAR","t":"","n":"BswM_UserType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/db0eac6849d82bca.json?v=15b2c924" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00216","k":"type","d":"AUTOSAR","t":"","n":"BswM_UserType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/db0eac6849d82bca.json?v=03b40383" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

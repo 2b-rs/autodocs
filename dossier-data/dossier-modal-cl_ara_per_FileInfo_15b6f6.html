@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_per_FileInfo_15b6f6" class="dossier-modal dossier-workbench" data-dossier-sha="7af32fee792e1313" aria-labelledby="dossier-modal-cl_ara_per_FileInfo_15b6f6-title">
+<dialog id="dossier-modal-cl_ara_per_FileInfo_15b6f6" class="dossier-modal dossier-workbench" data-dossier-sha="b12046b22090846a" aria-labelledby="dossier-modal-cl_ara_per_FileInfo_15b6f6-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_per_FileInfo_15b6f6-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_per_FileInfo_15b6f6)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,051 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,574 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::per::FileInfo' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_per_FileInfo_15b6f6",
@@ -224,79 +243,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="d885f8f1d000da1e979a6093374632e17f20afe77249d950d2284673bec44587" data-trace-output="7af32fee792e1313754d0932a0a29a6688276e7e2a6f0294cb1710d0b2f6125b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="c3acbafda95f8d744ccbdba26abf11feb674de49b77e0801683ba1aca1c31f38" data-trace-output="b12046b22090846a0b2b84eb6dbee0db5c0cc4203aa6d6292a0a27d8b210f9e2" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bündelt Zeitstempel und Zustandsinformationen über Ursprung und Änderungen einer Datei im adaptiven Persistenzmodul." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    The structure &lt;code&gt;ara::per::FileInfo&lt;/code&gt; is part of the persistence module (&lt;code&gt;per&lt;/code&gt;) of the AUTOSAR Adaptive Platform and is defined via the header file &lt;code&gt;ara/per/file_storage.h&lt;/code&gt;. It functions as a passive data transfer object (value object) whose purpose is to provide additional file information and status attributes in a structured manner. Instances of this structure are returned by the function &lt;code&gt;GetFileInfo&lt;/code&gt; to transmit metadata of a managed file to the calling application software.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Within the module architecture, &lt;code&gt;ara::per::FileInfo&lt;/code&gt; assumes the role of a pure information carrier between the persistence layer and the application logic. It summarizes temporal characteristics and status information for a file:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Creation time:&lt;/strong&gt; The data element &lt;code&gt;creationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;) documents the time of file creation as a 64-bit integer (&lt;code&gt;std::uint64_t&lt;/code&gt;) in nanoseconds since midnight of 01/01/1970 UTC.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Modification time:&lt;/strong&gt; The data element &lt;code&gt;modificationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;) records the time of the last content change of the file in the identical time format.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Access time:&lt;/strong&gt; The data element &lt;code&gt;accessTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;) stores the time of the last read or write access to the file in nanoseconds since the beginning of the Unix epoch.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Creation status:&lt;/strong&gt; The attribute &lt;code&gt;fileCreationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;) of type &lt;code&gt;FileCreationState&lt;/code&gt; provides information about how and by whom the file was originally created.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Modification status:&lt;/strong&gt; The attribute &lt;code&gt;fileModificationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;) of type &lt;code&gt;FileModificationState&lt;/code&gt; provides information about how and by whom the file was last modified.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    &lt;code&gt;ara::per::FileInfo&lt;/code&gt; encapsulates purely descriptive attributes of a file. The structure does not manage any open file descriptors, does not buffer file contents, and does not provide its own input or output operations.
-  &lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Bündelt Zeitstempel und Zustandsinformationen über Ursprung und Änderungen einer Datei im adaptiven Persistenzmodul.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::per::FileInfo&lt;/code&gt; dient als Metadaten-Container für persistente Dateien und wird von &lt;code&gt;GetFileInfo&lt;/code&gt; zurückgegeben. Sie stellt UTC-basierte Zeitstempel in Nanosekunden für Erstellung &lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;, Modifikation &lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt; und Zugriff &lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt; sowie Statusangaben zu Entstehung &lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt; und letzter Bearbeitung &lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt; bereit. Als passiver Datentyp unterliegt sie der Wertsemantik der Anwendung und bietet keine eigene Thread-Synchronisation.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::per::FileInfo&lt;/code&gt; dient im Modul &lt;code&gt;per&lt;/code&gt; (Persistency) der AUTOSAR Adaptive Platform als strukturierter Datenträger für administrative Datei-Metadaten. Bei Dateioperationen, die über die Schnittstellen der Header-Datei &lt;code&gt;ara/per/file_storage.h&lt;/code&gt; abgewickelt werden, trennt das Persistenzmodul die Verwaltungsinformationen von den eigentlichen Dateiinhalten. Die Struktur wird als Ergebnis der Operation &lt;code&gt;GetFileInfo&lt;/code&gt; bereitgestellt und übernimmt die Funktion eines Datenübertragungsobjekts (Data Transfer Object) zwischen der Persistenzschicht und der aufrufenden Anwendung.&lt;/p&gt;
+&lt;p&gt;Inhaltlich fasst &lt;code&gt;FileInfo&lt;/code&gt; zwei Kategorien von Attributen zusammen: präzise zeitliche Protokolldaten und qualitative Zustandsinformationen über die Entstehung und Pflege einer Datei. Zu den Zeitangaben zählen der Erstellungszeitpunkt &lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;, der Modifikationszeitpunkt &lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt; sowie der Zeitpunkt des letzten Zugriffs &lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;. Ergänzt werden diese Metadaten durch deskriptive Zustandsmerkmale, die beschreiben, wie und durch wen die Datei angelegt &lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt; sowie zuletzt verändert wurde &lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    As a C++ structure (&lt;code&gt;struct&lt;/code&gt;), &lt;code&gt;ara::per::FileInfo&lt;/code&gt; follows the rules of regular value semantics. The lifecycle of an instance typically does not begin with manual construction in the application, but with the return from the persistence subsystem upon calling &lt;code&gt;GetFileInfo&lt;/code&gt;. Interpretation: The function &lt;code&gt;GetFileInfo&lt;/code&gt; presumably represents a query method of a file storage abstraction in &lt;code&gt;ara/per/file_storage.h&lt;/code&gt; that determines the metadata of the file system and transfers it into an initialized instance of &lt;code&gt;FileInfo&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Upon return, ownership of the structure transfers completely to the caller. Since &lt;code&gt;FileInfo&lt;/code&gt; holds neither pointers to dynamic memory areas nor connection-specific system resources, no shared ownership exists. The instance can be copied or moved without restriction within the application code.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Regarding internal behavior, &lt;code&gt;FileInfo&lt;/code&gt; has no state machine. The contained values represent a static snapshot of the file attributes at the query time. Subsequent write or read accesses to the actual file do not automatically update existing &lt;code&gt;FileInfo&lt;/code&gt; objects; for up-to-date information, &lt;code&gt;GetFileInfo&lt;/code&gt; must be called again.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The destruction of an instance occurs deterministically when leaving the scope on the stack or upon destruction of the enclosing object. Special closing routines or release calls are not required. For concurrent operation: Since it is a passive data object, multiple threads can access the same instance simultaneously for reading. Modifications to an instance must be protected by application-specific synchronization mechanisms when used across threads.
-  &lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als passive C++-Struktur (&lt;code&gt;struct&lt;/code&gt;) besitzt &lt;code&gt;FileInfo&lt;/code&gt; keine eigenständige Zustandslogik und keinen aktiven Laufzeit-Lebenszyklus. Die Instanziierung erfolgt typischerweise innerhalb der Persistenz-Implementierung während der Ausführung von &lt;code&gt;GetFileInfo&lt;/code&gt;. Dabei werden die Metadaten aus dem zugrunde liegenden Dateisystem ausgelesen und in die Datenfelder der Struktur übertragen. Die Auslieferung an die Anwendung erfolgt vermutlich als Wertkopie oder verpackt in einem Ergebnis-Typ, womit die Eigentümerschaft und die Verantwortung für den Lebenszyklus vollständig auf die aufrufende Komponente übergehen.&lt;/p&gt;
+&lt;p&gt;Die Lebensdauer einer &lt;code&gt;FileInfo&lt;/code&gt;-Instanz ist an den Gültigkeitsbereich gebunden, in dem die Anwendung die Variable deklariert; bei Verlassen des Gültigkeitsbereichs wird die Struktur automatisch freigegeben. Da &lt;code&gt;FileInfo&lt;/code&gt; reine Datenfelder kapselt und keine internen Synchronisationsmechanismen bereitstellt, ist die Struktur nicht thread-sicher: Bei einem nebenläufigen Zugriff mehrerer Threads auf dieselbe Instanz dürfte anwendungsseitig eine explizite Synchronisation erforderlich sein, sofern mindestens ein Zugriff schreibend erfolgt.&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    The typical sequence when using &lt;code&gt;ara::per::FileInfo&lt;/code&gt; is divided into querying the file information, evaluating the administrative creation and modification states, and analyzing the timestamps.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Via the interfaces of the persistence module (header &lt;code&gt;ara/per/file_storage.h&lt;/code&gt;), the application initiates the call to &lt;code&gt;GetFileInfo&lt;/code&gt; for a desired file path or file identifier. As a result, it receives the populated &lt;code&gt;FileInfo&lt;/code&gt; structure.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Subsequently, the application logic checks the status attributes. Via &lt;code&gt;fileCreationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;) and &lt;code&gt;fileModificationState&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;), the context of the file is determined. Interpretation: &lt;code&gt;FileCreationState&lt;/code&gt; and &lt;code&gt;FileModificationState&lt;/code&gt; are presumably enumerations indicating whether a file was created or overwritten regularly by the application, as part of a factory initialization, or through an update.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Then, the temporal attributes are evaluated. Based on the values of &lt;code&gt;creationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;), &lt;code&gt;modificationTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;), and &lt;code&gt;accessTime&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;), key checks can be performed:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Modification check:&lt;/strong&gt; A comparison between &lt;code&gt;creationTime&lt;/code&gt; and &lt;code&gt;modificationTime&lt;/code&gt; indicates whether the file has been modified since its creation.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Cache invalidation:&lt;/strong&gt; Based on &lt;code&gt;modificationTime&lt;/code&gt;, the application can assess whether a data state held in main memory still corresponds to the persistent file or must be reloaded.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Cleanup strategies:&lt;/strong&gt; By comparing &lt;code&gt;accessTime&lt;/code&gt; with a current time reference, obsolete files can be identified for cleanup or archiving runs.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Interpretation: Although the specification specifies points in time in nanoseconds since 01/01/1970 UTC, the actually achievable temporal resolution and accuracy in practice presumably depends on the characteristics of the underlying operating system and file system.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) GetFileInfo als Zugriffsmethode einer Speicherabstraktion – Begründung: Der Payload nennt GetFileInfo als Quelle von FileInfo im Kontext von ara/per/file_storage.h, spezifiziert die Schnittstellensignatur jedoch nicht weiter. 2) FileCreationState und FileModificationState als Enumerationstypen – Begründung: Der Payload deklariert die Typnamen FileCreationState und FileModificationState, ohne deren Typdefinition oder Wertebereich offenzulegen. 3) Reale Zeitstempelgenauigkeit plattformabhängig – Begründung: SWS_PER_00441 bis SWS_PER_00443 definieren ganzzahlige Nanosekunden, die tatsächliche Granularität wird jedoch durch das darunterliegende Dateisystem bestimmt. --&gt;
-  &lt;p class="ai-note"&gt;This class guide was generated by an AI system based on the AUTOSAR Adaptive Platform R25-11 specification for the module per.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Ablauf zur Nutzung von &lt;code&gt;FileInfo&lt;/code&gt; umfasst die Abfrage der Dateiinformationen über die Dateispeicher-Schnittstelle und die anschließende Auswertung der Attribute durch die Anwendung. Die Anwendung initiiert die Abfrage über den Aufruf von &lt;code&gt;GetFileInfo&lt;/code&gt; unter Angabe der Zieldatei. Nach erfolgreicher Rückgabe stehen sämtliche Metadaten direkt über die öffentlichen Member-Variablen zur Verfügung.&lt;/p&gt;
+&lt;div class="diagram" id="diag-fileinfo-abruf"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 275" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Abruf und Auswertung von Datei-Metadaten&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="261" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="261" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="261" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileStorage_29266b.html" href="../classes/cl_ara_per_FileStorage_29266b.html"&gt;FileStorage&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileInfo_15b6f6.html" href="../classes/cl_ara_per_FileInfo_15b6f6.html"&gt;FileInfo&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00438" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00438"&gt;GetFileInfo&lt;/a&gt;(fileName)&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;Instanz erzeugen und Felder befüllen&lt;/text&gt;&lt;line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;Rückgabe &lt;a class="diag-ref" data-ref="classes/cl_ara_per_FileInfo_15b6f6.html" href="../classes/cl_ara_per_FileInfo_15b6f6.html"&gt;FileInfo&lt;/a&gt;&lt;/text&gt;&lt;line x1="345" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;path d="M 135 214 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="189" y="229" text-anchor="start" font-size="11" fill="#28251d"&gt;Zeitstempel und Zustandsfelder prüfen&lt;/text&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typischer Ablauf zum Abruf und zur Auswertung von Datei-Metadaten über GetFileInfo. Quellen: &lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Bei der Auswertung liest die Anwendung die Zeitstempel aus:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;creationTime&lt;/code&gt; repräsentiert den Zeitpunkt der Dateierstellung in Nanosekunden seit dem 01.01.1970 UTC (Unix-Epoche) &lt;a class="spec-record-ref" data-req="SWS_PER_00441" href="../spec/record.html?id=SWS_PER_00441"&gt;[SWS_PER_00441]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;modificationTime&lt;/code&gt; gibt den Zeitpunkt der letzten inhaltlichen Änderung im selben Nanosekunden-Format an &lt;a class="spec-record-ref" data-req="SWS_PER_00442" href="../spec/record.html?id=SWS_PER_00442"&gt;[SWS_PER_00442]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;accessTime&lt;/code&gt; dokumentiert den Zeitpunkt des letzten Lese- oder Schreibzugriffs in Nanosekunden seit 1970-01-01 UTC &lt;a class="spec-record-ref" data-req="SWS_PER_00443" href="../spec/record.html?id=SWS_PER_00443"&gt;[SWS_PER_00443]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Zusätzlich zur zeitlichen Einordnung prüft die Anwendung die Attribute &lt;code&gt;fileCreationState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00444" href="../spec/record.html?id=SWS_PER_00444"&gt;[SWS_PER_00444]&lt;/a&gt; und &lt;code&gt;fileModificationState&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_PER_00445" href="../spec/record.html?id=SWS_PER_00445"&gt;[SWS_PER_00445]&lt;/a&gt;. Diese Aufzählungswerte geben an, unter welchen Bedingungen und durch wen die Datei angelegt oder modifiziert wurde. Dies erlaubt es der Anwendung zu verifizieren, ob eine Datei regulär im Produktivbetrieb, während eines Wiederherstellungsprozesses oder durch ein Aktualisierungsverfahren erzeugt wurde, bevor weitere Lese- oder Schreiboperationen auf den Dateiinhalt ausgeführt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Operation GetFileInfo dürfte eine Methode einer Dateispeicher-Klasse in ara/per/file_storage.h sein – Begründung: Der Header ara/per/file_storage.h und die Beschreibung 'returned by GetFileInfo' sind im Payload belegt, die Schnittstellensignatur selbst ist dort jedoch nicht als Spezifikationsanforderung enthalten. 2) Die Rückgabe von FileInfo an die Anwendung erfolgt vermutlich als Wertobjekt oder innerhalb eines Fehlerbehandlungstyps wie ara::core::Result – Begründung: Der Payload dokumentiert FileInfo als reine struct, nennt jedoch nicht den konkreten Rückgabetyp von GetFileInfo. 3) FileInfo besitzt keine internen Synchronisationsmechanismen und dürfte bei nebenläufigem Zugriff extern synchronisiert werden müssen – Begründung: Der Payload definiert elementare Datentypen ohne Concurrency-Mechanismen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden wurde durch einen KI-Assistenten anhand der AUTOSAR-Spezifikation für Release R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -338,9 +315,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d885f8f1d000…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c3acbafda95f…</code></div>
               <div><strong>Konstituierende Records:</strong> 5</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -375,8 +352,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -413,7 +390,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -476,4 +453,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PER_00443","k":"variable","d":"PER","t":"variable accessTime [SWS_PER_00443] Upstream: RS_PER_00004 std::uint64_t accessTime; Time in nanoseconds since midnight 1970-01-01 UTC at which the file was last accessed. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol accessTime class mono Typ std::uint64_t class mono","n":"accessTime"},{"i":"SWS_PER_00441","k":"variable","d":"PER","t":"variable creationTime [SWS_PER_00441] Upstream: RS_PER_00004 std::uint64_t creationTime; Time in nanoseconds since midnight 1970-01-01 UTC at which the file was created. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol creationTime class mono Typ std::uint64_t class mono","n":"creationTime"},{"i":"SWS_PER_00444","k":"variable","d":"PER","t":"variable fileCreationState [SWS_PER_00444] Upstream: RS_PER_00004 FileCreationState fileCreationState; Information on how and by whom the file was created. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol fileCreationState class mono Typ FileCreationState class mono","n":"fileCreationState"},{"i":"SWS_PER_00445","k":"variable","d":"PER","t":"variable fileModificationState [SWS_PER_00445] Upstream: RS_PER_00004 FileModificationState fileModificationState; Information on how and by whom the file was last modified. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol fileModificationState class mono Typ FileModificationState class mono","n":"fileModificationState"},{"i":"SWS_PER_00442","k":"variable","d":"PER","t":"variable modificationTime [SWS_PER_00442] Upstream: RS_PER_00004 std::uint64_t modificationTime; Time in nanoseconds since midnight 1970-01-01 UTC at which the file was last modified. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol modificationTime class mono Typ std::uint64_t class mono","n":"modificationTime"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/0aa0bfd5dce66977.json?v=08586f20" data-total="7" data-new="7" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_PER_00443","k":"variable","d":"PER","t":"variable accessTime [SWS_PER_00443] Upstream: RS_PER_00004 std::uint64_t accessTime; Time in nanoseconds since midnight 1970-01-01 UTC at which the file was last accessed. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol accessTime class mono Typ std::uint64_t class mono","n":"accessTime"},{"i":"SWS_PER_00441","k":"variable","d":"PER","t":"variable creationTime [SWS_PER_00441] Upstream: RS_PER_00004 std::uint64_t creationTime; Time in nanoseconds since midnight 1970-01-01 UTC at which the file was created. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol creationTime class mono Typ std::uint64_t class mono","n":"creationTime"},{"i":"SWS_PER_00444","k":"variable","d":"PER","t":"variable fileCreationState [SWS_PER_00444] Upstream: RS_PER_00004 FileCreationState fileCreationState; Information on how and by whom the file was created. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol fileCreationState class mono Typ FileCreationState class mono","n":"fileCreationState"},{"i":"SWS_PER_00445","k":"variable","d":"PER","t":"variable fileModificationState [SWS_PER_00445] Upstream: RS_PER_00004 FileModificationState fileModificationState; Information on how and by whom the file was last modified. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol fileModificationState class mono Typ FileModificationState class mono","n":"fileModificationState"},{"i":"SWS_PER_00442","k":"variable","d":"PER","t":"variable modificationTime [SWS_PER_00442] Upstream: RS_PER_00004 std::uint64_t modificationTime; Time in nanoseconds since midnight 1970-01-01 UTC at which the file was last modified. Header-Datei #include \"ara/per/file_storage.h\" class mono Scope struct ara::per::FileInfo class mono Symbol modificationTime class mono Typ std::uint64_t class mono","n":"modificationTime"}],"inbound":[]}</script></dialog>

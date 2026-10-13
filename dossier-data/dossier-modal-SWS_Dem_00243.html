@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00243" class="dossier-modal dossier-workbench" data-dossier-sha="f65176934195845f" aria-labelledby="dossier-modal-SWS_Dem_00243-title">
+<dialog id="dossier-modal-SWS_Dem_00243" class="dossier-modal dossier-workbench" data-dossier-sha="2203c5a325ed0557" aria-labelledby="dossier-modal-SWS_Dem_00243-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00243-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00243)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,379 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,834 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_EnableDTCSetting'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,24 +202,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="8b2d271ccf4c1c5e13bc561c1ba0e65eece1a497b5de44d1da3e60b58b324ce7" data-trace-output="f65176934195845f2de15c2e7aa1f3b5a1bbd7e88702bf75cfead568894f8668" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4784195edff915c0ff31ec266050d72617b671810799e3631edd431961195025" data-trace-output="2203c5a325ed0557161851ab9b0a568c68f5e3ef31216318221c0aeff7fb9c04" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Reaktiviert das DTC-Setting und die Ereignisspeicherung für alle DTCs des adressierten Clients." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die asynchrone Service-Funktion &lt;code&gt;Dem_EnableDTCSetting&lt;/code&gt; (Service-ID &lt;code&gt;0x25&lt;/code&gt;) aktiviert bzw. reaktiviert das DTC-Setting für alle DTCs, die dem &lt;code&gt;DemEventMemorySet&lt;/code&gt; des jeweils adressierten Clients zugeordnet sind &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;. Die Funktion steht über die Header-Datei &lt;code&gt;Dem.h&lt;/code&gt; zur Verfügung &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
-  &lt;p&gt;Über den Eingangsparameter &lt;code&gt;ClientId&lt;/code&gt; übergibt der Aufrufer die eindeutige Client-ID, die der jeweiligen Instanz des aufrufenden Moduls zugewiesen ist &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;. Da die Verarbeitung asynchron erfolgt, liefert die API standardisierte Rückgabewerte vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die asynchrone Funktion &lt;code&gt;Dem_EnableDTCSetting&lt;/code&gt; aktiviert bzw. reaktiviert das DTC-Setting für alle DTCs, die dem &lt;code&gt;DemEventMemorySet&lt;/code&gt; des adressierten Clients zugeordnet sind &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;. Beim Aufruf wird die eindeutige Kennung &lt;code&gt;ClientId&lt;/code&gt; der aufrufenden Modulinstanz übergeben &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Als Rückgabewerte sind definiert &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Operation wurde erfolgreich abgeschlossen &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DEM_PENDING&lt;/code&gt;: Die gestartete Operation wird gegenwärtig ausgeführt; der Aufrufer muss die Funktion zu einem späteren Zeitpunkt erneut aufrufen &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Operation wurde erfolgreich abgeschlossen.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DEM_PENDING&lt;/code&gt;: Der Vorgang wird asynchron ausgeführt; der Aufrufer muss die Funktion zu einem späteren Zeitpunkt erneut aufrufen.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
-  &lt;p&gt;Bezüglich der Nebenläufigkeit ist &lt;code&gt;Dem_EnableDTCSetting&lt;/code&gt; reentrant für Aufrufe mit unterschiedlichen Werten für &lt;code&gt;ClientId&lt;/code&gt;, jedoch nicht reentrant für dieselbe &lt;code&gt;ClientId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Zusammenspiel und funktionale Auswirkungen&lt;/h4&gt;
-  &lt;p&gt;Wird &lt;code&gt;Dem_EnableDTCSetting&lt;/code&gt; aufgerufen, aktiviert das DEM die Speicherung der korrespondierenden Ereignisse sowie des UDS-Statusbytes &lt;a class="spec-record-ref" data-req="SWS_Dem_00080" href="../../spec/record.html?id=SWS_Dem_00080"&gt;[SWS_Dem_00080]&lt;/a&gt;. Sofern das &lt;code&gt;ControlDTCSetting&lt;/code&gt; der betreffenden Ereignisse reaktiviert wird, stößt die API die Callback-Funktion &lt;code&gt;InitMonitorForEvent&lt;/code&gt; der zugehörigen Ereignisse an &lt;a class="spec-record-ref" data-req="SWS_Dem_00682" href="../../spec/record.html?id=SWS_Dem_00682"&gt;[SWS_Dem_00682]&lt;/a&gt;. Hierbei wird der Parameter &lt;code&gt;InitMonitorReason&lt;/code&gt; auf den Wert &lt;code&gt;DEM_INIT_MONITOR_REENABLED&lt;/code&gt; gesetzt &lt;a class="spec-record-ref" data-req="SWS_Dem_00682" href="../../spec/record.html?id=SWS_Dem_00682"&gt;[SWS_Dem_00682]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR Classic Release R20-11 erstellt.&lt;/p&gt;
+  &lt;p&gt;Bezüglich der Nebenläufigkeit ist &lt;code&gt;Dem_EnableDTCSetting&lt;/code&gt; reentrant für unterschiedliche &lt;code&gt;ClientId&lt;/code&gt;-Werte, darf jedoch für dieselbe &lt;code&gt;ClientId&lt;/code&gt; nicht nebenläufig aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_Dem_00243" href="../../spec/record.html?id=SWS_Dem_00243"&gt;[SWS_Dem_00243]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Im Zusammenspiel mit der Ereignisverarbeitung sorgt die Funktion dafür, dass das DEM die Speicherung der zugehörigen Ereignisse und des UDS-Status-Bytes freigibt &lt;a class="spec-record-ref" data-req="SWS_Dem_00080" href="../../spec/record.html?id=SWS_Dem_00080"&gt;[SWS_Dem_00080]&lt;/a&gt;. Wird das DTC-Setting für die Ereignisse wieder aktiviert, stößt &lt;code&gt;Dem_EnableDTCSetting&lt;/code&gt; die Callback-Funktion &lt;code&gt;InitMonitorForEvent&lt;/code&gt; der betroffenen Ereignisse mit dem Parameter &lt;code&gt;InitMonitorReason&lt;/code&gt; auf &lt;code&gt;DEM_INIT_MONITOR_REENABLED&lt;/code&gt; an &lt;a class="spec-record-ref" data-req="SWS_Dem_00682" href="../../spec/record.html?id=SWS_Dem_00682"&gt;[SWS_Dem_00682]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient der Orientierung. Verbindlich sind ausschließlich die Spezifikationen der jeweiligen AUTOSAR-Releases.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -241,7 +254,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8b2d271ccf4c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4784195edff9…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -379,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00243","k":"function","d":"AUTOSAR","t":"","n":"Dem_EnableDTCSetting"}],"inbound":[{"i":"SWS_Dem_00080","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00080].","n":"SWS_Dem_00080"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a514293c1a14004c.json?v=d0882827" data-total="7" data-new="7" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00243","k":"function","d":"AUTOSAR","t":"","n":"Dem_EnableDTCSetting"}],"inbound":[{"i":"SWS_Dem_00080","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00080].","n":"SWS_Dem_00080"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a514293c1a14004c.json?v=bcdce392" data-total="7" data-new="7" data-figures="1" data-used="0"></script></dialog>

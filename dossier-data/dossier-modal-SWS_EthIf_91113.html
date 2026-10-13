@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91113" class="dossier-modal dossier-workbench" data-dossier-sha="85d3b025e9c2fc74" aria-labelledby="dossier-modal-SWS_EthIf_91113-title">
+<dialog id="dossier-modal-SWS_EthIf_91113" class="dossier-modal dossier-workbench" data-dossier-sha="037fc432b0455846" aria-labelledby="dossier-modal-SWS_EthIf_91113-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91113-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91113)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,411 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,865 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SwitchPortGetDuplexMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,31 +198,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a7376cc69d3a5efc94cf5f37e241abb2dcf9480f8dd057675196dd3e7474040f" data-trace-output="85d3b025e9c2fc74d1a1e8d6b6ad3795fbf39c359ca9049891d7577fe1203360" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="f64160e278b61614405eb0916ef6d11159b7c668401a1b1d0e9e80614f71c16d" data-trace-output="037fc432b045584642430fca32ef2dbf2cbd5f9e0931a81f84eef28ca1bbb8db" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermittelt den aktuellen Duplex-Modus eines indizierten Ethernet-Switch-Ports über den zuständigen Switch-Treiber." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;EthIf_SwitchPortGetDuplexMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;) serves to query the duplex mode of an indexed switch port and is available via header &lt;code&gt;EthIf.h&lt;/code&gt; with service ID &lt;code&gt;0x4f&lt;/code&gt;.&lt;/p&gt;
-  &lt;p&gt;Control is performed via the following parameters (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EthIf_SwitchPortGetDuplexMode&lt;/code&gt; dient dem Abfragen des aktuellen Duplex-Modus eines indizierten Ports an einem Ethernet-Switch &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;. Sie leitet den Aufruf an die Funktion &lt;code&gt;EthSwt_GetDuplexMode&lt;/code&gt; des über &lt;code&gt;SwitchIdx&lt;/code&gt; zugeordneten Ethernet-Switch-Treibers weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00428" href="../../spec/record.html?id=SWS_EthIf_00428"&gt;[SWS_EthIf_00428]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Parameter und Schnittstelle&lt;/h4&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt; (in): Index of the switch within the context of the Ethernet switch driver.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;SwitchPortIdx&lt;/code&gt; (in): Index of the port on the addressed switch.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DuplexModePtr&lt;/code&gt; (out): Pointer to &lt;code&gt;EthTrcv_DuplexModeType&lt;/code&gt; for receiving the result. Possible values are &lt;code&gt;ETHTRCV_DUPLEX_MODE_HALF&lt;/code&gt; (half-duplex connection) and &lt;code&gt;ETHTRCV_DUPLEXMODE_FULL&lt;/code&gt; (full-duplex connection).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt;: Index des Ethernet-Switches im Kontext des Treibers &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;SwitchPortIdx&lt;/code&gt;: Index des betreffenden Ports am adressierten Switch &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DuplexModePtr&lt;/code&gt;: Ausgabepointer vom Typ &lt;code&gt;EthTrcv_DuplexModeType*&lt;/code&gt; für den ermittelten Modus, entweder &lt;code&gt;ETHTRCV_DUPLEX_MODE_HALF&lt;/code&gt; (Halbduplex) oder &lt;code&gt;ETHTRCV_DUPLEXMODE_FULL&lt;/code&gt; (Vollduplex) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; indicates the result of the call (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The duplex mode of the indexed switch port was successfully determined.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The duplex mode could not be queried, or the function was called in states &lt;code&gt;ETHSWT_STATE_UNINIT&lt;/code&gt; or &lt;code&gt;ETHSWT_STATE_INIT&lt;/code&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is specified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) and exhibits synchronous or asynchronous semantics (&lt;em&gt;Synchronous / Asynchronous&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00428" href="../../spec/record.html?id=SWS_EthIf_00428"&gt;[SWS_EthIf_00428]&lt;/a&gt;, &lt;code&gt;EthIf_SwitchPortGetDuplexMode&lt;/code&gt; forwards the call directly to function &lt;code&gt;EthSwt_GetDuplexMode&lt;/code&gt; of the associated Ethernet switch driver (&lt;code&gt;EthIfSwitchIdx&lt;/code&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+  &lt;h4&gt;Ausführung und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; signalisiert eine erfolgreiche Abfrage &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;. Kann der Duplex-Modus des Ports nicht ermittelt werden oder befindet sich der Treiber in den Zuständen &lt;code&gt;ETHSWT_STATE_UNINIT&lt;/code&gt; bzw. &lt;code&gt;ETHSWT_STATE_INIT&lt;/code&gt;, gibt die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Schnittstelle ist nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) und in der Spezifikation als synchron/asynchron deklariert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91113" href="../../spec/record.html?id=SWS_EthIf_91113"&gt;[SWS_EthIf_91113]&lt;/a&gt;. Interpretation: Die tatsächliche synchrone oder asynchrone Arbeitsweise dürfte von den Eigenschaften des angebundenen Switch-Treibers abhängen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Das synchrone oder asynchrone Ausführungsverhalten dürfte von der zugrundeliegenden Switch-Treiber-Implementierung abhängen – Begründung: Das Element ist als „Synchronous / Asynchronous“ spezifiziert, ohne weitere Bedingungen zu nennen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -244,7 +253,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a7376cc69d3a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f64160e278b6…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -382,4 +391,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91113","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SwitchPortGetDuplexMode"}],"inbound":[{"i":"SWS_EthIf_00428","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00428].","n":"SWS_EthIf_00428"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3317fdb44a0123a1.json?v=175fe897" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91113","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SwitchPortGetDuplexMode"}],"inbound":[{"i":"SWS_EthIf_00428","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00428].","n":"SWS_EthIf_00428"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3317fdb44a0123a1.json?v=40244aec" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Crypto_91009" class="dossier-modal dossier-workbench" data-dossier-sha="aa701bf90a8f6984" aria-labelledby="dossier-modal-SWS_Crypto_91009-title">
+<dialog id="dossier-modal-SWS_Crypto_91009" class="dossier-modal dossier-workbench" data-dossier-sha="273c9dd5d21abde5" aria-labelledby="dossier-modal-SWS_Crypto_91009-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Crypto_91009-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Crypto_91009)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,573 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,028 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Crypto_KeyExchangeCalcPubVal'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,36 +198,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="b3e9d0d3dfa45cdfcfa7846539d54e01f4f26c357e434ce3ea19dd5ddb013569" data-trace-output="aa701bf90a8f6984d9f48e8856d3b1079f37f4f7b4a7f707a6021a4639dd3afd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c27ddd0a9e75d1af904ebb239b30cadf9e449a89511948603ae987e91d368dc8" data-trace-output="273c9dd5d21abde558c45f16ccb0bb6133d00690710aafda6645d3c04614d33a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Berechnet synchron den öffentlichen Wert für den Schlüsselaustausch und legt diesen im Zielpuffer ab." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
 &lt;p&gt;
-The synchronous function &lt;code&gt;Crypto_KeyExchangeCalcPubVal&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91009" href="../../spec/record.html?id=SWS_Crypto_91009"&gt;[SWS_Crypto_91009]&lt;/a&gt;) computes the public key value for a key exchange protocol based on the key identified via &lt;code&gt;cryptoKeyId&lt;/code&gt; and stores it in the target memory area &lt;code&gt;publicValuePtr&lt;/code&gt;.\nPrior to the call, the provided buffer size must be passed via the input/output parameter &lt;code&gt;publicValueLengthPtr&lt;/code&gt;; after completion of execution, this pointer contains the actual length of the generated value. The function is provided via &lt;code&gt;Crypto.h&lt;/code&gt;.
+Die synchrone Funktion &lt;code&gt;Crypto_KeyExchangeCalcPubVal&lt;/code&gt; berechnet den öffentlichen Wert für ein Schlüsselaustauschprotokoll und speichert diesen am Speicherort von &lt;code&gt;publicValuePtr&lt;/code&gt; ab (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91009" href="../../spec/record.html?id=SWS_Crypto_91009"&gt;[SWS_Crypto_91009]&lt;/a&gt;). Der Aufrufer übergibt über &lt;code&gt;cryptoKeyId&lt;/code&gt; die Kennung des Schlüssels, der für das Protokoll genutzt werden soll. Über den Ein- und Ausgangsparameter &lt;code&gt;publicValueLengthPtr&lt;/code&gt; muss beim Aufruf die Puffergröße des bereitgestellten Speichers übergeben werden; nach Abschluss der Ausführung wird dort die tatsächliche Länge des berechneten öffentlichen Werts hinterlegt (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91009" href="../../spec/record.html?id=SWS_Crypto_91009"&gt;[SWS_Crypto_91009]&lt;/a&gt;).
 &lt;/p&gt;
-
-&lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
+&lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
 &lt;p&gt;
-The status of execution is signaled via the return type &lt;code&gt;Std_ReturnType&lt;/code&gt;:
+Die Funktion gibt &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ausführung zurück. Tritt ein Fehler auf, wird &lt;code&gt;E_NOT_OK&lt;/code&gt; oder ein spezifischer Fehlercode zurückgegeben (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91009" href="../../spec/record.html?id=SWS_Crypto_91009"&gt;[SWS_Crypto_91009]&lt;/a&gt;):
 &lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The request was executed successfully.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The execution failed.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The required Crypto Driver Object is currently busy.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: The source key element is not initialized.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: The key status of the key specified via &lt;code&gt;cryptoKeyId&lt;/code&gt; is invalid (&lt;code&gt;invalid&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Die Anfrage schlägt fehl, da das Crypto Driver Object belegt ist.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Die Anfrage schlägt fehl, weil das Quell-Schlüsselelement nicht initialisiert ist.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Die Anfrage schlägt fehl, da der Status des über &lt;code&gt;cryptoKeyId&lt;/code&gt; referenzierten Schlüssels ungültig ist.&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
+&lt;h4&gt;Nebenläufigkeit und Systemintegration&lt;/h4&gt;
 &lt;p&gt;
-The function is implemented as reentrant, but must not be called concurrently for the same &lt;code&gt;cryptoKeyId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91009" href="../../spec/record.html?id=SWS_Crypto_91009"&gt;[SWS_Crypto_91009]&lt;/a&gt;).
+Gemäß &lt;a class="spec-record-ref" data-req="SWS_Crypto_91009" href="../../spec/record.html?id=SWS_Crypto_91009"&gt;[SWS_Crypto_91009]&lt;/a&gt; ist die Funktion reentrant, jedoch nicht für dieselbe &lt;code&gt;cryptoKeyId&lt;/code&gt;. Wenn der Krypto-Treiber für interne Zwecke wie &lt;code&gt;Crypto_KeyExchangeCalcPubVal&lt;/code&gt; Dienste eines Zufallszahlengenerators (RNG) benötigt, muss das erste Crypto Driver Object (Objektnummer 0) für diesen Zweck konfiguriert sein (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00224" href="../../spec/record.html?id=SWS_Crypto_00224"&gt;[SWS_Crypto_00224]&lt;/a&gt;).
 &lt;/p&gt;
-
-&lt;h4&gt;Interaction&lt;/h4&gt;
-&lt;p&gt;
-If the crypto driver requires a random number generator (RNG) for internal operations such as &lt;code&gt;Crypto_KeyExchangeCalcPubVal&lt;/code&gt;, the first Crypto Driver Object (object number 0) is to be configured for this purpose according to &lt;a class="spec-record-ref" data-req="SWS_Crypto_00224" href="../../spec/record.html?id=SWS_Crypto_00224"&gt;[SWS_Crypto_00224]&lt;/a&gt;.
-&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch eine KI generiert. Alle Angaben basieren auf der Spezifikation AUTOSAR Classic R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -249,9 +259,9 @@ If the crypto driver requires a random number generator (RNG) for internal opera
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>b3e9d0d3dfa4…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c27ddd0a9e75…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -286,8 +296,8 @@ If the crypto driver requires a random number generator (RNG) for internal opera
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -324,7 +334,7 @@ If the crypto driver requires a random number generator (RNG) for internal opera
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 0 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -387,4 +397,4 @@ If the crypto driver requires a random number generator (RNG) for internal opera
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_91009","k":"function","d":"AUTOSAR","t":"","n":"Crypto_KeyExchangeCalcPubVal"}],"inbound":[{"i":"SWS_Crypto_00224","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Crypto_00224].","n":"SWS_Crypto_00224"}]}</script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_91009","k":"function","d":"AUTOSAR","t":"","n":"Crypto_KeyExchangeCalcPubVal"}],"inbound":[{"i":"SWS_Crypto_00224","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Crypto_00224].","n":"SWS_Crypto_00224"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/0475a146b105ca12.json?v=37e4d114" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

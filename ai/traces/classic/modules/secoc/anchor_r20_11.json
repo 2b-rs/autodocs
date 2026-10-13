@@ -1,8 +1,9 @@
 {
  "annahmen": [
-  "1) Text: Abgrenzung zwischen SWS_SecOC_00256 (sofortiges Verwerfen mit SECOC_FRESHNESSFAILURE) und SWS_SecOC_00248 (Zählung gegen SecOCAuthenticationVerifyAttempts, DET SECOC_E_FRESHNESS_FAILURE) als offen dargestellt – Begründung: Beide R20-11-Requirements regeln E_NOT_OK der Rx-Freshness-Abfrage unterschiedlich, der Payload enthält keine Auflösung.",
-  "2) Diagramm diag-tx-direkt: SecOC_SPduTxConfirmation folgt dem erfolgreichen PduR_SecOCTransmit – Begründung: SWS_SecOC_00232 spricht nur von „successfully initiated for transmission“, ohne genaue Aufrufstelle.",
-  "3) Text und Diagramm diag-tx-fehler: Ein konfiguriertes, aber per SecOC_SendDefaultAuthenticationInformation nicht aktiviertes Default-Pattern führt wie ein fehlendes Pattern zum Abbruch – Begründung: Der relevante Teil von SWS_SecOC_00229 ist im Payload abgeschnitten; die Konfigurationsbeschreibung nennt nur den Fall „nicht vorhanden“."
+  "1) Weitergabe an die obere Schicht beim TP-Empfang beginnt erst nach erfolgreicher Verifikation – Begründung: Schaubild 9.7 zeigt die Weitergabe im opt-Fragment [successful verification], SWS_SecOC_00255 verlangt nur den vollständigen Empfang.",
+  "2) Bei konfiguriertem, aber nicht freigegebenem Default-Muster bricht SecOC den Sendeauftrag ab – Begründung: Der Text von SWS_SecOC_00229 ist im Payload an dieser Stelle gekürzt; die Parameterbeschreibung regelt nur den Fall ohne Muster. Diagramm diag-rx-tp:",
+  "1) wie Annahme 1. Diagramm diag-tx-fehler:",
+  "1) wie Annahme 2."
  ],
  "diagrams": [
   {
@@ -17,13 +18,18 @@
   },
   {
    "art": "seq",
-   "id": "diag-tx-direkt",
-   "quelle": "anchor_r20_11.diag-tx-direkt.seq.json"
+   "id": "diag-tx-if",
+   "quelle": "anchor_r20_11.diag-tx-if.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-rx-direkt",
-   "quelle": "anchor_r20_11.diag-rx-direkt.seq.json"
+   "id": "diag-tx-tp",
+   "quelle": "anchor_r20_11.diag-tx-tp.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-rx-freshness",
+   "quelle": "anchor_r20_11.diag-rx-freshness.seq.json"
   },
   {
    "art": "seq",
@@ -32,13 +38,13 @@
   },
   {
    "art": "dot",
-   "id": "diag-verifikation",
-   "quelle": "anchor_r20_11.diag-verifikation.dot"
+   "id": "diag-tx-fehler",
+   "quelle": "anchor_r20_11.diag-tx-fehler.dot"
   },
   {
    "art": "dot",
-   "id": "diag-tx-fehler",
-   "quelle": "anchor_r20_11.diag-tx-fehler.dot"
+   "id": "diag-rx-verifikation",
+   "quelle": "anchor_r20_11.diag-rx-verifikation.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/secoc/anchor_r20_11.html",
@@ -46,8 +52,7 @@
   "ausgelassen": {
    "budget": [],
    "dublette": {
-    "SNIP_CLASSIC_CSM_SECTION_7_1_1_2_Data_covered_by_Authenticator": "SNIP_CLASSIC_SECOC_SECTION_7_1_1_2_Data_covered_by_Authenticator",
-    "SNIP_CLASSIC_SECOCPROTOCOL_SECTION_6_Configuration_parameters": "SNIP_CLASSIC_SECOC_SECTION_6_Configuration_parameters"
+    "SNIP_ADAPTIVE_SECOC_FIGURE_Figure_9_24": "SNIP_CLASSIC_SECOC_FIGURE_Figure_9_24"
    },
    "inhaltsverzeichnis": [],
    "ohne_inhalt": [
@@ -64,21 +69,62 @@
     "SNIP_CLASSIC_SECOC_SECTION_8_8_3_Client_Server_Interfaces",
     "SNIP_CLASSIC_SECOC_SECTION_8_8_5_Implementation_Data_Types",
     "SNIP_CLASSIC_SECOC_SECTION_8_API_specification",
-    "SNIP_CLASSIC_SECOC_SECTION_9_2_Verification_of_incoming_PDUs",
-    "SNIP_det_AUTOSAR_SWS_Secu_P131_1085",
-    "SNIP_det_AUTOSAR_SWS_Secu_P46_1078",
-    "SNIP_det_AUTOSAR_SWS_Secu_P94_1079"
+    "SNIP_CLASSIC_SECOC_SECTION_9_2_Verification_of_incoming_PDUs"
    ],
    "ohne_text": []
   },
-  "im_prompt": 128,
-  "im_prompt_schaubilder": 59,
-  "kandidaten": 147,
+  "im_prompt": 98,
+  "im_prompt_schaubilder": 39,
+  "kandidaten": 113,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "2c4847521a62d6450d4adfcf8d9ef2d7cb6aa30911bd22fbff8eb913c11c3f9c",
- "output_store": "ai/store/outputs/2c/2c4847521a62d6450d4adfcf8d9ef2d7cb6aa30911bd22fbff8eb913c11c3f9c.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-rx-verifikation"
+  ],
+  "oneliner_chars": 107,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 75,
+   "3": 303,
+   "4": 1823
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_2_Relationship_to_PduR: SWS_SecureOnboardCommunication S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_1_Authentication_during_direct_transmission: SWS_SecureOnboardCommunication S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_1_2_Data_covered_by_Authenticator: SWS_SecureOnboardCommunication S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_6_Gateway_functionality: SWS_SecureOnboardCommunication S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_3_2_SecOC_DeInit: SWS_SecureOnboardCommunication S. 65 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_5_SecOCMainFunctionTx: SWS_SecureOnboardCommunication S. 130 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_4_SecOCMainFunctionRx: SWS_SecureOnboardCommunication S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_6_2_SecOC_MainFunctionTx: SWS_SecureOnboardCommunication S. 84 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_6_2_SecOC_MainFunctionTx: SWS_SecureOnboardCommunication S. 84 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs: SWS_SecureOnboardCommunication S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_2_Authentication_of_I_PDUs: SWS_SecureOnboardCommunication S. 33 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs: SWS_SecureOnboardCommunication S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_2_Authentication_during_triggered_transmission: SWS_SecureOnboardCommunication S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_5_Verification_of_incoming_PDUs: SWS_SecureOnboardCommunication S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_5_2_Verification_during_transport_protocol_reception: SWS_SecureOnboardCommunication S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_5_3_SecOC_GetTxFreshness: SWS_SecureOnboardCommunication S. 80 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_8_5_4_SecOC_OverrideStatusType: SWS_SecureOnboardCommunication S. 102 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_2_SecOCGeneral: SWS_SecureOnboardCommunication S. 124 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_14_SecOCTxPduProcessing: SWS_SecureOnboardCommunication S. 155 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_7_SecOCRxPduProcessing: SWS_SecureOnboardCommunication S. 140 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-dcde7205be9da3fd: AUTOSAR_SWS_SecureOnboardCommunication S. 106 nicht im Anker R20-11 (Snippet-Releases: R18-10, R19-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_4_9_CSM_callback_interfaces: SWS_SecureOnboardCommunication S. 78 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_2_SecOCGeneral: SWS_SecureOnboardCommunication S. 124 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_2_SecOCGeneral: SWS_SecureOnboardCommunication S. 124 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_4_Error_handling_and_cancelation_of_transmission: SWS_SecureOnboardCommunication S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_2_Authentication_of_I_PDUs: SWS_SecureOnboardCommunication S. 33 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_SECOC_SECTION_7_2_Relationship_to_PduR: SWS_SecureOnboardCommunication S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_1_2_Data_covered_by_Authenticator: SWS_SecureOnboardCommunication S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs: SWS_SecureOnboardCommunication S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+ ],
+ "output_sha256": "86b17098145b352681fd33d6f529424f053c722453e5d92bf68ce247c035d39b",
+ "output_store": "ai/store/outputs/86/86b17098145b352681fd33d6f529424f053c722453e5d92bf68ce247c035d39b.html",
  "params": {
   "module": "secoc",
   "platform": "classic",
@@ -107,9 +153,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "648e2692e2f27c2b1ae255880ad07de991880582cda2075c89662bc17256a8b3",
- "prompt_store": "ai/store/prompts/64/648e2692e2f27c2b1ae255880ad07de991880582cda2075c89662bc17256a8b3.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "e42ecdfc6fe3bbb5aefd7e61a9a106656feed96ac9a9cb03792c5ee8f4fe23c0",
+ "prompt_store": "ai/store/prompts/e4/e42ecdfc6fe3bbb5aefd7e61a9a106656feed96ac9a9cb03792c5ee8f4fe23c0.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -122,14 +168,44 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.328108,
-   "cost_usd_reported": 1.328108,
-   "created_at": "2026-10-09T07:27:56Z",
-   "duration_api_seconds": 312.513,
-   "duration_seconds": 312.622,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.39116,
+   "cost_usd_reported": 1.39116,
+   "created_at": "2026-10-13T03:19:21Z",
+   "duration_api_seconds": 374.555,
+   "duration_seconds": 376.947,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_2_Relationship_to_PduR: SWS_SecureOnboardCommunication S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_1_Authentication_during_direct_transmission: SWS_SecureOnboardCommunication S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_1_2_Data_covered_by_Authenticator: SWS_SecureOnboardCommunication S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_6_Gateway_functionality: SWS_SecureOnboardCommunication S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_3_2_SecOC_DeInit: SWS_SecureOnboardCommunication S. 65 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_5_SecOCMainFunctionTx: SWS_SecureOnboardCommunication S. 130 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_4_SecOCMainFunctionRx: SWS_SecureOnboardCommunication S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_6_2_SecOC_MainFunctionTx: SWS_SecureOnboardCommunication S. 84 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_6_2_SecOC_MainFunctionTx: SWS_SecureOnboardCommunication S. 84 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs: SWS_SecureOnboardCommunication S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_2_Authentication_of_I_PDUs: SWS_SecureOnboardCommunication S. 33 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs: SWS_SecureOnboardCommunication S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_2_Authentication_during_triggered_transmission: SWS_SecureOnboardCommunication S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_5_Verification_of_incoming_PDUs: SWS_SecureOnboardCommunication S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_5_2_Verification_during_transport_protocol_reception: SWS_SecureOnboardCommunication S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_5_3_SecOC_GetTxFreshness: SWS_SecureOnboardCommunication S. 80 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_8_5_4_SecOC_OverrideStatusType: SWS_SecureOnboardCommunication S. 102 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_2_SecOCGeneral: SWS_SecureOnboardCommunication S. 124 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_14_SecOCTxPduProcessing: SWS_SecureOnboardCommunication S. 155 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_7_SecOCRxPduProcessing: SWS_SecureOnboardCommunication S. 140 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-dcde7205be9da3fd: AUTOSAR_SWS_SecureOnboardCommunication S. 106 nicht im Anker R20-11 (Snippet-Releases: R18-10, R19-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_8_4_9_CSM_callback_interfaces: SWS_SecureOnboardCommunication S. 78 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_2_SecOCGeneral: SWS_SecureOnboardCommunication S. 124 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_10_1_2_SecOCGeneral: SWS_SecureOnboardCommunication S. 124 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_4_Error_handling_and_cancelation_of_transmission: SWS_SecureOnboardCommunication S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_2_Authentication_of_I_PDUs: SWS_SecureOnboardCommunication S. 33 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_SECOC_SECTION_7_2_Relationship_to_PduR: SWS_SecureOnboardCommunication S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_SECOC_SECTION_7_1_1_2_Data_covered_by_Authenticator: SWS_SecureOnboardCommunication S. 29 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_SECOC_SECTION_7_4_Authentication_of_outgoing_PDUs: SWS_SecureOnboardCommunication S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -138,19 +214,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.328108,
-     "inputTokens": 125912,
+     "costUSD": 1.39116,
+     "inputTokens": 100065,
      "maxOutputTokens": 128000,
-     "outputTokens": 41223,
+     "outputTokens": 49545,
      "provider": "firstParty",
-     "thinkingTokens": 15880,
+     "thinkingTokens": 24095,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "84841332-83c1-4aad-938c-9e8a0b5486cc",
+   "run_id": "50400b37-ca94-4271-acac-f9d4f907d87b",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/84841332-83c1-4aad-938c-9e8a0b5486cc.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/50400b37-ca94-4271-acac-f9d4f907d87b.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -159,11 +235,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 125912,
-    "output_tokens": 41223,
+    "inference_geo": "global",
+    "input_tokens": 100065,
+    "output_tokens": 49545,
     "output_tokens_details": {
-     "thinking_tokens": 15880
+     "thinking_tokens": 24095
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -175,11 +251,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 125912,
-    "output": 41223,
-    "thinking": 15880
+    "input_uncached": 100065,
+    "output": 49545,
+    "thinking": 24095
    },
-   "wall_seconds": 315.24
+   "wall_seconds": 378.453
   }
  ],
  "schema": "ai-trace@2",

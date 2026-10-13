@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinIf_00201" class="dossier-modal dossier-workbench" data-dossier-sha="1e6eb981c6ea1b33" aria-labelledby="dossier-modal-SWS_LinIf_00201-title">
+<dialog id="dossier-modal-SWS_LinIf_00201" class="dossier-modal dossier-workbench" data-dossier-sha="5e0a789bf5beedf2" aria-labelledby="dossier-modal-SWS_LinIf_00201-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinIf_00201-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinIf_00201)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,302 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,757 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinIf_Transmit'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,27 +198,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a34e13a064ed98bc662db1029f4dec852a4497fe40ff8bf4847f478e8c543d01" data-trace-output="1e6eb981c6ea1b331ecc9ab8bcb4f338439ca0458b789d764d3a7c687f69301e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="26fe69f012f5c6c60b1eb8add51404d21aeb1dd4bf9a0dfcd590f10213b9cbec" data-trace-output="5e0a789bf5beedf23e0dc0726b4d0d522bd6dea6c4ee1ba809293a7481810399" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert synchron die Übertragung einer PDU an und meldet die Annahme der Sendeanforderung zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;LinIf_Transmit&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;) is used to request the transmission of a PDU. It is available via the header &lt;code&gt;LinIf.h&lt;/code&gt; with the service ID &lt;code&gt;0x49&lt;/code&gt;. The call expects two input parameters:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;TxPduId&lt;/code&gt; (type &lt;code&gt;PduIdType&lt;/code&gt;): Identifier of the PDU to be transmitted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;PduInfoPtr&lt;/code&gt; (type &lt;code&gt;const PduInfoType*&lt;/code&gt;): Pointer to the PDU information, consisting of the length, a pointer to the payload data, and a pointer to metadata.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; indicates whether the transmit request could be accepted (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The transmit request was accepted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The transmit request was not accepted.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;With regard to concurrent invocation, &lt;code&gt;LinIf_Transmit&lt;/code&gt; is reentrant for different PDU IDs. However, for identical &lt;code&gt;TxPduId&lt;/code&gt; values, the function is non-reentrant (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Interaction and Boundary Conditions&lt;/h4&gt;
-  &lt;p&gt;Going beyond the standard assumption, &lt;a class="spec-record-ref" data-req="SWS_LinIf_00700" href="../../spec/record.html?id=SWS_LinIf_00700"&gt;[SWS_LinIf_00700]&lt;/a&gt; requires that &lt;code&gt;LinIf_Transmit&lt;/code&gt; must also return &lt;code&gt;E_OK&lt;/code&gt; if the respective PDU belongs to a non-sporadic frame (on a LIN master node) or a non-event-triggered frame (on a LIN slave node) and the LIN Interface is initialized.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification elements of AUTOSAR Classic Release R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die in &lt;code&gt;LinIf.h&lt;/code&gt; deklarierte Funktion &lt;code&gt;LinIf_Transmit&lt;/code&gt; (Service-ID &lt;code&gt;0x49&lt;/code&gt;) dient der synchronen Anforderung zur Übertragung einer PDU &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;. Als Eingangsparameter erwartet sie &lt;code&gt;TxPduId&lt;/code&gt; zur eindeutigen Identifikation der zu sendenden PDU sowie den Zeiger &lt;code&gt;PduInfoPtr&lt;/code&gt; auf eine &lt;code&gt;PduInfoType&lt;/code&gt;-Struktur, die neben der Datenlänge und den eigentlichen Nutzdaten auch Metadaten referenzieren kann &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;. Zusätzliche Ein-/Ausgangs- oder Ausgabeparameter existieren nicht &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Verhaltensanforderungen&lt;/h4&gt;
+&lt;p&gt;Als Rückgabewert liefert der Dienst den Status &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Übertragungsanforderung wurde durch das LIN-Interface erfolgreich angenommen &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anforderung zur Übertragung konnte nicht angenommen werden &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Das Zusammenspiel mit den Frame-Typen wird durch &lt;a class="spec-record-ref" data-req="SWS_LinIf_00700" href="../../spec/record.html?id=SWS_LinIf_00700"&gt;[SWS_LinIf_00700]&lt;/a&gt; präzisiert: Bei initialisiertem LIN-Interface gibt &lt;code&gt;LinIf_Transmit&lt;/code&gt; auch dann &lt;code&gt;E_OK&lt;/code&gt; zurück, wenn die PDU zu einem nicht-sporadischen Frame auf einem LIN-Master-Knoten oder zu einem nicht-ereignisgesteuerten Frame auf einem LIN-Slave-Knoten gehört.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;In Bezug auf die Ausführungsumgebung ist &lt;code&gt;LinIf_Transmit&lt;/code&gt; reentrant für unterschiedliche PDU-IDs, darf jedoch für dieselbe &lt;code&gt;TxPduId&lt;/code&gt; nicht zeitgleich bzw. nebenläufig aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_LinIf_00201" href="../../spec/record.html?id=SWS_LinIf_00201"&gt;[SWS_LinIf_00201]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,7 +253,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a34e13a064ed…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>26fe69f012f5…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -378,4 +391,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_00201","k":"function","d":"AUTOSAR","t":"","n":"LinIf_Transmit"}],"inbound":[{"i":"SWS_LinIf_00700","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_LinIf_00700].","n":"SWS_LinIf_00700"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/783a3db899e0e933.json?v=6fa2ca6c" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_00201","k":"function","d":"AUTOSAR","t":"","n":"LinIf_Transmit"}],"inbound":[{"i":"SWS_LinIf_00700","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_LinIf_00700].","n":"SWS_LinIf_00700"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/783a3db899e0e933.json?v=8cfdfcec" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

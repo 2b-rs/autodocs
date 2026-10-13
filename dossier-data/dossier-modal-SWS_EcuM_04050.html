@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EcuM_04050" class="dossier-modal dossier-workbench" data-dossier-sha="a822e8a7d7a58a82" aria-labelledby="dossier-modal-SWS_EcuM_04050-title">
+<dialog id="dossier-modal-SWS_EcuM_04050" class="dossier-modal dossier-workbench" data-dossier-sha="c8a893a23fff8ec4" aria-labelledby="dossier-modal-SWS_EcuM_04050-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EcuM_04050-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EcuM_04050)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,489 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,944 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EcuM_SelectShutdownCause'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,39 +198,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="c8f05305f1d056a0ec131ff80bf470cc0c040024f66dee9ab8cdba52d3a70d91" data-trace-output="a822e8a7d7a58a82f6e64fa22a03bca80b66d6ce01016a35bc9c7b259094421e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="518672a867f6ab663f9b4cd48a49b74e7de59508321ddd1deae6a737b61e3109" data-trace-output="c8a893a23fff8ec49023e058c0183f2301dce45fd0ba95cfb13780ec2cc8f3cb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Wählt synchron die Ursache für das Herunterfahren des Steuergeräts aus und gibt den Status der Operation zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;EcuM_SelectShutdownCause&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;) serves to select the cause for an upcoming shutdown of the ECU. It is part of the port interface of the ECU Manager module and available via the header file &lt;code&gt;EcuM.h&lt;/code&gt; with service ID &lt;code&gt;0x1b&lt;/code&gt;. As a passing parameter, the function expects the value &lt;code&gt;target&lt;/code&gt; of type &lt;code&gt;EcuM_ShutdownCauseType&lt;/code&gt;, which passes the desired shutdown cause.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;EcuM_SelectShutdownCause&lt;/code&gt; dient der Auswahl der Ursache für ein Herunterfahren des Steuergeräts und ist über die Header-Datei &lt;code&gt;EcuM.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;
-    The call returns a return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The new shutdown cause was set successfully.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The new shutdown cause could not be adopted.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Specific error codes for DET or DEM are not separately listed for this element in the specification.
-  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Verwendung und Semantik:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Parameter:&lt;/strong&gt; Der Eingangsparameter &lt;code&gt;target&lt;/code&gt; vom Typ &lt;code&gt;EcuM_ShutdownCauseType&lt;/code&gt; übergibt die ausgewählte Abschaltursache &lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Rückgabewert:&lt;/strong&gt; Ein Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; signalisiert mit &lt;code&gt;E_OK&lt;/code&gt;, dass die neue Ursache erfolgreich gesetzt wurde, und mit &lt;code&gt;E_NOT_OK&lt;/code&gt;, dass das Setzen fehlgeschlagen ist &lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Ausführung:&lt;/strong&gt; Der Dienst arbeitet synchron unter der Service-ID &lt;code&gt;0x1b&lt;/code&gt; und ist reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    &lt;code&gt;EcuM_SelectShutdownCause&lt;/code&gt; is specified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;). This is consistent with the definition of the internal behavior (&lt;code&gt;InternalBehavior EcuStateManager&lt;/code&gt;), in which the associated runnable entity &lt;code&gt;SelectShutdownCause&lt;/code&gt; is configured with property &lt;code&gt;canbeInvokedConcurrently = TRUE&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;). It can thus be called concurrently from different contexts.
-  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Nebenläufigkeit und Zusammenspiel:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Die Funktion ist Teil des Port-Interfaces des Moduls ECU Manager &lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;. Für die Konfiguration der lokalen RTE ist im internen Verhalten &lt;code&gt;EcuStateManager&lt;/code&gt; die Runnable Entity &lt;code&gt;SelectShutdownCause&lt;/code&gt; mit dem Symbol &lt;code&gt;EcuM_SelectShutdownCause&lt;/code&gt; definiert, wobei die Eigenschaft &lt;code&gt;canbeInvokedConcurrently = TRUE&lt;/code&gt; vergeben ist &lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    Within the configuration of the internal behavior (&lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;), the function is embedded in a group of related shutdown and state operations. The runnable entity &lt;code&gt;GetShutdownCause&lt;/code&gt; declared there (symbol &lt;code&gt;EcuM_GetShutdownCause&lt;/code&gt;) likely serves as a complementary function to query the cause previously set with &lt;code&gt;EcuM_SelectShutdownCause&lt;/code&gt; again. In addition, setting the cause interacts with operations for selecting the target state, such as &lt;code&gt;SelectShutdownTarget&lt;/code&gt;.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    This usage note is based on the specification data of AUTOSAR version R20-11.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) Die Runnable Entity GetShutdownCause dient komplementär zum Auslesen der zuvor gesetzten Shutdown-Ursache – Begründung: Der Payload enthält für GetShutdownCause lediglich den Eintrag im internen Verhalten (SWS_EcuM_03018), jedoch keine separate Beschreibung der Funktionssemantik. --&gt;
+&lt;p&gt;&lt;strong&gt;Fehlerbehandlung:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Im Spezifikationsumfang sind keine spezifischen DET- oder DEM-Meldungen ausgewiesen; Fehlerzustände beim Setzen der Ursache werden ausschließlich über den Rückgabewert &lt;code&gt;E_NOT_OK&lt;/code&gt; angezeigt &lt;a class="spec-record-ref" data-req="SWS_EcuM_04050" href="../../spec/record.html?id=SWS_EcuM_04050"&gt;[SWS_EcuM_04050]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert erstellt und basiert auf den Spezifikationsvorgaben zu AUTOSAR Classic Release R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -252,7 +256,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>c8f05305f1d0…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>518672a867f6…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -390,4 +394,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_04050","k":"function","d":"AUTOSAR","t":"","n":"EcuM_SelectShutdownCause"}],"inbound":[{"i":"SWS_EcuM_03018","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_03018].","n":"SWS_EcuM_03018"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/21f342f3912ebc8f.json?v=04969ab6" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_04050","k":"function","d":"AUTOSAR","t":"","n":"EcuM_SelectShutdownCause"}],"inbound":[{"i":"SWS_EcuM_03018","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_03018].","n":"SWS_EcuM_03018"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/21f342f3912ebc8f.json?v=0753ccac" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>

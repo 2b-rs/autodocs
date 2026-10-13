@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_IdsM_91011" class="dossier-modal dossier-workbench" data-dossier-sha="a711462217771e77" aria-labelledby="dossier-modal-SWS_IdsM_91011-title">
+<dialog id="dossier-modal-SWS_IdsM_91011" class="dossier-modal dossier-workbench" data-dossier-sha="5fd2e4b191144e97" aria-labelledby="dossier-modal-SWS_IdsM_91011-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_IdsM_91011-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_IdsM_91011)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,288 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,743 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'IdsM_TpTxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,20 +198,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="f02e0a9581c5e6e8cdfe0119f761c91b34fc7e948bb3cea44fe8a525b3e8597e" data-trace-output="a711462217771e7730b43d0b0ecf75fa15313008e46b2b17cacf855114ab7401" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="127e922f9325aa48d4686902f3115d984c5332b318e90a0d65edde1f8e7917d0" data-trace-output="5fd2e4b191144e977a331b225aa90bba1715d357dd892886c116d0144a664abe" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Empfängt Bestätigungen des PduR über die erfolgte Übertragung einer segmentierten PDU inklusive des Sendestatus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The callback function &lt;code&gt;IdsM_TpTxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;) is called after an I-PDU has been transmitted via the respective network. It serves to inform module &lt;code&gt;IdsM&lt;/code&gt; whether the transmission was successful (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;The interface has service ID &lt;code&gt;0x48&lt;/code&gt;, is provided via the header file &lt;code&gt;IdsM_Cbk.h&lt;/code&gt;, and provides no return value (&lt;code&gt;void&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;). The function expects the following input parameters:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callback-Funktion &lt;code&gt;IdsM_TpTxConfirmation&lt;/code&gt; wird als synchroner und reentranter Dienst über die Header-Datei &lt;code&gt;IdsM_Cbk.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;. Gemäß &lt;a class="spec-record-ref" data-req="SWS_IdsM_01502" href="../../spec/record.html?id=SWS_IdsM_01502"&gt;[SWS_IdsM_01502]&lt;/a&gt; empfängt das Modul &lt;code&gt;IdsM&lt;/code&gt; über diesen Dienst die Bestätigung des Moduls &lt;code&gt;PduR&lt;/code&gt; für die Übertragung einer segmentierten PDU. Der Aufruf erfolgt, sobald die betreffende I-PDU auf dem zugrundeliegenden Netzwerk übertragen wurde &lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Schnittstelle besitzt die Service-ID &lt;code&gt;0x48&lt;/code&gt; und liefert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;. Beim Aufruf werden zwei Eingabeparameter übergeben:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;id&lt;/code&gt; (&lt;code&gt;PduIdType&lt;/code&gt;): Identifier of the transmitted I-PDU (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;result&lt;/code&gt; (&lt;code&gt;Std_ReturnType&lt;/code&gt;): Result of the PDU transmission (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;id&lt;/code&gt; (Typ &lt;code&gt;PduIdType&lt;/code&gt;): Eindeutige Identifikation der übertragenen I-PDU &lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;result&lt;/code&gt; (Typ &lt;code&gt;Std_ReturnType&lt;/code&gt;): Übermittelt das Ergebnis der I-PDU-Übertragung und zeigt an, ob der Sendevorgang erfolgreich war oder fehlschlug &lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_IdsM_01502" href="../../spec/record.html?id=SWS_IdsM_01502"&gt;[SWS_IdsM_01502]&lt;/a&gt;, module &lt;code&gt;IdsM&lt;/code&gt; receives via service &lt;code&gt;IdsM_TpTxConfirmation&lt;/code&gt; the confirmation of the transmission of a segmented PDU by module &lt;code&gt;PduR&lt;/code&gt;.&lt;/p&gt;
-  &lt;h4&gt;Concurrency and Error Handling&lt;/h4&gt;
-  &lt;p&gt;The call is synchronous and specified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;). Specific DET or DEM error messages are not defined in the element description; the status of the transmission is indicated directly to the &lt;code&gt;IdsM&lt;/code&gt; via the passed value &lt;code&gt;result&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification data of release R20-11.&lt;/p&gt;
+  &lt;p&gt;Spezifische Fehlercodes sowie DET- oder DEM-Meldungen sind für diesen Aufruf in der Spezifikation nicht definiert. Dank der spezifizierten Reentranz kann die Funktion von der aufrufenden Schicht parallel für verschiedene I-PDUs aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_IdsM_91011" href="../../spec/record.html?id=SWS_IdsM_91011"&gt;[SWS_IdsM_91011]&lt;/a&gt;. Interpretation: Das Modul &lt;code&gt;IdsM&lt;/code&gt; dürfte den Statusparameter &lt;code&gt;result&lt;/code&gt; auswerten, um den internen Übertragungsstatus der segmentierten PDU zu aktualisieren und belegte Sendepuffer nach Abschluss freizugeben.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Das IdsM wertet den Parameter result zur Aktualisierung des Übertragungsstatus und zur Freigabe interner Puffer segmentierter PDUs aus – Begründung: SWS_IdsM_91011 und SWS_IdsM_01502 beschreiben die Übergabe von result und den Kontext segmentierter PDUs, spezifizieren jedoch keine internen Zustandsübergänge oder Folgeaktionen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt und basiert ausschließlich auf den Spezifikationen von AUTOSAR R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -233,7 +250,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>f02e0a9581c5…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>127e922f9325…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -371,4 +388,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91011","k":"function","d":"AUTOSAR","t":"","n":"IdsM_TpTxConfirmation"}],"inbound":[{"i":"SWS_IdsM_01502","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_IdsM_01502].","n":"SWS_IdsM_01502"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/11a180a77be7b5a5.json?v=8858ca6b" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91011","k":"function","d":"AUTOSAR","t":"","n":"IdsM_TpTxConfirmation"}],"inbound":[{"i":"SWS_IdsM_01502","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_IdsM_01502].","n":"SWS_IdsM_01502"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/11a180a77be7b5a5.json?v=9198edd0" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

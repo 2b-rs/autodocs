@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_shwa_PropertyList_e7bb02" class="dossier-modal dossier-workbench" data-dossier-sha="df29b10839299332" aria-labelledby="dossier-modal-cl_ara_shwa_PropertyList_e7bb02-title">
+<dialog id="dossier-modal-cl_ara_shwa_PropertyList_e7bb02" class="dossier-modal dossier-workbench" data-dossier-sha="20b99ff19a12eb53" aria-labelledby="dossier-modal-cl_ara_shwa_PropertyList_e7bb02-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_shwa_PropertyList_e7bb02-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_shwa_PropertyList_e7bb02)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,683 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,205 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::shwa::PropertyList' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_shwa_PropertyList_e7bb02",
@@ -208,63 +227,38 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="dbc17625de75cb5782acaf94feeacee6f20f888139264d76fe216a1a51418fe3" data-trace-output="df29b10839299332e8a0cfaf5118942602eb927e0f9dd48b712b07dd3b44139d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="5dbb1d61ed773e0c465f7f5f795ee4ea1b930bf8403c49bf3c22bb6433227707" data-trace-output="20b99ff19a12eb533c1448cb4a963cdcd02daa902a9b5be944316e616f7c6a98" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bündelt Eigenschaften für Hardware-Aktoren in einem ausnahmesicheren Werteobjekt zur Übergabe an SHWA-Schnittstellen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    The class &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; provides a structured collection of properties within module &lt;code&gt;shwa&lt;/code&gt; of the AUTOSAR Adaptive Platform. According to the class syntax, the type is declared as &lt;code&gt;final&lt;/code&gt;, which precludes specialization via inheritance hierarchies and causes instances to function as self-contained value or configuration objects. In software-based ECU systems, such a property list serves to encapsulate attributes, parameters, or state characteristics that are transmitted to system components during function calls.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Interpretation: The class is likely designed as a generic wrapper for heterogeneous property types in order to bundle functional configurations in a type-safe and flexible manner. The primary interaction partners here are the calling application logic, which parameterizes the list at runtime, and receiving services of module &lt;code&gt;shwa&lt;/code&gt;, which process the contained properties for initialization or operational control.
-  &lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Bündelt Eigenschaften für Hardware-Aktoren in einem ausnahmesicheren Werteobjekt zur Übergabe an SHWA-Schnittstellen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die finale Klasse &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; dient im AUTOSAR-Adaptive-Modul &lt;code&gt;shwa&lt;/code&gt; der Aggregation und Übergabe von Eigenschaften. Die Erzeugung erfolgt über einen variadischen Template-Konstruktor, der als &lt;code&gt;noexcept&lt;/code&gt; deklariert und somit ausnahmesicher ist (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;). Interpretation: Instanzen dürften vorwiegend als kurzlebige Werteobjekte genutzt werden, um Konfigurationsattribute gebündelt an Hardware-Schnittstellen zu übergeben. Als zentrale Randbedingung ist die Klasse nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;), weshalb gleichzeitige Zugriffe aus mehreren Threads extern synchronisiert werden müssen (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;).&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;shwa&lt;/code&gt; (Smart Hardware Actuator) innerhalb der AUTOSAR Adaptive Platform. Die Spezifikation definiert diesen Typ als finale Klasse (&lt;code&gt;class PropertyList final&lt;/code&gt;), wodurch eine Ableitung durch Anwenderklassen im Vorfeld ausgeschlossen ist. Die primäre Rolle der Klasse besteht in der Bündelung und strukturierten Übergabe von Eigenschaften. Über das Konstruktortemplate &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; nimmt die Klasse eine variable Menge an Eigenschaftsobjekten entgegen. Interpretation: Die Klasse dürfte innerhalb des Moduls als typsicherer Aggregationscontainer dienen, der heterogene Konfigurationen oder Hardware-Attribute für Aktoren und Sensoren zusammenfasst und an verarbeitende Schnittstellen weiterreicht.&lt;/p&gt;
+&lt;p&gt;Im Zusammenspiel mit anderen Komponenten agiert die Klasse als Informationsträger. Der Aufrufer aggregiert anwendungsspezifische Eigenschaften, während das SHWA-Subsystem diese Listen entgegennimmt, um hardwarenahe Operationen zu steuern. Da die Klassendefinition final ist, bildet &lt;code&gt;PropertyList&lt;/code&gt; eine geschlossene Datenstruktur, die eine direkte Vererbungshierarchie verhindert und damit eine einheitliche Semantik bei der Parameterübergabe erzwingt.&lt;/p&gt;
 
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    The lifecycle of an object of class &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; begins with instantiation via the variadic constructor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. Through the function template &lt;code&gt;template &amp;lt;typename... Properties&amp;gt; PropertyList(Properties... props) noexcept&lt;/code&gt;, callers can pass an arbitrary number of property objects of different types directly upon creation.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Regarding ownership, the class is subject to the usual RAII principles (Resource Acquisition Is Initialization) of modern C++ design patterns. Instances are preferably instantiated locally on the call stack or as members of management objects. The lifetime of the passed properties is tied to the lifetime of the list. Because the class is specified as &lt;code&gt;final&lt;/code&gt;, no polymorphic destruction via base class pointers is intended; destruction takes place deterministically upon leaving the scope.
-  &lt;/p&gt;
-  &lt;p&gt;
-    With regard to concurrency, the class is designated as not thread-safe (&lt;code&gt;not thread-safe&lt;/code&gt;) according to &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. This requires that an instance of &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; must not be modified or read concurrently across multiple threads without external synchronization. When used in concurrent execution contexts, the calling software must protect accesses via locking mechanisms or maintain thread-local instances.
-  &lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus einer Instanz von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; beginnt mit der direkten Initialisierung über den variadischen Konstruktor &lt;code&gt;template &amp;lt;typename... Properties&amp;gt; PropertyList(Properties... props)&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;. Durch die Deklaration mit &lt;code&gt;noexcept&lt;/code&gt; ist garantiert, dass die Erzeugung einer Instanz unter Beachtung der Exception Safety vollständig ausnahmesicher abläuft (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;). Treten bei der Parameterübergabe oder der internen Verarbeitung Fehler auf, führt dies aufgrund der &lt;code&gt;noexcept&lt;/code&gt;-Garantie zum direkten Programmabbruch über &lt;code&gt;std::terminate&lt;/code&gt;, sofern zugrunde liegende Operationen Ausnahmen werfen sollten.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich des Nebenläufigkeitsverhaltens legt die Spezifikation fest, dass die Klasse nicht threadsicher (&lt;code&gt;not thread-safe&lt;/code&gt;) ist (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;). Dies bedeutet, dass Instanzen während ihrer Erzeugung und bei allen Folgeoperationen nicht ohne externe Synchronisationsmechanismen von mehreren Threads gleichzeitig verwendet werden dürfen. Interpretation: Instanzen von &lt;code&gt;PropertyList&lt;/code&gt; dürften typischerweise als lokale Werteobjekte (Value Objects) auf dem Stack angelegt oder per Move-Semantik an aufgerufene Funktionen übergeben werden, womit threadlokale Besitzverhältnisse ohne geteilten Zustand realisiert werden.&lt;/p&gt;
+&lt;p&gt;Das Ende des Lebenszyklus folgt den regulären Regeln für automatische oder dynamische C++-Objekte. Da keine virtuellen Destruktoren oder Vererbung vorgesehen sind, werden alle enthaltenen Ressourcen bei Zerstörung des Objekts deterministisch freigegeben.&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    The typical usage path comprises defining the property parameters, bundling them via the constructor, and passing them to downstream interfaces:
-  &lt;/p&gt;
-  &lt;ol&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Definition of properties:&lt;/strong&gt; The calling component prepares the individual property objects that are relevant for the respective use case.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Initialization of the list:&lt;/strong&gt; Via the variadic constructor &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; is created specifying the arguments. The template arguments are automatically deduced by the compiler in this process.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Passing to module functions:&lt;/strong&gt; The finished configuration object is passed to interfaces of module &lt;code&gt;shwa&lt;/code&gt; in order to configure specific services or trigger processing operations.
-    &lt;/li&gt;
-  &lt;/ol&gt;
-  &lt;p&gt;
-    Interpretation: Since no mutating member functions other than the constructor are identified in the specification, the class is likely to function primarily as an immutable value object whose content remains stable during propagation.
-  &lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der reguläre Nutzungspfad von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; umfasst die Zusammenstellung relevanter Eigenschaften und die Weitergabe des aggregierten Objekts an das SHWA-Subsystem:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Instanziierung:&lt;/strong&gt; Der Anwender erzeugt ein Objekt der Klasse, indem er die gewünschten Eigenschaften direkt an den variadischen Konstruktor übergibt (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;). Durch das Template können verschiedene Eigenschaftstypen typkonform in einem einzelnen Aufruf zusammengeführt werden.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Übergabe:&lt;/strong&gt; Die erzeugte Instanz wird an die entsprechenden Zielmethoden oder Schnittstellen des Moduls &lt;code&gt;shwa&lt;/code&gt; übergeben. Interpretation: Nach der Konstruktion erfolgt der Zugriff auf die gebündelten Werte vermutlich rein lesend durch die verarbeitenden Komponenten des Hardware-Subsystems.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Bereinigung:&lt;/strong&gt; Nach Abschluss der Verarbeitung oder beim Verlassen des Gültigkeitsbereichs wird die Instanz automatisch zerstört, ohne dass explizite Deinitialisierungsschritte erforderlich sind.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
-  &lt;p&gt;
-    Regarding failure safety, the construction of &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; exhibits a strict guarantee: according to &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, the constructor is declared with the specifier &lt;code&gt;noexcept&lt;/code&gt; and classified as exception safe (&lt;code&gt;exception safe&lt;/code&gt;). At the language level, no C++ exceptions can therefore escape during creation.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Potential error scenarios thus lie primarily in incorrect handling of the system environment or invalid preconditions:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Unauthorized concurrent access (data race):&lt;/strong&gt; Because the class is not thread-safe &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;, concurrent unprotected access from parallel threads leads to undefined behavior. Exclusive access is a precondition for every operation.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Type incompatibility during instantiation:&lt;/strong&gt; If arguments are passed that do not satisfy the syntactic or semantic requirements of the receiving parameters, compilation fails. This largely shifts potential runtime errors to the compilation phase.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;!-- annahmen: 1) Die Klasse dient als generischer Container zur Bündelung heterogener Eigenschaftstypen für shwa-Funktionen. – Begründung: Das unbeschränkte variadische Template des Konstruktors ohne weitere Typrestriktionen legt eine flexible Sammelfunktion nahe. 2) Die Instanzen fungieren primär als unveränderliche Werteobjekte. – Begründung: Der Payload führt außer dem Initialisierungskonstruktor keine mutierenden Elementfunktionen auf. --&gt;
-  &lt;p class="ai-note"&gt;This guide was generated automatically based on the AUTOSAR specification R25-11.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Da der Konstruktor von &lt;code&gt;ara::shwa::PropertyList&lt;/code&gt; explizit als &lt;code&gt;noexcept&lt;/code&gt; deklariert ist, treten beim Aufruf keine C++-Exceptions auf (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;). Die Ausnahmesicherheit ist in der Anforderungsspezifikation ausdrücklich als &lt;code&gt;exception safe&lt;/code&gt; ausgewiesen (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt;). Anwender müssen daher keine &lt;code&gt;try-catch&lt;/code&gt;-Blöcke um die Konstruktion von Eigenschaftslisten platzieren.&lt;/p&gt;
+&lt;p&gt;Ein wesentliches Fehlerszenario liegt in der Missachtung der Thread-Sicherheit. Da &lt;code&gt;PropertyList&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00802" href="../spec/record.html?id=AP_SWS_SHWA_00802"&gt;[AP_SWS_SHWA_00802]&lt;/a&gt; als &lt;code&gt;not thread-safe&lt;/code&gt; eingestuft ist, führt ein ungeschützter, nebenläufiger Zugriff mehrerer Ausführungsstränge auf dieselbe Instanz zu Race Conditions und undefiniertem Verhalten. Entwickler müssen sicherstellen, dass Instanzen entweder ausschließlich threadlokal betrieben oder durch geeignete Synchronisationsprimitive wie Mutexe vor nebenläufigen Zugriffen geschützt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Klasse dient als typsicherer Aggregationscontainer für hardware- und aktorspezifische Attribute im Modul shwa – Begründung: Der variadische Konstruktortemplate [AP_SWS_SHWA_00802] erlaubt die Aggregation beliebiger Eigenschaftsobjekte. 2) Instanzen werden typischerweise als kurzlebige Werteobjekte auf dem Stack erzeugt und threadlokal übergeben – Begründung: Die Klasse ist final deklariert und besitzt den Vermerk 'not thread-safe'. 3) Der Zugriff auf die gebündelten Eigenschaften erfolgt nach der Erzeugung überwiegend lesend – Begründung: Der Spezifikationsauszug weist keine modifizierenden Methoden aus. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine künstliche Intelligenz auf Basis der AUTOSAR-Spezifikation R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -306,7 +300,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>dbc17625de75…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>5dbb1d61ed77…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -444,4 +438,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"AP_SWS_SHWA_00802","k":"function","d":"SHWA","t":"function PropertyList [AP_SWS_SHWA_00802] Upstream: RS_SHWA_00001 , RS_SHWA_00007 , RS_SHWA_00014 template \u003ctypename... Properties> PropertyList (Properties... props) noexcept; Die Spezifikation definiert diese Deklaration mit der in der Signatur ausgewiesenen Semantik. Scope class ara::shwa::PropertyList class mono Thread Safety not thread-safe Exception Safety exception safe","n":"PropertyList"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/b34153816a37d578.json?v=5b462b0d" data-total="1" data-new="1" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"AP_SWS_SHWA_00802","k":"function","d":"SHWA","t":"function PropertyList [AP_SWS_SHWA_00802] Upstream: RS_SHWA_00001 , RS_SHWA_00007 , RS_SHWA_00014 template \u003ctypename... Properties> PropertyList (Properties... props) noexcept; Die Spezifikation definiert diese Deklaration mit der in der Signatur ausgewiesenen Semantik. Scope class ara::shwa::PropertyList class mono Thread Safety not thread-safe Exception Safety exception safe","n":"PropertyList"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/b34153816a37d578.json?v=d5a0e8cc" data-total="1" data-new="1" data-figures="1" data-used="0"></script></dialog>

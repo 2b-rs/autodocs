@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91079" class="dossier-modal dossier-workbench" data-dossier-sha="c81a0541bc84ebcf" aria-labelledby="dossier-modal-SWS_Dcm_91079-title">
+<dialog id="dossier-modal-SWS_Dcm_91079" class="dossier-modal dossier-workbench" data-dossier-sha="4b1130e72fa70654" aria-labelledby="dossier-modal-SWS_Dcm_91079-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91079-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91079)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,804 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,258 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_ProcessRequestDeleteFile'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,32 +198,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="3f3e50046655300f8678d11c17203832c375ae7426fde817ec97f94743bb0f59" data-trace-output="c81a0541bc84ebcfd93ccfcd2f51936f0468794013073b4aa8f5006fc0e4de25" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="236f3be8e83fd89c23417acfa631362c0f8611dc08c5bdb34844d78270b8b46d" data-trace-output="4b1130e72fa706545c2ff4b417cd1926684ae6734ab4ae305be0df4ac1ae8f8d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Startet asynchron das Löschen einer Datei auf dem Server im Rahmen des Diagnose-Dienstes RequestFileTransfer." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die Callout-Funktion &lt;code&gt;Dcm_ProcessRequestDeleteFile&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;) wird vom DCM-Modul aufgerufen, um einen Diagnoseprozess für den Dienst &lt;em&gt;RequestFileTransfer&lt;/em&gt; mit dem Modus &lt;code&gt;0x02&lt;/code&gt; (DeleteFile) zu initiieren und auszuführen.&lt;/p&gt;
-
-  &lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
-  &lt;p&gt;Die Funktion arbeitet asynchron und ist nicht reentrant (Service-ID &lt;code&gt;0x73&lt;/code&gt;, deklariert in &lt;code&gt;Dcm_Externals.h&lt;/code&gt;). Die Steuerung des Verarbeitungsfortschritts erfolgt über den Parameter &lt;code&gt;OpStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;DCM_INITIAL&lt;/code&gt;: Erstaufruf. Die Eingabeparameter &lt;code&gt;filePathAndNameLength&lt;/code&gt; und &lt;code&gt;filePathAndName&lt;/code&gt; sind gültig und definieren den Zielpfad inklusive Dateinamen der zu löschenden Datei auf dem Server.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt;: Folgeaufrufe; alle Eingabeparameter sind auf &lt;code&gt;0x00&lt;/code&gt; gesetzt.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p&gt;Mögliche Rückgabewerte (&lt;code&gt;Std_ReturnType&lt;/code&gt;) sind:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Löschvorgang wurde erfolgreich abgeschlossen.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Die Bearbeitung ist noch nicht abgeschlossen und erfordert weitere Aufrufe durch das DCM.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt;: Die Anwendung fordert die Übertragung einer Zwischenmeldung &lt;em&gt;Response Pending&lt;/em&gt; (NRC &lt;code&gt;0x78&lt;/code&gt;) an.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Operation ist fehlgeschlagen.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;Wird &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben, muss die Implementierung über den Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; einen passenden Fehlercode (&lt;code&gt;Dcm_NegativeResponseCodeType&lt;/code&gt;) bereitstellen. Das DCM-Modul versendet daraufhin eine negative Antwort (Negative Response) mit dem im &lt;code&gt;ErrorCode&lt;/code&gt; übergebenen NRC-Wert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;Die Operation ist Teil des Service-Frameworks für &lt;em&gt;RequestFileTransfer&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91086" href="../../spec/record.html?id=SWS_Dcm_91086"&gt;[SWS_Dcm_91086]&lt;/a&gt;), welcher abhängig von der Konfiguration (&lt;code&gt;DcmRequestFileTransfer/UsePort == TRUE&lt;/code&gt;) über Service-Ports oder Callouts mit der Anwendungs- bzw. Dateisystemebene interagiert.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufsemantik&lt;/h4&gt;
+&lt;p&gt;Die Callout-Funktion &lt;code&gt;Dcm_ProcessRequestDeleteFile&lt;/code&gt; wird vom DCM aufgerufen, um im Rahmen des Diagnose-Dienstes RequestFileTransfer das Löschen einer Datei (&lt;code&gt;modeOfOperation&lt;/code&gt; = 0x02) auf dem Server zu initiieren &lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;. Die Funktion ist in &lt;code&gt;Dcm_Externals.h&lt;/code&gt; deklariert und arbeitet asynchron sowie nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Übergabe und Auswertung erfolgt anhand des Parameters &lt;code&gt;OpStatus&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;DCM_INITIAL&lt;/code&gt;: Zeigt den Start der Operation an. Hierbei sind alle Eingangsparameter gültig; &lt;code&gt;filePathAndName&lt;/code&gt; übergibt den Speicherort und Namen der zu löschenden Datei, dessen Bytelänge über &lt;code&gt;filePathAndNameLength&lt;/code&gt; spezifiziert ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt;: Bei fortlaufender Verarbeitung oder Abbruch sind alle Eingangsparameter auf &lt;code&gt;0x00&lt;/code&gt; gesetzt &lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Als Rückgabewerte liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Durchführung, &lt;code&gt;DCM_E_PENDING&lt;/code&gt;, falls die Ausführung noch andauert und weitere Aufrufe benötigt, oder &lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt;, wenn die Applikation das Senden einer Zwischennachricht mit NRC 0x78 (Response Pending) anfordert &lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;, analog zum Dienst RequestFileTransfer &lt;a class="spec-record-ref" data-req="SWS_Dcm_91086" href="../../spec/record.html?id=SWS_Dcm_91086"&gt;[SWS_Dcm_91086]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Schlägt die Verarbeitung fehl, gibt die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück. In diesem Fall muss über den Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; ein negativer Antwortcode bereitgestellt werden, den das DCM als negative Rückmeldung (NRC) an den Tester übermittelt &lt;a class="spec-record-ref" data-req="SWS_Dcm_91079" href="../../spec/record.html?id=SWS_Dcm_91079"&gt;[SWS_Dcm_91079]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -245,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>3f3e50046655…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>236f3be8e83f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -383,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91079","k":"function","d":"AUTOSAR","t":"","n":"Dcm_ProcessRequestDeleteFile"}],"inbound":[{"i":"SWS_Dcm_91086","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_91086].","n":"SWS_Dcm_91086"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6344dda640b6f9f7.json?v=43321464" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91079","k":"function","d":"AUTOSAR","t":"","n":"Dcm_ProcessRequestDeleteFile"}],"inbound":[{"i":"SWS_Dcm_91086","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_91086].","n":"SWS_Dcm_91086"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/6344dda640b6f9f7.json?v=d5440bdc" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

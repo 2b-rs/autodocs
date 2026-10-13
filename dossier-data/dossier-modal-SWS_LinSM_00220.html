@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinSM_00220" class="dossier-modal dossier-workbench" data-dossier-sha="84469d56e7b790d7" aria-labelledby="dossier-modal-SWS_LinSM_00220-title">
+<dialog id="dossier-modal-SWS_LinSM_00220" class="dossier-modal dossier-workbench" data-dossier-sha="4b63cf20fbb7e2ed" aria-labelledby="dossier-modal-SWS_LinSM_00220-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinSM_00220-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinSM_00220)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,148 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,602 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinSM_ModeType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,32 +193,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="610d386823892ce46fdd7c085d7edca02403b62a8be152a9000c5f3125e7ffbd" data-trace-output="84469d56e7b790d720b096f88c74ab1082760d554911c104fd5da7139786ab5d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="939c0e58134fcbf2075ef6dbe4ce570d83f5821f59f99b4c61f45298cb87469d" data-trace-output="4b63cf20fbb7e2ed5e57995ffd42d461f4d5fe2a6abba62a0d47f55811f0f1b7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet den aktuellen Kommunikationsmodus des LIN-Netzwerks als Vollkommunikation oder inaktiven Zustand an den BswM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The type &lt;code&gt;LinSM_ModeType&lt;/code&gt; is used in module &lt;code&gt;LinSM&lt;/code&gt; to report the current communication mode to the BswM (Basic Software Mode Manager) (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;). It is derived as an elementary type based on &lt;code&gt;uint8&lt;/code&gt; and is available via the header file &lt;code&gt;LinSM.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;h4&gt;Value Range&lt;/h4&gt;
-  &lt;p&gt;
-    According to requirement &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;, the type defines two discrete states for the operating mode:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;LINSM_FULL_COM&lt;/code&gt; (value &lt;code&gt;0x01&lt;/code&gt;): Full communication (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;LINSM_NO_COM&lt;/code&gt; (value &lt;code&gt;0x02&lt;/code&gt;): No communication (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    Interpretation: Since &lt;code&gt;LinSM_ModeType&lt;/code&gt; represents a pure type definition based on &lt;code&gt;uint8&lt;/code&gt;, specification &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt; defines neither separate development or production errors (DET/DEM) nor runtime or reentrancy rules for this type. The validity check for the defined values (&lt;code&gt;0x01&lt;/code&gt; and &lt;code&gt;0x02&lt;/code&gt;, respectively) is likely performed in the interface functions of the LIN State Manager that pass values of this type to the BswM.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note was automatically generated for AUTOSAR Classic R20-11 based on specification &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) Keine eigenen DET-/DEM-Fehler oder Reentranzvorschriften am Typ – Begründung: LinSM_ModeType ist eine elementare uint8-Typdefinition ohne eigene Ausführungslogik. 2) Gültigkeitsprüfung der Werte erfolgt in den nutzenden Schnittstellenfunktionen – Begründung: Der Typ uint8 umfasst 256 Werte, die Spezifikation definiert für diesen Kontext jedoch nur LINSM_FULL_COM und LINSM_NO_COM. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;LinSM_ModeType&lt;/code&gt; ist ein Standardtyp des LIN State Managers, der auf dem Basistyp &lt;code&gt;uint8&lt;/code&gt; aufbaut und über den Header &lt;code&gt;LinSM.h&lt;/code&gt; zur Verfügung gestellt wird &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;. Die primäre Aufgabe dieses Typs besteht darin, den aktuellen Kommunikationsmodus eines LIN-Netzwerks an das BSW Mode Management (BswM) zu melden &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Für &lt;code&gt;LinSM_ModeType&lt;/code&gt; sind zwei Zustände im Wertebereich spezifiziert &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;LINSM_FULL_COM&lt;/code&gt; (numerischer Wert &lt;code&gt;0x01&lt;/code&gt;): Signalisiert den Zustand der uneingeschränkten Vollkommunikation (Full communication) &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LINSM_NO_COM&lt;/code&gt; (numerischer Wert &lt;code&gt;0x02&lt;/code&gt;): Kennzeichnet den Zustand ohne laufende Kommunikation (No communication) &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Hinsichtlich Fehlerbehandlung und Nebenläufigkeit enthält die Typdefinition keine eigenen Fehlercodes, DET-Meldungen oder DEM-Ereignisse, da es sich um eine elementare Typdeklaration handelt &lt;a class="spec-record-ref" data-req="SWS_LinSM_00220" href="../../spec/record.html?id=SWS_LinSM_00220"&gt;[SWS_LinSM_00220]&lt;/a&gt;. Interpretation: Die Übergabe von Werten dieses Typs an den BswM dürfte im Rahmen übergeordneter Zustandswechsel des LinSM erfolgen, wobei Aufrufer sicherstellen müssen, dass keine unzulässigen Werte außerhalb der definierten Zustände übermittelt werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Übergabe von Werten dieses Typs an den BswM dürfte im Rahmen übergeordneter Zustandswechsel des LinSM erfolgen. – Begründung: SWS_LinSM_00220 spezifiziert den Zweck der Meldung an den BswM, definiert als reiner Typ jedoch keine konkreten Aufrufkontexte oder Funktionen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde durch eine KI erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,9 +245,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>610d38682389…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>939c0e58134f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -378,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinSM_00220","k":"type","d":"AUTOSAR","t":"","n":"LinSM_ModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1534e0c7dbaf2f0e.json?v=3892d52f" data-total="6" data-new="6" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinSM_00220","k":"type","d":"AUTOSAR","t":"","n":"LinSM_ModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1534e0c7dbaf2f0e.json?v=74b5b5da" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>

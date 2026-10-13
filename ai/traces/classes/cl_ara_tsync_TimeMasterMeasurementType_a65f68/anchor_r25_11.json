@@ -1,8 +1,8 @@
 {
  "annahmen": [
-  "1) Die Struktur dürfte vorwiegend als kurzlebiges Wertobjekt per Kopie oder const-Referenz an Validierungs-Callbacks übergeben werden. – Begründung: Das finale struct-Layout ohne dynamische Elemente impliziert klassische C++-Wertsemantik.",
-  "2) Fehlende Hardware-Zeitstempel werden vermutlich über Nullwerte oder reservierte Sentinel-Werte im Feld syncEgressTimestamp signalisiert. – Begründung: Der elementare Datentyp std::uint64_t bietet keine eigene Fehleranzeige wie std::optional.",
-  "3) Die Erfassung der Egress-Metriken erfolgt vermutlich asynchron unmittelbar nach der Bestätigung des Frame-Versands durch den Netzwerk-Treiber. – Begründung: Physische Austrittszeitstempel (TX-Timestamps) liegen in Ethernet-Controllern erst nach tatsächlichem Verlassen des Ports vor."
+  "1) Die Übergabe an Validierungsinstanzen erfolgt per Wertkopie oder Move – Begründung: struct final ohne dynamische Speicherverwaltung im Payload.",
+  "2) Nebenläufige Zugriffe sind nicht intern synchronisiert – Begründung: Reine Datenstruktur ohne Synchronisationsprimitive in der Spezifikation.",
+  "3) Die Validierungslogik nutzt die Daten zur Drift- und Jitter-Berechnung – Begründung: Zweckbestimmung 'validation of the Time Master' legt den Vergleich von globaler und lokaler Zeit nahe."
  ],
  "diagrams": [
   {
@@ -12,9 +12,22 @@
   }
  ],
  "fragment": "content/ai/classes/cl_ara_tsync_TimeMasterMeasurementType_a65f68/anchor_r25_11.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-master-validation"
+  ],
+  "oneliner_chars": 109,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 76,
+   "3": 196,
+   "4": 440
+  }
+ },
  "lint": [],
- "output_sha256": "9df98eff35b84422ab1d2e2b72656f0f82e632b29f3a9ad5a0b81ee3540c1575",
- "output_store": "ai/store/outputs/9d/9df98eff35b84422ab1d2e2b72656f0f82e632b29f3a9ad5a0b81ee3540c1575.html",
+ "output_sha256": "bf7bb158872c1156a978a23c89bed6deecebbfb8d48b6638d0c7d560b0f95a48",
+ "output_store": "ai/store/outputs/bf/bf7bb158872c1156a978a23c89bed6deecebbfb8d48b6638d0c7d560b0f95a48.html",
  "params": {
   "class_id": "cl_ara_tsync_TimeMasterMeasurementType_a65f68",
   "platform": "adaptive",
@@ -40,9 +53,9 @@
   "top_p": null
  },
  "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "ff4b207db34abf2c8cf405d1d5b53726c1ba700423e2e676034febda73856751",
- "prompt_store": "ai/store/prompts/ff/ff4b207db34abf2c8cf405d1d5b53726c1ba700423e2e676034febda73856751.txt",
- "recipe": "class-guide@2",
+ "prompt_hash": "2ead85402aa58d9aae5d52a679ca05768095a8d3dc33eab969888a989ebb8cee",
+ "prompt_store": "ai/store/prompts/2e/2ead85402aa58d9aae5d52a679ca05768095a8d3dc33eab969888a989ebb8cee.txt",
+ "recipe": "class-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -54,17 +67,18 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T08:32:57Z",
-   "duration_seconds": 23.198099,
+   "created_at": "2026-10-13T04:01:29Z",
+   "duration_seconds": 50.018304075,
+   "prompt_transport": "argv -p",
    "route": "agy-cli-print",
-   "run_id": "2b391082-e5b3-49b6-9b05-263780c67689",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/2b391082-e5b3-49b6-9b05-263780c67689.jsonl",
+   "run_id": "fd59a379-aa0a-46f2-bb2a-340a46b654b9",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/fd59a379-aa0a-46f2-bb2a-340a46b654b9.jsonl",
    "usage": {
-    "cache_read_tokens": 8143,
-    "input_tokens": 6500,
-    "output_tokens": 9711,
-    "thinking_tokens": 7325,
-    "total_tokens": 16211
+    "cache_read_tokens": 0,
+    "input_tokens": 14744,
+    "output_tokens": 18346,
+    "thinking_tokens": 15440,
+    "total_tokens": 33090
    }
   }
  ],

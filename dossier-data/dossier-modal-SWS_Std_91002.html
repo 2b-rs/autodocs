@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Std_91002" class="dossier-modal dossier-workbench" data-dossier-sha="9db7f7aec0dbe4cf" aria-labelledby="dossier-modal-SWS_Std_91002-title">
+<dialog id="dossier-modal-SWS_Std_91002" class="dossier-modal dossier-workbench" data-dossier-sha="e55c40ed4b61cbd0" aria-labelledby="dossier-modal-SWS_Std_91002-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Std_91002-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Std_91002)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,274 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,729 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Std_MessageResultType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,26 +198,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="2d940ff9f1013ae6098c1205963f7b3f1733ac1265999c4e0961bb5f46ecd13f" data-trace-output="9db7f7aec0dbe4cfc9ac86f1b52b766e2c44099ece11fe8e31f07e0a1c0de9ee" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="48b18d78d865eea8d2104273c718d4db000ffe4662202ce595baa0d4fbbf0272" data-trace-output="e55c40ed4b61cbd07e352973f79d0abd2630074a50440b3fdc1d7e5a4d0e52e3" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient zur Enkodierung von Erfolgs- und Fehlerergebnissen bei Antwortnachrichten in AUTOSAR Classic." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Value Range&lt;/h4&gt;
-  &lt;p&gt;
-    The data type &lt;code&gt;Std_MessageResultType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;) is an elementary standard type of module &lt;code&gt;Std&lt;/code&gt; in AUTOSAR Classic release R20-11. It is provided via the header file &lt;code&gt;Std_Types.h&lt;/code&gt; and is based on definition &lt;code&gt;typedef uint8 Std_MessageResultType;&lt;/code&gt;. Its purpose is the uniform encoding of different result types for response messages.
-  &lt;/p&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Std_00019" href="../../spec/record.html?id=SWS_Std_00019"&gt;[SWS_Std_00019]&lt;/a&gt; as well as &lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;, this encoding is currently limited to distinguishing between successful and erroneous response messages. The specified value range comprises the following definitions:
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der fundamentale Datentyp &lt;code&gt;Std_MessageResultType&lt;/code&gt; dient in der AUTOSAR-Classic-Plattform der Enkodierung verschiedener Ergebnistypen für Antwortnachrichten (Response Messages) &lt;a class="spec-record-ref" data-req="SWS_Std_00019" href="../../spec/record.html?id=SWS_Std_00019"&gt;[SWS_Std_00019]&lt;/a&gt;. Der Typ wird über die Standard-Headerdatei &lt;code&gt;Std_Types.h&lt;/code&gt; bereitgestellt und ist als Skalartyp auf Basis von &lt;code&gt;uint8&lt;/code&gt; definiert &lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Verwendung und Wertebereich&lt;/h4&gt;
+  &lt;p&gt;Die Spezifikation fordert die Nutzung von &lt;code&gt;Std_MessageResultType&lt;/code&gt; zur einheitlichen Kennzeichnung von Antwortnachrichten &lt;a class="spec-record-ref" data-req="SWS_Std_00019" href="../../spec/record.html?id=SWS_Std_00019"&gt;[SWS_Std_00019]&lt;/a&gt;. Derzeit ist der vorgesehene Funktionsumfang dieser Enkodierung auf die grundlegende Unterscheidung zwischen erfolgreichen und fehlerhaften Antworten beschränkt &lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;. Hierzu sind folgende feste Ergebniswerte definiert:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;STD_MESSAGERESULT_OK&lt;/code&gt; (value &lt;code&gt;0x00&lt;/code&gt;): Identifies the successful result of a response message (&lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;STD_MESSAGERESULT_ERROR&lt;/code&gt; (value &lt;code&gt;0x01&lt;/code&gt;): Identifies the erroneous result of a response message (&lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Value range &lt;code&gt;0x02&lt;/code&gt; to &lt;code&gt;0x3F&lt;/code&gt;: This range is reserved for future message results (&lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;STD_MESSAGERESULT_OK&lt;/code&gt; (Wert &lt;code&gt;0x00&lt;/code&gt;): Kennzeichnet das reguläre, fehlerfreie Ergebnis einer Antwortnachricht &lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;STD_MESSAGERESULT_ERROR&lt;/code&gt; (Wert &lt;code&gt;0x01&lt;/code&gt;): Signalisiert das Ergebnis einer fehlerhaften Antwortnachricht (Error Response) &lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Interaction and Error Handling&lt;/h4&gt;
-  &lt;p&gt;
-    Regarding error handling and concurrency, the specification for &lt;code&gt;Std_MessageResultType&lt;/code&gt; contains no separate DET or DEM error messages, reentrancy specifications, or specific call contexts. The type is likely to function as a function return value or status parameter in message-based interfaces, which is why thread safety and synchronization requirements presumably depend entirely on the respective calling BSW functions or software components.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification requirements of AUTOSAR Classic R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Verwendung als Funktionsrückgabewert oder Statusparameter in Schnittstellen – Begründung: Der Typ dient der Kodierung von Ergebnissen von Antwortnachrichten, konkrete Funktionssignaturen fehlen jedoch im Payload; 2) Thread-Sicherheit und Synchronisation hängen von den aufrufenden Funktionen ab – Begründung: Als typedef uint8 besitzt der Typ keine eigene Nebenläufigkeits- oder Zustandslogik in der Spezifikation. --&gt;
+  &lt;h4&gt;Einschränkungen und künftige Erweiterungen&lt;/h4&gt;
+  &lt;p&gt;Der Wertebereich von &lt;code&gt;0x02&lt;/code&gt; bis &lt;code&gt;0x3F&lt;/code&gt; ist explizit für künftige Nachrichtenergebnisse reserviert &lt;a class="spec-record-ref" data-req="SWS_Std_91002" href="../../spec/record.html?id=SWS_Std_91002"&gt;[SWS_Std_91002]&lt;/a&gt;. Interpretation: Da die Spezifikation aktuell keine anderen gültigen Rückgabewerte vorsieht, dürften auswertende Module defensiv programmiert sein müssen, um unerwartete oder noch nicht belegte Werte in diesem Bereich sicher abzufangen &lt;a class="spec-record-ref" data-req="SWS_Std_00019" href="../../spec/record.html?id=SWS_Std_00019"&gt;[SWS_Std_00019]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Auswertende Module dürften defensiv programmiert sein müssen, um Werte außerhalb von OK und ERROR abzufangen. – Begründung: Der Wertebereich 0x02 bis 0x3F ist für zukünftige Ergebnisse reserviert, das konkrete Verhalten bei unvorhergesehenen Werten ist in den Quellen jedoch nicht spezifiziert. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch eine KI erstellt und fasst die Festlegungen der AUTOSAR-Spezifikation für Entwickler zusammen.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -239,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2d940ff9f101…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>48b18d78d865…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 18 <span class="dossier-meta-sub">(18 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 18 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -377,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Std_91002","k":"type","d":"AUTOSAR","t":"","n":"Std_MessageResultType"}],"inbound":[{"i":"SWS_Std_00019","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Std_00019].","n":"SWS_Std_00019"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3e4f4624211f70e9.json?v=4825b79f" data-total="18" data-new="18" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Std_91002","k":"type","d":"AUTOSAR","t":"","n":"Std_MessageResultType"}],"inbound":[{"i":"SWS_Std_00019","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Std_00019].","n":"SWS_Std_00019"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3e4f4624211f70e9.json?v=ce7ddf2f" data-total="18" data-new="18" data-figures="0" data-used="0"></script></dialog>

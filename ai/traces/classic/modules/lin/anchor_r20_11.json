@@ -1,6 +1,6 @@
 {
  "annahmen": [
-  "1) Jeder Kanal startet nach Lin_Init vermutlich in LIN_CH_SLEEP (gilt für den Text und diag-zustaende) – Begründung: Die zugehörige Anforderung ist im Payload abgeschnitten; nur die KI-Beschreibung von FIG-56f1936b2cf91cec nennt LIN_CH_SLEEP als Initialzustand."
+  "1) Der Übergang LIN_CH_SLEEP_PENDING → LIN_CH_SLEEP wird durch Lin_GetStatus abgeschlossen – Begründung: Das Zustandsschaubild (SWS LIN Driver S. 24) nennt Lin_GetStatus als Übergang im Master-Teil, und LinIf erwartet beim Prüfen des Go-to-sleep-Kommandos den Rückgabewert LIN_CH_SLEEP (SWS LIN Interface S. 56); ein ausdrückliches R20-11-Requirement liegt im Payload nicht vor."
  ],
  "diagrams": [
   {
@@ -15,33 +15,23 @@
   },
   {
    "art": "seq",
-   "id": "diag-master-senden",
-   "quelle": "anchor_r20_11.diag-master-senden.seq.json"
+   "id": "diag-master-frame",
+   "quelle": "anchor_r20_11.diag-master-frame.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-master-empfang",
-   "quelle": "anchor_r20_11.diag-master-empfang.seq.json"
+   "id": "diag-slave-frame",
+   "quelle": "anchor_r20_11.diag-slave-frame.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-slave-header",
-   "quelle": "anchor_r20_11.diag-slave-header.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-schlaf",
-   "quelle": "anchor_r20_11.diag-schlaf.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-weckerkennung",
-   "quelle": "anchor_r20_11.diag-weckerkennung.seq.json"
+   "id": "diag-wakeup",
+   "quelle": "anchor_r20_11.diag-wakeup.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-statusauswertung",
-   "quelle": "anchor_r20_11.diag-statusauswertung.dot"
+   "id": "diag-fehlerpfade",
+   "quelle": "anchor_r20_11.diag-fehlerpfade.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/lin/anchor_r20_11.html",
@@ -50,14 +40,13 @@
    "budget": [],
    "dublette": {
     "SNIP_CLASSIC_LINIF_SECTION_7_4_2_2_LIN_Slave_specific": "SNIP_CLASSIC_LIN_SECTION_7_4_2_2_LIN_Slave_specific",
-    "SNIP_CLASSIC_LINIF_SECTION_7_4_2_Go_to_sleep_process": "SNIP_CLASSIC_LIN_SECTION_7_4_2_Go_to_sleep_process",
+    "SNIP_CLASSIC_LINIF_SECTION_9_2_2_Frame_reception_in_slave_nodes": "SNIP_CLASSIC_LIN_SECTION_9_2_2_Frame_reception_in_slave_nodes",
+    "SNIP_CLASSIC_LIN_SECTION_7_1_2_2_Frame_reception_in_slave_nodes": "SNIP_CLASSIC_LINIF_SECTION_7_1_2_2_Frame_reception_in_slave_nodes",
     "SNIP_CLASSIC_LIN_SECTION_7_1_4_1_Header": "SNIP_CLASSIC_LINIF_SECTION_7_1_4_1_Header",
-    "SNIP_CLASSIC_LIN_SECTION_8_3_1_2_Lin_CheckWakeup": "SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup",
-    "SNIP_CLASSIC_LIN_SECTION_9_2_2_Frame_reception_in_slave_nodes": "SNIP_CLASSIC_LINIF_SECTION_9_2_2_Frame_reception_in_slave_nodes"
+    "SNIP_CLASSIC_LIN_SECTION_8_3_1_2_Lin_CheckWakeup": "SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup"
    },
    "inhaltsverzeichnis": [],
    "ohne_inhalt": [
-    "SNIP_CLASSIC_CAN_FIGURE_Figure_9_9_ECUSTATEMANAGER",
     "SNIP_CLASSIC_LINIF_FIGURE_Figure_9_15",
     "SNIP_CLASSIC_LIN_FIGURE_Figure_10_11",
     "SNIP_CLASSIC_LIN_FIGURE_Figure_10_1_LINDRIVER",
@@ -100,38 +89,73 @@
     "SNIP_CLASSIC_LIN_SECTION_7_6_3_7_LIN_TP_reception_error",
     "SNIP_CLASSIC_LIN_SECTION_8_3_2_Services_affecting_a_single_LIN_channel",
     "SNIP_CLASSIC_LIN_SECTION_8_API_specification",
-    "SNIP_CLASSIC_LIN_SECTION_9_2_Frame_Reception",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P28_001",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P29_002",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P29_003",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P29_004",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P29_005",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P29_006",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P30_007",
-    "SNIP_LinIf_AUTOSAR_SWS_LIND_P30_008",
-    "SNIP_LinIf_AUTOSAR_SWS_LINI_P20_012",
-    "SNIP_LinIf_AUTOSAR_SWS_LINI_P20_013",
-    "SNIP_LinIf_AUTOSAR_SWS_LINI_P35_017",
-    "SNIP_LinIf_AUTOSAR_SWS_LINI_P35_018",
-    "SNIP_LinIf_AUTOSAR_SWS_LINI_P41_029",
-    "SNIP_det_AUTOSAR_SWS_LIND_P29_006",
-    "SNIP_det_AUTOSAR_SWS_LIND_P35_014",
-    "SNIP_det_AUTOSAR_SWS_LIND_P35_015",
-    "SNIP_det_AUTOSAR_SWS_LIND_P35_016",
-    "SNIP_det_AUTOSAR_SWS_LIND_P43_019",
-    "SNIP_det_AUTOSAR_SWS_LIND_P56_029",
-    "SNIP_det_AUTOSAR_SWS_LINI_P111_063"
+    "SNIP_CLASSIC_LIN_SECTION_9_2_Frame_Reception"
    ],
    "ohne_text": []
   },
-  "im_prompt": 162,
-  "im_prompt_schaubilder": 89,
-  "kandidaten": 231,
+  "im_prompt": 116,
+  "im_prompt_schaubilder": 49,
+  "kandidaten": 164,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "887be0623f97147c2b36809be5cf8a47765c2382b49b2ebabce0436f113f5f07",
- "output_store": "ai/store/outputs/88/887be0623f97147c2b36809be5cf8a47765c2382b49b2ebabce0436f113f5f07.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-zustaende"
+  ],
+  "oneliner_chars": 109,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 78,
+   "3": 290,
+   "4": 1827
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_4_Callback_notifications: SWS_LINDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_10_2_3_LinChannel: SWS_LINDriver S. 60 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_4_3_1_1_Wakeup_during_sleep_transition_in_master_nodes: SWS_LINInterface S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_4_4_Data_byte_mapping: SWS_LINDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_7_4_2_3_Common: SWS_LINDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_2_1_1_Header: SWS_LINInterface S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_3_1_1_Header_and_response: SWS_LINInterface S. 37 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_7_1_4_1_Header: SWS_LINInterface S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_2_1_3_Status_check: SWS_LINInterface S. 35 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_4_3_2_1_Receive_data_consistency_Master_only: SWS_LINDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_1_With_no_answer: SWS_LINInterface S. 127 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_3_With_collision: SWS_LINInterface S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_6_Lin_GetStatus: SWS_LINDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_2_With_answer_No_collision: SWS_LINInterface S. 128 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_3_With_collision: SWS_LINInterface S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_3_1_2_Status_check: SWS_LINInterface S. 40 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_9_1_2_Frame_transmission_in_slave_nodes: SWS_LINInterface S. 121 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_2_2_Frame_reception_in_slave_nodes: SWS_LINInterface S. 132 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_2_Lin_GoToSleep: SWS_LINDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_5_1_Background_Rationale: SWS_LINDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_3_Lin_GoToSleepInternal: SWS_LINDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_5_2_Requirements: SWS_LINDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup: SWS_LINDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_2_20_LinIf_CheckWakeup: SWS_LINInterface S. 112 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_FIGURE_Figure_9_10_ECUSTATEMANAGER: SWS_ECUStateManager S. 173 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup: SWS_LINDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_2_20_LinIf_CheckWakeup: SWS_LINInterface S. 112 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-49b6c3d4a23ec0b6: AUTOSAR_SWS_ECU_StateManager S. 147 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_4_Lin_Wakeup: SWS_LINDriver S. 45 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_1_3_Lin_GetVersionInfo: SWS_LINDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup: SWS_LINDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_5_LinDemEventParameterRefs: SWS_LINDriver S. 65 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_General_Overview: SWS_LINDriver S. 4 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "4fc0200bdbcdae7eeff2d3c2a87d9952ecae7a19bc09c14a469e96e71ae99f4c",
+ "output_store": "ai/store/outputs/4f/4fc0200bdbcdae7eeff2d3c2a87d9952ecae7a19bc09c14a469e96e71ae99f4c.html",
  "params": {
   "module": "lin",
   "platform": "classic",
@@ -160,9 +184,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "41629e9b206801117bac2d2613d1a44410787a9ef42c8f53aebedd4c502579ad",
- "prompt_store": "ai/store/prompts/41/41629e9b206801117bac2d2613d1a44410787a9ef42c8f53aebedd4c502579ad.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "ea366bb8619ce76dab74185772f97c69e73f89fa74cb7b2ee481c1606d36cfb9",
+ "prompt_store": "ai/store/prompts/ea/ea366bb8619ce76dab74185772f97c69e73f89fa74cb7b2ee481c1606d36cfb9.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -175,14 +199,55 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.411184,
-   "cost_usd_reported": 1.411184,
-   "created_at": "2026-10-09T07:14:07Z",
-   "duration_api_seconds": 352.189,
-   "duration_seconds": 352.284,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.266976,
+   "cost_usd_reported": 1.266976,
+   "created_at": "2026-10-13T03:02:49Z",
+   "duration_api_seconds": 351.387,
+   "duration_seconds": 354.421,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_4_Callback_notifications: SWS_LINDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_10_2_3_LinChannel: SWS_LINDriver S. 60 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_4_3_1_1_Wakeup_during_sleep_transition_in_master_nodes: SWS_LINInterface S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_4_4_Data_byte_mapping: SWS_LINDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_7_4_2_3_Common: SWS_LINDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_2_1_1_Header: SWS_LINInterface S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_3_1_1_Header_and_response: SWS_LINInterface S. 37 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_7_1_4_1_Header: SWS_LINInterface S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_2_1_3_Status_check: SWS_LINInterface S. 35 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_4_3_2_1_Receive_data_consistency_Master_only: SWS_LINDriver S. 30 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_1_With_no_answer: SWS_LINInterface S. 127 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_3_With_collision: SWS_LINInterface S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_6_Lin_GetStatus: SWS_LINDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_2_With_answer_No_collision: SWS_LINInterface S. 128 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_5_1_3_With_collision: SWS_LINInterface S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_1_3_1_2_Status_check: SWS_LINInterface S. 40 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_9_1_2_Frame_transmission_in_slave_nodes: SWS_LINInterface S. 121 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_9_2_2_Frame_reception_in_slave_nodes: SWS_LINInterface S. 132 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_2_Lin_GoToSleep: SWS_LINDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_5_1_Background_Rationale: SWS_LINDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_3_Lin_GoToSleepInternal: SWS_LINDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_5_2_Requirements: SWS_LINDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup: SWS_LINDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_2_20_LinIf_CheckWakeup: SWS_LINInterface S. 112 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_FIGURE_Figure_9_10_ECUSTATEMANAGER: SWS_ECUStateManager S. 173 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup: SWS_LINDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_2_20_LinIf_CheckWakeup: SWS_LINInterface S. 112 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-49b6c3d4a23ec0b6: AUTOSAR_SWS_ECU_StateManager S. 147 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_2_4_Lin_Wakeup: SWS_LINDriver S. 45 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_8_3_1_3_Lin_GetVersionInfo: SWS_LINDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LINIF_SECTION_8_3_1_2_Lin_CheckWakeup: SWS_LINDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_10_2_5_LinDemEventParameterRefs: SWS_LINDriver S. 65 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_LIN_SECTION_General_Overview: SWS_LINDriver S. 4 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_LIN_SECTION_7_3_3_State_diagrams: SWS_LINDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -191,19 +256,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.411184,
-     "inputTokens": 118671,
+     "costUSD": 1.266976,
+     "inputTokens": 79249,
      "maxOutputTokens": 128000,
-     "outputTokens": 46825,
+     "outputTokens": 47499,
      "provider": "firstParty",
-     "thinkingTokens": 23541,
+     "thinkingTokens": 23609,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "66425bda-857a-4f81-8d39-ad7a1c3a7e67",
+   "run_id": "4af3dd03-4caa-42e1-b427-3b4782584182",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/66425bda-857a-4f81-8d39-ad7a1c3a7e67.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/4af3dd03-4caa-42e1-b427-3b4782584182.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -212,11 +277,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 118671,
-    "output_tokens": 46825,
+    "inference_geo": "global",
+    "input_tokens": 79249,
+    "output_tokens": 47499,
     "output_tokens_details": {
-     "thinking_tokens": 23541
+     "thinking_tokens": 23609
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -228,11 +293,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 118671,
-    "output": 46825,
-    "thinking": 23541
+    "input_uncached": 79249,
+    "output": 47499,
+    "thinking": 23609
    },
-   "wall_seconds": 353.646
+   "wall_seconds": 355.752
   }
  ],
  "schema": "ai-trace@2",

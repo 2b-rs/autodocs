@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Crypto_91003" class="dossier-modal dossier-workbench" data-dossier-sha="a9bfb52101975c9d" aria-labelledby="dossier-modal-SWS_Crypto_91003-title">
+<dialog id="dossier-modal-SWS_Crypto_91003" class="dossier-modal dossier-workbench" data-dossier-sha="3569ddc4e783eee4" aria-labelledby="dossier-modal-SWS_Crypto_91003-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Crypto_91003-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Crypto_91003)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,696 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,151 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Crypto_ProcessJob'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,31 +206,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d012bfb1bbb05e08d1f8f364013c27bc928611d20c5b3acb2eb9363e1d56b929" data-trace-output="a9bfb52101975c9d443ab28e1336f39bbe3831ecb288cf99ab568464cf7fc268" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="58fc9052e1fa0e043718cd9cfd91628b24982d71497a031f4952d8e51187086d" data-trace-output="3569ddc4e783eee4b4c3abe880584895a9231d7e9c1e3482de233dcc82d1a812" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Führt ein im Job konfiguriertes kryptografisches Primitiv synchron oder asynchron auf einem Treiber-Objekt aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The function &lt;code&gt;Crypto_ProcessJob&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;) serves to perform the cryptographic primitive configured in parameter &lt;code&gt;job&lt;/code&gt; on the Crypto Driver Object referenced via &lt;code&gt;objectId&lt;/code&gt;. The interface is reentrant. The execution behavior is synchronous or asynchronous depending on the job configuration. Via the in-out parameter &lt;code&gt;job&lt;/code&gt; (type &lt;code&gt;Crypto_JobType*&lt;/code&gt;), both controlling parameter structures and pointers to the result data buffers are passed.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Crypto_ProcessJob&lt;/code&gt; führt das im Parameter &lt;code&gt;job&lt;/code&gt; konfigurierte kryptografische Primitiv auf dem durch &lt;code&gt;objectId&lt;/code&gt; referenzierten Crypto Driver Object aus &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;. Der Aufruf ist reentrant und arbeitet abhängig von der Job-Konfiguration synchron oder asynchron &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;. Über den Zeiger auf &lt;code&gt;Crypto_JobType&lt;/code&gt; werden sowohl Konfigurationsdaten für das Primitiv als auch Puffer für die Ergebnisdaten übergeben &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error Handling and Validation&lt;/h4&gt;
-  &lt;p&gt;
-    Prior to job execution, the crypto driver checks the validity of the key references:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      If &lt;code&gt;job-&amp;gt;cryptoKeyId&lt;/code&gt; or optionally &lt;code&gt;job-&amp;gt;targetCryptoKeyId&lt;/code&gt; are out of range, &lt;code&gt;Crypto_ProcessJob&lt;/code&gt; reports the error &lt;code&gt;CRYPTO_E_PARAM_HANDLE&lt;/code&gt; to the DET and returns &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00217" href="../../spec/record.html?id=SWS_Crypto_00217"&gt;[SWS_Crypto_00217]&lt;/a&gt;). This also applies in particular if an invalid &lt;code&gt;targetCryptoKeyId&lt;/code&gt; is passed for the service &lt;code&gt;CRYPTO_KEYDERIVE&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00202" href="../../spec/record.html?id=SWS_Crypto_00202"&gt;[SWS_Crypto_00202]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      If the random number generator service is requested and entropy is exhausted, the function reports the runtime error &lt;code&gt;CRYPTO_E_RE_ENTROPY_EXHAUSTED&lt;/code&gt; and returns &lt;code&gt;CRYPTO_E_ENTROPY_EXHAUSTED&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_00141" href="../../spec/record.html?id=SWS_Crypto_00141"&gt;[SWS_Crypto_00141]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      According to &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;, the function acknowledges successful requests with &lt;code&gt;E_OK&lt;/code&gt;. In the event of overload or a full queue, &lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt; is reported. Additional type-specific error codes include key access and consistency errors (&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;) as well as &lt;code&gt;CRYPTO_E_JOB_CANCELED&lt;/code&gt; for canceled synchronous jobs.
-    &lt;/li&gt;
-  &lt;/ul&gt;
+&lt;p&gt;Vor der eigentlichen Ausführung eines Jobs prüft der Treiber die Schlüsselbezeichner auf Gültigkeit: Liegen &lt;code&gt;job-&amp;gt;cryptoKeyId&lt;/code&gt; oder gegebenenfalls &lt;code&gt;job-&amp;gt;targetCryptoKeyId&lt;/code&gt; außerhalb des zulässigen Bereichs, meldet die Funktion den Fehler &lt;code&gt;CRYPTO_E_PARAM_HANDLE&lt;/code&gt; an das DET und gibt &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Crypto_00217" href="../../spec/record.html?id=SWS_Crypto_00217"&gt;[SWS_Crypto_00217]&lt;/a&gt;. Dies gilt auch für den Dienst &lt;code&gt;CRYPTO_KEYDERIVE&lt;/code&gt; (&lt;code&gt;job-&amp;gt;jobPrimitiveInfo-&amp;gt;primitiveInfo-&amp;gt;service&lt;/code&gt;), sofern &lt;code&gt;job-&amp;gt;targetCryptoKeyId&lt;/code&gt; ungültig ist &lt;a class="spec-record-ref" data-req="SWS_Crypto_00202" href="../../spec/record.html?id=SWS_Crypto_00202"&gt;[SWS_Crypto_00202]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically based on the specification AUTOSAR CP R20-11.
-  &lt;/p&gt;
+&lt;p&gt;Neben &lt;code&gt;E_OK&lt;/code&gt; und &lt;code&gt;E_NOT_OK&lt;/code&gt; signalisieren spezifische Fehlercodes das Scheitern der Anforderung &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;, wenn das Treiber-Objekt belegt oder dessen Warteschlange voll ist &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;,&lt;/li&gt;
+&lt;li&gt;schlüsselbezogene Fehler wie &lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;, &lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt; oder &lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;,&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_JOB_CANCELED&lt;/code&gt; bei Abbruch eines synchronen Jobs &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt; sowie&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CRYPTO_E_ENTROPY_EXHAUSTED&lt;/code&gt; bei unzureichender Entropie eines Zufallsgenerators; hierbei meldet die Funktion zusätzlich den Laufzeitfehler &lt;code&gt;CRYPTO_E_RE_ENTROPY_EXHAUSTED&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Crypto_00141" href="../../spec/record.html?id=SWS_Crypto_00141"&gt;[SWS_Crypto_00141]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Crypto_91003" href="../../spec/record.html?id=SWS_Crypto_91003"&gt;[SWS_Crypto_91003]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI basierend auf AUTOSAR R20-11 Spezifikationsdaten erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -252,9 +261,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d012bfb1bbb0…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>58fc9052e1fa…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -289,8 +298,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -327,7 +336,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 4 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -390,4 +399,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_91003","k":"function","d":"AUTOSAR","t":"","n":"Crypto_ProcessJob"}],"inbound":[{"i":"SWS_Crypto_00217","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Crypto_00217].","n":"SWS_Crypto_00217"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/034ef316ec97f208.json?v=16496bee" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_91003","k":"function","d":"AUTOSAR","t":"","n":"Crypto_ProcessJob"}],"inbound":[{"i":"SWS_Crypto_00217","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Crypto_00217].","n":"SWS_Crypto_00217"}]}</script></dialog>

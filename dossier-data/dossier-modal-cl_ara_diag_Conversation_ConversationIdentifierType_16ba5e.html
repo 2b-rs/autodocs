@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e" class="dossier-modal dossier-workbench" data-dossier-sha="eed79f1ba1aecf16" aria-labelledby="dossier-modal-cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e-title">
+<dialog id="dossier-modal-cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e" class="dossier-modal dossier-workbench" data-dossier-sha="ea1200e63aab7a6b" aria-labelledby="dossier-modal-cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,744 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,266 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::diag::Conversation::ConversationIdentifierType' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e",
@@ -218,37 +237,56 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="97538dd9e87bb278206ef4efef747b33f492b752b98f7f956a69b154913480cb" data-trace-output="eed79f1ba1aecf16843b9e9d7528c0f7a9895a5e1ecaf3fddf3a312921667282" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="a39668937e7cba1a810a662f693c4f61a6b4b795529528587b8da6a1f3936fb9" data-trace-output="ea1200e63aab7a6be59c4d7927c4444fb697064d797d5774200a6899a2e01b5d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt Eigenschaften zur eindeutigen Identifikation einer Diagnose-Konversation." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Structure &lt;code&gt;ara::diag::Conversation::ConversationIdentifierType&lt;/code&gt; belongs to the diagnostics functional cluster (module &lt;code&gt;diag&lt;/code&gt;) within the AUTOSAR Adaptive Platform for Release R25-11. According to the specification in &lt;a class="spec-record-ref" data-req="SWS_DM_00691" href="../spec/record.html?id=SWS_DM_00691"&gt;[SWS_DM_00691]&lt;/a&gt;, this type serves to define and encapsulate properties that allow unique identification of a diagnostic conversation (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 “Struct: ConversationIdentifierType”&lt;/a&gt;). It is declared as a public type within the scope of class &lt;code&gt;ara::diag::Conversation&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=1110"&gt;AUTOSAR_AP_SWS_Diagnostics p. 1110 “Definition of API class ara::diag::Conversation::ConversationIdentifierType”&lt;/a&gt;).&lt;/p&gt;
-&lt;p&gt;In the system architecture of a diagnostic-capable Adaptive application, the data structure assumes the role of a standardized descriptor. Diagnostic conversations represent logical communication relationships between external diagnostic testers and internal functional components of the vehicle. To reference these sessions uniquely across the system and within the application, &lt;code&gt;ConversationIdentifierType&lt;/code&gt; bundles the relevant connection parameters. Interaction partners primarily include the Diagnostic Management of the Adaptive Platform, higher-level conversation abstraction &lt;code&gt;ara::diag::Conversation&lt;/code&gt;, and application-side diagnostic routines and service handlers that process diagnostic requests in the context of a particular connection.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt Eigenschaften zur eindeutigen Identifikation einer Diagnose-Konversation.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;
+Die C++-Datenstruktur &lt;code&gt;ara::diag::Conversation::ConversationIdentifierType&lt;/code&gt; stellt im AUTOSAR-Adaptive-Modul &lt;code&gt;diag&lt;/code&gt; Eigenschaften bereit, die eine eindeutige Identifikation einer Diagnose-Konversation ermöglichen (&lt;a class="spec-record-ref" data-req="SWS_DM_00691" href="../spec/record.html?id=SWS_DM_00691"&gt;[SWS_DM_00691]&lt;/a&gt;). Innerhalb der Diagnosekommunikation dient der Typ dazu, aktive Verbindungen zwischen Diagnosetestern und dem System anhand standardisierter Verbindungsparameter zu unterscheiden (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 „Struct: ConversationIdentifierType“&lt;/a&gt;). Interpretation: Als reine passive Datenstruktur unterliegt sie der Wertsemantik ohne eigene Zustandslogik, weshalb die Synchronisation bei nebenläufigem Zugriff durch die aufrufende Applikation gewährleistet werden muss.
+&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;
+Die Datenstruktur &lt;code&gt;ara::diag::Conversation::ConversationIdentifierType&lt;/code&gt; bildet einen integralen Bestandteil des Funktionsclusters Diagnostic Management (Modul &lt;code&gt;diag&lt;/code&gt;) innerhalb der AUTOSAR Adaptive Platform im Release R25-11 (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 „Struct: ConversationIdentifierType“&lt;/a&gt;). In der Spezifikation wird dieser Typ gemäß &lt;a class="spec-record-ref" data-req="SWS_DM_00691" href="../spec/record.html?id=SWS_DM_00691"&gt;[SWS_DM_00691]&lt;/a&gt; formal als Struktur (&lt;code&gt;struct ConversationIdentifierType&lt;/code&gt;) definiert. Ihre primäre funktionale Aufgabe besteht laut Spezifikation darin, Eigenschaften bereitzustellen, die eine eindeutige Identifikation einer Diagnose-Konversation ermöglichen („Properties allowing an identification of the conversation.“). Als verschachtelter Typ innerhalb des Gültigkeitsbereichs der Klasse &lt;code&gt;ara::diag::Conversation&lt;/code&gt; ist die Struktur direkt an das Konzept der Diagnosekommunikation gekoppelt und wird im Spezifikationsdokument formal unter den API-Klassen des Moduls geführt (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=1110"&gt;AUTOSAR_AP_SWS_Diagnostics S. 1110&lt;/a&gt;).
+&lt;/p&gt;
+&lt;p&gt;
+In modernen Fahrzeugarchitekturen kommunizieren externe Diagnosetester oder interne Prüfinstanzen über standardisierte Diagnoseprotokolle mit den im Fahrzeug betriebenen Adaptive Applications. Innerhalb dieser Kommunikationsinfrastruktur repräsentiert eine Konversation den logischen Kommunikationskanal zwischen einem solchen Tester und dem fahrzeuginternen Diagnoseserver. Um parallele oder sequenzielle Anfragen verschiedener Tester eindeutig unterscheiden und den zuständigen Diagnose-Handlern zuordnen zu können, erfordert das System eine transparente Kennzeichnung der jeweiligen Verbindung. Der Spezifikationseintrag verweist hierzu auf die übergeordneten Anforderungen &lt;code&gt;RS_Diag_04166&lt;/code&gt;, &lt;code&gt;RS_Diag_04169&lt;/code&gt; sowie &lt;code&gt;RS_Diag_04209&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 „Struct: ConversationIdentifierType“&lt;/a&gt;).
+&lt;/p&gt;
+&lt;p&gt;
+Interpretation: Die Struktur &lt;code&gt;ConversationIdentifierType&lt;/code&gt; dürfte die Gesamtheit jener Identifikationsmerkmale kapseln, die für die Adressierung und Unterscheidung einer aktiven Konversation erforderlich sind, beispielsweise Verbindungskennungen oder Adressierungsinformationen. Durch diese Bündelung relevanter Kenngrößen in einer eigenständigen Struktur stellt AUTOSAR sicher, dass Diagnosekomponenten und Applikationen nicht mit protokollspezifischen Detailstrukturen hantieren müssen, sondern über eine vereinheitlichte Schnittstelle auf die Konversationsmetadaten zugreifen können.
+&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a purely passive data structure (declared via &lt;code&gt;struct ConversationIdentifierType {...};&lt;/code&gt; according to &lt;a class="spec-record-ref" data-req="SWS_DM_00691" href="../spec/record.html?id=SWS_DM_00691"&gt;[SWS_DM_00691]&lt;/a&gt;), this type is subject to the usual rules for value types in C++. The lifecycle of an instance is tied directly to the scope in which the object is declared or managed. Creation and destruction take place without dynamic registration processes or complex initialization phases.&lt;/p&gt;
-&lt;p&gt;Regarding ownership, the structure is typically kept in the state memory of the diagnostic conversation or passed as an immutable reference or copy to application-specific handlers. The structure presumably possesses complete value semantics (value object), so instances can be copied, assigned, and transported without side effects because there is no binding to exclusive system resources. With regard to concurrency, the structure allows parallel, concurrent read access from multiple threads. If modification of instances takes place, synchronization is the responsibility of the calling application logic, as plain data structs in AUTOSAR encapsulate no internal synchronization mechanisms by default.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;
+Als reine Datenstruktur ohne eigene funktionale Member-Methoden (&lt;a class="spec-record-ref" data-req="SWS_DM_00691" href="../spec/record.html?id=SWS_DM_00691"&gt;[SWS_DM_00691]&lt;/a&gt;) unterliegt &lt;code&gt;ConversationIdentifierType&lt;/code&gt; den deterministischen Lebenszyklusregeln elementarer C++-Datentypen. Die Erzeugung einer Instanz erfolgt entweder auf dem Stack innerhalb lokaler Ausführungskontexte oder als Datenelement innerhalb übergeordneter Diagnoseverwaltungsobjekte auf dem Heap. Die Spezifikation definiert den Typ explizit als &lt;code&gt;struct ConversationIdentifierType {...};&lt;/code&gt; (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 „Struct: ConversationIdentifierType“&lt;/a&gt;), was ein direktes Instanziieren und Kopieren unterstützt.
+&lt;/p&gt;
+&lt;p&gt;
+Interpretation: Als passive Datenstruktur dürfte &lt;code&gt;ConversationIdentifierType&lt;/code&gt; reguläre Wertsemantik besitzen und keine eigenen Threads, asynchronen Aktivitäten oder internen Zustandsmaschinen verwalten. Eine Instanz durchläuft somit keine komplexen Zustandswechsel; ihre Konsistenz und Aussagekraft hängen ausschließlich von den zugewiesenen Werten der Identifikationseigenschaften ab. Solange die Werte einer aktiven Diagnose-Konversation entsprechen, repräsentiert die Instanz einen gültigen Identifikator im Gesamtsystem.
+&lt;/p&gt;
+&lt;p&gt;
+Hinsichtlich der Nebenläufigkeit und des Ressourcenmanagements bedeutet die Eigenschaft als reines Datenobjekt, dass die Struktur standardmäßig nicht thread-sicher gegen konkurrierende Schreibzugriffe ist. Da Diagnose-Konversationen in nachrichtenbasierten Systemen häufig über Threads des Diagnose-Daemons bedient werden, muss ein gleichzeitiger lesender und schreibender Zugriff auf dieselbe Instanz von der aufrufenden Anwendungslogik synchronisiert werden, sofern Kopien nicht bevorzugt werden. Der Besitz liegt bei dem Kontext, der die Instanz anlegt oder per Wertübergabe empfängt. Die Zerstörung erfolgt automatisch mit dem Verlassen des Gültigkeitsbereichs und erfordert keine manuellen Bereinigungsschritte.
+&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical flow when using &lt;code&gt;ara::diag::Conversation::ConversationIdentifierType&lt;/code&gt; is divided into providing, querying, and evaluating conversation contexts:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Provision by the runtime environment:&lt;/strong&gt; When an external diagnostic tester directs a request to the vehicle, the diagnostic runtime environment establishes a diagnostic conversation. In the course of this, a corresponding instance of &lt;code&gt;ConversationIdentifierType&lt;/code&gt; is created that carries the identification attributes of this session (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 “Struct: ConversationIdentifierType”&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Query via the conversation instance:&lt;/strong&gt; In typical diagnostic flows, such an identification object is likely to be queried from the associated &lt;code&gt;ara::diag::Conversation&lt;/code&gt; to map the incoming diagnostic request to a specific logical connection or tester source.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Evaluation and logging:&lt;/strong&gt; The application-side processing logic evaluates the properties stored in the identification structure. This allows application-internal context (e.g. session parameters, security levels, or stateful routines) to be targeted specifically to the identified conversation, or structured trace and log entries to be generated.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;For data structure &lt;code&gt;ConversationIdentifierType&lt;/code&gt; itself, the specification defines neither error return values nor exception handling or specific error codes (&lt;a class="spec-record-ref" data-req="SWS_DM_00691" href="../spec/record.html?id=SWS_DM_00691"&gt;[SWS_DM_00691]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 “Struct: ConversationIdentifierType”&lt;/a&gt;). Faulty states therefore do not refer to malfunctions within the type, but to faulty contexts of the higher-level conversation:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Invalid identification:&lt;/strong&gt; Interpretation: Because this is a pure property structure, the type itself triggers no diagnostic errors; error states presumably occur only at a higher level when an identifier is assigned or passed to an already closed, invalid, or no longer existing diagnostic conversation.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Consistency requirements:&lt;/strong&gt; Preconditions for meaningful processing are that the reading application obtains the instance from a valid, active diagnostic connection. If incompletely initialized or obsolete identifiers are passed on, downstream mappings in Diagnostic Management may fail.&lt;/li&gt;
-&lt;/ul&gt;
-
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;
+Der reguläre Nutzungspfad von &lt;code&gt;ConversationIdentifierType&lt;/code&gt; gliedert sich in die Bereitstellung, Auswertung und Weitergabe von Konversationsidentifikatoren bei der Diagnoseabwicklung (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=366"&gt;AUTOSAR_AP_SWS_Diagnostics §8.9.4 „Struct: ConversationIdentifierType“&lt;/a&gt;). Wenn ein externer Diagnosetester eine Verbindung initiiert oder eine Diagnoseanforderung absetzt, erzeugt die zugrundeliegende Diagnoselaufzeitumgebung eine entsprechende Repräsentanz der Konversation.
+&lt;/p&gt;
+&lt;p&gt;
+Innerhalb dieses Prozesses dient die Struktur dazu, dem Diagnose-Handler oder der Adaptive Application mitzuteilen, über welchen Verbindungskontext die Anfrage eingetroffen ist. Eine Applikation fragt die Identifikation typischerweise ab, um sicherheitsrelevante Prüfungen durchzuführen, sitzungsspezifische Kontexte aufzulösen oder Protokollierungen mit einer eindeutigen Kennung zu versehen. Ebenso kann der Identifikator als Parameter in weiterführende Diagnosefunktionen übergeben werden, um Antworten gezielt an denselben Kommunikationspfad zurückzuleiten.
+&lt;/p&gt;
+&lt;p&gt;
+Interpretation: Spezifische Fehlercodes oder strukturinterne Fehlerszenarien sind für &lt;code&gt;ConversationIdentifierType&lt;/code&gt; nicht definiert, da die Fehlererkennung und -behandlung bezüglich fehlerhafter oder abgelaufener Kommunikationsbeziehungen vollständig in den Verantwortungsbereich der übergeordneten Konversationsverwaltung (&lt;code&gt;ara::diag::Conversation&lt;/code&gt;) und der Transportprotokolle fällt. Stellt eine Applikation fest, dass ein Identifikator nicht mehr zu einer bestehenden Sitzung passt, erfolgt die Fehlerbehandlung über die Fehlermechanismen der übergeordneten Diagnose-API, während die Datenstruktur selbst rein deskriptiv bleibt (&lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=1110"&gt;AUTOSAR_AP_SWS_Diagnostics S. 1110&lt;/a&gt;).
+&lt;/p&gt;
 &lt;!-- annahmen:
-1) Vermutlich besitzt die Struktur vollständige Wertesemantik (Value Object) ohne eigene Ressourcenbindung. – Begründung: Aus der Deklaration als reine Datenstruktur (struct) ohne spezifizierte dynamische Ressourcenverwaltung in SWS_DM_00691 folgt das typische Muster eines leichtgewichtigen C++ Value Types.
-2) In typischen Diagnoseabläufen dürfte das Identifikationsobjekt über die Conversation-Schnittstelle abgefragt werden. – Begründung: Der spezifizierte Zweck "Properties allowing an identification of the conversation" erfordert das Auslesen der Merkmale zur Unterscheidung konkreter Diagnoseverbindungen.
-3) Interpretation: Die Struktur selbst löst keine Fehlercodes aus; Fehlerszenarien entstehen erst auf übergeordneter Ebene bei unpassenden oder abgelaufenen Sitzungskontexten. – Begründung: SWS_DM_00691 und die Dokumentstellen spezifizieren für den Typ ausschließlich Datenfeldeigenschaften ohne Methoden oder Fehlercodes.
+1) Interpretation: Die Struktur dürfte primär Identifikationsmerkmale wie Adressierungs- und Protokollparameter bündeln, um aktive Diagnose-Konversationen zu unterscheiden. – Begründung: Der Klassenname ConversationIdentifierType und die Beschreibung „Properties allowing an identification of the conversation“ belegen den Zweck, während die konkreten Member im Payload nicht aufgeführt sind.
+2) Interpretation: Als passive Datenstruktur (struct) dürfte ConversationIdentifierType reguläre Wertsemantik ohne eigene Threads oder interne Zustandsmaschinen aufweisen. – Begründung: Die Syntaxdeklaration weist den Typ als einfaches C++-Struct ohne Methoden aus.
+3) Interpretation: Ein eigenständiges Fehlermanagement dürfte für den Typ nicht existieren, da Fehler auf Ebene der übergeordneten Konversation und Transportprotokolle behandelt werden. – Begründung: Im Payload sind weder Fehlercodes noch Ausnahmen für diesen Typ definiert.
 --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive Platform R25-11 specification (module diag) and summarizes the architecture and integration aspects of &lt;code&gt;ara::diag::Conversation::ConversationIdentifierType&lt;/code&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch ein KI-System generiert und basiert ausschließlich auf den Spezifikationen der AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -290,9 +328,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>97538dd9e87b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a39668937e7c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 2</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 2</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -327,8 +365,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -365,7 +403,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (2 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (2 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -428,4 +466,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_00691","k":"requirement","d":"AUTOSAR Specification","t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_DM_00691]."}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P366_548","d":"AUTOSAR_AP_SWS_Diagnostics","p":366,"t":"⌋\n8.9.4 Struct: ConversationIdentifierType\n[SWS_DM_00691] Definition of API class ara::diag::Conversation::Conversation\nIdentifierType\nUpstream requirements:\nRS_Diag_04166, RS_Diag_04169, RS_Diag_04209\n⌈"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P1110_2013","d":"AUTOSAR_AP_SWS_Diagnostics","p":1110,"t":"Definition of API class ara::diag::Conversation::ConversationIdentifierType"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/e6814cf6b230b1a1.json?v=db84d8f4" data-total="5" data-new="3" data-figures="0" data-used="2"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_00691","k":"requirement","d":"AUTOSAR Specification","t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_DM_00691]."}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P366_548","d":"AUTOSAR_AP_SWS_Diagnostics","p":366,"t":"⌋\n8.9.4 Struct: ConversationIdentifierType\n[SWS_DM_00691] Definition of API class ara::diag::Conversation::Conversation\nIdentifierType\nUpstream requirements:\nRS_Diag_04166, RS_Diag_04169, RS_Diag_04209\n⌈"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P1110_2013","d":"AUTOSAR_AP_SWS_Diagnostics","p":1110,"t":"Definition of API class ara::diag::Conversation::ConversationIdentifierType"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/e6814cf6b230b1a1.json?v=23671311" data-total="0" data-new="0" data-figures="0" data-used="2"></script></dialog>

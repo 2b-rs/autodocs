@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_com__SI_Namespace_proxy_methods_abbc87" class="dossier-modal dossier-workbench" data-dossier-sha="64731a322ead10b9" aria-labelledby="dossier-modal-ns_com__SI_Namespace_proxy_methods_abbc87-title">
+<dialog id="dossier-modal-ns_com__SI_Namespace_proxy_methods_abbc87" class="dossier-modal dossier-workbench" data-dossier-sha="a01f9a56dc530c03" aria-labelledby="dossier-modal-ns_com__SI_Namespace_proxy_methods_abbc87-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_com__SI_Namespace_proxy_methods_abbc87-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_com__SI_Namespace_proxy_methods_abbc87)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,703 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,225 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace &lt;SI-Namespace&gt;::proxy::methods' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -208,45 +227,49 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="8a677b90bae22dd576cfbc348b41a49c216ac497e0625e5b2a53bf64afe85c4b" data-trace-output="64731a322ead10b907d3f2e8bd9d446218deea71cd236421aebb3b8e70cf598c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="7fa554ce3c3b006363495725ecdb5652acf061d959accf191232262ecc94d812" data-trace-output="a01f9a56dc530c0387b73b2044799808653e7627c1358ed6734673a9faaba3d8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Stellt proxy-seitige Methodenklassen für reguläre Serviceaufrufe und Fire-and-Forget-Operationen bereit." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Within module &lt;code&gt;com&lt;/code&gt; of the AUTOSAR Adaptive Platform, the namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; provides the client-side interface representatives for method calls. In the service-oriented architecture of AUTOSAR Adaptive, communication relationships are defined via service interfaces (&lt;code&gt;ServiceInterface&lt;/code&gt;). If such an interface contains operations of type &lt;code&gt;ClientServerOperation&lt;/code&gt;, the interface generator generates a specialized method class in the proxy namespace for each of these operations.&lt;/p&gt;
-&lt;p&gt;The architecture fundamentally distinguishes between two forms of methods, which are controlled by the metamodel attribute &lt;code&gt;fireAndForget&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Stellt proxy-seitige Methodenklassen für reguläre Serviceaufrufe und Fire-and-Forget-Operationen bereit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namensraum &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; stellt die proxy-seitigen Klassen für Methodenaufrufe eines &lt;code&gt;ServiceInterface&lt;/code&gt; im Modul &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform bereit. Für jede &lt;code&gt;ClientServerOperation&lt;/code&gt; wird abhängig vom Metamodell-Attribut &lt;code&gt;ClientServerOperation.fireAndForget&lt;/code&gt; entweder die Klasse &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; für reguläre Aufrufe oder &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; für unidirektionale Aufrufe instanziiert. Während reguläre Methoden serverseitige Rückgabewerte und Fehlermeldungen unterstützen, verarbeiten Fire-and-Forget-Methoden prinzipbedingt keine Antwortnachrichten. Die Lebensdauer der Methodenobjekte dürfte dabei direkt an die Existenz der übergeordneten Proxy-Instanz gebunden sein.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namensraum &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; bildet innerhalb des Moduls &lt;code&gt;com&lt;/code&gt; der AUTOSAR Adaptive Platform die methodenspezifischen Schnittstellenklassen für Service-Proxies ab. Jedes in einem &lt;code&gt;ServiceInterface&lt;/code&gt; modellierte &lt;code&gt;ClientServerOperation&lt;/code&gt; wird abhängig von seinen Konfigurationseigenschaften auf eine entsprechende Methodenklasse abgebildet. Der Namensraum enthält dabei im Wesentlichen zwei Klassenmuster: &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; für Operationen mit Antwortverhalten und &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; für sogenannte Fire-and-Forget-Operationen.&lt;/p&gt;
+
+&lt;p&gt;Die primäre Verantwortlichkeit dieser Klassen besteht darin, Methodenaufrufe einer Client-Anwendung entgegenzunehmen, die Übergabeparameter für den Transport aufzubereiten und die Kommunikation mit der zugrunde liegenden Middleware-Schicht abzuwickeln. Interaktionspartner sind auf der Aufruferseite die anwendungsspezifischen Client-Komponenten sowie auf der Vermittlungsseite die übergeordnete Proxy-Klasse des Namensraums &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt;, welche die Methodeninstanzen aggregiert.&lt;/p&gt;
+
+&lt;p&gt;Die Differenzierung der beiden Klassen richtet sich nach dem Metamodell-Attribut &lt;code&gt;ClientServerOperation.fireAndForget&lt;/code&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Class &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;:&lt;/strong&gt; This class is generated for each &lt;code&gt;ClientServerOperation&lt;/code&gt; for which &lt;code&gt;ClientServerOperation.fireAndForget == FALSE&lt;/code&gt; is configured. It represents synchronous or asynchronous request-response calls where the client expects a response or a result from the server.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Class &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;:&lt;/strong&gt; This class is generated for operations for which &lt;code&gt;ClientServerOperation.fireAndForget == TRUE&lt;/code&gt; applies. It implements a pure one-way message pattern (fire-and-forget) in which the call is dispatched without transmitting a server-side acknowledgement or return value to the client.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; wird für Operationen erzeugt, bei denen &lt;code&gt;ClientServerOperation.fireAndForget == FALSE&lt;/code&gt; konfiguriert ist. Vermutlich kapselt eine Instanz dieser Klasse den asynchronen Aufruf eines Dienstes und stellt das Ergebnis oder eventuelle Anwendungsfehler über einen zukunftsgerichteten Ergebnistyp bereit.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; wird erzeugt, wenn &lt;code&gt;ClientServerOperation.fireAndForget == TRUE&lt;/code&gt; konfiguriert ist. Eine Methode dieser Klasse dürfte als unidirektionaler Aufruf implementiert sein, der keine Antwort vom Server erwartet und dem Aufrufer keinen Rückgabewert liefert.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Within the overall hierarchy of &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt;, these classes encapsulate the serialization of input parameters, the transfer to the underlying communication infrastructure, and, for regular methods, the reception of the response data.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifetime of the classes in namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; is tightly coupled to the higher-level proxy instance of the respective service interface. Interpretation: &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; and &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; instances are likely instantiated as members of the generated service proxy class and therefore completely share its lifecycle.&lt;/p&gt;
-&lt;p&gt;When instantiating the service proxy (after successful service discovery and binding to a concrete service instance), the embedded method objects are initialized. In doing so, they receive the access context to the underlying communication binding. As long as the service proxy remains valid, the method instances are available to the client application. If the service proxy is destroyed, the associated method objects also expire. Ongoing asynchronous calls or still pending responses must be processed or invalidated before or during the proxy's destructor call.&lt;/p&gt;
-&lt;p&gt;With respect to concurrency, method calls are designed such that multiple threads of the application software can invoke the same proxy method, provided that the middleware implementation ensures thread safety for transmission. Because method objects typically do not store stateful invocation context across consecutive calls, they essentially act as stateless function interfaces for message transport.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Erzeugung und Zerstörung der in diesem Namensraum definierten Methodenklassen ist eng an den übergeordneten Proxy gekoppelt. Die Lebensdauer der Methodenobjekte dürfte an die Lebensdauer der umschließenden Proxy-Instanz im Namensraum &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt; gebunden sein. Bei der Instanziierung des Proxy-Objekts werden die zugehörigen Instanzen von &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; und &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; als Member initialisiert und stehen der Anwendung unmittelbar für Aufrufe zur Verfügung.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical sequence when using the classes from &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt; is divided into the following phases:&lt;/p&gt;
+&lt;p&gt;Hinsichtlich des internen Zustands besitzen die Methodenobjekte nach ihrer Initialisierung eine dauerhafte Aufrufbereitschaft, solange die Proxy-Instanz gültig bleibt. Zustandsübergänge einzelner Aufrufe betreffen nicht die Methodeninstanz selbst, sondern die individuellen Aufrufkontexte. Bei nebenläufigen Zugriffen aus mehreren Threads der Client-Anwendung muss gewährleistet sein, dass parallele Aufrufe derselben Methodeninstanz threadsicher initiiert werden können. Die Zerstörung erfolgt implizit beim Verlassen des Gültigkeitsbereichs oder bei der expliziten Zerstörung der Proxy-Instanz, wobei offene Kommunikationsressourcen bereinigt werden.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Ablauf bei der Nutzung der Methodenklassen durch eine Client-Anwendung folgt einer festgelegten Abfolge:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Proxy provisioning:&lt;/strong&gt; The client application finds the desired service instance via the service discovery of module &lt;code&gt;com&lt;/code&gt; and instantiates the typed proxy.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Method access:&lt;/strong&gt; The application accesses the specific method member of the proxy. Interpretation: The invocation of a method object is likely typically performed via an overloaded function call operator (&lt;code&gt;operator()&lt;/code&gt;) of the respective object.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Execution of regular methods (&lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt;):&lt;/strong&gt; For a regular operation, the application passes the declared input parameters. The method object forwards the request via the middleware to the server and returns an object encapsulating the asynchronous result to the calling application. The application can then block synchronously until the result is available, or register an asynchronous notification.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Execution of fire-and-forget methods (&lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;):&lt;/strong&gt; For a one-way operation, the application likewise passes the input parameters to the method object. This object initiates the transmission and returns immediately to the application without providing a return or state object for a result.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Proxy-Bereitstellung:&lt;/strong&gt; Die Anwendung erzeugt oder bezieht eine initialisierte Instanz des Service-Proxy aus dem Namensraum &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Methodenzugriff:&lt;/strong&gt; Der Aufruf der gewünschten Operation erfolgt über die Methoden-Member der Proxy-Instanz, welche die Klassen &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; oder &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; instanziieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ausführung einer regulären Operation:&lt;/strong&gt; Bei Aufruf einer Instanz von &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; übergibt der Client die erforderlichen Eingangsparameter. Der Aufruf stößt die Übertragung an das Zielsystem an. Das Rückgabeobjekt ermöglicht es der Anwendung, das Eintreffen des Ergebnisses abzuwarten oder asynchron weiterzuarbeiten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ausführung einer Fire-and-Forget-Operation:&lt;/strong&gt; Bei Aufruf einer Instanz von &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; werden die Parameter übergeben und unmittelbar zur Weiterleitung an die Übertragungsschicht übermittelt. Die Methode kehrt direkt nach der Übergabe an den Aufrufer zurück.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ergebnisverarbeitung:&lt;/strong&gt; Bei regulären Methodenaufrufen wertet der Client das bereitgestellte Ergebnis aus und prüft, ob die Operation erfolgreich abgeschlossen wurde.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;When calling classes from &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::proxy::methods&lt;/code&gt;, different error levels must be taken into account, which differ depending on the call semantics:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Communication and binding errors:&lt;/strong&gt; A functioning transport channel to the service instance is a precondition for any method call. If the network connection drops or the service instance is no longer reachable, calls fail. For regular &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; classes, a corresponding error is transported via the result object.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Application errors:&lt;/strong&gt; If the server cannot process a regular &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; successfully, an application error defined in the service interface is transmitted back to the client.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Error behavior with fire-and-forget:&lt;/strong&gt; Interpretation: For &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt;, server-side processing errors are likely not reported back to the caller, as fire-and-forget semantically does not provide for a response message. For the application, this means that server-side exceptions or computation errors remain unnoticed unless a separate return channel (such as an event) is used for this purpose. Local errors during parameter acceptance or dispatch, by contrast, can be signaled immediately in the calling context.&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Fehlerbehandlung unterscheidet sich grundlegend zwischen den beiden Methodenarten: Bei regulären Operationen über &lt;code&gt;&amp;lt;Method&amp;gt;&lt;/code&gt; können sowohl Fehler der Übertragungsschicht als auch spezifische Anwendungsfehler auftreten, die in der Schnittstellendefinition hinterlegt sind. Da &lt;code&gt;ClientServerOperation.fireAndForget == FALSE&lt;/code&gt; konfiguriert ist, werden Antwortnachrichten einschließlich möglicher Fehlermeldungen vom Server an den Proxy zurückgemeldet. Die Client-Anwendung kann diese Fehler über das Rückgabeobjekt des Aufrufs auswerten und geeignete Behandlungsroutinen einleiten.&lt;/p&gt;
 
-&lt;!-- annahmen:
-1) &lt;Method&gt;- und &lt;FnFMethod&gt;-Instanzen dürften als Member der generierten Proxy-Klasse instanziiert werden und deren Lebenszyklus teilen. – Begründung: Der Payload definiert sie als Service-Proxy-Methodenklassen für ClientServerOperations, nennt aber keine eigenständige Factory oder Lebenszyklusverwaltung außerhalb des Proxys.
-2) Der Aufruf eines Methodenobjekts dürfte typischerweise über einen überladenen Funktionsaufruf-Operator (operator()) des jeweiligen Objekts erfolgen. – Begründung: Der Payload benennt die Klassen als Methodenklassen eines C++-Service-Proxys, spezifiziert jedoch nicht die genaue Signatur des Aufrufoperators im Auszug.
-3) Bei &lt;FnFMethod&gt; dürften serverseitige Verarbeitungsfehler nicht an den Aufrufer zurückgemeldet werden, da fire-and-forget semantisch keine Antwortnachricht vorsieht. – Begründung: Aus der Bedingung ClientServerOperation.fireAndForget == TRUE folgt die Einweg-Kommunikation ohne Rückkanal.
---&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specification data of AUTOSAR Adaptive Platform Release R25-11 for module com and was created automatically.&lt;/p&gt;
+&lt;p&gt;Im Gegensatz dazu schließt das Design von &lt;code&gt;&amp;lt;FnFMethod&amp;gt;&lt;/code&gt; durch &lt;code&gt;ClientServerOperation.fireAndForget == TRUE&lt;/code&gt; eine serverseitige Fehlerrückmeldung an den Aufrufer prinzipbedingt aus. Fehler, die auf dem Server während der Abarbeitung der Operation auftreten, können nicht an den Proxy übermittelt werden. Vor- und Nachbedingungen beschränken sich auf die lokale Aufrufseite: Vorbedingungen verlangen gültige Parameterwerte und eine einsatzbereite Kommunikationsinfrastruktur. Tritt beim Absenden ein lokaler Fehler auf, kann dieser unmittelbar beim Methodenaufruf signalisiert werden, während serverseitige Ausführungsfehler für den Aufrufer unbemerkt bleiben.&lt;/p&gt;
+
+&lt;!-- annahmen: 1) Vermutlich kapselt eine Instanz von &lt;Method&gt; den asynchronen Aufruf eines ClientServerOperation-Dienstes und gibt das Ergebnis über einen zukunftsgerichteten Ergebnistyp zurück – Begründung: Standardentwurfsmuster für Methoden mit Rückgabewert bei ClientServerOperation.fireAndForget == FALSE. 2) Eine Methode vom Typ &lt;FnFMethod&gt; dürfte als unidirektionaler Aufruf implementiert sein, der keine Antwort vom Server erwartet – Begründung: Semantische Definition von ClientServerOperation.fireAndForget == TRUE. 3) Die Lebensdauer der Methodenobjekte dürfte an die Lebensdauer der umschließenden Proxy-Instanz gebunden sein – Begründung: Methodenobjekte werden typischerweise als Member des Service-Proxy instanziiert. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine künstliche Intelligenz auf Basis der AUTOSAR-Spezifikationsdaten generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -288,7 +311,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8a677b90bae2…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7fa554ce3c3b…</code></div>
               <div><strong>Konstituierende Records:</strong> 2</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

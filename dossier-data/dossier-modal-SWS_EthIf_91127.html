@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91127" class="dossier-modal dossier-workbench" data-dossier-sha="31236686629a2b96" aria-labelledby="dossier-modal-SWS_EthIf_91127-title">
+<dialog id="dossier-modal-SWS_EthIf_91127" class="dossier-modal dossier-workbench" data-dossier-sha="5763afd7123d1278" aria-labelledby="dossier-modal-SWS_EthIf_91127-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91127-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91127)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,355 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,810 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SetPortTestMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,29 +198,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="8411a4af3423ec5990c488d95b8067f74cae5cd52bd0638d8078fe5a3e5a1063" data-trace-output="31236686629a2b96724e5458e1f501a596b41f91c21a748496b06b9dbec1dd88" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="3e1f0657b21d8a306694c71bb67e74c8c5365f3a9354f68302819132913db603" data-trace-output="5763afd7123d1278446d71c68e9e0462b0f4895dad794dd82f90e53907115527" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktiviert synchron einen vorgegebenen Testmodus an einem indizierten Port eines Ethernet-Switches." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous interface &lt;code&gt;EthIf_SetPortTestMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;) activates a specified test mode on an indexed port of an Ethernet switch. The function has the Service ID &lt;code&gt;0x5d&lt;/code&gt; and is provided via the header file &lt;code&gt;EthIf.h&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The function expects the following input parameters:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EthIf_SetPortTestMode&lt;/code&gt; dient der Aktivierung eines vorgegebenen Testmodus an einem indizierten Port eines Ethernet-Switches &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;. Der synchrone Dienst ist über den Header &lt;code&gt;EthIf.h&lt;/code&gt; mit der Service-ID &lt;code&gt;0x5d&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Zur Konfiguration des Testmodus erwartet die Schnittstelle drei Eingabeparameter, während keine Ein-/Ausgabe- oder reinen Ausgabeparameter existieren &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt;: Index of the Ethernet switch in the context of the Ethernet switch driver.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PortIdx&lt;/code&gt;: Index of the port on the addressed Ethernet switch.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Mode&lt;/code&gt;: Test mode to be activated (of type &lt;code&gt;EthTrcv_PhyTestModeType&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Index des Switches im Kontext des jeweiligen Ethernet-Switch-Treibers &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PortIdx&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Index des Ports an dem adressierten Ethernet-Switch &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Mode&lt;/code&gt; (&lt;code&gt;EthTrcv_PhyTestModeType&lt;/code&gt;): Der an dem Switch-Port zu aktivierende Testmodus &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Return values of the function (&lt;code&gt;Std_ReturnType&lt;/code&gt;):&lt;/p&gt;
+&lt;p&gt;Der Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; signalisiert den Erfolg der Operation &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The port test mode for the indexed switch port was set successfully.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Setting the test mode was not successful (e.g. if the indexed Ethernet switch port is not available).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Port-Testmodus für den indizierten Ethernet-Switch-Port wurde erfolgreich gesetzt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Das Setzen des Port-Testmodus war nicht erfolgreich, beispielsweise wenn der adressierte Ethernet-Switch-Port nicht verfügbar ist &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;h4&gt;Interaction&lt;/h4&gt;
-&lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00456" href="../../spec/record.html?id=SWS_EthIf_00456"&gt;[SWS_EthIf_00456]&lt;/a&gt;, &lt;code&gt;EthIf_SetPortTestMode&lt;/code&gt; forwards the call to the function &lt;code&gt;EthSwt_SetPortTestMode&lt;/code&gt; of the corresponding Ethernet switch driver (using &lt;code&gt;EthIfSwitchIdx&lt;/code&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Concurrency&lt;/h4&gt;
-&lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;, the function is classified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) and synchronous.&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert und arbeitet synchron &lt;a class="spec-record-ref" data-req="SWS_EthIf_91127" href="../../spec/record.html?id=SWS_EthIf_91127"&gt;[SWS_EthIf_91127]&lt;/a&gt;. Beim Aufruf leitet &lt;code&gt;EthIf_SetPortTestMode&lt;/code&gt; die Anforderung direkt an die unterlagerte Funktion &lt;code&gt;EthSwt_SetPortTestMode&lt;/code&gt; des korrespondierenden Ethernet-Switch-Treibers weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00456" href="../../spec/record.html?id=SWS_EthIf_00456"&gt;[SWS_EthIf_00456]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -242,7 +257,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8411a4af3423…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3e1f0657b21d…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -380,4 +395,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91127","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SetPortTestMode"}],"inbound":[{"i":"SWS_EthIf_00456","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00456].","n":"SWS_EthIf_00456"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/aab653674acacc5b.json?v=589b6355" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91127","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SetPortTestMode"}],"inbound":[{"i":"SWS_EthIf_00456","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00456].","n":"SWS_EthIf_00456"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/aab653674acacc5b.json?v=d9cd514e" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

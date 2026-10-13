@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dlt_00754" class="dossier-modal dossier-workbench" data-dossier-sha="043a89b01cbc8ada" aria-labelledby="dossier-modal-SWS_Dlt_00754-title">
+<dialog id="dossier-modal-SWS_Dlt_00754" class="dossier-modal dossier-workbench" data-dossier-sha="b5dc17b58427a3c5" aria-labelledby="dossier-modal-SWS_Dlt_00754-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dlt_00754-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dlt_00754)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,523 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,978 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dlt_TriggerTransmit'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,28 +193,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d17cce930c076012aab2fa9a55b9c75e7a147faf569d9f27b6e75a4bb32592e4" data-trace-output="043a89b01cbc8adaa4766c6cb6806f9675f967fdba4a3d1055c4897e15603041" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="2f7ee51c3bb5a2a6eb51f876510ac702fdf14a612d653ce48d69bac14202bce4" data-trace-output="b5dc17b58427a3c500a391b2afb6e7e678bbfae1a0255bce50d6cf5c40874076" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kopiert angeforderte SDU-Daten synchron in den Puffer der unteren Schicht, sofern die Puffergröße ausreicht." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous interface &lt;code&gt;Dlt_TriggerTransmit&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;, declared in &lt;code&gt;Dlt.h&lt;/code&gt;, service ID &lt;code&gt;0x41&lt;/code&gt;) is used to provide SDU data for a requested transmission. The caller identifies the SDU to be transmitted via the input parameter &lt;code&gt;TxPduId&lt;/code&gt;. Via the input/output parameter &lt;code&gt;PduInfoPtr&lt;/code&gt;, the data structure is passed that provides the destination buffer (&lt;code&gt;SduDataPtr&lt;/code&gt;) as well as the maximum available buffer size (&lt;code&gt;SduLength&lt;/code&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    Within the function, the called module checks whether the available SDU data fits into the specified buffer area:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Success case (&lt;code&gt;E_OK&lt;/code&gt;):&lt;/strong&gt; If the available data fits into the buffer size reported via &lt;code&gt;PduInfoPtr-&amp;gt;SduLength&lt;/code&gt;, the module copies its data into the buffer &lt;code&gt;PduInfoPtr-&amp;gt;SduDataPtr&lt;/code&gt;. In addition, &lt;code&gt;PduInfoPtr-&amp;gt;SduLength&lt;/code&gt; is updated to the actual number of copied bytes (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Error case (&lt;code&gt;E_NOT_OK&lt;/code&gt;):&lt;/strong&gt; If the buffer size is insufficient, the function returns &lt;code&gt;E_NOT_OK&lt;/code&gt; without modifying &lt;code&gt;PduInfoPtr&lt;/code&gt;. Upon a return of &lt;code&gt;E_NOT_OK&lt;/code&gt;, no SDU data was copied; &lt;code&gt;PduInfoPtr&lt;/code&gt; must not be used by the caller afterwards, as it may contain a NULL pointer or point to invalid data (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;, &lt;code&gt;Dlt_TriggerTransmit&lt;/code&gt; is reentrant for different PDU IDs, but non-reentrant for the same PDU ID.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Dlt_TriggerTransmit&lt;/code&gt; dient gemäß &lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt; dazu, SDU-Daten auf Anfrage einer unterlagerten Schicht in einen bereitgestellten Puffer zu kopieren. Sie ist in &lt;code&gt;Dlt.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x41&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Beim Aufruf werden folgende Parameter übergeben:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TxPduId&lt;/code&gt;: Bezeichner der SDU, deren Übertragung angefordert wird.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PduInfoPtr&lt;/code&gt;: Zeiger auf eine Struktur vom Typ &lt;code&gt;PduInfoType&lt;/code&gt;. Der Aufrufer übergibt über &lt;code&gt;SduDataPtr&lt;/code&gt; den Zielpuffer und über &lt;code&gt;SduLength&lt;/code&gt; die maximal verfügbare Puffergröße.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Innerhalb der Funktion prüft das Modul gemäß &lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;, ob die verfügbaren Daten in die übergebene Puffergröße passen:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Passen die Daten, kopiert die Funktion die Nutzdaten in &lt;code&gt;SduDataPtr&lt;/code&gt;, aktualisiert &lt;code&gt;SduLength&lt;/code&gt; mit der Anzahl der tatsächlich kopierten Bytes und liefert &lt;code&gt;E_OK&lt;/code&gt; zurück.&lt;/li&gt;
+&lt;li&gt;Reicht der Puffer nicht aus, liefert die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, ohne &lt;code&gt;PduInfoPtr&lt;/code&gt; zu modifizieren.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Wird &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben, wurden keine SDU-Daten kopiert. Der Aufrufer darf &lt;code&gt;PduInfoPtr&lt;/code&gt; in diesem Fall nicht weiterverwenden, da er auf ungültige Daten verweisen oder ein NULL-Zeiger sein kann &lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit ist &lt;code&gt;Dlt_TriggerTransmit&lt;/code&gt; reentrant für unterschiedliche PDU-IDs, jedoch nicht reentrant für dieselbe &lt;code&gt;TxPduId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dlt_00754" href="../../spec/record.html?id=SWS_Dlt_00754"&gt;[SWS_Dlt_00754]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde automatisch generiert. Alle Angaben stützen sich auf die referenzierten AUTOSAR-Spezifikationen.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -236,7 +250,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d17cce930c07…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2f7ee51c3bb5…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

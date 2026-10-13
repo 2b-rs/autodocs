@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinIf_00550" class="dossier-modal dossier-workbench" data-dossier-sha="9d8cd0d7b30060c7" aria-labelledby="dossier-modal-SWS_LinIf_00550-title">
+<dialog id="dossier-modal-SWS_LinIf_00550" class="dossier-modal dossier-workbench" data-dossier-sha="01bfad3c0f8478da" aria-labelledby="dossier-modal-SWS_LinIf_00550-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinIf_00550-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinIf_00550)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,334 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,789 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinIf_SetTrcvWakeupMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,27 +193,27 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="191537329a294fd6cec0f83d305d0b528fc71a150cdd1c56d812f8a3660f168e" data-trace-output="9d8cd0d7b30060c7daddb7c267a73684f5abdb4ed2e89e9ec021e61593cc6760" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="aabbd5422a4feb678d5d77ab6a286bf0e6a534d8ce0d2d11e512b5f20e370ccb" data-trace-output="01bfad3c0f8478da46c5cb7753bf6650ada269be3cdf279933d00428bd71c0f5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktiviert, deaktiviert oder löscht Benachrichtigungen für Wakeup-Ereignisse auf einem adressierten LIN-Netzwerk." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;LinIf_SetTrcvWakeupMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;) is used to enable, disable, and reset notification for wakeup events on the respectively addressed network channel. It is defined as synchronous and reentrant and is provided via the header file &lt;code&gt;LinIf.h&lt;/code&gt;.&lt;/p&gt;
-  &lt;p&gt;The parameters of the interface comprise:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Channel&lt;/code&gt; (type: &lt;code&gt;NetworkHandleType&lt;/code&gt;): Unique identification of the affected LIN network channel.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LinTrcvWakeupMode&lt;/code&gt; (type: &lt;code&gt;LinTrcv_TrcvWakeupModeType&lt;/code&gt;): The requested wakeup mode or reason for the transceiver.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;LinIf_SetTrcvWakeupMode&lt;/code&gt; dient dazu, Benachrichtigungen für Wakeup-Ereignisse auf dem angegebenen LIN-Kanal zu aktivieren, zu deaktivieren oder zurückzusetzen &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;. Die Deklaration wird über den Header &lt;code&gt;LinIf.h&lt;/code&gt; bereitgestellt und besitzt die Service-ID &lt;code&gt;0x0b&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;The function returns a status value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The call of the underlying API service of the LIN transceiver driver (LIN Transceiver Driver) was successful.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The call of the transceiver driver failed or at least one of the passed parameters (&lt;code&gt;Channel&lt;/code&gt; or &lt;code&gt;LinTrcvWakeupMode&lt;/code&gt;) is invalid.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;p&gt;Die Schnittstelle erwartet zwei Eingangsparameter &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Channel&lt;/code&gt;: Eindeutige Kennung des anzusprechenden LIN-Netzwerks bzw. -Kanals vom Typ &lt;code&gt;NetworkHandleType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LinTrcvWakeupMode&lt;/code&gt;: Angeforderter Wakeup-Modus des Transceivers vom Typ &lt;code&gt;LinTrcv_TrcvWakeupModeType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is specified as reentrant and operates synchronously (&lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;). Specific DET or DEM notifications are not listed in the element's specification excerpt, which is why error states at interface level are primarily mapped via the return of &lt;code&gt;E_NOT_OK&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Als Rückgabewert liefert die Funktion den Status &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Aufruf des API-Dienstes des LIN-Transceiver-Treibers war erfolgreich und lieferte &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Der API-Dienst des LIN-Transceiver-Treibers schlug fehl (Rückgabe &lt;code&gt;E_NOT_OK&lt;/code&gt;) oder mindestens einer der übergebenen Parameter für Kanal oder Modus ist ungültig &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;p class="ai-note"&gt;This usage note is based on the AUTOSAR Classic R20-11 specification.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich des Zusammenspiels delegiert die Funktion die Anforderung an den LIN-Transceiver-Treiber; vermutlich bildet das LinIf hierbei eine vermittelnde Schnittstelle zwischen oberen Schichten und der Transceiver-Hardware &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;. Da der Dienst als reentrant spezifiziert ist, darf er parallel für unterschiedliche oder denselben Kanal ausgeführt werden &lt;a class="spec-record-ref" data-req="SWS_LinIf_00550" href="../../spec/record.html?id=SWS_LinIf_00550"&gt;[SWS_LinIf_00550]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Vermutlich fungiert LinIf als Durchreicher an den LIN-Transceiver-Treiber – Begründung: Der Rückgabewert spiegelt laut Spezifikation direkt das Ergebnis des Treibers wider. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Maßgeblich sind die offiziellen Spezifikationsdokumente von AUTOSAR.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -235,9 +253,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>191537329a29…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>aabbd5422a4f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -272,8 +290,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -310,7 +328,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -373,4 +391,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_00550","k":"function","d":"AUTOSAR","t":"","n":"LinIf_SetTrcvWakeupMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/7c7b35b331a2e82f.json?v=dd199db3" data-total="7" data-new="7" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinIf_00550","k":"function","d":"AUTOSAR","t":"","n":"LinIf_SetTrcvWakeupMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/7c7b35b331a2e82f.json?v=576db5d4" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91133" class="dossier-modal dossier-workbench" data-dossier-sha="b5140b687cd522bb" aria-labelledby="dossier-modal-SWS_EthIf_91133-title">
+<dialog id="dossier-modal-SWS_EthIf_91133" class="dossier-modal dossier-workbench" data-dossier-sha="ee8e6c29202ccbeb" aria-labelledby="dossier-modal-SWS_EthIf_91133-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91133-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91133)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,411 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,865 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SwitchGetCfgDataRaw'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,27 +198,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="98609e6e76e9dd0cec80c6ad0b70bbf1e45253d2cd0b9d1933f98352cf810884" data-trace-output="b5140b687cd522bb95309d19c4bfed7574acf75b4021f93f330825df507573aa" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="be1ed9572145851fff0da6df622390fe35efc69930fab1dd56017b27acba7fda" data-trace-output="ee8e6c29202ccbeb5d3d53f14d81f14a724f660d177d4f067a45b6e10940bd81" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem asynchronen Auslesen von Speicherdaten eines Ethernet-Switches über den zugehörigen Treiber." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;EthIf_SwitchGetCfgDataRaw&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;) serves to read raw configuration data of variable length from the memory of an indexed Ethernet switch. It is available via header &lt;code&gt;EthIf.h&lt;/code&gt; and operates asynchronously as well as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;).&lt;/p&gt;
-&lt;p&gt;The transfer parameters are structured as follows:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt; (Input): Index of the Ethernet switch in the context of the respective Ethernet switch driver.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Offset&lt;/code&gt; (Input): Offset in the memory of the Ethernet switch from which the reading process begins.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Length&lt;/code&gt; (Input): Length of the data to be copied in bytes.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;BufferPtr&lt;/code&gt; (Output): Pointer to the memory area into which the read data is to be copied.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals whether the read operation could be initiated.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The data read operation was triggered successfully.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The read operation could not be triggered successfully (e.g. if the indexed Ethernet switch is not available).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Interaction and Forwarding&lt;/h4&gt;
-&lt;p&gt;According to requirement &lt;a class="spec-record-ref" data-req="SWS_EthIf_00468" href="../../spec/record.html?id=SWS_EthIf_00468"&gt;[SWS_EthIf_00468]&lt;/a&gt;, &lt;code&gt;EthIf_SwitchGetCfgDataRaw&lt;/code&gt; does not execute the read operation itself, but forwards the call to the driver function &lt;code&gt;EthSwt_GetCfgDataRaw&lt;/code&gt; of the corresponding Ethernet switch driver (&lt;code&gt;EthIfSwitchIdx&lt;/code&gt;).&lt;/p&gt;
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;Due to the classification as &lt;em&gt;Non Reentrant&lt;/em&gt;, the caller must ensure that calls to &lt;code&gt;EthIf_SwitchGetCfgDataRaw&lt;/code&gt; do not occur concurrently or uncoordinatedly. Specific DET or DEM error messages are not specified for this element in the provided specification scope.&lt;/p&gt;
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;
+    Die Schnittstellenfunktion &lt;code&gt;EthIf_SwitchGetCfgDataRaw&lt;/code&gt; dient dem Auslesen von Konfigurations- oder Speicherdaten eines indizierten Ethernet-Switches in variabler Länge &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;. Im Rahmen des Schichtenmodells verarbeitet das Modul den Aufruf nicht eigenständig, sondern leitet ihn direkt an die Funktion &lt;code&gt;EthSwt_GetCfgDataRaw&lt;/code&gt; des zuständigen Ethernet-Switch-Treibers weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00468" href="../../spec/record.html?id=SWS_EthIf_00468"&gt;[SWS_EthIf_00468]&lt;/a&gt;. Die Funktion ist im Header &lt;code&gt;EthIf.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x63&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;h4&gt;Aufruf und Parameter&lt;/h4&gt;
+  &lt;p&gt;
+    Der Aufruf erfolgt asynchron und initiiert lediglich die Leseoperation &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;. An Parametern erwartet die Funktion:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;SwitchIdx&lt;/code&gt;: Index des Ethernet-Switches im Kontext des Ethernet-Switch-Treibers &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;,&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;Offset&lt;/code&gt;: Start-Offset im Speicher des Ethernet-Switches, ab dem der Lesevorgang beginnt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;,&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;Length&lt;/code&gt;: Anzahl der zu lesenden und kopierenden Datenbytes &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;,&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BufferPtr&lt;/code&gt;: Zeiger auf den Zielspeicherort, an welchen die Daten kopiert werden sollen &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;
+    Als Rückgabewert liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt;, wenn der Lesevorgang erfolgreich angestoßen wurde &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;. Kann der Vorgang nicht angestoßen werden – beispielsweise wenn der adressierte Switch nicht verfügbar ist –, wird &lt;code&gt;E_NOT_OK&lt;/code&gt; gemeldet &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;
+    Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) definiert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91133" href="../../spec/record.html?id=SWS_EthIf_91133"&gt;[SWS_EthIf_91133]&lt;/a&gt;. Aufrufer müssen daher sicherstellen, dass Aufrufe sequenziell erfolgen. Interpretation: Wegen des asynchronen Charakters dürfte der Pufferinhalt bei der Rückkehr von &lt;code&gt;E_OK&lt;/code&gt; noch nicht final gefüllt sein, sondern erst zeitverzögert durch den Treiber bereitgestellt werden.
+  &lt;/p&gt;
+&lt;!-- annahmen: 1) Die Bereitstellung der Daten im Puffer BufferPtr dürfte asynchron nach Funktionsrückkehr abgeschlossen werden – Begründung: SWS_EthIf_91133 spezifiziert die Funktion als asynchron und E_OK als rein erfolgreiches Auslösen („read was triggered successfully“), ohne einen expliziten synchronen Kopiervorgang oder Callback zu nennen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,9 +263,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>98609e6e76e9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>be1ed9572145…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -277,8 +300,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -315,7 +338,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 3 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -378,4 +401,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91133","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SwitchGetCfgDataRaw"}],"inbound":[{"i":"SWS_EthIf_00468","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00468].","n":"SWS_EthIf_00468"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/7c38b9a84c5e5ffa.json?v=914f5c88" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91133","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SwitchGetCfgDataRaw"}],"inbound":[{"i":"SWS_EthIf_00468","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00468].","n":"SWS_EthIf_00468"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/7c38b9a84c5e5ffa.json?v=1c34aa49" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

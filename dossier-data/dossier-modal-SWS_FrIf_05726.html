@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_FrIf_05726" class="dossier-modal dossier-workbench" data-dossier-sha="fe4dc7b5b8e4f6da" aria-labelledby="dossier-modal-SWS_FrIf_05726-title">
+<dialog id="dossier-modal-SWS_FrIf_05726" class="dossier-modal dossier-workbench" data-dossier-sha="7edd527c2cef3bb7" aria-labelledby="dossier-modal-SWS_FrIf_05726-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_FrIf_05726-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_FrIf_05726)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,354 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,809 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'FrIf_EnableBusMirroring'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,46 +193,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="8c46f3de7ef0b5a6a2aa3e0594100af00fc59be84ae5c223d0817ee2b44bf3c7" data-trace-output="fe4dc7b5b8e4f6da6a2201bd8e086a6af5ce1d123e08af4f620333164d7659e6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="64884bdfc0932d376c1cce5adf6f38f97da69b0cd958148103b5c173bde612fb" data-trace-output="7edd527c2cef3bb7a9d0db65e4abb2e3d449962986ca4898fa8114b787fd3d8e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktiviert oder deaktiviert das Bus-Mirroring für alle Controller eines adressierten FlexRay-Clusters." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The synchronous and reentrant function &lt;code&gt;FrIf_EnableBusMirroring&lt;/code&gt; serves to activate or deactivate bus mirroring for all FlexRay controllers connected to the addressed FlexRay cluster (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;). The interface is available via header &lt;code&gt;FrIf.h&lt;/code&gt; and has the service ID &lt;code&gt;0x4b&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Parameters and Control&lt;/h4&gt;
-  &lt;p&gt;
-    The behavior of mirroring is configured via two input parameters (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;FrIf_ClstIdx&lt;/code&gt;: Determines the index of the FlexRay cluster to be addressed (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;FrIf_MirroringActive&lt;/code&gt;: Specifies the mirroring mode. In case of &lt;code&gt;TRUE&lt;/code&gt;, the reporting function &lt;code&gt;Mirror_ReportFlexRayFrame&lt;/code&gt; is called for each received or transmitted frame of the addressed controller. In case of &lt;code&gt;FALSE&lt;/code&gt;, &lt;code&gt;Mirror_ReportFlexRayFrame&lt;/code&gt; is not called (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Return Values and Error Checking&lt;/h4&gt;
-  &lt;p&gt;
-    The function returns the execution status via &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;E_OK&lt;/code&gt;: The mirroring mode was switched successfully (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;E_NOT_OK&lt;/code&gt;: An invalid index was passed, or mirroring is globally disabled via &lt;code&gt;FrIfBusMirroringSupport&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    &lt;code&gt;FrIf_EnableBusMirroring&lt;/code&gt; is specified as reentrant and handles the switching process synchronously (&lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    This usage note was created automatically based on the AUTOSAR specification for R20-11.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;FrIf_EnableBusMirroring&lt;/code&gt; schaltet das Bus-Mirroring für sämtliche FlexRay-Controller um, die an den übergebenen FlexRay-Cluster angebunden sind &lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;. Über den Parameter &lt;code&gt;FrIf_ClstIdx&lt;/code&gt; wird der jeweilige Cluster adressiert. Der boolesche Parameter &lt;code&gt;FrIf_MirroringActive&lt;/code&gt; bestimmt den Modus: Bei Übergabe von &lt;code&gt;TRUE&lt;/code&gt; wird für jeden auf den Controllern empfangenen oder gesendeten Frame die Schnittstelle &lt;code&gt;Mirror_ReportFlexRayFrame&lt;/code&gt; aufgerufen; bei &lt;code&gt;FALSE&lt;/code&gt; wird das Weiterleiten der Frames an das Mirror-Modul deaktiviert &lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Der Funktionsaufruf liefert einen Status vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Spiegelungsmodus für den angegebenen Cluster wurde erfolgreich aktualisiert &lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Das Umschalten wurde abgewiesen, wenn die Spiegelungsfunktion global deaktiviert ist (Konfigurationsparameter &lt;code&gt;FrIfBusMirroringSupport&lt;/code&gt;) oder ein ungültiger Index vorliegt &lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;. Interpretation: Die Spezifikationsangabe &lt;code&gt;FrIf_CtrlIdx&lt;/code&gt; bei &lt;code&gt;E_NOT_OK&lt;/code&gt; dürfte sich trotz der abweichenden Bezeichnung auf die Überprüfung des Cluster-Index &lt;code&gt;FrIf_ClstIdx&lt;/code&gt; beziehungsweise der zugeordneten Controller beziehen.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Nebenläufigkeit und Integration&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist als reentrant deklariert und besitzt die Service-ID &lt;code&gt;0x4b&lt;/code&gt;; sie wird über die Header-Datei &lt;code&gt;FrIf.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_FrIf_05726" href="../../spec/record.html?id=SWS_FrIf_05726"&gt;[SWS_FrIf_05726]&lt;/a&gt;. Aufrufer müssen beachten, dass die Ausführung synchron erfolgt. Zusätzliche Fehlerkanäle über DET oder DEM sind für diesen Service nicht aufgeführt.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Spezifikationsangabe FrIf_CtrlIdx bei E_NOT_OK dürfte sich auf die Validierung des übergebenen Cluster-Index FrIf_ClstIdx bzw. der zugeordneten Controller beziehen – Begründung: Der Übergabeparameter der Funktion lautet FrIf_ClstIdx, während die Bedingung für E_NOT_OK FrIf_CtrlIdx nennt. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt; maßgeblich ist die AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -254,7 +248,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8c46f3de7ef0…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>64884bdfc093…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -392,4 +386,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrIf_05726","k":"function","d":"AUTOSAR","t":"","n":"FrIf_EnableBusMirroring"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/480f1aadff8ff404.json?v=44bba41a" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrIf_05726","k":"function","d":"AUTOSAR","t":"","n":"FrIf_EnableBusMirroring"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/480f1aadff8ff404.json?v=283440a4" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>

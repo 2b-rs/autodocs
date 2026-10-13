@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_IdsM_91021" class="dossier-modal dossier-workbench" data-dossier-sha="1f55b802426a060c" aria-labelledby="dossier-modal-SWS_IdsM_91021-title">
+<dialog id="dossier-modal-SWS_IdsM_91021" class="dossier-modal dossier-workbench" data-dossier-sha="4d5be3db802ebaf4" aria-labelledby="dossier-modal-SWS_IdsM_91021-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_IdsM_91021-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_IdsM_91021)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,428 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,882 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'IdsM_SetSecurityEventWithTimestampCountContextDataManager'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,30 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="124787e246dd4a0ff6ff28b33ff8184a681305e824eebd49397daa80311d8b57" data-trace-output="1f55b802426a060c5d7e329f184d8832d602105fd1390ba6becd6b2409e8f58d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a1b69abd8805c8ab2c1eb123878a1fb490dd04ba5763c671efe4e550c5f1ecca" data-trace-output="4d5be3db802ebaf437adc4ca9ad608a9e7dbcc6fc3d0dca9be1752aed5ec8391" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet Sicherheitsereignisse von Smart Sensors mit Zeitstempel, Zählwert und Kontextdaten synchron an den IdsM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;
-The function &lt;code&gt;IdsM_SetSecurityEventWithTimestampCountContextData&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;), specified for element &lt;code&gt;IdsM_SetSecurityEventWithTimestampCountContextDataManager&lt;/code&gt;, serves as an application interface for smart sensors to report security events (Security Events) to the Intrusion Detection System Manager (IdsM). The interface is available via header &lt;code&gt;IdsM.h&lt;/code&gt; and has the service ID &lt;code&gt;0x08&lt;/code&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-The function expects exclusively input parameters:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;securityEventId&lt;/code&gt; (&lt;code&gt;IdsM_SecurityEventIdType&lt;/code&gt;): Designates the ID of the security event to be reported.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;timestamp&lt;/code&gt; (&lt;code&gt;IdsM_TimestampType&lt;/code&gt;): Serves as a temporal reference for the reported security event.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;count&lt;/code&gt; (&lt;code&gt;uint16&lt;/code&gt;): Indicates the count value used as the start value for the event.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;contextData&lt;/code&gt; (&lt;code&gt;const uint8*&lt;/code&gt;): Pointer to optional context data; if no context is available, &lt;code&gt;NULL_PTR&lt;/code&gt; must be passed.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;contextDataSize&lt;/code&gt; (&lt;code&gt;uint16&lt;/code&gt;): Specifies the size of the passed context data.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-The interface has neither input/output nor output parameters and returns no value (return type &lt;code&gt;void&lt;/code&gt;).
-&lt;/p&gt;
-&lt;h4&gt;Concurrency and Execution&lt;/h4&gt;
-&lt;p&gt;
-According to &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;, execution is synchronous (&lt;em&gt;Synchronous&lt;/em&gt;) and non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;). Parallel or preempting calls to the interface must therefore be avoided.
-&lt;/p&gt;
-&lt;p class="ai-note"&gt;This usage note was generated automatically and relies exclusively on the specification requirements from AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;IdsM_SetSecurityEventWithTimestampCountContextData&lt;/code&gt; mit der Service-ID &lt;code&gt;0x08&lt;/code&gt; dient als standardisierte Anwendungsschnittstelle für Smart Sensors, um Sicherheitsereignisse zusammen mit einem Zeitstempel, einem Startzählwert sowie optionalen Kontextdaten an den Intrusion Detection System Manager (IdsM) zu melden &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;. Die Deklaration dieser Schnittstelle wird über den Header &lt;code&gt;IdsM.h&lt;/code&gt; zur Verfügung gestellt &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Der Aufruf wird synchron ausgeführt und verwendet ausschließlich Eingangsparameter, während weder Ein-/Ausgabeparameter noch Ausgabeparameter existieren &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;. Beim Aufruf sind folgende Parameter zu übergeben &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;securityEventId&lt;/code&gt;: Kennung des spezifischen Sicherheitsereignisses, das an den IdsM übermittelt werden soll &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;timestamp&lt;/code&gt;: Zeitstempelwert, der als zeitliche Referenz des aufgetretenen Sicherheitsereignisses fungiert &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;count&lt;/code&gt;: Zählwert, welcher vom IdsM als Startwert für das jeweilige Sicherheitsereignis verwendet wird &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;contextData&lt;/code&gt;: Zeiger auf optionale Kontextdaten zum Ereignis; stehen keine Daten bereit, muss &lt;code&gt;NULL_PTR&lt;/code&gt; übergeben werden &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;contextDataSize&lt;/code&gt;: Numerische Angabe über die Größe der übergebenen Kontextdaten &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;Bezüglich des Ausführungsverhaltens ist die Funktion als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) klassifiziert und besitzt keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;. Aufrufende Smart Sensors müssen daher sicherstellen, dass keine gleichzeitigen oder überlappenden Aufrufe der Schnittstelle stattfinden &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../../spec/record.html?id=SWS_IdsM_91021"&gt;[SWS_IdsM_91021]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -238,9 +247,9 @@ According to &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../..
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>124787e246dd…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a1b69abd8805…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -275,8 +284,8 @@ According to &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../..
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -313,7 +322,7 @@ According to &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../..
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -376,4 +385,4 @@ According to &lt;a class="spec-record-ref" data-req="SWS_IdsM_91021" href="../..
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91021","k":"function","d":"AUTOSAR","t":"","n":"IdsM_SetSecurityEventWithTimestampCountContextDataManager"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a67e733684bf9a41.json?v=c19a5809" data-total="5" data-new="5" data-figures="4" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_IdsM_91021","k":"function","d":"AUTOSAR","t":"","n":"IdsM_SetSecurityEventWithTimestampCountContextDataManager"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a67e733684bf9a41.json?v=6700b074" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

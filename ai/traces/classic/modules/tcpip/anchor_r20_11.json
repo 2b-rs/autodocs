@@ -1,8 +1,9 @@
 {
  "annahmen": [
-  "1) Nach TcpIp_Init steht jeder EthIf-Controller zunächst in TCPIP_STATE_OFFLINE (Text Abschnitt 2 und diag-zustand) – Begründung: Schaubild 7.2 zeigt den Übergang aus dem Initialzustand mit TcpIp_Init(); die R20-11-Requirements nennen den Startzustand nicht ausdrücklich.",
-  "2) Zeitgesteuerte Aufgaben wie TCP-Wiederholungen und Tabellen-Timeouts laufen im Kontext von TcpIp_MainFunction (Text Abschnitt „Verhalten im Fehlerfall“) – Begründung: SWS_TCPIP_00026 beschreibt nur allgemein das Scheduling; SWS_TCPIP_00351 und die Sequenzdiagramme ordnen einzelne Verarbeitungsschritte der MainFunction zu.",
-  "3) diag-tcp-server: Kennzeichnung der Rx/Tx-Frames als SYN, SYN-ACK und ACK – Begründung: Das Schaubild 9.2 zeigt die Aufrufe ohne Segmenttyp; die Zuordnung folgt dem von SWS_TCPIP_00061 geforderten TCP nach RFC 793."
+  "1) TcpIp_MainFunction dürfte zeitgesteuerte Vorgänge wie Timeouts ausführen – Begründung: [SWS_TCPIP_00026] nennt nur „Schedules the TCP/IP stack“.",
+  "2) Rückmeldung per EthSM_TcpIpModeIndication gilt auch in R20-11 – Begründung: nur in Schaubildern späterer Releases belegt. Diagramm diag-hochlauf:",
+  "1) wie Annahme 2. Diagramm diag-adressaufloesung:",
+  "1) Ein eingereihtes Paket wird nach erfolgreicher Auflösung gesendet – Begründung: [SWS_TCPIP_00191] verweist dafür nur auf IETF RFC 1122."
  ],
  "diagrams": [
   {
@@ -16,85 +17,73 @@
    "quelle": "anchor_r20_11.diag-zustand.dot"
   },
   {
+   "art": "seq",
+   "id": "diag-hochlauf",
+   "quelle": "anchor_r20_11.diag-hochlauf.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-tcpverbindung",
+   "quelle": "anchor_r20_11.diag-tcpverbindung.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-tcpsenden",
+   "quelle": "anchor_r20_11.diag-tcpsenden.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-empfang",
+   "quelle": "anchor_r20_11.diag-empfang.seq.json"
+  },
+  {
    "art": "dot",
-   "id": "diag-zuweisung",
-   "quelle": "anchor_r20_11.diag-zuweisung.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-tcp-server",
-   "quelle": "anchor_r20_11.diag-tcp-server.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-tcp-tx",
-   "quelle": "anchor_r20_11.diag-tcp-tx.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-rx",
-   "quelle": "anchor_r20_11.diag-rx.seq.json"
-  },
-  {
-   "art": "dot",
-   "id": "diag-udp-arp",
-   "quelle": "anchor_r20_11.diag-udp-arp.dot"
+   "id": "diag-adressaufloesung",
+   "quelle": "anchor_r20_11.diag-adressaufloesung.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/tcpip/anchor_r20_11.html",
  "kontext": {
   "ausgelassen": {
    "budget": [
-    "FIG-061e71535ad97878",
-    "FIG-1e3bba3b426566fd",
-    "FIG-2879c38a14f07ce5",
-    "FIG-3b9f4ddc62b1bd87",
-    "FIG-3d1a4a1020ef9e2d",
-    "FIG-424cb1bcf71f5a95",
-    "FIG-4cf41b28d0e29710",
-    "FIG-4f32ddd8c61b3551",
-    "FIG-4ff8fb1075a7273f",
-    "FIG-6c21d98d76e15049",
-    "FIG-77d2dea4853ff3dd",
-    "FIG-7d63269c534dfa8e",
-    "FIG-8d7d096012113639",
-    "FIG-8fc056f7407a27a0",
+    "FIG-080163659872db45",
+    "FIG-0adb933adf9dfb1c",
+    "FIG-0b4b610afe7362e6",
+    "FIG-1a41571810ea7cf0",
+    "FIG-35b7a9272dc0f670",
+    "FIG-501160f2c5593236",
+    "FIG-6549228244dbda93",
+    "FIG-6e2954eae3e7baa3",
+    "FIG-70438574f0db0359",
     "FIG-9d20fe2d3dca2299",
-    "FIG-a5dfe11b709accab",
+    "FIG-b34176e1f3f5ade7",
+    "FIG-b3afe6275d79c9da",
     "FIG-c8152578cc76631d",
     "FIG-c8417a9ca16d3d58",
-    "FIG-d0806a6505f752b3",
-    "FIG-d3c828224d2b3b1e",
+    "FIG-d23191929b20f628",
     "FIG-d56fc54338c28d0b",
-    "FIG-d81950f295d4c8f8",
-    "FIG-ec72eea173438a13",
-    "FIG-ecb4fc17478d7666",
-    "FIG-fccf0e4596b6d3d6",
-    "SNIP_CLASSIC_CAN_FIGURE_Figure_6_36",
-    "SNIP_CLASSIC_ETHIF_SECTION_7_7_Message_Transmission",
+    "FIG-d5e64529182eea1b",
+    "FIG-f52ad4a5ad45d739",
+    "FIG-ff87e43e4ed30c74",
+    "SNIP_ADAPTIVE_PLATFORM_FIGURE_Figure_7_4_MANIFESTSPECIFICATION",
     "SNIP_CLASSIC_ETH_FIGURE_Figure_7_6",
-    "SNIP_CLASSIC_NVM_SECTION_5_Release_History",
+    "SNIP_CLASSIC_ETH_SECTION_9_Sequence_diagrams_TCPIP",
+    "SNIP_CLASSIC_KEYM_SECTION_8_7_3_Configurable_interfaces_TCPIP",
     "SNIP_CLASSIC_STD_SECTION_8_3_4_5_SoAd_RequestIpAddrAssignment",
-    "SNIP_CLASSIC_STD_SECTION_8_3_4_6_SoAd_ReleaseIpAddrAssignment",
-    "SNIP_CLASSIC_SYSTEMTEMPLATE_SECTION_4_2_3_6_Template_Description",
+    "SNIP_CLASSIC_STD_SECTION_8_3_4_8_SoAd_GetPhysAddr",
+    "SNIP_CLASSIC_STD_SECTION_9_4_Reception_Upper_Layer_If_API",
     "SNIP_CLASSIC_TCPIP_SECTION_6_Requirements_Tracing",
-    "SNIP_CLASSIC_TCPIP_SECTION_7_1_1_Socket_Connection_Open",
-    "SNIP_CLASSIC_TCPIP_SECTION_7_5_4_Transport_Layer_Security_TLS",
-    "SNIP_CLASSIC_TCPIP_SECTION_7_6_5_2_Transition_from_sub_state_ONLINE_to_WAIT_OFFLINE",
-    "SNIP_CLASSIC_TCPIP_SECTION_7_6_5_3_Transition_from_sub_state_ONLINE_to_ONHOLD",
-    "SNIP_CLASSIC_TCPIP_SECTION_7_6_Message_Reception",
-    "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER",
-    "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_ISO15118CHARGING"
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_SOCKETADAPTOR"
    ],
    "dublette": {
-    "SNIP_ADAPTIVE_TCPIP_FIGURE_Figure_5_4": "SNIP_CLASSIC_TCPIP_FIGURE_Figure_5_4",
     "SNIP_CLASSIC_COMSTACK_SECTION_8_4_Callback_notifications_CHARGINGMANAGER": "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER",
-    "SNIP_CLASSIC_ETH_SECTION_9_3_Reception": "SNIP_CLASSIC_TCPIP_SECTION_9_3_Reception",
-    "SNIP_CLASSIC_ETH_SECTION_9_Sequence_diagrams_TCPIP": "SNIP_CLASSIC_ETHIF_SECTION_9_Sequence_diagrams_TCPIP",
-    "SNIP_CLASSIC_KEYM_SECTION_8_7_3_Configurable_interfaces_TCPIP": "SNIP_CLASSIC_ETHIF_SECTION_8_7_3_Configurable_interfaces",
+    "SNIP_CLASSIC_COMSTACK_SECTION_8_4_Callback_notifications_ISO15118CHARGING": "SNIP_CLASSIC_STD_SECTION_8_4_Callback_notifications_ISO15118CHARGING",
+    "SNIP_CLASSIC_COMSTACK_SECTION_8_6_3_Configurable_interfaces_SOCKETADAPTOR": "SNIP_CLASSIC_TCPIP_SECTION_8_6_3_Configurable_interfaces",
+    "SNIP_CLASSIC_STD_SECTION_8_3_4_18_SoAd_ReadDhcpHostNameOption": "SNIP_CLASSIC_TCPIP_SECTION_8_3_4_18_SoAd_ReadDhcpHostNameOption",
+    "SNIP_CLASSIC_STD_SECTION_8_3_4_19_SoAd_WriteDhcpHostNameOption": "SNIP_CLASSIC_TCPIP_SECTION_8_3_4_19_SoAd_WriteDhcpHostNameOption",
     "SNIP_CLASSIC_STD_SECTION_8_4_Callback_notifications_CHARGINGMANAGER": "SNIP_CLASSIC_TCPIP_SECTION_8_4_Callback_notifications_CHARGINGMANAGER",
-    "SNIP_CLASSIC_STD_SECTION_8_4_Callback_notifications_ISO15118CHARGING": "SNIP_CLASSIC_COMSTACK_SECTION_8_4_Callback_notifications_ISO15118CHARGING",
-    "SNIP_CLASSIC_TCPIP_SECTION_8_4_2_SoAd_CopyTxData": "SNIP_CLASSIC_COMSTACK_SECTION_8_4_2_SoAd_CopyTxData"
+    "SNIP_CLASSIC_TCPIP_SECTION_8_4_2_SoAd_CopyTxData": "SNIP_CLASSIC_COMSTACK_SECTION_8_4_2_SoAd_CopyTxData",
+    "SNIP_CLASSIC_TCPIP_SECTION_9_3_Reception": "SNIP_CLASSIC_ETH_SECTION_9_3_Reception"
    },
    "inhaltsverzeichnis": [
     "SNIP_CLASSIC_TCPIP_SECTION_10_3_Published_Information"
@@ -116,31 +105,57 @@
     "SNIP_CLASSIC_TCPIP_SECTION_8_4_4_Transmission",
     "SNIP_CLASSIC_TCPIP_SECTION_8_8_Service_Interfaces",
     "SNIP_CLASSIC_TCPIP_SECTION_8_API_specification",
-    "SNIP_CLASSIC_TCPIP_SECTION_9_Sequence_diagrams_and_Transition_Tables",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P102_394",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P105_396",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P106_397",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P143_399",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P192_400",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P201_401",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P29_381",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P47_383",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P67_384",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P75_386",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P76_387",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P84_389",
-    "SNIP_det_AUTOSAR_SWS_TCPI_P98_391"
+    "SNIP_CLASSIC_TCPIP_SECTION_9_Sequence_diagrams_and_Transition_Tables"
    ],
    "ohne_text": []
   },
-  "im_prompt": 156,
+  "im_prompt": 154,
   "im_prompt_schaubilder": 51,
-  "kandidaten": 235,
+  "kandidaten": 208,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "c4ce88e987e86b1f359137f68c3243bf5b7df59f718bf8ada0b2de29805920c7",
- "output_store": "ai/store/outputs/c4/c4ce88e987e86b1f359137f68c3243bf5b7df59f718bf8ada0b2de29805920c7.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-zustand"
+  ],
+  "oneliner_chars": 108,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 90,
+   "3": 364,
+   "4": 1856
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_6_6_Behaviour_in_sub_state_ETHSM_STATE_WAIT_OFFLINE: SWS_EthernetStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-1cf9b3a19614db86: AUTOSAR_CP_SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-10414e5815900f9a: AUTOSAR_CP_SWS_EthernetStateManager S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_1_1_Socket_Connection_Open: SWS_SocketAdaptor S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_8_2_TCP_IP_Stack_state_handling: SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-10414e5815900f9a: AUTOSAR_CP_SWS_EthernetStateManager S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-2aa60d4f48a0b33a: AUTOSAR_CP_SWS_TcpIp S. 220 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-7ed57a6633ec157f: AUTOSAR_CP_SWS_TcpIp S. 224 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_8_4_2_2_TcpIp_Bind: SWS_TcpIp S. 85 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_8_4_4_SoAd_TcpAccepted: SWS_SocketAdaptor S. 81 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-d37285cfa483586b: AUTOSAR_CP_SWS_TcpIp S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ETH_SECTION_9_2_TCP_Connection_Setup_Server: SWS_TcpIp S. 107 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_8_4_3_SoAd_TxConfirmation: SWS_SocketAdaptor S. 86 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ETH_SECTION_9_4_Transmission_TCP: SWS_TcpIp S. 109 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_3: SWS_TcpIp S. 131 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ETH_SECTION_9_3_Reception: SWS_TcpIp S. 108 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_2_2_Address_Resolution_Protocol_ARP: SWS_TcpIp S. 29 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-e1c5b285c4033a70: AUTOSAR_CP_SWS_TcpIp S. 176 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-2301857cd9435878: AUTOSAR_CP_SWS_TcpIp S. 251 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_8_4_2_3_TcpIp_TcpConnect: SWS_TcpIp S. 86 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_9_2_Runtime_Errors: SWS_TcpIp S. 65 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-1cf9b3a19614db86: AUTOSAR_CP_SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-1b28097e83d944b5: AUTOSAR_CP_SWS_TcpIp S. 232 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-1cf9b3a19614db86: AUTOSAR_CP_SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "0a7f6b239d7be12dbe5f428b91c0914c62a2dcedac410b3342d6fd53bf0dd023",
+ "output_store": "ai/store/outputs/0a/0a7f6b239d7be12dbe5f428b91c0914c62a2dcedac410b3342d6fd53bf0dd023.html",
  "params": {
   "module": "tcpip",
   "platform": "classic",
@@ -169,9 +184,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "91f564413d326381983d001270f024415d19b08875879375b139372b13db747c",
- "prompt_store": "ai/store/prompts/91/91f564413d326381983d001270f024415d19b08875879375b139372b13db747c.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "0a4cda5ef1d2ae1c97901d7e06b390e3dfa6dcebbf079f873553e43aeb3ba29e",
+ "prompt_store": "ai/store/prompts/0a/0a4cda5ef1d2ae1c97901d7e06b390e3dfa6dcebbf079f873553e43aeb3ba29e.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -184,14 +199,39 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.960844,
-   "cost_usd_reported": 1.960844,
-   "created_at": "2026-10-09T07:31:23Z",
-   "duration_api_seconds": 464.781,
-   "duration_seconds": 464.882,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.82112,
+   "cost_usd_reported": 1.82112,
+   "created_at": "2026-10-13T03:24:57Z",
+   "duration_api_seconds": 408.933,
+   "duration_seconds": 410.215,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_6_6_Behaviour_in_sub_state_ETHSM_STATE_WAIT_OFFLINE: SWS_EthernetStateManager S. 27 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-1cf9b3a19614db86: AUTOSAR_CP_SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-10414e5815900f9a: AUTOSAR_CP_SWS_EthernetStateManager S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_1_1_Socket_Connection_Open: SWS_SocketAdaptor S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_8_2_TCP_IP_Stack_state_handling: SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-10414e5815900f9a: AUTOSAR_CP_SWS_EthernetStateManager S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-2aa60d4f48a0b33a: AUTOSAR_CP_SWS_TcpIp S. 220 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-7ed57a6633ec157f: AUTOSAR_CP_SWS_TcpIp S. 224 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_8_4_2_2_TcpIp_Bind: SWS_TcpIp S. 85 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_8_4_4_SoAd_TcpAccepted: SWS_SocketAdaptor S. 81 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-d37285cfa483586b: AUTOSAR_CP_SWS_TcpIp S. 129 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ETH_SECTION_9_2_TCP_Connection_Setup_Server: SWS_TcpIp S. 107 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_8_4_3_SoAd_TxConfirmation: SWS_SocketAdaptor S. 86 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ETH_SECTION_9_4_Transmission_TCP: SWS_TcpIp S. 109 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_FIGURE_Figure_9_3: SWS_TcpIp S. 131 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ETH_SECTION_9_3_Reception: SWS_TcpIp S. 108 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_2_2_Address_Resolution_Protocol_ARP: SWS_TcpIp S. 29 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-e1c5b285c4033a70: AUTOSAR_CP_SWS_TcpIp S. 176 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-2301857cd9435878: AUTOSAR_CP_SWS_TcpIp S. 251 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_8_4_2_3_TcpIp_TcpConnect: SWS_TcpIp S. 86 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_TCPIP_SECTION_7_9_2_Runtime_Errors: SWS_TcpIp S. 65 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-1cf9b3a19614db86: AUTOSAR_CP_SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-1b28097e83d944b5: AUTOSAR_CP_SWS_TcpIp S. 232 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-1cf9b3a19614db86: AUTOSAR_CP_SWS_TcpIp S. 60 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -200,19 +240,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.960844,
-     "inputTokens": 184996,
+     "costUSD": 1.82112,
+     "inputTokens": 183555,
      "maxOutputTokens": 128000,
-     "outputTokens": 61043,
+     "outputTokens": 54345,
      "provider": "firstParty",
-     "thinkingTokens": 33518,
+     "thinkingTokens": 27943,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "bcc19536-7469-4b54-9847-10ca5655f030",
+   "run_id": "60c695f9-ac4e-406c-99a8-3f028e23a6dc",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/bcc19536-7469-4b54-9847-10ca5655f030.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/60c695f9-ac4e-406c-99a8-3f028e23a6dc.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -221,11 +261,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 184996,
-    "output_tokens": 61043,
+    "inference_geo": "global",
+    "input_tokens": 183555,
+    "output_tokens": 54345,
     "output_tokens_details": {
-     "thinking_tokens": 33518
+     "thinking_tokens": 27943
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -237,11 +277,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 184996,
-    "output": 61043,
-    "thinking": 33518
+    "input_uncached": 183555,
+    "output": 54345,
+    "thinking": 27943
    },
-   "wall_seconds": 466.296
+   "wall_seconds": 411.536
   }
  ],
  "schema": "ai-trace@2",

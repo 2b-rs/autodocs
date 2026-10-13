@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_WdgM_00360" class="dossier-modal dossier-workbench" data-dossier-sha="fa1274e6afa759c3" aria-labelledby="dossier-modal-SWS_WdgM_00360-title">
+<dialog id="dossier-modal-SWS_WdgM_00360" class="dossier-modal dossier-workbench" data-dossier-sha="5a38fb9859c72045" aria-labelledby="dossier-modal-SWS_WdgM_00360-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_WdgM_00360-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_WdgM_00360)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,312 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,767 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'WdgM_GlobalStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,24 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="50fa32c9455e32f191e295ff1c6e21085dfe43bb95c9cab280b20df48791b197" data-trace-output="fa1274e6afa759c38cf9419cbccf12404c983b3444cdcd5a4dc355d0223c1f3b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="f7b49aed5af1615d3a695fd8939e759a8befd304e3e1efd4ed917ae71350cd7e" data-trace-output="5a38fb9859c72045ea88158c1f055971e74f1942e20700ed0157235d6308993d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Repräsentiert den globalen Überwachungsstatus des Watchdog-Manager-Moduls über alle Betriebszustände hinweg." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The type &lt;code&gt;WdgM_GlobalStatusType&lt;/code&gt; is used for variables that represent the global monitoring status of the module Watchdog Manager (WdgM) (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;). It is derived from &lt;code&gt;uint8&lt;/code&gt; and provided via the header &lt;code&gt;Rte_WdgM_Type.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;States and Value Range&lt;/h4&gt;
-  &lt;p&gt;The value range comprises five defined monitoring states (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_OK&lt;/code&gt; (0): The monitoring has yielded no errors (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_FAILED&lt;/code&gt; (1): The monitoring has failed, but is still within the margin of allowed errors (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_EXPIRED&lt;/code&gt; (2): The monitoring has failed and the allowed error tolerance has been exceeded; however, the watchdog driver has not yet been instructed to stop triggering (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_STOPPED&lt;/code&gt; (3): The monitoring has failed, the limit of allowed errors has been exceeded, and the watchdog driver has been instructed to stop triggering. A watchdog reset is imminent (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_DEACTIVATED&lt;/code&gt; (4): The module WdgM is not initialized and consequently does not trigger the watchdogs (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Usage and Interaction&lt;/h4&gt;
-  &lt;p&gt;Software components or upper-level system services that access the watchdog status via RTE interfaces evaluate variables of this type to react to state changes of watchdog monitoring—from regular operation through error tolerance cycles to an imminent reset (&lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;WdgM_GlobalStatusType&lt;/code&gt; dient der Definition von Variablen, die den globalen Überwachungsstatus des Watchdog-Manager-Moduls darstellen &lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;. Er ist vom Basistyp &lt;code&gt;uint8&lt;/code&gt; abgeleitet und wird über den Header &lt;code&gt;Rte_WdgM_Type.h&lt;/code&gt; zur Verfügung gestellt &lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Der Wertebereich umfasst fünf definierte Überwachungszustände &lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_OK&lt;/code&gt; (0): Die Überwachung weist keinerlei Fehler auf.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_FAILED&lt;/code&gt; (1): Die Überwachung ist fehlgeschlagen, befindet sich jedoch noch innerhalb des zulässigen Limits an Fehlern.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_EXPIRED&lt;/code&gt; (2): Die Überwachung ist fehlgeschlagen und das zulässige Fehlerlimit wurde überschritten, der Watchdog-Treiber wurde jedoch noch nicht angewiesen, die Triggerung einzustellen.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_STOPPED&lt;/code&gt; (3): Das Fehlerlimit wurde überschritten und der Watchdog-Treiber wurde angewiesen, die Triggerung zu stoppen, sodass ein Watchdog-Reset unmittelbar bevorsteht.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;WDGM_GLOBAL_STATUS_DEACTIVATED&lt;/code&gt; (4): Das Modul WdgM ist nicht initialisiert und steuert die Watchdogs daher nicht an.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Über diese Zustände bildet der Typ den gesamten Zyklus der Überwachung ab, beginnend bei der Deaktivierung vor der Initialisierung über den regulären bzw. fehlertoleranten Betrieb bis hin zur mehrstufigen Eskalation mit abschließendem Watchdog-Reset bei anhaltenden Fehlern &lt;a class="spec-record-ref" data-req="SWS_WdgM_00360" href="../../spec/record.html?id=SWS_WdgM_00360"&gt;[SWS_WdgM_00360]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI basierend auf der AUTOSAR-Spezifikation erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -232,9 +247,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>50fa32c9455e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f7b49aed5af1…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -269,8 +284,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -307,7 +322,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -370,4 +385,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_WdgM_00360","k":"type","d":"AUTOSAR","t":"","n":"WdgM_GlobalStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/969467ffd20727a8.json?v=7c9891a7" data-total="7" data-new="7" data-figures="3" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_WdgM_00360","k":"type","d":"AUTOSAR","t":"","n":"WdgM_GlobalStatusType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/969467ffd20727a8.json?v=18ebf57a" data-total="5" data-new="5" data-figures="2" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00944" class="dossier-modal dossier-workbench" data-dossier-sha="2efce10eaeb2ad65" aria-labelledby="dossier-modal-SWS_Dem_00944-title">
+<dialog id="dossier-modal-SWS_Dem_00944" class="dossier-modal dossier-workbench" data-dossier-sha="c0259c866b639071" aria-labelledby="dossier-modal-SWS_Dem_00944-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00944-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00944)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,991 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,445 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_IumprDenomCondStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,36 +206,27 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="1d3ec67a4f35191c0477d97f135c6f6b5b8cab5518398bece433fe098066e6c7" data-trace-output="2efce10eaeb2ad65820c41fb58ac75c76692b0fe476f167059d2f32244b3fa53" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8df8011c88ff996dc246e16bd6c32fb9eebe2962be16f37e07e0a3091b949d60" data-trace-output="c0259c866b639071b4e0b7ad3f19e050857ba7819b18d0ecd358d9eb21f28e04" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Zustände einer IUMPR-Nenner-Bedingung für die Übertragung zwischen OBD-relevanten Steuergeräten." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
+&lt;div class="ai-level" data-ai-level="4"&gt;
 &lt;h4&gt;Verwendung&lt;/h4&gt;
-&lt;p&gt;
-Der Datentyp &lt;code&gt;Dem_IumprDenomCondStatusType&lt;/code&gt; basiert auf &lt;code&gt;uint8&lt;/code&gt; und ist über die Header-Datei &lt;code&gt;Rte_Dem_Type.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;. Er bildet die Zustände zusätzlicher IUMPR-Denominator-Bedingungen ab, die zwischen OBD-relevanten Steuergeräten ausgetauscht werden &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;. Folgende Werte sind definiert:
-&lt;/p&gt;
+&lt;p&gt;Der Typ &lt;code&gt;Dem_IumprDenomCondStatusType&lt;/code&gt; basiert auf &lt;code&gt;uint8&lt;/code&gt; und definiert die möglichen Statuszustände einer zusätzlichen IUMPR-Nenner-Bedingung zur Verteilung zwischen OBD-relevanten Steuergeräten &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;. Der Typ ist über &lt;code&gt;Rte_Dem_Type.h&lt;/code&gt; verfügbar und umfasst folgende Werte &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;DEM_IUMPR_DEN_STATUS_NOT_REACHED&lt;/code&gt; (&lt;code&gt;0x00&lt;/code&gt;): Die Denominator-Bedingung ist (noch) nicht erfüllt &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DEM_IUMPR_DEN_STATUS_REACHED&lt;/code&gt; (&lt;code&gt;0x01&lt;/code&gt;): Die Denominator-Bedingung ist erfüllt &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DEM_IUMPR_DEN_STATUS_INHIBITED&lt;/code&gt; (&lt;code&gt;0x02&lt;/code&gt;): Die Denominator-Bedingung ist gesperrt und kann nicht erreicht werden &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DEM_IUMPR_DEN_STATUS_NOT_REACHED&lt;/code&gt; (0x00): Die Bedingung ist (noch) nicht erfüllt.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DEM_IUMPR_DEN_STATUS_REACHED&lt;/code&gt; (0x01): Die Bedingung ist erfüllt.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DEM_IUMPR_DEN_STATUS_INHIBITED&lt;/code&gt; (0x02): Die Bedingung ist gesperrt und kann nicht erreicht werden.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;
-Die Werte &lt;code&gt;0x03&lt;/code&gt; bis &lt;code&gt;0xFF&lt;/code&gt; sind reserviert &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;h4&gt;Zusammenspiel und Nebenläufigkeit&lt;/h4&gt;
-&lt;p&gt;
-Der Typ wird als Parameter &lt;code&gt;ConditionStatus&lt;/code&gt; in zwei C-APIs des DEM verwendet:
-&lt;/p&gt;
+&lt;p&gt;Werte im Bereich von 0x03 bis 0xFF sind reserviert &lt;a class="spec-record-ref" data-req="SWS_Dem_00944" href="../../spec/record.html?id=SWS_Dem_00944"&gt;[SWS_Dem_00944]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Service-Schnittstellen&lt;/h4&gt;
+&lt;p&gt;Im Rahmen des Service-Interfaces &lt;code&gt;IUMPRDenominatorCondition&lt;/code&gt; wird der Status für Bedingungen wie General Denominator, Cold start, EVAP oder 500mi übermittelt &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00742" href="../../spec/record.html?id=SWS_Dem_00742"&gt;[SWS_Dem_00742]&lt;/a&gt;. Es existieren zwei zentrale Service-Funktionen:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;In &lt;code&gt;Dem_SetIUMPRDenCondition&lt;/code&gt; als Eingabewert (IN), um den Zustand einer Bedingung an das DEM eines Steuergeräts weiterzuleiten &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt;. Die Funktion ist reentrant und besitzt synchrone bzw. asynchrone Semantik &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;In &lt;code&gt;Dem_GetIUMPRDenCondition&lt;/code&gt; als Ausgabezeiger (OUT), um den Zustand synchron aus dem DEM des berechnenden Steuergeräts abzufragen &lt;a class="spec-record-ref" data-req="SWS_Dem_00734" href="../../spec/record.html?id=SWS_Dem_00734"&gt;[SWS_Dem_00734]&lt;/a&gt;. Dieser Aufruf ist ebenfalls reentrant &lt;a class="spec-record-ref" data-req="SWS_Dem_00734" href="../../spec/record.html?id=SWS_Dem_00734"&gt;[SWS_Dem_00734]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Dem_SetIUMPRDenCondition&lt;/code&gt;: Leitet den Status über den Eingabeparameter &lt;code&gt;ConditionStatus&lt;/code&gt; synchron oder asynchron an das DEM eines Steuergeräts weiter &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Dem_GetIUMPRDenCondition&lt;/code&gt;: Fragt den Status synchron über den Zeiger-Ausgabeparameter &lt;code&gt;ConditionStatus&lt;/code&gt; von dem Steuergerät ab, auf dem die Bedingungen berechnet werden &lt;a class="spec-record-ref" data-req="SWS_Dem_00734" href="../../spec/record.html?id=SWS_Dem_00734"&gt;[SWS_Dem_00734]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;
-Für Software-Komponenten steht die Serviceschnittstelle &lt;code&gt;IUMPRDenominatorCondition&lt;/code&gt; bereit &lt;a class="spec-record-ref" data-req="SWS_Dem_00742" href="../../spec/record.html?id=SWS_Dem_00742"&gt;[SWS_Dem_00742]&lt;/a&gt;. Sie bietet pro Denominator-Condition-ID einen Port und bindet &lt;code&gt;Dem_IumprDenomCondStatusType&lt;/code&gt; über die Operationen &lt;code&gt;SetIUMPRDenCondition&lt;/code&gt; (Richtung IN) und &lt;code&gt;GetIUMPRDenCondition&lt;/code&gt; (Richtung OUT) an &lt;a class="spec-record-ref" data-req="SWS_Dem_00742" href="../../spec/record.html?id=SWS_Dem_00742"&gt;[SWS_Dem_00742]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-&lt;p&gt;
-Die zugehörigen Funktionen und Schnittstellenoperationen geben den Status über &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück: &lt;code&gt;E_OK&lt;/code&gt; signalisiert eine erfolgreiche Durchführung, während &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben wird, wenn das Setzen oder Abfragen fehlschlägt oder der Status nicht akzeptiert werden kann &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00734" href="../../spec/record.html?id=SWS_Dem_00734"&gt;[SWS_Dem_00734]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00742" href="../../spec/record.html?id=SWS_Dem_00742"&gt;[SWS_Dem_00742]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 erstellt.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Beide Funktionen sind als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00734" href="../../spec/record.html?id=SWS_Dem_00734"&gt;[SWS_Dem_00734]&lt;/a&gt;. Bei erfolgreicher Ausführung geben die APIs &lt;code&gt;E_OK&lt;/code&gt; zurück; schlägt das Setzen oder Abrufen fehl oder kann die Bedingung nicht akzeptiert werden, liefern sie &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00733" href="../../spec/record.html?id=SWS_Dem_00733"&gt;[SWS_Dem_00733]&lt;/a&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00734" href="../../spec/record.html?id=SWS_Dem_00734"&gt;[SWS_Dem_00734]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch durch eine KI auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -257,9 +266,9 @@ Die zugehörigen Funktionen und Schnittstellenoperationen geben den Status über
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1d3ec67a4f35…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8df8011c88ff…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -294,8 +303,8 @@ Die zugehörigen Funktionen und Schnittstellenoperationen geben den Status über
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -332,7 +341,7 @@ Die zugehörigen Funktionen und Schnittstellenoperationen geben den Status über
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 4 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -395,4 +404,4 @@ Die zugehörigen Funktionen und Schnittstellenoperationen geben den Status über
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00944","k":"type","d":"AUTOSAR","t":"","n":"Dem_IumprDenomCondStatusType"}],"inbound":[{"i":"SWS_Dem_00733","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00733].","n":"SWS_Dem_00733"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/00f7b2224917a446.json?v=545756bf" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00944","k":"type","d":"AUTOSAR","t":"","n":"Dem_IumprDenomCondStatusType"}],"inbound":[{"i":"SWS_Dem_00733","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00733].","n":"SWS_Dem_00733"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/00f7b2224917a446.json?v=8fcde38a" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>

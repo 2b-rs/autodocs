@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_BswM_00194" class="dossier-modal dossier-workbench" data-dossier-sha="e8062581deb55535" aria-labelledby="dossier-modal-SWS_BswM_00194-title">
+<dialog id="dossier-modal-SWS_BswM_00194" class="dossier-modal dossier-workbench" data-dossier-sha="a06593958de93df8" aria-labelledby="dossier-modal-SWS_BswM_00194-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_BswM_00194-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_BswM_00194)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,292 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,747 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'BswM_J1939Nm_StateChangeNotification'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,35 +193,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9361772466e8b42306eaee14ff6fb3ed2c04d33292efe90751eecc77ecc91e4c" data-trace-output="e8062581deb5553579d04f359d5da116b48a1e2f0f6ff240b9c91e1fa7569d19" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="47b6489fcb28d113705b5ed457aa668804d6a1a5d00a80526e8ceded095fcccb" data-trace-output="a06593958de93df8027253402965a327b6fb7a94d3b89c6091b76360f13763a5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet dem Modus-Manager synchron erfolgte Zustandswechsel von Knoten im J1939-Netzwerkmanagement." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The function &lt;code&gt;BswM_J1939Nm_StateChangeNotification&lt;/code&gt; (service ID &lt;code&gt;0x18&lt;/code&gt;, declared in &lt;code&gt;BswM_J1939Nm.h&lt;/code&gt;) serves to notify the BSW Mode Manager (&lt;code&gt;BswM&lt;/code&gt;) of the current state of a J1939 node after state changes have occurred &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;BswM_J1939Nm_StateChangeNotification&lt;/code&gt; dient der synchronen Benachrichtigung des BSW Mode Managers über den aktuellen Zustand eines J1939-Netzwerkknotens nach einer erfolgten Zustandsänderung &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;. Die Deklaration ist über die Header-Datei &lt;code&gt;BswM_J1939Nm.h&lt;/code&gt; verfügbar und wird unter der Service-ID &lt;code&gt;0x18&lt;/code&gt; geführt &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Schnittstelle erwartet drei Eingabeparameter und liefert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) zurück &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Network&lt;/code&gt; (&lt;code&gt;NetworkHandleType&lt;/code&gt;): Kennzeichnet den betroffenen J1939-Kanal &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Node&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Numerische Identifikation des betreffenden J1939-Knotens &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;NmState&lt;/code&gt; (&lt;code&gt;Nm_StateType&lt;/code&gt;): Repräsentiert den aktuellen bzw. neu eingenommenen Zustand des Knotens &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Usage and Parameters&lt;/h4&gt;
-  &lt;p&gt;
-    The interface has no return value (&lt;code&gt;void&lt;/code&gt;) and processes three input parameters &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Network&lt;/code&gt; (type &lt;code&gt;NetworkHandleType&lt;/code&gt;): Determines the identification of the affected J1939 channel &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Node&lt;/code&gt; (type &lt;code&gt;uint8&lt;/code&gt;): Transmits the identifier of the respective J1939 node &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;NmState&lt;/code&gt; (type &lt;code&gt;Nm_StateType&lt;/code&gt;): Signals the current or new state of the J1939 node &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Nebenläufigkeit und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die Verarbeitung erfolgt synchron und ist als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;. Daher darf die Benachrichtigung in Systemen mit mehreren Knoten oder Kanälen auch nebenläufig erfolgen. Der Aufrufer dürfte das Modul J1939Nm sein, welches den BswM nach internen Zustandsübergängen über den neuen Status in Kenntnis setzt.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Call Context&lt;/h4&gt;
-  &lt;p&gt;
-    Function execution occurs synchronously (&lt;code&gt;Synchronous&lt;/code&gt;) and is specified as reentrant (&lt;code&gt;Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;. The call is typically expected to be triggered directly by module &lt;code&gt;J1939Nm&lt;/code&gt; as a notification as soon as a state change of a node occurs there.
-  &lt;/p&gt;
-
-  &lt;p&gt;
-    Specific error codes, return values in case of error, and DET or DEM notifications are not defined in the present scope of the specification.
-  &lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Der Aufruf der Funktion dürfte typischerweise durch das Modul J1939Nm erfolgen – Begründung: Der Spezifikationstext beschreibt eine Zustandsbenachrichtigung des J1939Nm, nennt die aufrufende Komponente im Payload jedoch nicht explizit. --&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically based on the specification for AUTOSAR Classic R20-11.
-  &lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Die Spezifikation definiert für diesen Dienst weder spezifische Fehlercodes noch Benachrichtigungen an DET oder DEM &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;. Zudem existieren weder Ausgabeparameter noch Ein-/Ausgabeparameter zur Fehlerindikation &lt;a class="spec-record-ref" data-req="SWS_BswM_00194" href="../../spec/record.html?id=SWS_BswM_00194"&gt;[SWS_BswM_00194]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Aufrufer dürfte das Modul J1939Nm sein – Begründung: Die Spezifikation beschreibt die Funktion als Benachrichtigung über J1939Nm-Zustände, benennt im Payload jedoch keinen expliziten Aufrufer. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -243,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9361772466e8…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>47b6489fcb28…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 14 <span class="dossier-meta-sub">(14 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 14 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -381,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00194","k":"function","d":"AUTOSAR","t":"","n":"BswM_J1939Nm_StateChangeNotification"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1b534b5197a07b8f.json?v=b989c515" data-total="14" data-new="14" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00194","k":"function","d":"AUTOSAR","t":"","n":"BswM_J1939Nm_StateChangeNotification"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1b534b5197a07b8f.json?v=4762ed04" data-total="14" data-new="14" data-figures="2" data-used="0"></script></dialog>

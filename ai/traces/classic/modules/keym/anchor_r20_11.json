@@ -1,36 +1,13 @@
 {
  "annahmen": [
-  "1) Text: Der Konfigurationszeiger von KeyM_Init dürfte in R20-11 faktisch keine Konfiguration übergeben – Begründung: SWS_KeyM_00158 fordert stets NULL_PTR, SWS_KeyM_00043 nennt einen Post-Build-Satz; die Quellen lösen den Widerspruch nicht auf.",
-  "2) Text: KeyM_MainFunction/KeyM_MainBackgroundFunction treiben vermutlich die asynchronen Dienste voran – Begründung: Die Quellen nennen nur „periodisch“ bzw. „im Hintergrund“, ohne die Zuordnung explizit zu machen.",
-  "3) Diagramm diag-zertstatus: Zuordnung von VALIDITY_PERIOD_FAIL, SIGNATURE_FAIL, INVALID_CHAIN_OF_TRUST, INVALID_CONTENT, REVOKED und CERTIFICATE_INVALID zur Verifikationsphase – Begründung: Belegt ist nur die Zuordnung von INVALID_FORMAT/INVALID_TYPE zu Parse-Fehlern; die übrigen Werte beschreiben Prüfergebnisse.",
-  "4) Diagramm diag-zertstatus: Rücksetzen per KeyM_SetCertificate(len=",
-  "0) aus jedem Status – Begründung: Die Quelle spricht allgemein vom Zurücksetzen „eines Zertifikats und seines Status“ ohne Einschränkung des Ausgangsstatus."
+  "1) Zuordnung von KEYM_E_CERTIFICATE_INVALID_CONTENT zu den Parsing-Fehlern und von KEYM_E_CERTIFICATE_REVOKED zu den Prüffehlern (Text und Statusdiagramm) – Begründung: Die Schaubildbeschreibungen nennen nur INVALID_FORMAT und INVALID_TYPE ausdrücklich als Parsing-Fehler; die übrigen Werte sind nur als Enum-Literale in SWS_KeyM_91003 belegt.",
+  "2) Bezug von SWS_KeyM_00166 auf den temporären Ablageweg über KeyM_SetCertificate() – Begründung: Der Payload-Auszug des Requirements nennt die auslösende Funktion nicht; die Dokumentstelle S. 31 beschreibt KeyM_SetCertificate() als RAM-Ablage, die nicht für die Daueraufbewahrung gedacht ist."
  ],
  "diagrams": [
   {
    "art": "dot",
    "id": "diag-kontext",
    "quelle": "anchor_r20_11.diag-kontext.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-kette",
-   "quelle": "anchor_r20_11.diag-kette.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-zertstatus",
-   "quelle": "anchor_r20_11.diag-zertstatus.dot"
-  },
-  {
-   "art": "seq",
-   "id": "diag-verifikation",
-   "quelle": "anchor_r20_11.diag-verifikation.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-servicecert",
-   "quelle": "anchor_r20_11.diag-servicecert.seq.json"
   },
   {
    "art": "seq",
@@ -41,6 +18,26 @@
    "art": "dot",
    "id": "diag-update",
    "quelle": "anchor_r20_11.diag-update.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-zertdienst",
+   "quelle": "anchor_r20_11.diag-zertdienst.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-pki",
+   "quelle": "anchor_r20_11.diag-pki.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-zertstatus",
+   "quelle": "anchor_r20_11.diag-zertstatus.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-zertpruefung",
+   "quelle": "anchor_r20_11.diag-zertpruefung.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/keym/anchor_r20_11.html",
@@ -49,16 +46,18 @@
    "budget": [],
    "dublette": {
     "SNIP_CLASSIC_CSM_SECTION_7_1_1_General_behavior": "SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior",
+    "SNIP_CLASSIC_CSM_SECTION_7_4_2_10_2_Verify_Certificates": "SNIP_CLASSIC_DCM_SECTION_7_4_2_10_2_Verify_Certificates",
+    "SNIP_CLASSIC_CSM_SECTION_8_3_2_3_KeyM_Update": "SNIP_CLASSIC_STD_SECTION_8_3_2_3_KeyM_Update",
     "SNIP_CLASSIC_CSM_SECTION_8_3_2_4_KeyM_Finalize": "SNIP_CLASSIC_KEYM_SECTION_8_3_2_4_KeyM_Finalize",
+    "SNIP_CLASSIC_DCM_SECTION_7_6_2_10_3_Proof_of_ownership_client": "SNIP_CLASSIC_CSM_SECTION_7_6_2_10_3_Proof_of_ownership_client",
     "SNIP_CLASSIC_DET_SECTION_8_7_1_Mandatory_interfaces_KEYMANAGER": "SNIP_CLASSIC_NVM_SECTION_8_7_1_Mandatory_interfaces_KEYMANAGER",
-    "SNIP_CLASSIC_STD_SECTION_8_3_2_3_KeyM_Update": "SNIP_CLASSIC_CSM_SECTION_8_3_2_3_KeyM_Update",
+    "SNIP_CLASSIC_KEYM_SECTION_7_4_2_10_2_Verify_Certificates": "SNIP_CLASSIC_DCM_SECTION_7_4_2_10_2_Verify_Certificates",
     "SNIP_CLASSIC_STD_SECTION_8_3_2_5_KeyM_Verify": "SNIP_CLASSIC_KEYM_SECTION_8_3_2_5_KeyM_Verify"
    },
    "inhaltsverzeichnis": [
     "SNIP_CLASSIC_KEYM_SECTION_8_3_3_8_KeyM_CertElementGetByIndex"
    ],
    "ohne_inhalt": [
-    "SNIP_CLASSIC_CSM_SECTION_10_Csm_KeyElementSet_MyEccKeyId_CRYPTO_KE_SIGNATURE_KEY_EccKey_sizeof",
     "SNIP_CLASSIC_KEYM_FIGURE_Figure_10_1",
     "SNIP_CLASSIC_KEYM_SECTION_2_SEQUENCE_1_elem",
     "SNIP_CLASSIC_KEYM_SECTION_7_5_2_Runtime_Errors",
@@ -73,14 +72,66 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 101,
-  "im_prompt_schaubilder": 15,
-  "kandidaten": 119,
+  "im_prompt": 105,
+  "im_prompt_schaubilder": 17,
+  "kandidaten": 125,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "a35296c0ddbd022b2e105bf1f9fb93320e5de20fab9a9a81092ac0df14fa931a",
- "output_store": "ai/store/outputs/a3/a35296c0ddbd022b2e105bf1f9fb93320e5de20fab9a9a81092ac0df14fa931a.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-sitzung",
+   "diag-zertstatus"
+  ],
+  "oneliner_chars": 114,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 83,
+   "3": 324,
+   "4": 1810
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip FIG-eb10eba460c97521: AUTOSAR_CP_SWS_KeyManager S. 23 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CAN_FIGURE_Figure_7_2_KEYMANAGER: SWS_KeyManager S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_Crypto_key_submodule: SWS_KeyManager S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-eb10eba460c97521: AUTOSAR_CP_SWS_KeyManager S. 23 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-383f20c98390d9ff: AUTOSAR_CP_SWS_KeyManager S. 119 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_1_2_KeyM_Deinit: SWS_KeyManager S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-21d8290a2dc9642f: AUTOSAR_CP_SWS_KeyManager S. 131 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_7_3_2_KeyM_KH_Prepare: SWS_KeyManager S. 82 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_2_4_KeyM_Finalize: SWS_KeyManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-f2d643e09511d6d9: AUTOSAR_CP_SWS_KeyManager S. 116 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-2858072034ad024d: AUTOSAR_CP_SWS_KeyManager S. 164 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_3_Derive_key: SWS_KeyManager S. 118 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-f2d643e09511d6d9: AUTOSAR_CP_SWS_KeyManager S. 116 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_4_Security_Events: SWS_KeyManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-303efcd12de1aa31: AUTOSAR_CP_SWS_KeyManager S. 120 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration: SWS_KeyManager S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration: SWS_KeyManager S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-1a22d27c48ec5ec8: AUTOSAR_CP_SWS_KeyManager S. 33 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_3_5_KeyM_VerifyCertificate: SWS_KeyManager S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DCM_SECTION_7_4_2_10_2_Verify_Certificates: SWS_DiagnosticCommunicationManager S. 147 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DCM_SECTION_8_4_11_Dcm_KeyMAsyncCertificateVerifyFinished: SWS_DiagnosticCommunicationManager S. 245 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-383f20c98390d9ff: AUTOSAR_CP_SWS_KeyManager S. 119 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_9_6_Connection_setup_for_a_TLS_server: SWS_TcpIp S. 134 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DCM_SECTION_7_4_2_10_5_Definition_and_verification_of_white_lists: SWS_DiagnosticCommunicationManager S. 155 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration: SWS_KeyManager S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_3_5_KeyM_VerifyCertificate: SWS_KeyManager S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-36ce43b55553b125: AUTOSAR_CP_SWS_KeyManager S. 117 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_3_Custom_Handling: SWS_KeyManager S. 37 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_Crypto_key_submodule: SWS_KeyManager S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+ ],
+ "output_sha256": "25790ed9250332ed8b19fa30729904bedea769cbc82c600c448b6bc3cbc06090",
+ "output_store": "ai/store/outputs/25/25790ed9250332ed8b19fa30729904bedea769cbc82c600c448b6bc3cbc06090.html",
  "params": {
   "module": "keym",
   "platform": "classic",
@@ -109,9 +160,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "ca15c72b3f31f3cbfcb88a23af514ef815bd6d10446d2464a14a80e22e71f5b2",
- "prompt_store": "ai/store/prompts/ca/ca15c72b3f31f3cbfcb88a23af514ef815bd6d10446d2464a14a80e22e71f5b2.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "a0c67f50ff2402c9ef8a8c53ae9f71832abe940ff7a37f7dbc0f2a3e99b5965b",
+ "prompt_store": "ai/store/prompts/a0/a0c67f50ff2402c9ef8a8c53ae9f71832abe940ff7a37f7dbc0f2a3e99b5965b.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -124,14 +175,52 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.32348,
-   "cost_usd_reported": 1.32348,
-   "created_at": "2026-10-09T07:13:32Z",
-   "duration_api_seconds": 348.963,
-   "duration_seconds": 349.046,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.54852,
+   "cost_usd_reported": 1.5485200000000001,
+   "created_at": "2026-10-13T02:59:03Z",
+   "duration_api_seconds": 421.361,
+   "duration_seconds": 423.588,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip FIG-eb10eba460c97521: AUTOSAR_CP_SWS_KeyManager S. 23 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_CAN_FIGURE_Figure_7_2_KEYMANAGER: SWS_KeyManager S. 28 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_Crypto_key_submodule: SWS_KeyManager S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-eb10eba460c97521: AUTOSAR_CP_SWS_KeyManager S. 23 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-383f20c98390d9ff: AUTOSAR_CP_SWS_KeyManager S. 119 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_1_2_KeyM_Deinit: SWS_KeyManager S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-21d8290a2dc9642f: AUTOSAR_CP_SWS_KeyManager S. 131 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_7_3_2_KeyM_KH_Prepare: SWS_KeyManager S. 82 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_2_4_KeyM_Finalize: SWS_KeyManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-f2d643e09511d6d9: AUTOSAR_CP_SWS_KeyManager S. 116 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-2858072034ad024d: AUTOSAR_CP_SWS_KeyManager S. 164 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_3_Derive_key: SWS_KeyManager S. 118 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-f2d643e09511d6d9: AUTOSAR_CP_SWS_KeyManager S. 116 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_4_Security_Events: SWS_KeyManager S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-303efcd12de1aa31: AUTOSAR_CP_SWS_KeyManager S. 120 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration: SWS_KeyManager S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration: SWS_KeyManager S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-1a22d27c48ec5ec8: AUTOSAR_CP_SWS_KeyManager S. 33 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_3_5_KeyM_VerifyCertificate: SWS_KeyManager S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DCM_SECTION_7_4_2_10_2_Verify_Certificates: SWS_DiagnosticCommunicationManager S. 147 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DCM_SECTION_8_4_11_Dcm_KeyMAsyncCertificateVerifyFinished: SWS_DiagnosticCommunicationManager S. 245 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-383f20c98390d9ff: AUTOSAR_CP_SWS_KeyManager S. 119 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_9_6_Connection_setup_for_a_TLS_server: SWS_TcpIp S. 134 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DCM_SECTION_7_4_2_10_5_Definition_and_verification_of_white_lists: SWS_DiagnosticCommunicationManager S. 155 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_3_Certificate_configuration: SWS_KeyManager S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_8_3_3_5_KeyM_VerifyCertificate: SWS_KeyManager S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-36ce43b55553b125: AUTOSAR_CP_SWS_KeyManager S. 117 nicht im Anker R20-11 (Snippet-Releases: R22-11, R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_2_4_Operation_mode: SWS_KeyManager S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_KEYM_SECTION_7_3_Custom_Handling: SWS_KeyManager S. 37 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_Crypto_key_submodule: SWS_KeyManager S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_KEYM_SECTION_7_1_1_General_behavior: SWS_KeyManager S. 25 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -140,19 +229,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.32348,
-     "inputTokens": 102865,
+     "costUSD": 1.5485200000000001,
+     "inputTokens": 108335,
      "maxOutputTokens": 128000,
-     "outputTokens": 45601,
+     "outputTokens": 55759,
      "provider": "firstParty",
-     "thinkingTokens": 21481,
+     "thinkingTokens": 28659,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "e96582ec-b824-4b42-b4fb-3d4f1fcb746a",
+   "run_id": "5ee66793-bee5-4f03-b2f5-6a45f884b2ba",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/e96582ec-b824-4b42-b4fb-3d4f1fcb746a.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/5ee66793-bee5-4f03-b2f5-6a45f884b2ba.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -161,11 +250,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 102865,
-    "output_tokens": 45601,
+    "inference_geo": "global",
+    "input_tokens": 108335,
+    "output_tokens": 55759,
     "output_tokens_details": {
-     "thinking_tokens": 21481
+     "thinking_tokens": 28659
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -177,11 +266,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 102865,
-    "output": 45601,
-    "thinking": 21481
+    "input_uncached": 108335,
+    "output": 55759,
+    "thinking": 28659
    },
-   "wall_seconds": 350.883
+   "wall_seconds": 424.917
   }
  ],
  "schema": "ai-trace@2",

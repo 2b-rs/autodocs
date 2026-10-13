@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dlt_00516" class="dossier-modal dossier-workbench" data-dossier-sha="789670638d29c92e" aria-labelledby="dossier-modal-SWS_Dlt_00516-title">
+<dialog id="dossier-modal-SWS_Dlt_00516" class="dossier-modal dossier-workbench" data-dossier-sha="9e04af967be64532" aria-labelledby="dossier-modal-SWS_Dlt_00516-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dlt_00516-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dlt_00516)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,853 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,308 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dlt_CopyTxData'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,26 +193,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d28e218f8f406cd90e52ff5bb51c7e990c5ba847e44b27e930a3fcac6f84a4de" data-trace-output="789670638d29c92e63f1335080ce54d3992f31253a27c087e2064382adb717b5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="131f9d82c4ddd3870205dcb4ea97ec40992348db0b85f57bce21a95af821ef36" data-trace-output="9e04af967be6453241e6f6d253345633f0dc0bf3542e6b613a99b08371e6d368" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kopiert Sendedaten eines I-PDU-Segments in den Puffer unterer Schichten und verwaltet Wiederholungen sowie Restlängen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous and reentrant function &lt;code&gt;Dlt_CopyTxData&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;) is called by a lower-layer module to retrieve transmit data for an I-PDU segment (N-PDU) step-by-step from the Tx buffer of the Dlt module (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+  &lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;Dlt_CopyTxData&lt;/code&gt; dient dem Abrufen von Sendedaten eines I-PDU-Segments (N-PDU) aus dem Dlt-Modul &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;. Über &lt;code&gt;id&lt;/code&gt; wird die zu sendende I-PDU spezifiziert, während &lt;code&gt;info&lt;/code&gt; den Zielpuffer (&lt;code&gt;SduDataPtr&lt;/code&gt;) sowie die gewünschte Bytelänge (&lt;code&gt;SduLength&lt;/code&gt;) bereitstellt &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;. Eine Übergabe von &lt;code&gt;SduLength = 0&lt;/code&gt; (bei der &lt;code&gt;SduDataPtr&lt;/code&gt; als &lt;code&gt;NULL_PTR&lt;/code&gt; übergeben werden darf) erlaubt es, reine Statusänderungen über &lt;code&gt;retry&lt;/code&gt; zu übermitteln oder die verbleibende Datenmenge im Sendepuffer abzufragen &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;. Über den Ausgabeparameter &lt;code&gt;availableDataPtr&lt;/code&gt; meldet die Funktion die noch verfügbare Datenmenge im Tx-Puffer zurück, was beispielsweise TP-Modulen mit dynamischer Nutzdatenlänge (wie FrIsoTp) die Dimensionierung nachfolgender Segmente ermöglicht &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Bestätigung und Fehlerbehebung&lt;/h4&gt;
+  &lt;p&gt;Über den Zeiger &lt;code&gt;retry&lt;/code&gt; wird die Quittierung oder wiederholte Übertragung gesteuert &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;id&lt;/code&gt;: Unique identifier of the I-PDU to be transmitted (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;info&lt;/code&gt;: References the destination buffer address (&lt;code&gt;SduDataPtr&lt;/code&gt;) and the desired copy length (&lt;code&gt;SduLength&lt;/code&gt;). A value of 0 for &lt;code&gt;SduLength&lt;/code&gt; is used to communicate status changes via &lt;code&gt;retry&lt;/code&gt; or to query the remaining amount of data; in this case, &lt;code&gt;SduDataPtr&lt;/code&gt; may be a &lt;code&gt;NULL_PTR&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;retry&lt;/code&gt;: Controls confirmation and error recovery. If this parameter is a &lt;code&gt;NULL_PTR&lt;/code&gt;, transmitted data can be released from the buffer immediately after copying. Otherwise, states such as &lt;code&gt;TP_CONFPENDING&lt;/code&gt; (keep data in buffer), &lt;code&gt;TP_DATACONF&lt;/code&gt; (confirmation of data already copied), or &lt;code&gt;TP_DATARETRY&lt;/code&gt; (retry copying from offset &lt;code&gt;TxTpDataCnt&lt;/code&gt;) control buffer management (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;availableDataPtr&lt;/code&gt;: Writes back the number of remaining bytes in the Tx buffer of the Dlt module, which, for example, allows transport protocol modules with dynamic payload lengths to determine the size of subsequent segments (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Ist &lt;code&gt;retry&lt;/code&gt; ein &lt;code&gt;NULL_PTR&lt;/code&gt;, dürfen die kopierten Daten unmittelbar nach dem Kopiervorgang aus dem Puffer verworfen werden &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Zeigt &lt;code&gt;TpDataState&lt;/code&gt; den Wert &lt;code&gt;TP_CONFPENDING&lt;/code&gt;, müssen zuvor kopierte Daten für eine eventuelle Fehlerbehebung im Puffer verbleiben &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Bei &lt;code&gt;TP_DATACONF&lt;/code&gt; gelten alle vor dem Aufruf übertragenen Daten als bestätigt und können freigegeben werden &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Bei &lt;code&gt;TP_DATARETRY&lt;/code&gt; setzt das Modul das Kopieren ab dem in &lt;code&gt;TxTpDataCnt&lt;/code&gt; übergebenen Byte-Offset erneut an &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;The call returns a status of type &lt;code&gt;BufReq_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;):&lt;/p&gt;
+
+  &lt;h4&gt;Rückgabewerte und Randbedingungen&lt;/h4&gt;
+  &lt;p&gt;Das Ergebnis der Anforderung wird als &lt;code&gt;BufReq_ReturnType&lt;/code&gt; gemeldet &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_OK&lt;/code&gt;: The requested data was completely copied into the destination buffer (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_E_BUSY&lt;/code&gt;: The requested amount of transmit data is currently not available in the upper module. No data was copied; the lower-layer module can retry the call later (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt;: The request failed; no data was copied (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BUFREQ_OK&lt;/code&gt;: Daten wurden vollständig wie gefordert in den Zielpuffer kopiert &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BUFREQ_E_BUSY&lt;/code&gt;: Die geforderte Datenmenge ist nicht verfügbar; es wurden keine Daten kopiert, ein späterer Neuversuch ist zulässig &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt;: Anfrage fehlgeschlagen; es wurden keine Daten kopiert &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Concurrency&lt;/h4&gt;
-  &lt;p&gt;The interface is specified as reentrant and is processed synchronously (&lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note is based on the specifications of AUTOSAR specification R20-11.&lt;/p&gt;
+  &lt;p&gt;Die Schnittstelle ist über &lt;code&gt;Dlt.h&lt;/code&gt; verfügbar und reentrant ausgelegt &lt;a class="spec-record-ref" data-req="SWS_Dlt_00516" href="../../spec/record.html?id=SWS_Dlt_00516"&gt;[SWS_Dlt_00516]&lt;/a&gt;. Der Aufrufkontext dürfte typischerweise in einem unterlagerten Transportprotokoll-Modul während der segmentierten Übertragung liegen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Aufrufkontext dürfte typischerweise in einem unterlagerten Transportprotokoll-Modul liegen – Begründung: Die Spezifikation nennt FrIsoTp als Beispiel und beschreibt den Abruf von I-PDU-Segmenten (N-PDUs). --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -234,9 +258,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d28e218f8f40…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>131f9d82c4dd…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -271,8 +295,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -309,7 +333,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -372,4 +396,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dlt_00516","k":"function","d":"AUTOSAR","t":"","n":"Dlt_CopyTxData"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1e3655ed74cffa4f.json?v=5719f302" data-total="2" data-new="2" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dlt_00516","k":"function","d":"AUTOSAR","t":"","n":"Dlt_CopyTxData"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/1e3655ed74cffa4f.json?v=24b2ad8a" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

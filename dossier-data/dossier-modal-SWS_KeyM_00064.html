@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00064" class="dossier-modal dossier-workbench" data-dossier-sha="bd935bd605d4abf6" aria-labelledby="dossier-modal-SWS_KeyM_00064-title">
+<dialog id="dossier-modal-SWS_KeyM_00064" class="dossier-modal dossier-workbench" data-dossier-sha="ec79803cd3948640" aria-labelledby="dossier-modal-SWS_KeyM_00064-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00064-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00064)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,682 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,137 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_CertElementGetFirst'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,24 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="518496a3c55aa97fcc4f6fc1d44a2206f50263f51ec25eb40305347a5f2c0dbc" data-trace-output="bd935bd605d4abf6a348e16ea50298d44f0b9650989f7a40da0cc06a7aa8e82f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ed15c818bd7ae1357ca19fd695c52644d9b72efeba00038f7bc25ffd6f83d028" data-trace-output="ec79803cd39486408e00c1380481bc409c13e89a4d922a41e9d1a8e05c902473" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Initialisiert die iterative Extraktion von Daten eines Zertifikatselements und liest das erste Element synchron aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;KeyM_CertElementGetFirst&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00064" href="../../spec/record.html?id=SWS_KeyM_00064"&gt;[SWS_KeyM_00064]&lt;/a&gt;) serves to initialize the iterative reading of a certificate data element. It always retrieves the top element of the certificate element specified via &lt;code&gt;CertElementId&lt;/code&gt; from the certificate specified by &lt;code&gt;CertId&lt;/code&gt; and initializes the iterator structure &lt;code&gt;CertElementIterator&lt;/code&gt;. The caller provides the output buffer &lt;code&gt;CertElementData&lt;/code&gt; as well as the maximum buffer size via &lt;code&gt;CertElementDataLength&lt;/code&gt;; upon successful return (&lt;code&gt;E_OK&lt;/code&gt;), the actual data length is written back to &lt;code&gt;CertElementDataLength&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;In case of success, the function returns &lt;code&gt;E_OK&lt;/code&gt;. If the element data could not be found, &lt;code&gt;E_NOT_OK&lt;/code&gt; is returned; the iterator must then not be used for subsequent calls. Specific return values in case of error are:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;KeyM_CertElementGetFirst&lt;/code&gt; dient gemäß &lt;a class="spec-record-ref" data-req="SWS_KeyM_00064" href="../../spec/record.html?id=SWS_KeyM_00064"&gt;[SWS_KeyM_00064]&lt;/a&gt; dazu, die iterative Extraktion von Zertifikatsdaten einzuleiten. Sie liest das oberste Element des über &lt;code&gt;CertElementId&lt;/code&gt; adressierten Zertifikatselements aus dem Zertifikat &lt;code&gt;CertId&lt;/code&gt; aus und initialisiert die Iteratorkonstruktion &lt;code&gt;CertElementIterator&lt;/code&gt; für nachfolgende Aufrufe von &lt;code&gt;KeyM_CertElementGetNext()&lt;/code&gt;.&lt;/p&gt;
+  &lt;p&gt;Beim Aufruf sind folgende Parameter- und Speicheranforderungen nach &lt;a class="spec-record-ref" data-req="SWS_KeyM_00064" href="../../spec/record.html?id=SWS_KeyM_00064"&gt;[SWS_KeyM_00064]&lt;/a&gt; zu beachten:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt;: The passed &lt;code&gt;CertId&lt;/code&gt; or &lt;code&gt;CertElementId&lt;/code&gt; is invalid.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_SIZE_MISMATCH&lt;/code&gt;: The provided data buffer is too small for the certificate element.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_EMPTY&lt;/code&gt;: The certificate contains no data or is empty.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERT_INVALID&lt;/code&gt;: The certificate is invalid or verification was not successful.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CertElementIterator&lt;/code&gt;: Zeiger auf eine vom Aufrufer allozierte und verwaltete Struktur; diese darf von der Applikation weder zerstört noch verändert werden, solange nicht alle Daten über &lt;code&gt;KeyM_CertElementGetNext()&lt;/code&gt; abgerufen wurden.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CertElementData&lt;/code&gt;: Zeiger auf einen vom Aufrufer bereitgestellten Ausgabepuffer, in den bei erfolgreichem Auffinden (&lt;code&gt;E_OK&lt;/code&gt;) die Nutzdaten kopiert werden.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CertElementDataLength&lt;/code&gt;: Übergibt als Eingabe die Maximallänge des Datenpuffers und wird bei Rückgabe von &lt;code&gt;E_OK&lt;/code&gt; mit der tatsächlich geschriebenen Datenlänge überschrieben.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is reentrant with respect to a single iterator (&lt;em&gt;Reentrant for one iterator&lt;/em&gt;). The structure &lt;code&gt;CertElementIterator&lt;/code&gt; allocated and managed by the caller must neither be destroyed nor modified by the application as long as not all associated elements have been retrieved via &lt;code&gt;KeyM_CertElementGetNext()&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR R20-11.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich Nebenläufigkeit ist der Service laut &lt;a class="spec-record-ref" data-req="SWS_KeyM_00064" href="../../spec/record.html?id=SWS_KeyM_00064"&gt;[SWS_KeyM_00064]&lt;/a&gt; reentrant, jedoch bezogen auf genau einen Iterator („Reentrant for one iterator“).&lt;/p&gt;
+  &lt;p&gt;Im Fehlerfall differenziert die Funktion über spezifische Rückgabewerte gemäß &lt;a class="spec-record-ref" data-req="SWS_KeyM_00064" href="../../spec/record.html?id=SWS_KeyM_00064"&gt;[SWS_KeyM_00064]&lt;/a&gt;: &lt;code&gt;E_NOT_OK&lt;/code&gt; zeigt an, dass keine Elementdaten gefunden wurden (der Iterator darf danach nicht für weitere Aufrufe verwendet werden). &lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt; signalisiert eine ungültige Zertifikats- oder Element-ID, &lt;code&gt;KEYM_E_KEY_CERT_SIZE_MISMATCH&lt;/code&gt; einen zu kleinen Datenpuffer, &lt;code&gt;KEYM_E_KEY_CERT_EMPTY&lt;/code&gt; ein leeres Zertifikat ohne verfügbare Daten und &lt;code&gt;KEYM_E_CERT_INVALID&lt;/code&gt; ein ungültiges oder nicht erfolgreich verifiziertes Zertifikat.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis von AUTOSAR R20-11 Spezifikationsdaten erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -232,7 +246,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>518496a3c55a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ed15c818bd7a…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -370,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00064","k":"function","d":"AUTOSAR","t":"","n":"KeyM_CertElementGetFirst"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/979c92e6d40cebd8.json?v=86372f3c" data-total="10" data-new="10" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00064","k":"function","d":"AUTOSAR","t":"","n":"KeyM_CertElementGetFirst"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/979c92e6d40cebd8.json?v=f9667bd8" data-total="10" data-new="10" data-figures="0" data-used="0"></script></dialog>

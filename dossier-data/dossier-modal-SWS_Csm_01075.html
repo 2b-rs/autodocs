@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_01075" class="dossier-modal dossier-workbench" data-dossier-sha="4e7a60894c909627" aria-labelledby="dossier-modal-SWS_Csm_01075-title">
+<dialog id="dossier-modal-SWS_Csm_01075" class="dossier-modal dossier-workbench" data-dossier-sha="604e1000942c4db0" aria-labelledby="dossier-modal-SWS_Csm_01075-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_01075-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_01075)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,167 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,621 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_AEADDecryptPlaintextType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,20 +193,17 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="b939f32c781970d2ae72f6ea8b965fe2cf79b5ea5de0643ac4cdf3b404874ae2" data-trace-output="4e7a60894c909627b3bb5d77a79ec663f6259fcf778b2370f55548dfd6978385" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8dacdd2f122cfc36309eda5263e020ff46218bc415cbf0140bffa0a2f75d6b76" data-trace-output="604e1000942c4db0a176a82e4c46b814dabffe09c43a5ef3d81ed48e954f40a3" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Byte-Puffer zur Speicherung der Klartextdaten bei einer authentifizierten Entschlüsselung." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Usage of &lt;code&gt;Csm_AEADDecryptPlaintextType&lt;/code&gt;&lt;/h4&gt;
-&lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;, type &lt;code&gt;Csm_AEADDecryptPlaintextType&lt;/code&gt; is specified as an array of &lt;code&gt;uint8&lt;/code&gt; elements. It serves as a data buffer to receive the plaintext data resulting from a decryption with associated data (AEAD Decrypt) in the CSM.&lt;/p&gt;
-&lt;p&gt;Essential characteristics and configuration aspects:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Data type and structure:&lt;/strong&gt; The type is defined as a byte array (&lt;code&gt;Kind Array&lt;/code&gt;) with base elements of type &lt;code&gt;uint8&lt;/code&gt;. According to the specification, the array is sized such that it can hold the complete data of the plaintext.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Static sizing:&lt;/strong&gt; The buffer size (&lt;code&gt;Size&lt;/code&gt;) is defined via configuration value &lt;code&gt;CsmAEADDecryptPlaintextMaxLength&lt;/code&gt; under &lt;code&gt;ecuc(Csm/CsmPrimitives/CsmAEADDecrypt/CsmAEADDecryptConfig)&lt;/code&gt;. This rigidly binds the array size to the maximum plaintext length permissible for the primitive configuration.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Variant generation:&lt;/strong&gt; The type supports variant generation via the short name of the cryptographic primitives (&lt;code&gt;Crypto = {ecuc/Csm/CsmPrimitives.SHORT-NAME}&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Header inclusion:&lt;/strong&gt; The definition of the data type is provided via header &lt;code&gt;Rte_Csm_Type.h&lt;/code&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Interpretation: Since the definition is provided via &lt;code&gt;Rte_Csm_Type.h&lt;/code&gt;, the data type is likely to serve primarily at typed interfaces of the RTE for passing the decrypted plaintext to requesting software components.&lt;/p&gt;
-&lt;p class="ai-note"&gt;This usage note is based exclusively on the specification data from AUTOSAR Classic R20-11.&lt;/p&gt;
-&lt;!-- annahmen: 1) Verwendung an RTE-Ports: Aus der Verfügbarkeit via Rte_Csm_Type.h wird abgeleitet, dass der Typ für typisierte Software-Komponenten-Ports der RTE gedacht ist. – Begründung: SWS_Csm_01075 nennt Rte_Csm_Type.h, spezifiziert jedoch keine Funktionsaufrufe oder C-API-Parameter für diesen Typen. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Struktur&lt;/h4&gt;
+  &lt;p&gt;Der Datentyp &lt;code&gt;Csm_AEADDecryptPlaintextType&lt;/code&gt; bzw. dessen primitivenspezifische Variante &lt;code&gt;Csm_AEADDecryptPlaintextType_{Crypto}&lt;/code&gt; ist als Byte-Array mit Elementen des Typs &lt;code&gt;uint8&lt;/code&gt; definiert &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;. Er dient dazu, einen ausreichend dimensionierten Puffer zur Speicherung der Klartextdaten bei einer AEAD-Entschlüsselung (Authenticated Encryption with Associated Data) bereitzustellen &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;. Die feste Feldgröße wird über den Konfigurationsparameter &lt;code&gt;CsmAEADDecryptPlaintextMaxLength&lt;/code&gt; innerhalb der Konfiguration der jeweiligen AEAD-Entschlüsselungs-Primitive bestimmt &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;. Über den Header &lt;code&gt;Rte_Csm_Type.h&lt;/code&gt; wird der Datentyp für Software-Komponenten bereitgestellt, wobei der Typname über die Variation &lt;code&gt;Crypto&lt;/code&gt; an den Kurznamen der konfigurierten CSM-Primitiven gekoppelt ist &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Da es sich um eine reine Typdefinition handelt, definiert das Element keine eigenen Rückgabewerte, Fehlercodes oder DET-Meldungen &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;. Die wesentliche funktionale Randbedingung liegt in der statisch festgelegten Maximallänge: Klartextdaten, welche die konfigurierte Grenze überschreiten, können in diesem Puffer nicht abgebildet werden &lt;a class="spec-record-ref" data-req="SWS_Csm_01075" href="../../spec/record.html?id=SWS_Csm_01075"&gt;[SWS_Csm_01075]&lt;/a&gt;. Interpretation: Der Typ dürfte primär zur typisierten Datenübergabe über RTE-Ports dienen, wenn SWCs asynchron oder synchron Ergebnisse von Entschlüsselungsdiensten empfangen. Aufrufer müssen vermutlich eigenständig sicherstellen, dass Puffergrenzen eingehalten werden und gleichzeitige Schreib- oder Lesezugriffe über mehrere Tasks hinweg threadsicher synchronisiert sind.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Der Typ dürfte primär an RTE-Ports von SWCs zur Aufnahme von Entschlüsselungsergebnissen dienen – Begründung: Die Bereitstellung über Rte_Csm_Type.h spricht für die Verwendung an Schnittstellen der AUTOSAR-RTE. 2) Aufrufer müssen Zugriffe und Puffergrenzen eigenständig absichern – Begründung: Als reiner Datentyp stellt das Element keine Laufzeitprüfungen oder Synchronisationsmechanismen bereit. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI generiert und basiert auf den Festlegungen der AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -228,7 +243,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>b939f32c7819…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8dacdd2f122c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -366,4 +381,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_01075","k":"type","d":"AUTOSAR","t":"","n":"Csm_AEADDecryptPlaintextType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/33c5fa0f860d14c0.json?v=c01a345a" data-total="4" data-new="4" data-figures="3" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_01075","k":"type","d":"AUTOSAR","t":"","n":"Csm_AEADDecryptPlaintextType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/33c5fa0f860d14c0.json?v=361602e8" data-total="4" data-new="4" data-figures="3" data-used="0"></script></dialog>

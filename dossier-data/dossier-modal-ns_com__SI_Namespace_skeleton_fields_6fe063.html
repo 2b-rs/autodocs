@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063" class="dossier-modal dossier-workbench" data-dossier-sha="52b08989c4647bcf" aria-labelledby="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063-title">
+<dialog id="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063" class="dossier-modal dossier-workbench" data-dossier-sha="2df69792882ed292" aria-labelledby="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_com__SI_Namespace_skeleton_fields_6fe063-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_com__SI_Namespace_skeleton_fields_6fe063)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,654 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,176 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace &lt;SI-Namespace&gt;::skeleton::fields' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -207,27 +226,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="e1d25af99427509cd8d40c014e3c1247d3e5e029559e940fd6eb247b5e615d2b" data-trace-output="52b08989c4647bcf14e167d50e1938a4aef77a967cad5d85e714afc1e94c003c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="a157bce9c128085d23d871a22273f2b6ebc7a4673ba68e0bf33158ee3951d97b" data-trace-output="2df69792882ed2920173c8eeb1ee2cf1294a8aa181ce53eba3304bed3569745f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert serverseitige Feld-Klassen für Service-Skelette zur Bereitstellung und Aktualisierung von Schnittstellenfeldern." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Namespace &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; is part of module &lt;code&gt;com&lt;/code&gt; in the AUTOSAR Adaptive Platform (Release R25-11). It encapsulates the server-side representations for all fields modeled in a service interface. For each element defined in the respective &lt;code&gt;ServiceInterface&lt;/code&gt; in the role of a field, a specific skeleton field class &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; is provided. These classes serve as an interface between the concrete service implementation (skeleton) and the communication infrastructure to provide data values, report updates to subscribers, and handle optional read or write requests.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Definiert serverseitige Feld-Klassen für Service-Skelette zur Bereitstellung und Aktualisierung von Schnittstellenfeldern.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namensraum kapselt die serverseitigen Feld-Klassen für jedes in einem ServiceInterface deklarierte Feld innerhalb der Skeleton-Architektur des Moduls com. Dienstanbieter nutzen diese generierten Klassen, um den aktuellen Feldwert zu verwalten und bei Wertänderungen an verbundene Clients zu übermitteln. Die Instanziierung und Lebensdauer der Feld-Objekte dürfte dabei direkt an die übergeordnete Skeleton-Instanz gebunden sein. Bei der Aktualisierung und Bereitstellung der Daten ist auf die Synchronisation gemäß dem Threading-Modell des Service-Skeletts zu achten.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namensraum &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; ist Bestandteil der Kommunikationsarchitektur (Modul &lt;code&gt;com&lt;/code&gt;) der AUTOSAR Adaptive Platform im Release R25-11. Er beinhaltet die serverseitig generierten Klassen für alle Felder, die in einem &lt;code&gt;ServiceInterface&lt;/code&gt; in der Rolle &lt;code&gt;field&lt;/code&gt; modelliert wurden. Für jedes im Interface definierte Feld existiert hierbei eine korrespondierende Service-Skeleton-Feld-Klasse, die dem generischen Namensschema &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; folgt. Diese Klassen bilden das Bindeglied zwischen der anwendungsspezifischen Implementierung eines Dienstes und der zugrundeliegenden Kommunikationsschicht, um feldbezogene Datenstrukturen strukturiert anzubieten.&lt;/p&gt;
+&lt;p&gt;In serviceorientierten Architekturen repräsentieren Felder Eigenschaften eines Dienstes, die sich typischerweise aus einer Kombination von Lesezugriffen (Gettern), Schreibzugriffen (Settern) und ereignisbasierten Benachrichtigungen (Notifiern) zusammensetzen können. Während auf Client-Seite im Proxy-Namensraum entsprechende Schnittstellen für den konsumierenden Zugriff generiert werden, stellt &lt;code&gt;skeleton::fields&lt;/code&gt; die Klassen bereit, mit denen der Dienstanbieter (Server) den internen Status verwaltet und nach außen exponiert. Die Klassen im Namensraum &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; kapseln dabei die Kommunikation und protokollspezifische Übertragung, sodass sich der Anwendungsentwickler auf die funktionale Logik des Dienstes konzentrieren kann.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle and ownership&lt;/h4&gt;
-&lt;p&gt;The instances of the skeleton field classes &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; are strictly tied to the lifecycle of the higher-level service skeleton. They are created upon instantiation of the service skeleton class and remain owned by it. As long as the service instance is actively offered, the field instances manage the current state of the modeled field as well as registrations for notifications or access handlers. With the destruction of the service skeleton, the lifetime and validity of the associated field instances also end.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Hinsichtlich der Erzeugung und der Besitzverhältnisse dürfte die Lebensdauer einer Feld-Klasse im Namensraum &lt;code&gt;skeleton::fields&lt;/code&gt; unmittelbar an die übergeordnete Skeleton-Klasse des Service-Interfaces gebunden sein. In C++-basierten Implementierungen der Adaptive Platform werden die Feld-Instanzen typischerweise als direkte Member-Objekte innerhalb des generierten Skeletons instanziiert. Folglich beginnt der Lebenszyklus der Feld-Objekte mit dem Konstruktoraufruf des Service-Skeletts und endet automatisch mit dessen Destruktion.&lt;/p&gt;
+&lt;p&gt;Während der Betriebsphase verweilt das Feld-Objekt im Speicher des Dienstanbieters. Vor oder während des Angebots des Dienstes im Netzwerk (etwa vor der Dienst-Registrierung oder unmittelbar danach) wird die Feld-Instanz mit einem validen Startwert initialisiert. Da das Skeleton über seine gesamte Lebensdauer hinweg für Abfragen und Aktualisierungen zur Verfügung steht, bleibt auch die Feld-Instanz persistent verfügbar.&lt;/p&gt;
+&lt;p&gt;Bezüglich der Nebenläufigkeit und des Threadings dürfte die Handhabung von Feld-Zugriffen stark vom gewählten Verarbeitungsmodell des Skeletons abhängen. Sofern die Feld-Klasse Callback-Mechanismen für eingehende Schreib- oder Leseanfragen bereitstellt oder Methoden zur Aktualisierung des Feldwerts anbietet, müssen konkurrierende Zugriffe durch die anwendende Dienst-Implementierung synchronisiert werden, um Race Conditions bei nebenläufiger Abarbeitung zu verhindern.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical interaction with elements from &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; takes place within the service implementation:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Provisioning:&lt;/strong&gt; The skeleton instantiates the generated field objects &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt; as part of its member structure.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Initialization:&lt;/strong&gt; The skeleton sets the initial value of the field or optionally registers handlers for accesses (Get/Set), provided the field supports these operations.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Update:&lt;/strong&gt; If the internal state in the service changes, the skeleton updates the field value via class &lt;code&gt;&amp;lt;Field&amp;gt;&lt;/code&gt;, whereby registered subscribers on the proxy side can be notified via the communication layer.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Error scenarios primarily concern the lifecycle and invalid calls during transition phases. Accessing a field prior to complete initialization of the skeleton or after the start of shutdown of the service instance leads to undefined behavior or communication errors. In addition, access handlers must ensure that requests are answered consistently and that error states of the application logic are properly transmitted to the communication layer.&lt;/p&gt;
-
-&lt;!-- annahmen: 1) Die Feldklassen &lt;Field&gt; sind Member des jeweiligen Service-Skeletons und teilen dessen Lebenszyklus. – Begründung: Der Payload belegt &lt;Field&gt; als "Service skeleton Field class, one for each Field defined in the ServiceInterface in the role field." 2) Das Feld unterstützt Wertaktualisierungen sowie optionale Get/Set-Operationen. – Begründung: Typische AUTOSAR-Adaptive-Feldsemantik für Service-Interfaces. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the structural metadata of Release R25-11. Further normative requirements are not available for this namespace in the current dataset.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad für die Klassen aus &lt;code&gt;&amp;lt;SI-Namespace&amp;gt;::skeleton::fields&lt;/code&gt; beginnt im Rahmen der Initialisierung des Dienstanbieters. Beim Aufbau der Skeleton-Instanz wird für jedes konfigurierte Feld das jeweilige Feld-Objekt erzeugt. Die Implementierung des Dienstes weist der Feld-Klasse typischerweise initial einen gültigen Startwert zu, damit anfragende Clients von Beginn an konsistente Daten vorfinden.&lt;/p&gt;
+&lt;p&gt;Im laufenden Betrieb erfolgt die Interaktion primär über Wertaktualisierungen. Sobald sich interne Zustände, Sensorwerte oder Berechnungsdaten in der Dienstanwendung ändern, ruft das Skeleton die entsprechende Aktualisierungsmethode der Feld-Instanz auf. Die Feld-Klasse übernimmt daraufhin die Verteilung der neuen Daten an das Kommunikations-Framework, welches die Werte als Notifier-Nachrichten an alle interessierten und abonnierten Service-Proxys im Netzwerk versendet.&lt;/p&gt;
+&lt;p&gt;Sofern das Feld für schreibende Zugriffe durch Clients konfiguriert ist, verarbeitet die Feld-Klasse eingehende Aktualisierungsanfragen (Set-Operationen). Die Service-Implementierung nimmt die geänderten Werte entgegen, validiert diese und aktualisiert den internen Zustand. Durch diesen zweckgerichteten Ablauf von Initialisierung, periodischer oder ereignisbasierter Werteübermittlung und kontrollierter Beendigung mit dem Skeleton-Lebensende fügen sich die Feld-Klassen nahtlos in das Interaktionsmuster der AUTOSAR-Adaptive-Dienstebene ein.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Instanziierung der Klassen in skeleton::fields dürfte als Member der übergeordneten Skeleton-Klasse erfolgen – Begründung: Der Payload spezifiziert &lt;Field&gt; als Skeleton Field-Klasse je Field im ServiceInterface im Modul com. 2) Die Feld-Klasse dürfte Aktualisierungen des Feldwerts und Anfragen verwalten – Begründung: Rolle von Skeleton-Feldern in Service-Interfaces zur Bereitstellung an Clients. 3) Aufrufe an die Feld-Instanzen dürften gemäß dem Threading-Modell des Service-Skeletons zu synchronisieren sein – Begründung: Adaptive Platform Dienste agieren potenziell nebenläufig. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf dem AUTOSAR-Release R25-11 für die Adaptive Platform (Modul com). Da der Dokumentations-Payload keine Spezifikations-Records oder Dokumentstellen für diesen Namensraum enthält, beschränkt sich die Darstellung auf eine neutrale architektonische Einordnung und explizit gekennzeichnete Interpretationen.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -269,7 +292,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e1d25af99427…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a157bce9c128…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

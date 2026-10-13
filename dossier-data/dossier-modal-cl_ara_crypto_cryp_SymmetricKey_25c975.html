@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_crypto_cryp_SymmetricKey_25c975" class="dossier-modal dossier-workbench" data-dossier-sha="779b85d82ef96e43" aria-labelledby="dossier-modal-cl_ara_crypto_cryp_SymmetricKey_25c975-title">
+<dialog id="dossier-modal-cl_ara_crypto_cryp_SymmetricKey_25c975" class="dossier-modal dossier-workbench" data-dossier-sha="42ab50a3fae04d57" aria-labelledby="dossier-modal-cl_ara_crypto_cryp_SymmetricKey_25c975-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_crypto_cryp_SymmetricKey_25c975-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_crypto_cryp_SymmetricKey_25c975)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,664 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,186 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::crypto::cryp::SymmetricKey' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_crypto_cryp_SymmetricKey_25c975",
@@ -208,28 +227,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="4477ab102e7c407ccd656032977e8521d86f15967d263de08fdfc9c9c81048ec" data-trace-output="779b85d82ef96e43a1b4dbc051dca386fea26923eee8c034a24f1a51832354a9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="f71a58d7ce351c4f539bfe953db89b9e296953fae1e2140cd244b47bd955ab42" data-trace-output="42ab50a3fae04d574291ee8192ac9813fa423f9be690b7e083c5bc099e98704f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt symmetrische kryptografische Schlüssel und steuert deren Lebensdauer über geteilte Smart Pointer." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;In module &lt;code&gt;crypto&lt;/code&gt; of the AUTOSAR Adaptive Platform (Release R25-11), interface &lt;code&gt;ara::crypto::cryp::SymmetricKey&lt;/code&gt; forms the object-oriented representation for symmetric cryptographic keys. The class declaration is available via header file &lt;code&gt;ara/crypto/cryp/cryobj/symmetric_key.h&lt;/code&gt; and derives publicly from base class &lt;code&gt;ara::crypto::cryp::CryptoObject&lt;/code&gt; (&lt;code&gt;class SymmetricKey : public CryptoObject&lt;/code&gt;). Through this inheritance, the interface is firmly integrated into the general object system of the crypto subsystem, which structures basic properties and identification features of cryptographic objects across types.&lt;/p&gt;
-&lt;p&gt;Within the crypto architecture, &lt;code&gt;SymmetricKey&lt;/code&gt; serves as a functional abstraction for sensitive key material used in symmetric procedures such as block ciphers, stream ciphers, or Message Authentication Codes (MAC). Interpretation: The interface is likely to act as a central, algorithm-independent base interface for symmetric procedures, through which key instances are transported in a unified manner and passed to cryptographic processing routines without requiring the using software component to know proprietary or hardware-dependent key formats. Through this decoupling from the concrete implementation, the application logic remains portable and independent of specific crypto drivers or security modules.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt symmetrische kryptografische Schlüssel und steuert deren Lebensdauer über geteilte Smart Pointer.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Schnittstelle &lt;code&gt;ara::crypto::cryp::SymmetricKey&lt;/code&gt; dient in AUTOSAR Adaptive als Abstraktion für symmetrische kryptografische Schlüssel und erbt grundlegende Eigenschaften von &lt;code&gt;CryptoObject&lt;/code&gt;. Anwendungen und Krypto-Kontexte verwalten Schlüsselinstanzen primär über den standardisierten Smart-Pointer-Typ &lt;code&gt;Sptr&lt;/code&gt; (&lt;code&gt;std::shared_ptr&amp;lt;SymmetricKey&amp;gt;&lt;/code&gt;) gemäß Header &lt;code&gt;ara/crypto/cryp/cryobj/symmetric_key.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;. Interpretation: Die Instanziierung dürfte über dedizierte Erzeugungsroutinen der Schlüsselverwaltung erfolgen, wobei der Schlüssel zur Konfiguration von Chiffren oder MACs übergeben wird. Als maßgebliche Randbedingung bestimmt die Referenzzählung des Shared Pointers die Lebensdauer, sodass das gekapselte Schlüsselobjekt erst nach Freigabe der letzten Referenz zerstört wird &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::crypto::cryp::SymmetricKey&lt;/code&gt; bildet in der AUTOSAR Adaptive Platform (Release R25-11, Modul &lt;code&gt;crypto&lt;/code&gt;) die zentrale Schnittstelle zur Repräsentation symmetrischer kryptografischer Schlüssel. Als elementarer Bestandteil des Kryptografie-Subsystems kapselt das Interface alle Eigenschaften, die für symmetrische kryptografische Verfahren erforderlich sind. Die Klasse ist direkt von &lt;code&gt;CryptoObject&lt;/code&gt; abgeleitet (&lt;code&gt;class SymmetricKey : public CryptoObject&lt;/code&gt;) und ordnet sich damit in die einheitliche Objekthierarchie für kryptografische Entitäten der Adaptive Platform ein. Deklariert wird die Schnittstelle in der Header-Datei &lt;code&gt;ara/crypto/cryp/cryobj/symmetric_key.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Als Interaktionspartner treten typischerweise kryptografische Ausführungskontexte sowie Schlüsselverwaltungsinstanzen auf. Das Interface fungiert als Bindeglied zwischen der Erzeugung oder Bereitstellung von Schlüsselmaterial und dessen operativer Anwendung. Interpretation: Symmetrische Schlüssel dürften in erster Linie in symmetrischen Chiffrierverfahren (etwa Block- oder Stromchiffren) sowie in Message Authentication Codes (MAC) zum Einsatz kommen, um Vertraulichkeit und Datenintegrität auf Fahrzeugebene abzusichern. Durch die Kapselung als &lt;code&gt;CryptoObject&lt;/code&gt; wird sichergestellt, dass das Schlüsselmaterial von der konkreten kryptografischen Transformation entkoppelt bleibt.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle management and ownership relationships of &lt;code&gt;SymmetricKey&lt;/code&gt; are based on standardized smart pointers. According to &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;, the interface provides type alias &lt;code&gt;Sptr&lt;/code&gt;, which is defined as &lt;code&gt;std::shared_ptr&amp;lt;SymmetricKey&amp;gt;&lt;/code&gt;. Throughout the crypto module, this alias acts as the primary type for shared management and passing of key instances.&lt;/p&gt;
-&lt;p&gt;Interpretation: Concrete instances of &lt;code&gt;SymmetricKey&lt;/code&gt; are not likely to be created directly by the user via constructor, but rather instantiated by specialized factories, key storage, or key management components of the crypto subsystem and provided as &lt;code&gt;Sptr&lt;/code&gt;. Because this is an abstract interface, the respective underlying implementation class encapsulates the physical storage of and access to the actual key material.&lt;/p&gt;
-&lt;p&gt;The release and destruction of a key object is controlled via the reference counting of &lt;code&gt;std::shared_ptr&lt;/code&gt;. The object remains in memory as long as at least one instance of &lt;code&gt;Sptr&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;) references it. As soon as the last owner leaves scope or resets the pointer, the destructor is called. Interpretation: When destroying the key object, the implementation is likely to ensure that sensitive key memory in RAM is overwritten or allocated hardware resources in protected crypto environments are securely released to prevent unauthorized reading of residual key data.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus von &lt;code&gt;ara::crypto::cryp::SymmetricKey&lt;/code&gt;-Instanzen ist eng an moderne C++-Speicherverwaltungsmuster gekoppelt. Gemäß &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt; stellt die Klasse den Typ-Alias &lt;code&gt;Sptr&lt;/code&gt; bereit, der als &lt;code&gt;using Sptr = std::shared_ptr&amp;lt;SymmetricKey&amp;gt;;&lt;/code&gt; definiert ist. Über diesen geteilten Smart Pointer wird der Lebenszyklus des Schnittstellenobjekts referenzgezählt und deterministisch gesteuert.&lt;/p&gt;
+&lt;p&gt;Interpretation: Die eigentliche Erzeugung und Initialisierung von Instanzen dürfte in der Praxis über spezialisierte Schlüsselgeneratoren, Laderoutinen oder Schlüsselverwaltungskomponenten des Krypto-Stacks erfolgen, da die Schnittstellendefinition keine öffentlichen Standardkonstruktoren für direkte Rohschlüssel-Instanziierungen ausweist. Sobald eine Schlüsselinstanz als &lt;code&gt;Sptr&lt;/code&gt; erzeugt wurde, kann sie von mehreren Software-Komponenten oder kryptografischen Kontexten nebenläufig und besitzteilend referenziert werden &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Freigabe der zugrunde liegenden Ressourcen erfolgt automatisch, sobald der letzte aktive &lt;code&gt;Sptr&lt;/code&gt; zerstört oder zurückgesetzt wird. Interpretation: Die Ableitung von &lt;code&gt;CryptoObject&lt;/code&gt; lässt vermuten, dass sensibles Schlüsselmaterial im Speicher besonders geschützt und bei der Zerstörung des Objekts sicher bereinigt (Zeroization) wird, um ein Auslesen nach Ablauf der Lebensdauer zu verhindern. Die Verwendung von &lt;code&gt;std::shared_ptr&lt;/code&gt; garantiert zudem Thread-Sicherheit bei der Verwaltung der Referenzzähler, während der Zugriff auf das referenzierte Schlüsselobjekt selbst den üblichen Synchronisationsregeln für gemeinsam genutzte Ressourcen unterliegt.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical usage flow of &lt;code&gt;SymmetricKey&lt;/code&gt; comprises acquisition, passing to cryptographic context classes, and automatic cleanup via the reference counter:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Key acquisition:&lt;/strong&gt; The application or a higher-level platform component obtains the instance of a symmetric key as &lt;code&gt;Sptr&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;), for example by loading from a persistent key repository, generating an ephemeral session key, or deriving from a base key.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Assignment to crypto operations:&lt;/strong&gt; The &lt;code&gt;Sptr&lt;/code&gt; is passed to transformation or verification contexts (such as symmetric encryption, decryption, or MAC calculation). Through the &lt;code&gt;shared_ptr&lt;/code&gt; concept, multiple contexts can reference the same key instance simultaneously or sequentially without having to copy or multiply instantiate key material.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Processing and cleanup:&lt;/strong&gt; After performing the cryptographic calculations, the context is closed. If all involved context objects and application routines discard their references to &lt;code&gt;Sptr&lt;/code&gt;, the object is automatically destructed.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;In multithreading scenarios, type alias &lt;code&gt;Sptr&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;) enables thread-safe copying and assigning of the pointer between different threads of execution according to the usual guarantees of the C++ standard library for &lt;code&gt;std::shared_ptr&lt;/code&gt;. Concurrent read accesses to an immutable key object do not cause data conflicts.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Die reguläre Verwendung von &lt;code&gt;ara::crypto::cryp::SymmetricKey&lt;/code&gt; in einer Adaptive-Anwendung folgt einem strukturierten Ablauf, der sich auf den definierten Smart Pointer stützt &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Header-Einbindung:&lt;/strong&gt; Zunächst bindet die nutzende Softwarekomponente den Header &lt;code&gt;#include "ara/crypto/cryp/cryobj/symmetric_key.h"&lt;/code&gt; ein, um Zugriff auf die Typdefinition und den Alias &lt;code&gt;Sptr&lt;/code&gt; zu erhalten &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Schlüsselbezug:&lt;/strong&gt; Die Anwendung bezieht die Schnittstelle in Form eines &lt;code&gt;ara::crypto::cryp::SymmetricKey::Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;, beispielsweise aus einem vorgelagerten Schlüsselbereitstellungsprozess.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Gültigkeitsprüfung:&lt;/strong&gt; Vor der operativen Verwendung verifiziert der Aufrufer, dass der erhaltene &lt;code&gt;Sptr&lt;/code&gt; ungleich &lt;code&gt;nullptr&lt;/code&gt; ist und auf ein intaktes &lt;code&gt;CryptoObject&lt;/code&gt; verweist.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Zuweisung an Krypto-Kontexte:&lt;/strong&gt; Der Schlüssel-Zeiger wird an den zuständigen kryptografischen Kontext übergeben, um diesen für anstehende Ver- oder Entschlüsselungsoperationen bzw. Integritätsprüfungen zu konfigurieren.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Freigabe:&lt;/strong&gt; Nach Abschluss der Transformationen oder beim Beenden des Anwendungskontexts wird der Zeiger verworfen; die Zerstörung des Schlüssels erfolgt durch das automatische Löschen des letzten &lt;code&gt;Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_23801" href="../spec/record.html?id=SWS_CRYPT_23801"&gt;[SWS_CRYPT_23801]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;!-- annahmen: 1) Die Schnittstelle dürfte als algorithmusunabhängige Basisschnittstelle für symmetrische Krypto-Verfahren fungieren – Begründung: Der Payload beschreibt die Klasse lediglich als 'Symmetric Key interface.' und nennt keine spezifischen Krypto-Algorithmen. 2) Instanzen dürften über Schlüsselspeicher- oder Krypto-Fabrikmethoden als Sptr erzeugt werden – Begründung: Als reine Schnittstelle (interface) kann die Klasse nicht direkt per Konstruktor instanziiert werden; SWS_CRYPT_23801 spezifiziert hierfür den std::shared_ptr-Alias. 3) Beim Zerstören des Schlüsselobjekts dürfte die Implementierung sensiblen Schlüsselspeicher sicher bereinigen oder Hardwareressourcen freigeben – Begründung: Der Payload enthält keine Angaben zu Destruktionsdetails, doch bei kryptografischen Objekten in AUTOSAR ist eine sichere Bereinigung flüchtigen Speichers üblich. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the interface documentation of the AUTOSAR Adaptive Platform for Release R25-11. All statements without explicit evidence represent methodological interpretations.&lt;/p&gt;
+&lt;!-- annahmen: 1) Einsatz in symmetrischen Primitiven (wie Chiffren oder MACs) – Begründung: Der Payload benennt die Schnittstelle als SymmetricKey und Ableitung von CryptoObject, nennt jedoch keine konkreten Algorithmen. 2) Erzeugung über Krypto-Fabriken oder Schlüsselverwaltung – Begründung: Im Payload sind außer dem Alias Sptr keine Konstruktoren oder Erzeugungsmethoden spezifiziert. 3) Kapselung und Schutz des Schlüsselmaterials als CryptoObject – Begründung: Die Vererbung von CryptoObject und die Bereitstellung via std::shared_ptr deuten auf opake Schlüsselverwaltung hin. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11. Die Aussagen stützen sich auf die referenzierten Spezifikationselemente sowie als solche gekennzeichnete Interpretationen.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -271,9 +299,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>4477ab102e7c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f71a58d7ce35…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -308,8 +336,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -346,7 +374,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 4 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -409,4 +437,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_23801","k":"type","d":"CRYPTO","t":"type alias Sptr [SWS_CRYPT_23801] Upstream: RS_CRYPTO_02201 using Sptr = std::shared_ptr \u003c SymmetricKey >; Shared smart pointer of the interface. Header-Datei #include \"ara/crypto/cryp/cryobj/symmetric_key.h\" class mono Scope class ara::crypto::cryp::SymmetricKey class mono Symbol Sptr class mono","n":"alias"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/d718b6dad0219fac.json?v=f28b5a68" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_23801","k":"type","d":"CRYPTO","t":"type alias Sptr [SWS_CRYPT_23801] Upstream: RS_CRYPTO_02201 using Sptr = std::shared_ptr \u003c SymmetricKey >; Shared smart pointer of the interface. Header-Datei #include \"ara/crypto/cryp/cryobj/symmetric_key.h\" class mono Scope class ara::crypto::cryp::SymmetricKey class mono Symbol Sptr class mono","n":"alias"}],"inbound":[]}</script></dialog>

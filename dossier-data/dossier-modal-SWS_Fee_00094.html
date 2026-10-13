@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Fee_00094" class="dossier-modal dossier-workbench" data-dossier-sha="b215a61c57e6e298" aria-labelledby="dossier-modal-SWS_Fee_00094-title">
+<dialog id="dossier-modal-SWS_Fee_00094" class="dossier-modal dossier-workbench" data-dossier-sha="f1979fd3310f0a59" aria-labelledby="dossier-modal-SWS_Fee_00094-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Fee_00094-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Fee_00094)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,257 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,712 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Fee_EraseImmediateBlock'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,21 +193,17 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="ffd476dcd1538936a928cdd833deeb6f8264527715b66e04413b3d92afd2dd0e" data-trace-output="b215a61c57e6e29830b71cfbf17ddfb9f94c61edde209cc57e9dede993ca840d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c9619585e034c066a286e96d86e6a2d634cf85dc5980435435030f2fe89da57d" data-trace-output="f1979fd3310f0a59730b90e54a0c2979c78b36ae8d27ae90288f75a80d662e4e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem asynchronen Löschen eines logischen Blocks anhand seiner Blocknummer im EEPROM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;Fee_EraseImmediateBlock&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;) provides a service for erasing a logical block. The interface is made available via the header &lt;code&gt;Fee.h&lt;/code&gt; and has the service ID &lt;code&gt;0x09&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;The execution semantics are asynchronous (&lt;code&gt;Asynchronous&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;). As an input parameter, &lt;code&gt;Block Number&lt;/code&gt; of type &lt;code&gt;uint16&lt;/code&gt; is passed; this specifies the number of the logical block and at the same time designates the start address of this block in the EEPROM (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;). Input/output parameters or pure output parameters do not exist (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals whether the erase job was accepted by the module (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The requested job was accepted by the module (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The requested job was not accepted by the module (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;According to the specification, returning &lt;code&gt;E_NOT_OK&lt;/code&gt; in the event of a rejected job occurs exclusively when the Default Error Tracer is enabled (&lt;code&gt;only if DET is enabled&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;).&lt;/p&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is defined as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;). Further information regarding call contexts or ordering conditions is not included in the specification data and is therefore omitted.&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note is based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Die Funktion &lt;code&gt;Fee_EraseImmediateBlock&lt;/code&gt; stellt einen asynchronen Dienst zum Löschen eines logischen Blocks bereit und ist über die Header-Datei &lt;code&gt;Fee.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;. Die Funktion besitzt die hexadezimale Service-ID &lt;code&gt;0x09&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;. Als einziger Eingangsparameter dient &lt;code&gt;Block Number&lt;/code&gt; vom Typ &lt;code&gt;uint16&lt;/code&gt;; dieser spezifiziert die Nummer des logischen Blocks und kennzeichnet zugleich dessen Startadresse im EEPROM &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Als Rückgabewert liefert die Schnittstelle den Status &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;. Der Wert &lt;code&gt;E_OK&lt;/code&gt; bestätigt, dass das Modul den angeforderten Löschauftrag erfolgreich entgegengenommen hat &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;. Wurde der Auftrag vom Modul nicht akzeptiert, liefert die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt;; laut Spezifikation tritt dieser Rückgabewert allerdings nur bei aktivierter DET-Fehlerüberwachung auf &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;Bezüglich Nebenläufigkeit und Aufrufbedingungen ist &lt;code&gt;Fee_EraseImmediateBlock&lt;/code&gt; als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) eingestuft und arbeitet asynchron &lt;a class="spec-record-ref" data-req="SWS_Fee_00094" href="../../spec/record.html?id=SWS_Fee_00094"&gt;[SWS_Fee_00094]&lt;/a&gt;. Aufrufende Module müssen daher gewährleisten, dass kein weiterer Aufruf derselben Schnittstelle erfolgt, solange das Modul noch mit der Bearbeitung befasst ist.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Kontextbezogene Erläuterung basierend auf der AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -229,7 +243,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>ffd476dcd153…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c9619585e034…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -367,4 +381,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fee_00094","k":"function","d":"AUTOSAR","t":"","n":"Fee_EraseImmediateBlock"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/cf8c12617d014f32.json?v=ace6dcd7" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Fee_00094","k":"function","d":"AUTOSAR","t":"","n":"Fee_EraseImmediateBlock"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/cf8c12617d014f32.json?v=2ee81b76" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

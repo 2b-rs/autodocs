@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Os_00201" class="dossier-modal dossier-workbench" data-dossier-sha="2ea941f4aeae488e" aria-labelledby="dossier-modal-SWS_Os_00201-title">
+<dialog id="dossier-modal-SWS_Os_00201" class="dossier-modal dossier-workbench" data-dossier-sha="c3c67d0e3a8cbce4" aria-labelledby="dossier-modal-SWS_Os_00201-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Os_00201-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Os_00201)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,477 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,932 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'StartScheduleTableSynchron'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,32 +198,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="92b879bc6196caedcd8f0a089634fa8310d23ba39430b15e7a114893e4406e0c" data-trace-output="2ea941f4aeae488ea7f786ecaf0b4fcdb832f8375af72d72d296d38b210e4a84" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8edf7224d05384b3c69eeadad6de2a20d14f6c8b560c12eb5207f58f4ae1ec94" data-trace-output="c3c67d0e3a8cbce45b581c692988f980e9ac569b0bd3ac3d249541515e033863" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem synchronen Starten einer explizit synchronisierten Schedule-Tabelle." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The function &lt;code&gt;StartScheduleTableSynchron&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;) serves to synchronously start an explicitly synchronized schedule table. The call is processed synchronously and is classified as reentrant. Header &lt;code&gt;Os.h&lt;/code&gt; must be included for usage.
-  &lt;/p&gt;
-  &lt;h4&gt;Parameters and Return Values&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Input parameter:&lt;/strong&gt; &lt;code&gt;ScheduleTableID&lt;/code&gt; of type &lt;code&gt;ScheduleTableType&lt;/code&gt; determines the schedule table to be started (&lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Return value (&lt;code&gt;StatusType&lt;/code&gt;):&lt;/strong&gt;
-      &lt;ul&gt;
-        &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The service was executed without error (&lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;).&lt;/li&gt;
-        &lt;li&gt;&lt;code&gt;E_OS_ID&lt;/code&gt;: The passed &lt;code&gt;ScheduleTableID&lt;/code&gt; is invalid (only returned in status &lt;code&gt;EXTENDED&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;).&lt;/li&gt;
-        &lt;li&gt;&lt;code&gt;E_OS_STATE&lt;/code&gt;: The specified schedule table was already started (&lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;).&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Interaction and Observability&lt;/h4&gt;
-  &lt;p&gt;
-    State information about operating system objects such as schedule tables can be made accessible to debug and analysis tools across the overall system via ARTI module descriptions (&lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    Note: This usage note was generated automatically based on the specification of AUTOSAR R20-11.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Der Systemdienst &lt;code&gt;StartScheduleTableSynchron&lt;/code&gt; dient dazu, eine explizit synchronisierte Schedule-Tabelle synchron zu starten &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Die Funktion ist in der Header-Datei &lt;code&gt;Os.h&lt;/code&gt; deklariert und besitzt die Service-ID &lt;code&gt;0x0b&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Als einzigen Übergabeparameter erwartet die Funktion den Eingabeparameter &lt;code&gt;ScheduleTableID&lt;/code&gt; vom Typ &lt;code&gt;ScheduleTableType&lt;/code&gt;, der die zu startende Tabelle eindeutig referenziert &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Ein-Ausgabe- oder reine Ausgabe-Parameter sind nicht vorhanden &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Die Verarbeitung erfolgt synchron und liefert einen Rückgabewert vom Typ &lt;code&gt;StatusType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Im fehlerfreien Ablauf gibt der Funktionsaufruf den Statuscode &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Bei Fehlern sind folgende Rückgabewerte spezifiziert:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OS_STATE&lt;/code&gt;: Die angegebene Schedule-Tabelle befindet sich bereits im gestarteten Zustand und kann nicht erneut synchron gestartet werden &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OS_ID&lt;/code&gt;: Die übergebene &lt;code&gt;ScheduleTableID&lt;/code&gt; ist ungültig &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Diese Fehlerprüfung und Fehlermeldung ist ausschließlich im EXTENDED-Status aktiv &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;. Da der wiederholte Aufruf für eine bereits aktive Tabelle mit &lt;code&gt;E_OS_STATE&lt;/code&gt; abgewiesen wird, muss der Aufrufer sicherstellen, dass die Zieltabelle vor dem Aufruf nicht bereits läuft &lt;a class="spec-record-ref" data-req="SWS_Os_00201" href="../../spec/record.html?id=SWS_Os_00201"&gt;[SWS_Os_00201]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Zustandsübergänge und dynamische Eigenschaften von Betriebssystemobjekten können für Test- und Diagnosewerkzeuge über ARTI-Modulbeschreibungsdateien und ORTI-Container nachvollzogen werden &lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;. Externe Debugger nutzen diese Beschreibungen, um den internen Status der OS-Objekte zur Laufzeit auszuwerten &lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI basierend auf der Spezifikation AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -245,7 +254,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>92b879bc6196…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8edf7224d053…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -383,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Os_00201","k":"function","d":"AUTOSAR","t":"","n":"StartScheduleTableSynchron"}],"inbound":[{"i":"SWS_Os_00829","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Os_00829].","n":"SWS_Os_00829"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/256dd8fb1b616763.json?v=1c448350" data-total="8" data-new="8" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Os_00201","k":"function","d":"AUTOSAR","t":"","n":"StartScheduleTableSynchron"}],"inbound":[{"i":"SWS_Os_00829","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Os_00829].","n":"SWS_Os_00829"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/256dd8fb1b616763.json?v=3d49b676" data-total="8" data-new="8" data-figures="2" data-used="0"></script></dialog>

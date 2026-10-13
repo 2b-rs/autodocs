@@ -1,19 +1,33 @@
 {
  "annahmen": [
-  "1) Interpretation: Da ModifyContextData rein virtuell deklariert ist (= 0), dient ContextDataProvider als abstrakte Basisklasse, von der anwendungsspezifische Provider erben müssen. – Begründung: SWS_AIDSM_10509 spezifiziert die Methode mit rein virtueller Signatur.",
-  "2) Interpretation: Vor Zerstörung der Provider-Instanz dürfte StopOffer aufgerufen werden. – Begründung: StopOffer unterbindet laut SWS_AIDSM_10508 Aufrufe von ModifyContextData und schützt vor Zugriffen auf ein in Zerstörung befindliches Objekt."
+  "1) Vor der Zerstörung einer Instanz dürfte typischerweise StopOffer() aufgerufen werden müssen – Begründung: Der Destruktor ist not thread-safe und laufende Callbacks durch IdsM müssen vor Objektlöschung unterbunden sein.",
+  "2) Bei Fehlschlagen der Datenanpassung in ModifyContextData dürfte ein Fehlercode im Result zurückgegeben werden – Begründung: Der Payload spezifiziert Result<std::size_t>, nennt aber keine konkreten Fehler-Enums.",
+  "3) Parallele Aufrufe der nicht threadsicheren Methoden dürften ohne externe Synchronisation zu Datenrennen führen – Begründung: Not thread-safe schließt nebenläufige Zugriffe ohne externen Schutz aus."
  ],
  "diagrams": [
   {
    "art": "seq",
-   "id": "diag-nutzungspfad",
-   "quelle": "anchor_r25_11.diag-nutzungspfad.seq.json"
+   "id": "diag-provider-ablauf",
+   "quelle": "anchor_r25_11.diag-provider-ablauf.seq.json"
   }
  ],
  "fragment": "content/ai/classes/cl_ara_idsm_ContextDataProvider_725af1/anchor_r25_11.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-provider-ablauf"
+  ],
+  "oneliner_chars": 109,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 65,
+   "3": 244,
+   "4": 480
+  }
+ },
  "lint": [],
- "output_sha256": "45b64529f7b4c3b2ae208c430bed31c9f5e7c361a08c6d2137f570ecfa45ba4b",
- "output_store": "ai/store/outputs/45/45b64529f7b4c3b2ae208c430bed31c9f5e7c361a08c6d2137f570ecfa45ba4b.html",
+ "output_sha256": "1016e51d7c5dabe57028ac72d454a1fd0a404fbb1cef22e71ec3b69dc90af38e",
+ "output_store": "ai/store/outputs/10/1016e51d7c5dabe57028ac72d454a1fd0a404fbb1cef22e71ec3b69dc90af38e.html",
  "params": {
   "class_id": "cl_ara_idsm_ContextDataProvider_725af1",
   "platform": "adaptive",
@@ -39,9 +53,9 @@
   "top_p": null
  },
  "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "54c6f53df078ce80f662b638e61a026fcfeafa234d680f7d0a258e21947ed8ea",
- "prompt_store": "ai/store/prompts/54/54c6f53df078ce80f662b638e61a026fcfeafa234d680f7d0a258e21947ed8ea.txt",
- "recipe": "class-guide@2",
+ "prompt_hash": "f62ecfb74d6d9bb59fcc5ab62168c93c00fa31469fb8f66fa0d12d279ab61032",
+ "prompt_store": "ai/store/prompts/f6/f62ecfb74d6d9bb59fcc5ab62168c93c00fa31469fb8f66fa0d12d279ab61032.txt",
+ "recipe": "class-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -53,17 +67,18 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T08:26:59Z",
-   "duration_seconds": 31.254447,
+   "created_at": "2026-10-13T03:58:15Z",
+   "duration_seconds": 38.561257269,
+   "prompt_transport": "argv -p",
    "route": "agy-cli-print",
-   "run_id": "750cd9c3-3aaf-4015-b267-af0e69c83816",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/750cd9c3-3aaf-4015-b267-af0e69c83816.jsonl",
+   "run_id": "379ab4ac-4ec2-4db5-93f0-0ee635aacec8",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/379ab4ac-4ec2-4db5-93f0-0ee635aacec8.jsonl",
    "usage": {
     "cache_read_tokens": 8145,
-    "input_tokens": 7190,
-    "output_tokens": 13660,
-    "thinking_tokens": 10080,
-    "total_tokens": 20850
+    "input_tokens": 7294,
+    "output_tokens": 15654,
+    "thinking_tokens": 11539,
+    "total_tokens": 22948
    }
   }
  ],

@@ -1,9 +1,8 @@
 {
  "annahmen": [
-  "1) Der InstanceSpecifier des Konstruktors bezeichnet den durch FirewallStateSwitchInterface typisierten RPortPrototype der Anwendung (Text und diag-manifest) – Begründung: Das Manifest-Schaubild S. 677 verbindet genau diesen Port mit der Firewall-Instanziierung, nennt den Specifier aber nicht.",
-  "2) EnumT in SwitchFirewallState steht für das generierte enum aus AP_SWS_Fw_81001 – Begründung: AP_SWS_Fw_81001 definiert dieses enum als Zustandstyp für FirewallStateSwitchInterface; die Signatur nennt nur EnumT.",
-  "3) Die Enumeratoren aus AP_SWS_Fw_81002 entsprechen den Modes der über firewallStateMachine aggregierten ModeDeclarationGroup (Text und diag-manifest) – Begründung: Laut AP_SWS_Fw_81002 entsteht ein Enumerator je modelliertem Zustand; die Modellierung erfolgt laut TPS S. 263 über ModeDeclarationGroupPrototype.",
-  "4) Diagramm diag-sev: Reihenfolge packetBlocked() → handlePacketBlocked() → raiseSecurityEvent() → ReportEvent() – Begründung: Die Bildtexte des Schaubilds S. 232 nennen die Nachrichten, die gekürzte Beschreibung legt die Reihenfolge aber nicht vollständig fest."
+  "1) Ein Quellobjekt nach einem Move ist nicht weiter zu verwenden; das Zielobjekt übernimmt die Rolle – Begründung: Die Requirements beschreiben Move-Konstruktor und Move-Zuweisung, nicht aber den Restzustand.",
+  "2) Bedeutung von kServiceNotAvailable (Dienst des FC Firewall nicht verfügbar) und kInvalidStateDependentFirewall (keine gültige StateDependentFirewall für den Zielzustand) – Begründung: aus den Namen und dem Manifestmodell abgeleitet, keine Auslösebedingungen im Payload.",
+  "3) EnumT ist die zum Interface generierte Zustands-Enumeration – Begründung: AP_SWS_Fw_81001 definiert diese Zustände für FirewallStateSwitchInterface, AP_SWS_Fw_82008 nennt nur den Platzhalter EnumT."
  ],
  "diagrams": [
   {
@@ -13,8 +12,13 @@
   },
   {
    "art": "dot",
-   "id": "diag-filter",
-   "quelle": "anchor_r25_11.diag-filter.dot"
+   "id": "diag-zustandsmodell",
+   "quelle": "anchor_r25_11.diag-zustandsmodell.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-manifest",
+   "quelle": "anchor_r25_11.diag-manifest.dot"
   },
   {
    "art": "seq",
@@ -23,18 +27,13 @@
   },
   {
    "art": "dot",
-   "id": "diag-manifest",
-   "quelle": "anchor_r25_11.diag-manifest.dot"
-  },
-  {
-   "art": "dot",
    "id": "diag-lebenszyklus",
    "quelle": "anchor_r25_11.diag-lebenszyklus.dot"
   },
   {
-   "art": "seq",
-   "id": "diag-sev",
-   "quelle": "anchor_r25_11.diag-sev.seq.json"
+   "art": "dot",
+   "id": "diag-paketpruefung",
+   "quelle": "anchor_r25_11.diag-paketpruefung.dot"
   },
   {
    "art": "dot",
@@ -56,14 +55,36 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 32,
-  "im_prompt_schaubilder": 16,
-  "kandidaten": 36,
+  "im_prompt": 28,
+  "im_prompt_schaubilder": 13,
+  "kandidaten": 32,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "dbf5b7eada8281cc599c9e8be4c83925e8d4eda153957ce063cb3a9aad1a0d89",
- "output_store": "ai/store/outputs/db/dbf5b7eada8281cc599c9e8be4c83925e8d4eda153957ce063cb3a9aad1a0d89.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-switch"
+  ],
+  "oneliner_chars": 113,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 72,
+   "3": 301,
+   "4": 1522
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip FIG-826e9bb7c1d7761d: AUTOSAR_EXP_SWArchitecture S. 158 nicht im Anker R25-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-826e9bb7c1d7761d: AUTOSAR_EXP_SWArchitecture S. 158 nicht im Anker R25-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_6_63: TPS_SystemTemplate S. 583 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+ ],
+ "output_sha256": "5e350ba0bbec2f5902fbde01c36f3b16b300c2fbad27213754b375933f8791dd",
+ "output_store": "ai/store/outputs/5e/5e350ba0bbec2f5902fbde01c36f3b16b300c2fbad27213754b375933f8791dd.html",
  "params": {
   "module": "fw",
   "platform": "adaptive",
@@ -92,9 +113,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "d04a55b01cb51af1294b13159005cfad0eebd1925262666c1922d20be051d6a8",
- "prompt_store": "ai/store/prompts/d0/d04a55b01cb51af1294b13159005cfad0eebd1925262666c1922d20be051d6a8.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "9267f9cbcba3633f5d1ab2bb48316563094b785644473f7021071c01b5ded9bc",
+ "prompt_store": "ai/store/prompts/92/9267f9cbcba3633f5d1ab2bb48316563094b785644473f7021071c01b5ded9bc.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -107,14 +128,22 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 0.800564,
-   "cost_usd_reported": 0.8005639999999999,
-   "created_at": "2026-10-09T07:42:53Z",
-   "duration_api_seconds": 270.883,
-   "duration_seconds": 271.052,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 0.862356,
+   "cost_usd_reported": 0.862356,
+   "created_at": "2026-10-13T01:58:32Z",
+   "duration_api_seconds": 299.155,
+   "duration_seconds": 300.716,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip FIG-826e9bb7c1d7761d: AUTOSAR_EXP_SWArchitecture S. 158 nicht im Anker R25-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-826e9bb7c1d7761d: AUTOSAR_EXP_SWArchitecture S. 158 nicht im Anker R25-11 (Snippet-Releases: R22-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_FIGURE_Figure_6_63: TPS_SystemTemplate S. 583 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_ADAPTIVE_IDSM_FIGURE_Figure_7_3: SWS_Firewall S. 31 nicht im Anker R25-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -123,19 +152,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 0.8005639999999999,
-     "inputTokens": 26966,
+     "costUSD": 0.862356,
+     "inputTokens": 24284,
      "maxOutputTokens": 128000,
-     "outputTokens": 34635,
+     "outputTokens": 38261,
      "provider": "firstParty",
-     "thinkingTokens": 17895,
+     "thinkingTokens": 19284,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "c3a9bbdf-281d-48d6-bf92-af44888814cb",
+   "run_id": "542c8d07-896f-4ea5-856a-51eb9d1aae68",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/c3a9bbdf-281d-48d6-bf92-af44888814cb.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/542c8d07-896f-4ea5-856a-51eb9d1aae68.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -144,11 +173,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 26966,
-    "output_tokens": 34635,
+    "inference_geo": "global",
+    "input_tokens": 24284,
+    "output_tokens": 38261,
     "output_tokens_details": {
-     "thinking_tokens": 17895
+     "thinking_tokens": 19284
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -160,11 +189,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 26966,
-    "output": 34635,
-    "thinking": 17895
+    "input_uncached": 24284,
+    "output": 38261,
+    "thinking": 19284
    },
-   "wall_seconds": 272.968
+   "wall_seconds": 302.26
   }
  ],
  "schema": "ai-trace@2",

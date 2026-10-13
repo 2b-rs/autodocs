@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_apext_tsync_FVContainer_9ac97b" class="dossier-modal dossier-workbench" data-dossier-sha="7f4be105a7b2f954" aria-labelledby="dossier-modal-cl_apext_tsync_FVContainer_9ac97b-title">
+<dialog id="dossier-modal-cl_apext_tsync_FVContainer_9ac97b" class="dossier-modal dossier-workbench" data-dossier-sha="190418a6c04c5660" aria-labelledby="dossier-modal-cl_apext_tsync_FVContainer_9ac97b-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_apext_tsync_FVContainer_9ac97b-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_apext_tsync_FVContainer_9ac97b)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,806 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,328 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'apext::tsync::FVContainer' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_apext_tsync_FVContainer_9ac97b",
@@ -212,32 +231,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="95074ccf47430b6f62766d430560c318ba1fedbe6849ea3a8b19fd0f7699cdf5" data-trace-output="7f4be105a7b2f9545e8eca53cfb38600867e7d6672c93b1eeed75d716abbac9a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="c7cff93a9b82e4276fb60525fdcc2922366776ede2d703d939a62b08d59d642d" data-trace-output="190418a6c04c5660120dcbe663eba22655ee4f2c44681c248b41abadb6186595" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt Frischewerte als Byte-Vektor zusammen mit ihrer exakten Bitlänge für das Freshness Value Management." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;In the context of the Adaptive Platform, data structure &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; functions as a dedicated data transfer container for freshness values in module &lt;code&gt;tsync&lt;/code&gt;. Defined in header &lt;code&gt;apext/tsync/fvm.h&lt;/code&gt;, the structure serves the standardized exchange of security and synchronization data between functional modules and components of Freshness Value Management (FVM). Its primary responsibility is to combine the actual freshness value together with its exact bit length in a compact value unit.&lt;/p&gt;
-&lt;p&gt;A freshness value is used in communications engineering and synchronization-relevant security protocols to prevent replay attacks and prove the recency of transmitted data structures. Here, the container encapsulates two central properties: The length of the freshness value in bits is maintained in attribute &lt;code&gt;length&lt;/code&gt; of type &lt;code&gt;std::uint64_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt;. The actual value is provided via attribute &lt;code&gt;value&lt;/code&gt; as a byte vector of type &lt;code&gt;ara::core::Vector&amp;lt;std::uint8_t&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;. Depending on the use case and interface specification of the called FVM methods, &lt;code&gt;value&lt;/code&gt; can represent either the complete freshness value or a truncated variant (Truncated Value) &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt Frischewerte als Byte-Vektor zusammen mit ihrer exakten Bitlänge für das Freshness Value Management.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; dient im Modul &lt;code&gt;tsync&lt;/code&gt; als Datenbehälter zur Übergabe und Rückgabe von Frischewerten zwischen Applikationen und dem Freshness Value Management. Sie kapselt den eigentlichen Frischewert als Byte-Vektor in &lt;code&gt;value&lt;/code&gt;, der je nach Richtung vollständige oder verkürzte Werte enthält &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;, sowie dessen exakte Bitlänge im Attribut &lt;code&gt;length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt;. Der nebenläufige Zugriff erfordert eine externe Koordinierung durch den Aufrufer.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; fungiert innerhalb des Funktionsclusters &lt;code&gt;tsync&lt;/code&gt; der AUTOSAR Adaptive Platform als dedizierter Datenbehälter für Frischewerte (Freshness Values). Eingebunden über die Header-Datei &lt;code&gt;apext/tsync/fvm.h&lt;/code&gt; dient sie als standardisierte Schnittstelle im Zusammenspiel mit dem Freshness Value Management (FVM). Ihre primäre Verantwortung besteht darin, den eigentlichen kryptografischen Frischewert zusammen mit dessen exakter Länge bereitzustellen. Hierzu kapselt der Container die Bitlänge im Datenelement &lt;code&gt;length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt; sowie die eigentlichen Nutzdaten im Byte-Vektor &lt;code&gt;value&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;. Die Struktur agiert somit als Brücke zwischen aufrufenden Applikationen oder Protokollschichten und den FVM-Berechnungsroutinen.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a C++ structure (&lt;code&gt;struct&lt;/code&gt;), &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; possesses direct value semantics. Creation usually occurs locally on the stack of the calling component or as a dynamically instantiated data object in the context of function returns. With regard to ownership, an instance of &lt;code&gt;FVContainer&lt;/code&gt; is the sole owner of its member variables. Memory management of the underlying payload is controlled autonomously by &lt;code&gt;ara::core::Vector&lt;/code&gt; according to the principles of RAII (Resource Acquisition Is Initialization).&lt;/p&gt;
-&lt;p&gt;Interpretation: Since it is an elementary C++ structure without explicit encapsulation methods, compiler-generated default constructors as well as copy and move operators, whose lifecycle behavior is completely determined by types &lt;code&gt;std::uint64_t&lt;/code&gt; and &lt;code&gt;ara::core::Vector&lt;/code&gt;, are likely to apply to &lt;code&gt;FVContainer&lt;/code&gt;. Special lifecycle phases or an internal state machine do not exist for the passive data object; the logical state is determined solely by the content of &lt;code&gt;length&lt;/code&gt; and &lt;code&gt;value&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Regarding concurrency, &lt;code&gt;FVContainer&lt;/code&gt; provides no inherent thread safety. If instances of the container are exchanged across thread boundaries or read and modified simultaneously by multiple execution paths, the necessary synchronization rests entirely with the participating application components.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als leichtgewichtige Datenstruktur (&lt;code&gt;struct&lt;/code&gt;) unterliegt &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; den regulären Wertesemantiken von C++. Die Erzeugung erfolgt typischerweise lokal auf dem Stack des Aufrufers oder dynamisch im Rahmen einer übergeordneten Nachrichtenerstellung. Mit der Instanziierung übernimmt die Struktur die Verantwortung für den Lebenszyklus des enthaltenen Vektors &lt;code&gt;value&lt;/code&gt; vom Typ &lt;code&gt;ara::core::Vector&amp;lt;std::uint8_t&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;. Dürfte die Struktur bei der Übergabe an Schnittstellen per Wert oder Referenz weitergereicht werden, sorgt das RAII-Prinzip des Vektors für eine deterministische Freigabe des allokierten Speichers bei Zerstörung des Containers. Da &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; keine internen Mechanismen zur Synchronisation bereitstellt, obliegt die thread-sichere Koordination bei nebenläufigem Lese- und Schreibzugriff vollständig der aufrufenden Softwarekomponente.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The usage of &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; essentially follows two complementary paths, depending on whether the container is passed to a method as an input parameter or received from it as a return value &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;In the input path, the caller instantiates the container, allocates the required byte quantity in &lt;code&gt;value&lt;/code&gt;, and initializes the bytes with the freshness value data. In parallel, the exact bit length is stored in &lt;code&gt;length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt;. This is particularly relevant if the logical bit length does not represent an integer multiple of 8 bits. Subsequently, the populated container is passed to the FVM interface.&lt;/p&gt;
-&lt;p&gt;In the return path, the called method creates an instance of &lt;code&gt;FVContainer&lt;/code&gt;, sets &lt;code&gt;value&lt;/code&gt; with the computed complete or truncated freshness value, and records the associated bit length in &lt;code&gt;length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;. After receipt, the caller first reads &lt;code&gt;length&lt;/code&gt; to determine the valid bit size, and then accesses the bytes in &lt;code&gt;value&lt;/code&gt; to perform the subsequent verification or message protection.&lt;/p&gt;
-
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Since &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt;, as a purely passive data container, does not execute internal validation routines, error scenarios arise primarily from inconsistencies in preconditions and postconditions in interaction with processing FVM methods:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Im praktischen Einsatz durchläuft &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; zwei zentrale Richtungen innerhalb der Schnittstellenkommunikation:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Size inconsistency between bit length and byte buffer:&lt;/strong&gt; If &lt;code&gt;length&lt;/code&gt; has a value that exceeds the byte quantity provided in vector &lt;code&gt;value&lt;/code&gt; (i.e., &lt;code&gt;length &amp;gt; value.size() * 8&lt;/code&gt;), an invalid precondition exists. Interpretation: The processing FVM method is likely to reject execution in this case or signal a system-specific error, since consistency checking rests with the called service.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Empty or uninitialized data containers:&lt;/strong&gt; If a container is passed whose &lt;code&gt;value&lt;/code&gt; vector is empty (&lt;code&gt;value.empty() == true&lt;/code&gt;) while &lt;code&gt;length&lt;/code&gt; is set to non-zero, a semantic contradiction arises. The same applies to the case where &lt;code&gt;length == 0&lt;/code&gt; is signaled, but the vector contains payload data.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Bit alignment and incomplete bytes:&lt;/strong&gt; If &lt;code&gt;length&lt;/code&gt; is not an exact multiple of 8 bits, unused residual bits remain in the last byte of the vector. Interpretation: The interpretation and masking of these unused bits (for example, alignment with the most significant bits or zero-padding) presumably depends on the higher-level FVM algorithms, so erroneous assumptions at the sender or receiver can lead to verification errors.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Resource exhaustion:&lt;/strong&gt; During dynamic allocation or resizing of vector &lt;code&gt;value&lt;/code&gt;, allocation errors can occur in memory-constrained ECUs, which must be handled by the calling context.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Eingabeparameter:&lt;/strong&gt; Bei der Verifikation oder Verarbeitung eingehender Nachrichten wird der Container von der Applikation befüllt und an Methoden des FVM übergeben. Je nach Kontext nimmt das Feld &lt;code&gt;value&lt;/code&gt; dabei entweder vollständige Frischewerte oder gekürzte Werte (Truncated Values) auf &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;. Parallel dazu spezifiziert das Feld &lt;code&gt;length&lt;/code&gt; die genaue Bitanzahl des enthaltenen Werts &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt;. Dies ist insbesondere dann von Bedeutung, wenn die Gültigkeit des Frischewerts nicht an einer ganzzahligen Bytegrenze endet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Rückgabewert:&lt;/strong&gt; Bei der Generierung frischer Werte durch das FVM liefert die jeweilige Methode eine Instanz von &lt;code&gt;apext::tsync::FVContainer&lt;/code&gt; zurück. Der aufrufende Kontext liest anschließend über &lt;code&gt;length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14195" href="../spec/record.html?id=SWS_TS_14195"&gt;[SWS_TS_14195]&lt;/a&gt; die vom FVM ermittelte effektive Länge in Bits aus und extrahiert die korrespondierenden Bytes aus &lt;code&gt;value&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14196" href="../spec/record.html?id=SWS_TS_14196"&gt;[SWS_TS_14196]&lt;/a&gt;, um sie in nachgelagerte Sicherheitsprotokolle einzubetten.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;!-- annahmen: 1) Die Kapselung und Lebenszyklussemantik (Standardkonstruktoren, Copy/Move) folgt der üblichen C++-Struktursemantik von ara::core::Vector und std::uint64_t. – Begründung: Im Payload ist FVContainer als 'struct FVContainer' deklariert und enthält keine benutzerdefinierten Konstruktoren. 2) Die Validierung der Konsistenz zwischen length und value.size() obliegt den verarbeitenden FVM-Diensten. – Begründung: Der Payload beschreibt FVContainer als reinen Datencontainer ohne eigene Methoden oder Invariantenprüfungen. 3) Die Bit-Ausrichtung bei nicht durch 8 teilbaren Bitlängen wird durch übergeordnete FVM-Algorithmen vorgegeben. – Begründung: SWS_TS_14195 und SWS_TS_14196 definieren lediglich length in Bits und value in Bytes, schweigen jedoch zur internen Bit-Ausrichtung im Restbyte. --&gt;
-&lt;p class="ai-note"&gt;This guide is based exclusively on the specification requirements of module tsync for release R25-11.&lt;/p&gt;
+&lt;p&gt;Interpretation: Vermutlich korrespondiert die in &lt;code&gt;length&lt;/code&gt; hinterlegte Bitanzahl stets mit der aufgerundeten Byte-Größe des Vektors &lt;code&gt;value&lt;/code&gt;, sodass unvollständig genutzte Restbits im letzten Byte des Vektors durch die Längenangabe präzise abgegrenzt werden können.&lt;/p&gt;
+&lt;!-- annahmen: 1) Dürfte die Struktur bei der Übergabe an Schnittstellen per Wert oder Referenz weitergereicht werden – Begründung: Der Payload spezifiziert ein reines struct mit C++-Standardtypen und ohne explizite Move-/Copy-Einschränkungen. 2) Da die Struktur keine interne Synchronisation aufweist, obliegt Thread-Sicherheit dem Aufrufer – Begründung: Der Payload dokumentiert keine Synchronisationsprimitive für apext::tsync::FVContainer. 3) Interpretation: Vermutlich korrespondiert length mit der Bitgröße im Bytevektor, um Bitgrenzen im letzten Byte abzugrenzen – Begründung: SWS_TS_14195 und SWS_TS_14196 unterscheiden explizit zwischen Bitlänge und Bytevektor. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch ein KI-System auf Basis der Spezifikationsanforderungen von AUTOSAR Release R25-11 generiert.&lt;/p&gt;
+
 
 &lt;/div&gt;</pre>
         </div>
@@ -278,9 +297,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>95074ccf4743…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c7cff93a9b82…</code></div>
               <div><strong>Konstituierende Records:</strong> 2</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -315,8 +334,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -353,7 +372,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -416,4 +435,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_TS_14195","k":"variable","d":"TSYNC","t":"variable length [SWS_TS_14195] Upstream: RS_TS_20072 std::uint64_t length; Length in bits of the freshness value passed in apext::tsync::FVContainer . Header-Datei #include \"apext/tsync/fvm.h\" class mono Scope struct apext::tsync::FVContainer class mono Symbol length class mono Typ std::uint64_t class mono","n":"length"},{"i":"SWS_TS_14196","k":"variable","d":"TSYNC","t":"variable value [SWS_TS_14196] Upstream: RS_TS_20072 ara::core::Vector \u003c std::uint8_t > value; Vector of bytes containing the freshness value. Depending on whether the container is used as an input or returning value by the method it will contain either the full freshness or truncated values. Header-Datei #include \"apext/tsync/fvm.h\" class mono Scope struct apext::tsync::FVContainer class mono Symbol value class mono Typ ara::core::Vector \u003c std::uint8_t > class mono","n":"value"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/dba0e4a88b74f8e9.json?v=907d30a5" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_TS_14195","k":"variable","d":"TSYNC","t":"variable length [SWS_TS_14195] Upstream: RS_TS_20072 std::uint64_t length; Length in bits of the freshness value passed in apext::tsync::FVContainer . Header-Datei #include \"apext/tsync/fvm.h\" class mono Scope struct apext::tsync::FVContainer class mono Symbol length class mono Typ std::uint64_t class mono","n":"length"},{"i":"SWS_TS_14196","k":"variable","d":"TSYNC","t":"variable value [SWS_TS_14196] Upstream: RS_TS_20072 ara::core::Vector \u003c std::uint8_t > value; Vector of bytes containing the freshness value. Depending on whether the container is used as an input or returning value by the method it will contain either the full freshness or truncated values. Header-Datei #include \"apext/tsync/fvm.h\" class mono Scope struct apext::tsync::FVContainer class mono Symbol value class mono Typ ara::core::Vector \u003c std::uint8_t > class mono","n":"value"}],"inbound":[]}</script></dialog>

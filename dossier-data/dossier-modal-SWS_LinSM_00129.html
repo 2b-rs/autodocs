@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinSM_00129" class="dossier-modal dossier-workbench" data-dossier-sha="357772f976db0f18" aria-labelledby="dossier-modal-SWS_LinSM_00129-title">
+<dialog id="dossier-modal-SWS_LinSM_00129" class="dossier-modal dossier-workbench" data-dossier-sha="885315718bb3d776" aria-labelledby="dossier-modal-SWS_LinSM_00129-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinSM_00129-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinSM_00129)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,245 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,700 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinSM_ScheduleRequestConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,32 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="352b37e5c5c98d1d6377d8bc540340f6364f6c251f18948c66e442992ea9f43c" data-trace-output="357772f976db0f18efa98a8818b55df5b3584eabdf41b015f02eb49b17449735" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="966015905644c35c73c40a34686b099bbbd56d9a86ac2c495086aaef609c59c6" data-trace-output="885315718bb3d77619b47014b7f6548f4cbf8c544c411dba1747a808267cd653" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bestätigt die erfolgreiche Aktivierung einer neu angeforderten Schedule-Tabelle durch das LIN-Interface." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The callback function &lt;code&gt;LinSM_ScheduleRequestConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;) serves as confirmation to module &lt;code&gt;LinSM&lt;/code&gt; as soon as a previously requested new schedule table has actually been switched to active. It is called by the LIN interface (&lt;code&gt;LinIf&lt;/code&gt;).
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;LinSM_ScheduleRequestConfirmation&lt;/code&gt; dient als Callback-Schnittstelle des Moduls LinSM und besitzt die Service-ID &lt;code&gt;0x20&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;. Sie ist über die Header-Datei &lt;code&gt;LinSM.h&lt;/code&gt; verfügbar und wird vom LIN-Interface (LinIf) aufgerufen, sobald eine zuvor angeforderte neue Schedule-Tabelle auf dem LIN-Bus aktiv geworden ist &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Usage and Parameters&lt;/h4&gt;
-  &lt;p&gt;
-    The call is performed synchronously and provides no return value (&lt;code&gt;void&lt;/code&gt;). The function is declared via header &lt;code&gt;LinSM.h&lt;/code&gt; and has the service ID &lt;code&gt;0x20&lt;/code&gt; according to &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;. It accepts two input parameters:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;network&lt;/code&gt; (&lt;code&gt;NetworkHandleType&lt;/code&gt;): Identification of the affected LIN channel.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;schedule&lt;/code&gt; (&lt;code&gt;LinIf_SchHandleType&lt;/code&gt;): Pointer or handle to the now active schedule table.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;p&gt;Die Schnittstelle besitzt keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) und übergibt zwei Eingangsparameter an das LinSM &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;network&lt;/code&gt; (&lt;code&gt;NetworkHandleType&lt;/code&gt;): Dient der eindeutigen Identifikation des betroffenen LIN-Kommunikationskanals &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;schedule&lt;/code&gt; (&lt;code&gt;LinIf_SchHandleType&lt;/code&gt;): Übergibt den Bezeichner bzw. Zeiger auf die neu aktivierte Schedule-Tabelle &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    According to the specification, the function is classified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;), allowing simultaneous confirmations for different channels to be processed.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    The function acts as an interface in the interaction between &lt;code&gt;LinIf&lt;/code&gt; and &lt;code&gt;LinSM&lt;/code&gt;: After a switch of the schedule table has been initiated, &lt;code&gt;LinIf&lt;/code&gt; informs &lt;code&gt;LinSM&lt;/code&gt; via this callback routine that the switch has taken effect (&lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR R20-11 specification.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Die Ausführung von &lt;code&gt;LinSM_ScheduleRequestConfirmation&lt;/code&gt; ist als synchron und reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;. Ein- und Ausgabeparameter (&lt;code&gt;inout&lt;/code&gt; oder &lt;code&gt;out&lt;/code&gt;) sind nicht vorhanden &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;. Das Zusammenspiel erfolgt eng gekoppelt mit dem Modul LinIf, welches diese Callback-Funktion aufruft, um den Zustandswechsel der Schedule-Tabelle an den LinSM zu bestätigen &lt;a class="spec-record-ref" data-req="SWS_LinSM_00129" href="../../spec/record.html?id=SWS_LinSM_00129"&gt;[SWS_LinSM_00129]&lt;/a&gt;. Interpretation: Da LinIf als Aufrufer agiert, dürfte der Aufrufkontext an die Ablaufverarbeitung des LinIf-Treibers bzw. Interfaces gekoppelt sein.&lt;/p&gt;
+&lt;!-- annahmen: 1) Aufrufkontext – Begründung: SWS_LinSM_00129 nennt LinIf als Aufrufer, spezifiziert jedoch nicht den konkreten Task- oder ISR-Kontext. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>352b37e5c5c9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>966015905644…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -378,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinSM_00129","k":"function","d":"AUTOSAR","t":"","n":"LinSM_ScheduleRequestConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/9b18f99efb874b80.json?v=94af381e" data-total="7" data-new="7" data-figures="4" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinSM_00129","k":"function","d":"AUTOSAR","t":"","n":"LinSM_ScheduleRequestConfirmation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/9b18f99efb874b80.json?v=a442d911" data-total="7" data-new="7" data-figures="2" data-used="0"></script></dialog>

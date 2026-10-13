@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" class="dossier-modal dossier-workbench" data-dossier-sha="2590cbb2aa4504de" aria-labelledby="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729-title">
+<dialog id="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729" class="dossier-modal dossier-workbench" data-dossier-sha="671b1bd5721c4499" aria-labelledby="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,632 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,154 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für '&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface&gt;RequestResultOutput' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_RoutineInterface_Namespace_RoutineInterface_RoutineInterfac_bf8729",
@@ -203,43 +222,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="5f09d1956600abe96f1cf76dbb99c3220413956c6723afdf9c79be1c5417c7ff" data-trace-output="2590cbb2aa4504dea4cf3ca53bae4121d11a631c0d4129c11343f8e147cff677" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="372418a0759e8d304f2ad02add6ff2c436334f7ff8df7d91149ffedab06c6133" data-trace-output="671b1bd5721c44993cc622388a54ac21875f76ffc787428a1b8513afb17c11a8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bündelt die Ausgabeargumente für die Ergebnisabfrage einer Diagnose-Routine in AUTOSAR Adaptive." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-In the module &lt;code&gt;diag&lt;/code&gt; of the AUTOSAR Adaptive Platform, the data structure &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; performs the task of bundling all output parameters for the operation &lt;code&gt;RequestResult&lt;/code&gt; of a diagnostic routine. When executing diagnostic routines via standardized diagnostic services, application-specific result data that must be transmitted to the diagnostic management system often exists in addition to the pure execution status. Instead of passing multiple separate return values individually via parameter lists, this structure encapsulates all output arguments in a common data type.
-&lt;/p&gt;
-&lt;p&gt;
-The primary interaction partners here are the concrete application component that implements the diagnostic routine and the runtime environment of the diagnostic module. The structure serves as a typed interface between the application-internal logic and the generated infrastructure. The fields of this data structure likely correspond to the output arguments of the diagnostic routine defined in the respective AUTOSAR model, ensuring a direct mapping of the specified diagnostic outputs.
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Bündelt die Ausgabeargumente für die Ergebnisabfrage einer Diagnose-Routine in AUTOSAR Adaptive.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; kapselt im Modul &lt;code&gt;diag&lt;/code&gt; der AUTOSAR Adaptive Platform (R25-11) alle Ausgabeargumente für den Aufruf einer Routine-Ergebnisabfrage (&lt;code&gt;RequestResult&lt;/code&gt;). Sie dient als typisierter Datencontainer, der von der anwendungsspezifischen Routine-Implementierung mit den ermittelten Ergebniswerten befüllt und an das Diagnose-Framework übergeben wird. Interpretation: Als reiner Werttyp ohne eigene Synchronisation dürfte die Struktur für eine kurzlebige Nutzung im Ausführungskontext bestimmt sein und erfordert bei geteiltem Zugriff eine externe Absicherung.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;RoutineInterface-Namespace&amp;gt;::&amp;lt;RoutineInterface&amp;gt;::&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; der AUTOSAR Adaptive Platform im Release R25-11. Gemäß Spezifikationsbeschreibung dient dieser Datentyp als Wrapper zur Kapselung der Ausgabeargumente (&lt;code&gt;out arguments&lt;/code&gt;) für eine &lt;code&gt;RequestResult&lt;/code&gt;-Operation. In der fahrzeugbezogenen Diagnose nach ISO 14229 (UDS RoutineControl, Dienst 0x31) ermöglicht das Routinen-Management das Starten, Stoppen und Abfragen von Ergebnissen diagnosefähiger Routinen auf dem Steuergerät. Wenn ein externer Diagnosetester oder eine interne Anwendungskomponente das Resultat einer zuvor initiierten Routine anfordert, müssen die erzeugten Ausgabeparameter strukturiert und typisiert transportiert werden. Die Struktur fungiert dabei als dedizierter Datenbehälter an der Schnittstelle zwischen der anwendungsseitigen Routinen-Implementierung und der Diagnose-Laufzeitumgebung. Interpretation: Die konkreten Member-Variablen der Struktur dürften den im jeweiligen AUTOSAR-Modell für diese Routine definierten Ausgabeargumenten des &lt;code&gt;RequestResult&lt;/code&gt;-Vorgangs entsprechen.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-As a C++ structure (&lt;code&gt;struct&lt;/code&gt;), &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; possesses the lifecycle of a classic value type. Instantiation typically occurs in the context of executing &lt;code&gt;RequestResult&lt;/code&gt; as soon as the application-specific routine has determined its results. The application creates a local instance of the structure, populates the members defined therein with the current result values, and passes the completed structure to the caller.
-&lt;/p&gt;
-&lt;p&gt;
-Regarding ownership, the object is not subject to complex dependencies: It holds no shared ownership rights to external services and manages no long-lived system resources. The structure is presumably instantiated by the application routine and subsequently returned to the diagnostic framework via regular pass-by-value or move semantics. After further processing or serialization by the diagnostic infrastructure, the lifecycle of the object ends regularly via the automatic invocation of the destructor upon leaving the corresponding scope. An internal state of its own does not exist apart from the contained payload data; there are therefore no separate state transitions or phases of a state machine.
-&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Syntax &lt;code&gt;struct &amp;lt;RoutineInterface&amp;gt;RequestResultOutput {...};&lt;/code&gt; definiert den Typ als ein elementares C++-Aggregat ohne eigene Steuerungs- oder Zustandslogik. Interpretation: Hinsichtlich des Lebenszyklus dürfte die Datenstruktur als reiner Werttyp (Value Type) ohne dynamische Ressourcenverwaltung konzipiert sein und damit den standardmäßigen C++-Konventionen für Wertsemantik folgen. Eine Instanz wird typischerweise innerhalb des Ausführungskontextes der Routine angelegt, sobald eine Anfrage zur Ergebnisabfrage vorliegt. Die Erzeugung erfolgt gewöhnlich lokal auf dem Stack oder innerhalb eines entsprechenden Rückgabebehälters der Routinen-Implementierung. Nach Zuweisung der ermittelten Ausgabewerte wird die Instanz über Standard-Kopier- oder Move-Mechanismen an das übergeordnete Diagnose-Framework übergeben. Mit Abschluss der Übermittlung und Serialisierung der Antwortdaten endet die Lebensdauer der Instanz. Da die Struktur keine internen Synchronisationsmechanismen implementiert, ist der gleichzeitige Zugriff aus mehreren Threads ohne externe Absicherung nicht nebenläufigkeitssicher.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The typical usage path is divided into the phases of initialization, population, and return:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Preparation:&lt;/strong&gt; The application receives the request via the generated routine interface to provide the intermediate or final result of a running diagnostic routine.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Creation and assignment:&lt;/strong&gt; The application component declares an instance of &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; and assigns the determined measured values, status flags, or other routine data to the respective fields.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Response:&lt;/strong&gt; The completely populated structure is returned as the result of the call, allowing the diagnostic subsystem to adopt the output values into the resulting diagnostic protocol.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-Interpretation: The diagnostic framework typically transports the populated instances further by value or by move semantics, since as a pure data structure no complex resource management is required. Because the structure is primarily designed as a passive data carrier, it does not itself contain any concurrent synchronization; if multiple threads access the same instance in parallel, thread-safe coordination is the responsibility of the calling application logic.
-&lt;/p&gt;
-
-&lt;!-- annahmen:
-1) Die Felder der Datenstruktur dürften den im AUTOSAR-Modell definierten Out-Argumenten der jeweiligen Diagnose-Routine entsprechen. – Begründung: Der Payload beschreibt die Struktur als Kapselung der Out-Argumente für ein RequestResult, ohne spezifische Member aufzuzählen.
-2) Vermutlich wird die Struktur von der Anwendungsroutine instanziiert und anschließend über reguläre Wertübergabe oder Move-Semantik an das Diagnose-Framework zurückgeliefert. – Begründung: Die Syntax deklariert ein reines C++-struct, was auf standardmäßige Value-Semantik für Rückgabeparameter hindeutet.
-3) Interpretation: Das Diagnose-Framework transportiert die befüllten Instanzen typischerweise per Wert oder per Move-Semantik weiter, da als reine Datenstruktur kein komplexes Ressourcenmanagement erforderlich ist. – Begründung: Es liegen im Payload keine Hinweise auf Referenzzählung, Pointer-Ownership oder Handle-Verwaltung vor.
---&gt;
-&lt;p class="ai-note"&gt;This guide is based exclusively on the specification metadata of AUTOSAR Adaptive Release R25-11.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Ablauf bei der Verwendung dieser Struktur gliedert sich in die Abfrageverarbeitung, die Bereitstellung der Daten und die anschließende Rückmeldung an den Aufrufer. Der Nutzungspfad beginnt, wenn das Diagnose-Framework eine Anforderung für eine &lt;code&gt;RequestResult&lt;/code&gt;-Operation an die Schnittstelle &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;&lt;/code&gt; weiterleitet. Die anwendungsspezifische Implementierung der Routine verarbeitet diesen Aufruf und ermittelt die aktuellen internen Ausgabedaten. Interpretation: Die Routine-Implementierung dürfte daraufhin eine Instanz von &lt;code&gt;&amp;lt;RoutineInterface&amp;gt;RequestResultOutput&lt;/code&gt; erzeugen und deren Member-Variablen mit den ermittelten Ergebniswerten belegen. Die vollständig befüllte Struktur wird anschließend als Ergebnis der Operation an das Diagnose-Framework zurückgereicht. Abschließend extrahiert und serialisiert das Framework die in der Struktur enthaltenen Ausgabeargumente, um die positive Diagnose-Antwortbotschaft zu konstruieren und an den Tester zu versenden. Nach der erfolgreichen Übernahme der Daten wird die temporäre Instanz regulär freigegeben.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die konkreten Member-Variablen der Struktur dürften den im AUTOSAR-Modell für die jeweilige Routine definierten Ausgabeparametern (Out-Argumenten) des RequestResult-Vorgangs entsprechen. – Begründung: Die Syntax struct &lt;RoutineInterface&gt;RequestResultOutput {...}; ist generisch parametrisiert und die Spezifikationsbeschreibung weist sie als Wrapper für die Ausgabeargumente aus. 2) Die Datenstruktur dürfte als gewöhnlicher Werttyp (Value Type) ohne dynamische Zustandshaltung konzipiert sein. – Begründung: Die Deklaration weist ein elementares C++-struct ohne Vererbung, virtuelle Methoden oder Zustandslogik aus. 3) Die Instanziierung und Befüllung dürfte durch die anwendungsseitige Routinen-Implementierung im Rahmen der Bearbeitung einer RequestResult-Anfrage erfolgen. – Begründung: Als reiner Ausgabeparameter-Wrapper dient die Struktur dem Datentransport von der Anwendungslogik zurück an das Diagnose-Framework. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationen der AUTOSAR Adaptive Platform für das Modul diag in Release R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -281,7 +283,7 @@ Interpretation: The diagnostic framework typically transports the populated inst
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>5f09d1956600…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>372418a0759e…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

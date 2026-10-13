@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Os_00792" class="dossier-modal dossier-workbench" data-dossier-sha="b883e64b6f592be8" aria-labelledby="dossier-modal-SWS_Os_00792-title">
+<dialog id="dossier-modal-SWS_Os_00792" class="dossier-modal dossier-workbench" data-dossier-sha="450943c3cb9d8694" aria-labelledby="dossier-modal-SWS_Os_00792-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Os_00792-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Os_00792)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,386 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,841 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'TryToGetSpinlockType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,34 +198,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="dac4c744999ad585eb50a1a63aa8d73f8036dfb5b044ea0caf2f18b65fa12f2e" data-trace-output="b883e64b6f592be8a7ccdd4ab995e4fe82a0d07692a906652fa9344b3015c942" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="9c58c4e8227f98e0ded7db4d9b1c806c1d5457049e42f95dc4f20131d323787f" data-trace-output="450943c3cb9d869409ebe4af4a74af1197d5020d434c1c49c3828c7640a0e77e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Zeigt als Aufzählungstyp an, ob ein Spinlock erfolgreich belegt werden konnte oder nicht." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Value Range&lt;/h4&gt;
-  &lt;p&gt;
-    The enumeration type &lt;code&gt;TryToGetSpinlockType&lt;/code&gt; is provided via the header file &lt;code&gt;Os.h&lt;/code&gt; and serves to indicate whether a spinlock could be successfully occupied or not (&lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    The enumeration comprises two defined states (&lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;TRYTOGETSPINLOCK_SUCCESS&lt;/code&gt;: Signals that the spinlock was successfully occupied (&lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;TRYTOGETSPINLOCK_NOSUCCESS&lt;/code&gt;: Signals that the spinlock could not be occupied (&lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Interpretation: The type is likely to serve primarily as a return value or status indicator in non-blocking attempts to occupy a spinlock, allowing the calling function to branch directly based on the success status.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    Specific error codes, DET messages, or DEM messages are not defined for this data type in the specification. Failure to occupy does not constitute an operating system error, but is represented regularly via the result value &lt;code&gt;TRYTOGETSPINLOCK_NOSUCCESS&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Interaction and Debugging&lt;/h4&gt;
-  &lt;p&gt;
-    Within the scope of system monitoring and diagnostics, the ARTI module description file supports all ORTI containers (&lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;). Connected debug tools can thereby determine and display information about the operating system, its status, as well as operating system objects and their dynamic attribute values via formulas (&lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Der Typ dürfte als Rückgabewert oder Statusindikator bei nicht-blockierenden Versuchen zur Spinlock-Belegung fungieren. – Begründung: Der Payload beschreibt TryToGetSpinlockType als Enumeration mit Erfolgs- und Misserfolgswerten für die Belegung, nennt jedoch keine zugehörige Funktionssignatur. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Wertebereich&lt;/h4&gt;
+&lt;p&gt;Der Enumerationstyp &lt;code&gt;TryToGetSpinlockType&lt;/code&gt; wird über die Header-Datei &lt;code&gt;Os.h&lt;/code&gt; bereitgestellt und dient als Statusanzeige dafür, ob ein Spinlock durch den Aufrufer erfolgreich belegt werden konnte oder nicht &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;. Er definiert das Ergebnis entsprechender Belegungsoperationen im Betriebssystem &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Der Wertebereich umfasst genau zwei spezifizierte Literale &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TRYTOGETSPINLOCK_SUCCESS&lt;/code&gt;: Signalisiert, dass der Spinlock erfolgreich belegt werden konnte &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TRYTOGETSPINLOCK_NOSUCCESS&lt;/code&gt;: Zeigt an, dass der Spinlock nicht belegt werden konnte &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Nebenläufigkeit und Systemkontext&lt;/h4&gt;
+&lt;p&gt;Der Typ findet Einsatz bei der Synchronisation in Mehrkernsystemen. Interpretation: Der Aufrufer dürfte den Rückgabewert synchron auswerten, um unmittelbar festzustellen, ob der geschützte kritische Abschnitt betreten werden darf oder ob bei &lt;code&gt;TRYTOGETSPINLOCK_NOSUCCESS&lt;/code&gt; ohne blockierendes Warten ein alternativer Programmzweig gewählt werden muss &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;. Eigene Fehlercodes oder Fehlermeldungen über DET oder DEM sind für diesen Typ nicht spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Os_00792" href="../../spec/record.html?id=SWS_Os_00792"&gt;[SWS_Os_00792]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel mit Diagnosewerkzeugen&lt;/h4&gt;
+&lt;p&gt;Im Rahmen von Werkzeuganbindungen unterstützt die ARTI-Modulbeschreibungsdatei alle ORTI-Container, um Informationen über das Betriebssystem, dessen Zustände und Betriebssystemobjekte anzuzeigen und dynamische Werte zu ermitteln &lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;. Interpretation: Über solche Schnittstellen dürften auch Spinlocks und deren Belegungszustände für Debugging- und Tracing-Werkzeuge visualisierbar sein &lt;a class="spec-record-ref" data-req="SWS_Os_00829" href="../../spec/record.html?id=SWS_Os_00829"&gt;[SWS_Os_00829]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Interpretation: Aufrufer nutzen den Typ zur synchronen Verzweigung zwischen kritischem Abschnitt und alternativem Ablauf ohne Blockieren – Begründung: Die Spezifikation unterscheidet lediglich Erfolg und Nichterfolg der Spinlock-Belegung. 2) Interpretation: Belegungszustände von Spinlocks lassen sich über ARTI/ORTI für Debug-Tools erfassen – Begründung: SWS_Os_00829 beschreibt den Zugriff auf OS-Objekte und dynamische Werte für angeschlossene Werkzeuge. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und basiert auf den AUTOSAR-Spezifikationen des Releases R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -247,7 +254,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>dac4c744999a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>9c58c4e8227f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -385,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Os_00792","k":"type","d":"AUTOSAR","t":"","n":"TryToGetSpinlockType"}],"inbound":[{"i":"SWS_Os_00829","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Os_00829].","n":"SWS_Os_00829"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/c4feeee64bb9bb8b.json?v=54214c4a" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Os_00792","k":"type","d":"AUTOSAR","t":"","n":"TryToGetSpinlockType"}],"inbound":[{"i":"SWS_Os_00829","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Os_00829].","n":"SWS_Os_00829"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/c4feeee64bb9bb8b.json?v=cd4e3ee7" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

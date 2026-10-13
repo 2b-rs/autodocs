@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_00126" class="dossier-modal dossier-workbench" data-dossier-sha="1821da0a315c2585" aria-labelledby="dossier-modal-SWS_SecOC_00126-title">
+<dialog id="dossier-modal-SWS_SecOC_00126" class="dossier-modal dossier-workbench" data-dossier-sha="ac2ee6a9d55d55c9" aria-labelledby="dossier-modal-SWS_SecOC_00126-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_00126-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_00126)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,367 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,821 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_TxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,22 +198,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="62c9a414c3ce2fca462bf9f2c0d70f644055e0bfac3e8544bc8c4e06039383f2" data-trace-output="1821da0a315c25852ba5b7c31dec4747d8df75fbb8a54710c57c3c461c9a53e1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="73c9975309da34290036dc54172a2b0921c7c1e316243fd817b2e088933ac999" data-trace-output="ac2ee6a9d55d55c94ee0dec9782ff06ad5977e0734136bd67d2905bc65f9ab2f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bestätigt die erfolgreiche oder fehlerhafte PDU-Übertragung aus der unterlagerten Schicht an das SecOC-Modul." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;SecOC_TxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;) is called by an underlying communication interface module to convey to the SecOC module the confirmation of successful transmission or failure of transmission of a PDU. Execution is synchronous (service ID &lt;code&gt;0x40&lt;/code&gt;, declared in &lt;code&gt;SecOC.h&lt;/code&gt;); a return value does not exist (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;).&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;TxPduId&lt;/code&gt;: ID of the PDU that was transmitted (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;result&lt;/code&gt;: Result status of the transmission (&lt;code&gt;E_OK&lt;/code&gt;: PDU was successfully transmitted; &lt;code&gt;E_NOT_OK&lt;/code&gt;: transmission of the PDU failed) (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;SecOC_TxConfirmation&lt;/code&gt; wird von dem unterlagerten Kommunikationsschnittstellenmodul aufgerufen, um dem Modul SecOC die erfolgreiche Übertragung oder das Scheitern des Versands einer PDU synchron zu bestätigen &lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;. Der Dienst besitzt keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;), ist in der Header-Datei &lt;code&gt;SecOC.h&lt;/code&gt; deklariert und unter der Service-ID &lt;code&gt;0x40&lt;/code&gt; geführt &lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Funktion erwartet zwei Eingangsparameter &lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TxPduId&lt;/code&gt;: Kennung der übertragenen PDU (Typ &lt;code&gt;PduIdType&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;result&lt;/code&gt;: Ergebnis der Übertragung (Typ &lt;code&gt;Std_ReturnType&lt;/code&gt;) mit den Werten &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Übermittlung oder &lt;code&gt;E_NOT_OK&lt;/code&gt; bei fehlgeschlagener Übertragung.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is reentrant for different PDU IDs, but non-reentrant for the same PDU ID (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;).&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Übertragungsfehler der unteren Schichten werden unmittelbar über das Argument &lt;code&gt;result&lt;/code&gt; mit dem Wert &lt;code&gt;E_NOT_OK&lt;/code&gt; übergeben &lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;. Bezüglich der Nebenläufigkeit ist der Aufruf für unterschiedliche PDU-IDs reentrant, für dieselbe PDU-ID jedoch als nicht reentrant definiert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00126" href="../../spec/record.html?id=SWS_SecOC_00126"&gt;[SWS_SecOC_00126]&lt;/a&gt;. Der konkrete Ausführungskontext dürfte vermutlich auf Task- oder Interrupt-Ebene des unterlagerten Moduls liegen, da die Spezifikation hierzu keine Einschränkung vorsieht.&lt;/p&gt;
 
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;If &lt;code&gt;SecOCTxSecuredPduCollection&lt;/code&gt; is used, the SecOC module forwards the confirmation to the upper layer only when &lt;code&gt;SecOC_TxConfirmation&lt;/code&gt; has been called for both the Authentic I-PDU and the Cryptographic I-PDU (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00270" href="../../spec/record.html?id=SWS_SecOC_00270"&gt;[SWS_SecOC_00270]&lt;/a&gt;). The parameter &lt;code&gt;result&lt;/code&gt; of the TxConfirmation call forwarded to the upper layer is &lt;code&gt;E_OK&lt;/code&gt; only if the &lt;code&gt;result&lt;/code&gt; parameters of both calls were each &lt;code&gt;E_OK&lt;/code&gt;; otherwise, &lt;code&gt;E_NOT_OK&lt;/code&gt; is passed (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00270" href="../../spec/record.html?id=SWS_SecOC_00270"&gt;[SWS_SecOC_00270]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel und Weiterleitung&lt;/h4&gt;
+&lt;p&gt;Wird die Konfiguration &lt;code&gt;SecOCTxSecuredPduCollection&lt;/code&gt; verwendet, leitet SecOC die Bestätigung erst an die übergeordnete Schicht weiter, wenn &lt;code&gt;SecOC_TxConfirmation&lt;/code&gt; sowohl für die Authentic I-PDU als auch für die Cryptographic I-PDU aufgerufen wurde &lt;a class="spec-record-ref" data-req="SWS_SecOC_00270" href="../../spec/record.html?id=SWS_SecOC_00270"&gt;[SWS_SecOC_00270]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Für den Ergebnisstatus an die obere Schicht gilt dabei eine strikte Bedingung: Der Parameter &lt;code&gt;result&lt;/code&gt; des weitergeleiteten Aufrufs ist nur dann &lt;code&gt;E_OK&lt;/code&gt;, wenn die Bestätigungen für beide Teil-PDUs jeweils mit &lt;code&gt;E_OK&lt;/code&gt; übergeben wurden; andernfalls lautet der Status &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_SecOC_00270" href="../../spec/record.html?id=SWS_SecOC_00270"&gt;[SWS_SecOC_00270]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Der Ausführungskontext (Task- oder Interrupt-Ebene) dürfte von der Implementierung des unterlagerten Kommunikationsschnittstellenmoduls abhängen. – Begründung: SWS_SecOC_00126 spezifiziert zwar Synchronität und Reentranz, legt jedoch keinen festen Ausführungskontext fest. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -235,7 +257,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>62c9a414c3ce…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>73c9975309da…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -373,4 +395,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00126","k":"function","d":"AUTOSAR","t":"","n":"SecOC_TxConfirmation"}],"inbound":[{"i":"SWS_SecOC_00270","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_SecOC_00270].","n":"SWS_SecOC_00270"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/e3951ab7524a66e2.json?v=4e67b169" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00126","k":"function","d":"AUTOSAR","t":"","n":"SecOC_TxConfirmation"}],"inbound":[{"i":"SWS_SecOC_00270","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_SecOC_00270].","n":"SWS_SecOC_00270"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/e3951ab7524a66e2.json?v=365a1d81" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

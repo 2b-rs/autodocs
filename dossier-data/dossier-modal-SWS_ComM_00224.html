@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_ComM_00224" class="dossier-modal dossier-workbench" data-dossier-sha="94df12d6f2b15c7b" aria-labelledby="dossier-modal-SWS_ComM_00224-title">
+<dialog id="dossier-modal-SWS_ComM_00224" class="dossier-modal dossier-workbench" data-dossier-sha="b244ec98545d53b1" aria-labelledby="dossier-modal-SWS_ComM_00224-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_ComM_00224-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_ComM_00224)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,238 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,693 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'ComM_ReadInhibitCounter'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,23 +193,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="e1fd732bf4b53d9f55fec4c6a0c1b2e15b43ef2d74d17c341eeae25443f78763" data-trace-output="94df12d6f2b15c7be72e45ba5d035bc385485ce4dc377037543d5cd151d48fd6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="08a2c24cbf905ccb9fdf79a43b4708deb00cd138e1b58ea6de94fc8123fcdf03" data-trace-output="b244ec98545d53b180d37c20fbb6f00f8e16e0f742dc841c5544c734e1ab4914" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liest synchron die Anzahl abgewiesener Benutzeranfragen nach vollem Kommunikationsbetrieb aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;ComM_ReadInhibitCounter&lt;/code&gt; serves to query the number of rejected user requests for &lt;code&gt;COMM_FULL_COMMUNICATION&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. The call takes place via the declaration in &lt;code&gt;ComM.h&lt;/code&gt; with the service ID &lt;code&gt;0x0d&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. The determined counter value is provided via the output parameter &lt;code&gt;Counter Value&lt;/code&gt; (pointer to &lt;code&gt;uint16&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;The status of the execution is indicated via the return type &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The counter value for the inhibition was read out and returned successfully &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Returning the counter failed &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. Detailed error codes or DET notifications are not specified in the element; passing a null pointer for &lt;code&gt;Counter Value&lt;/code&gt; presumably leads to the return value &lt;code&gt;E_NOT_OK&lt;/code&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The interface is specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) and behaves synchronously &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. Parallel calls from different execution contexts are therefore not permissible without the caller synchronizing access. Additional dependencies on further specification elements are not defined in the payload.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Nullzeiger führt zu E_NOT_OK – Begründung: Die Spezifikation definiert E_NOT_OK als Fehlerwert, nennt aber im Payload keine konkreten Parameterprüfungen oder DET-Fehler. --&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;Die synchrone Funktion &lt;code&gt;ComM_ReadInhibitCounter&lt;/code&gt; (Service-ID &lt;code&gt;0x0d&lt;/code&gt;) dient dazu, die Anzahl der abgewiesenen Benutzeranfragen nach vollem Kommunikationsbetrieb (&lt;code&gt;COMM_FULL_COMMUNICATION&lt;/code&gt;) abzufragen &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. Die Funktionsdeklaration wird über die Header-Datei &lt;code&gt;ComM.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Funktion besitzt keine Eingabeparameter. Als einziger Ausgabeparameter dient der Zeiger &lt;code&gt;CounterValue&lt;/code&gt; vom Basistyp &lt;code&gt;uint16*&lt;/code&gt;, über welchen der Zählerstand für die abgewiesenen Anfragen an den Aufrufer übermittelt wird &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. Konnte der Zählerstand erfolgreich ermittelt und geschrieben werden, liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; zurück; bei einem Fehlschlag gibt sie &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Spezifische Fehlercodes oder standardisierte Entwicklungsfehler (DET) sind in der Schnittstellenbeschreibung nicht gesondert aufgeführt. Ein Scheitern mit dem Rückgabewert &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt; dürfte vermutlich durch einen ungültigen Zeigerparameter (Null-Zeiger) oder einen Aufruf vor der Initialisierung des ComM-Moduls bedingt sein (Interpretation).&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;Die Schnittstelle ist explizit als nicht-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_ComM_00224" href="../../spec/record.html?id=SWS_ComM_00224"&gt;[SWS_ComM_00224]&lt;/a&gt;. Aufrufer müssen daher auf Systemebene sicherstellen, dass keine konkurrierenden oder unterbrechenden Aufrufe über unterschiedliche Tasks oder Interrupt-Service-Routinen erfolgen, um Inkonsistenzen beim Auslesen des Zählers zu vermeiden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Ursache für E_NOT_OK (Null-Zeiger oder uninitialisiertes Modul) – Begründung: SWS_ComM_00224 nennt E_NOT_OK als Rückgabewert, definiert jedoch keine spezifischen Fehlerursachen oder DET-Fehler im Payload. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert generiert und basiert auf den Spezifikationen der AUTOSAR-Version R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -231,7 +245,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e1fd732bf4b5…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>08a2c24cbf90…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -369,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_00224","k":"function","d":"AUTOSAR","t":"","n":"ComM_ReadInhibitCounter"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/10b538487969ae9e.json?v=7b45f8be" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_ComM_00224","k":"function","d":"AUTOSAR","t":"","n":"ComM_ReadInhibitCounter"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/10b538487969ae9e.json?v=3256475b" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

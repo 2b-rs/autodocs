@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00059" class="dossier-modal dossier-workbench" data-dossier-sha="e55daf384a993d4b" aria-labelledby="dossier-modal-SWS_KeyM_00059-title">
+<dialog id="dossier-modal-SWS_KeyM_00059" class="dossier-modal dossier-workbench" data-dossier-sha="6e1d8763a144f652" aria-labelledby="dossier-modal-SWS_KeyM_00059-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00059-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00059)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,615 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,070 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_VerifyCertificates'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,22 +198,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9e9d8d573118d6be5342ed0f2f6e36b7b90b879ff44448ad99314a96e7c8c8d9" data-trace-output="e55daf384a993d4bd4e5ba9dcbc365a2e76f71a7d7f6bd7da91530af49832376" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4588a9e6ec0694eb8a90672c5fa0e69a861905d228d1c79c522498713afbfa96" data-trace-output="6e1d8763a144f65285581fc9eb4304e3346ed06eec0121fae220fedfba795048" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient der asynchronen Verifikation zweier intern gespeicherter Zertifikate gegeneinander mit Ergebnisübermittlung via Callback." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The function &lt;code&gt;KeyM_VerifyCertificates&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00059" href="../../spec/record.html?id=SWS_KeyM_00059"&gt;[SWS_KeyM_00059]&lt;/a&gt;) serves for mutual verification of two internally stored and already parsed certificates. Specifically, it is validated whether the lower certificate of the chain referenced via &lt;code&gt;CertId&lt;/code&gt; was signed by the upper certificate designated with &lt;code&gt;CertUpperId&lt;/code&gt;. The verification is limited exclusively to these two certificates.&lt;/p&gt;
-
-  &lt;p&gt;Execution is asynchronous (&lt;code&gt;Asynchronous&lt;/code&gt;) and specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00059" href="../../spec/record.html?id=SWS_KeyM_00059"&gt;[SWS_KeyM_00059]&lt;/a&gt;). After successful acceptance of the verification request, the synchronous return value &lt;code&gt;E_OK&lt;/code&gt; signals that verification has been started in the background. The actual result of the verification is communicated to the caller via the configured callback function &lt;code&gt;KeyMCertificateVerifyCallbackNotificationFunc&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00153" href="../../spec/record.html?id=SWS_KeyM_00153"&gt;[SWS_KeyM_00153]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p&gt;If the operation request is rejected, the synchronous call returns one of the following error codes (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00059" href="../../spec/record.html?id=SWS_KeyM_00059"&gt;[SWS_KeyM_00059]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;KeyM_VerifyCertificates&lt;/code&gt; dient der asynchronen Überprüfung zweier intern gespeicherter und geparster Zertifikate gegeneinander gemäß &lt;a class="spec-record-ref" data-req="SWS_KeyM_00059" href="../../spec/record.html?id=SWS_KeyM_00059"&gt;[SWS_KeyM_00059]&lt;/a&gt;. Dabei wird validiert, ob das über &lt;code&gt;CertId&lt;/code&gt; referenzierte untergeordnete Zertifikat durch das mit &lt;code&gt;CertUpperId&lt;/code&gt; referenzierte übergeordnete Zertifikat signiert wurde.&lt;/p&gt;
+  &lt;p&gt;Da der Dienst als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) definiert ist, darf er nicht nebenläufig für überlappende Vorgänge aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_KeyM_00059" href="../../spec/record.html?id=SWS_KeyM_00059"&gt;[SWS_KeyM_00059]&lt;/a&gt;. Die Ausführung erfolgt asynchron im Hintergrund: Ein Rückgabewert von &lt;code&gt;E_OK&lt;/code&gt; signalisiert lediglich die erfolgreiche Annahme des Prüfauftrags. Das eigentliche Prüfergebnis wird dem Aufrufer über die konfigurierte Callback-Funktion &lt;code&gt;KeyMCertificateVerifyCallbackNotificationFunc&lt;/code&gt; mitgeteilt, sofern diese gültig konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_KeyM_00153" href="../../spec/record.html?id=SWS_KeyM_00153"&gt;[SWS_KeyM_00153]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Wird die Anfrage nicht akzeptiert, liefert die Funktion spezifische Rückgabewerte zur Fehlerbehandlung &lt;a class="spec-record-ref" data-req="SWS_KeyM_00059" href="../../spec/record.html?id=SWS_KeyM_00059"&gt;[SWS_KeyM_00059]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_BUSY&lt;/code&gt;: The Key Manager is already executing other requests; the verification cannot be accepted yet.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt;: At least one of the specified certificate IDs is invalid.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_EMPTY&lt;/code&gt;: One of the referenced certificate slots does not contain a certificate.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERT_INVALID_CHAIN_OF_TRUST&lt;/code&gt;: The parent certificate (&lt;code&gt;CertUpperId&lt;/code&gt;) is invalid.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: An internal error prevented acceptance of the request.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_E_BUSY&lt;/code&gt;: Der Key Manager ist durch andere Aufgaben ausgelastet; die Validierung kann zu diesem Zeitpunkt noch nicht gestartet werden.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt;: Mindestens eine übergebene Zertifikats-ID ist ungültig.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_EMPTY&lt;/code&gt;: Einer der referenzierten Zertifikats-Slots ist leer.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;KEYM_E_CERT_INVALID_CHAIN_OF_TRUST&lt;/code&gt;: Das übergeordnete Zertifikat (&lt;code&gt;CertUpperId&lt;/code&gt;) ist nicht gültig.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Der Auftrag wurde aufgrund eines internen Fehlers abgewiesen.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient der technischen Orientierung anhand der AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -235,9 +252,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9e9d8d573118…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4588a9e6ec06…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -272,8 +289,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -310,7 +327,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 4 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 6 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -373,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00059","k":"function","d":"AUTOSAR","t":"","n":"KeyM_VerifyCertificates"}],"inbound":[{"i":"SWS_KeyM_00153","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_KeyM_00153].","n":"SWS_KeyM_00153"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/be31e7df4097be0f.json?v=b0ceb285" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00059","k":"function","d":"AUTOSAR","t":"","n":"KeyM_VerifyCertificates"}],"inbound":[{"i":"SWS_KeyM_00153","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_KeyM_00153].","n":"SWS_KeyM_00153"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/be31e7df4097be0f.json?v=1d95ac9e" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>

@@ -1,52 +1,33 @@
 {
  "annahmen": [
-  "Text:",
-  "1) [SWS_Crypto_00222]/[SWS_Crypto_00223] beziehen sich auf Crypto_KeyElementGet bzw. Crypto_KeyElementSet – Begründung: Der Requirement-Text nennt nur „this operation“; die Lese- bzw. Schreibrechte passen zu diesen direkten Zugriffs-APIs.",
-  "2) Die Konfiguration ist statisch gebunden – Begründung: configPtr muss stets NULL sein ([SWS_Crypto_00215]), und Crypto_ConfigType ist implementierungsspezifisch. Diagramm diag-job-async:",
-  "1) Das CryIf leitet die Abschlussmeldung an den Csm weiter – Begründung: Der Payload belegt nur CRYIF_CallbackNotification und den Closing-Callback des Csm, nicht die Weitergabe selbst. Diagramm diag-nvm:",
-  "1) Der Schreibauftrag wird über NvM_SetRamBlockStatus oder NvM_WriteBlock ausgelöst, und WriteTo/Callback folgen asynchron – Begründung: [SWS_Crypto_91017] nennt beide Funktionen als optional, [SWS_Crypto_91026] spricht von asynchronen Einzelblockanforderungen. Diagramm diag-fehlerpruefung:",
-  "1) Die Prüfungen laufen in der Reihenfolge Initialisierung, Handle, Puffer, Belegung, Schlüsselzustand – Begründung: Die Spezifikation legt keine Reihenfolge fest; die Abfolge folgt der Aufzählung in den Requirements."
+  "1) Driver Object 0 fungiert als zentraler interner Referenz-Zufallsgenerator für alle weiteren Treiberobjekte derselben Partition. – Begründung: SWS_Crypto_00224 und SWS_Crypto_00225 verpflichten Treiberobjekte ohne eigenen RNG auf Object 0, benennen jedoch keine partitionsübergreifende Synchronisation.",
+  "2) Synchrone Jobs werden direkt blockierend im Kontext des Aufrufers von Crypto_ProcessJob ausgeführt, ohne Entkopplung über Crypto_MainFunction. – Begründung: SWS_Crypto_00027 beschränkt das Anstoßen über Crypto_MainFunction ausdrücklich auf die asynchrone Auftragsverarbeitung."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-kontext",
-   "quelle": "anchor_r20_11.diag-kontext.dot"
+   "id": "diag-architektur",
+   "quelle": "anchor_r20_11.diag-architektur.dot"
   },
   {
    "art": "seq",
-   "id": "diag-job-async",
-   "quelle": "anchor_r20_11.diag-job-async.seq.json"
-  },
-  {
-   "art": "dot",
-   "id": "diag-betriebsmodus",
-   "quelle": "anchor_r20_11.diag-betriebsmodus.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-teilkopie",
-   "quelle": "anchor_r20_11.diag-teilkopie.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-schluesselzustand",
-   "quelle": "anchor_r20_11.diag-schluesselzustand.dot"
+   "id": "diag-job-processing",
+   "quelle": "anchor_r20_11.diag-job-processing.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-nvm",
-   "quelle": "anchor_r20_11.diag-nvm.seq.json"
+   "id": "diag-job-cancel",
+   "quelle": "anchor_r20_11.diag-job-cancel.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-cancel",
-   "quelle": "anchor_r20_11.diag-cancel.dot"
+   "id": "diag-schluessel-lebenszyklus",
+   "quelle": "anchor_r20_11.diag-schluessel-lebenszyklus.dot"
   },
   {
-   "art": "dot",
-   "id": "diag-fehlerpruefung",
-   "quelle": "anchor_r20_11.diag-fehlerpruefung.dot"
+   "art": "seq",
+   "id": "diag-key-persistence",
+   "quelle": "anchor_r20_11.diag-key-persistence.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/crypto/anchor_r20_11.html",
@@ -54,7 +35,7 @@
   "ausgelassen": {
    "budget": [],
    "dublette": {
-    "SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_Key_Storage_in_NVM": "SNIP_CLASSIC_NVM_SECTION_7_2_6_Key_Storage_in_NVM",
+    "SNIP_CLASSIC_NVM_SECTION_7_2_6_1_Writing_keys_to_NVM": "SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM",
     "SNIP_CLASSIC_STD_SECTION_8_4_3_Crypto_NvBlock_WriteTo__NvBlock": "SNIP_CLASSIC_NVM_SECTION_8_4_3_Crypto_NvBlock_WriteTo__NvBlock"
    },
    "inhaltsverzeichnis": [],
@@ -71,54 +52,92 @@
     "SNIP_CLASSIC_CRYPTO_SECTION_8_3_4_5_Key_Generation_Interface",
     "SNIP_CLASSIC_CRYPTO_SECTION_8_3_4_6_Key_Derivation_Interface",
     "SNIP_CLASSIC_CRYPTO_SECTION_8_3_4_7_Key_Exchange_Interface",
-    "SNIP_CLASSIC_CRYPTO_SECTION_8_5_Scheduled_functions",
-    "SNIP_CLASSIC_PLATFORM_SECTION_12_CRYPTO_E_JOB",
-    "SNIP_det_AUTOSAR_SWS_Cryp_P49_1058",
-    "SNIP_det_AUTOSAR_SWS_Cryp_P49_1059",
-    "SNIP_det_AUTOSAR_SWS_Cryp_P56_1066",
-    "SNIP_det_AUTOSAR_SWS_Cryp_P56_1067"
+    "SNIP_CLASSIC_CRYPTO_SECTION_8_5_Scheduled_functions"
    ],
    "ohne_text": []
   },
-  "im_prompt": 107,
-  "im_prompt_schaubilder": 61,
-  "kandidaten": 127,
+  "im_prompt": 97,
+  "im_prompt_schaubilder": 57,
+  "kandidaten": 112,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "d976b70a405ec041f8d6732760d6ef14f3c45c7d086998c7d76b0920e5b2b5f0",
- "output_store": "ai/store/outputs/d9/d976b70a405ec041f8d6732760d6ef14f3c45c7d086998c7d76b0920e5b2b5f0.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-architektur",
+   "diag-job-processing"
+  ],
+  "oneliner_chars": 108,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 66,
+   "3": 327,
+   "4": 1893
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_4_1_UTILIZATIONOFCRYPTOSERVICES: EXP_UtilizationOfCryptoServices S. 8 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_7_1_CRYPTODRIVER: SWS_CryptoDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_7_1_CRYPTODRIVER: SWS_CryptoDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_3_Design_Notes: SWS_CryptoDriver S. 24 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_8_3_1_2_Crypto_GetVersionInfo: SWS_CryptoDriver S. 56 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_7_1_CRYPTODRIVER: SWS_CryptoDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_7_1_CRYPTODRIVER: SWS_CryptoDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-e39a11daf7b2d30c: AUTOSAR_CP_SWS_CryptoServiceManager S. 21 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_1_Normal_Operation: SWS_CryptoDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_1_Normal_Operation: SWS_CryptoDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_2_Functional_Requirements: SWS_CryptoDriver S. 26 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_4_Key_Management: SWS_CryptoDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_4_Key_Management: SWS_CryptoDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CSM_SECTION_8_3_8_7_Key_Exchange_Interface: SWS_CryptoServiceManager S. 70 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_Key_Storage_in_NVM: SWS_CryptoDriver S. 35 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-0d8448ed7a37e06a: AUTOSAR_CP_SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM: SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM: SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM: SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_4_Error_detection: SWS_CryptoDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_7_1_CRYPTODRIVER: SWS_CryptoDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_1_Normal_Operation: SWS_CryptoDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_4_Key_Management: SWS_CryptoDriver S. 28 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CSM_SECTION_8_3_8_7_Key_Exchange_Interface: SWS_CryptoServiceManager S. 70 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM: SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 2: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_4_1_UTILIZATIONOFCRYPTOSERVICES: EXP_UtilizationOfCryptoServices S. 8 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 2: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM: SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_4_1_UTILIZATIONOFCRYPTOSERVICES: EXP_UtilizationOfCryptoServices S. 8 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_CRYPTO_FIGURE_Figure_7_1_CRYPTODRIVER: SWS_CryptoDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_1_Normal_Operation: SWS_CryptoDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_CRYPTO_SECTION_7_2_6_1_Writing_keys_to_NVM: SWS_CryptoDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "7898bdaf8fd4d700a6caf9532ba597b30bab382c8acb5ffdbc651501997ecc4a",
+ "output_store": "ai/store/outputs/78/7898bdaf8fd4d700a6caf9532ba597b30bab382c8acb5ffdbc651501997ecc4a.html",
  "params": {
   "module": "crypto",
   "platform": "classic",
   "release": "R20-11"
  },
  "profile": {
-  "effort": "high",
+  "effort": "medium",
   "extra": {
-   "abrechnung": "Abonnement des Nutzers; Kosten im Lauf-Eintrag als Listenpreis-Schätzung",
-   "client": "claude (Claude Code CLI, Print-Modus); Version je Lauf im Lauf-Eintrag",
-   "flags": "--output-format json --tools \"\" --strict-mcp-config --no-session-persistence --safe-mode --disable-slash-commands",
-   "prompt_caching": "abgeschaltet (DISABLE_PROMPT_CACHING=1)",
-   "system_prompt": "Du erzeugst Texte für das Dokumentationssystem autodocs. Die Nutzernachricht enthält den vollständigen Auftrag mit Richtlinien, Daten und Ausgabeformat. Befolge ihn genau und antworte ausschließlich in dem dort verlangten Format.",
-   "tools": "keine (--tools \"\", --strict-mcp-config, --safe-mode)"
+   "client": "agy 1.2.17",
+   "system_prompt": "agy-Agenten-Systemprompt (nicht offengelegt) + Rezept-Prompt als Nutzer-Nachricht",
+   "tools": "angeboten, Nutzung führt zum Verwerfen"
   },
-  "max_output_tokens": 64000,
-  "model": "claude-opus-5-5",
-  "note": "claude-opus-5-5 (Effort high) über claude -p (Claude Code CLI), hermetisch ohne Werkzeuge; Temperatur nicht steuerbar",
-  "provider": "anthropic",
-  "route": "claude-cli-print",
+  "max_output_tokens": null,
+  "model": "gemini-3.8-flash-medium",
+  "note": "Gemini 3.8 Flash (Medium) über Antigravity-CLI Print-Modus; Temperatur nicht steuerbar",
+  "provider": "google",
+  "route": "agy-cli-print",
   "schema": "ai-generation-profile@v1",
   "seed": null,
-  "system_instruction_mode": "neutraler System-Prompt; Rezept-Prompt unverändert als Nutzernachricht",
+  "system_instruction_mode": null,
   "temperature": null,
   "top_k": null,
   "top_p": null
  },
- "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "22477ffebec72e9845d5bea7c9d5f3620fc1f8ad0cb0e14858b0291f0a737d66",
- "prompt_store": "ai/store/prompts/22/22477ffebec72e9845d5bea7c9d5f3620fc1f8ad0cb0e14858b0291f0a737d66.txt",
- "recipe": "module-guide@2",
+ "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
+ "prompt_hash": "79b1b64c6bf7f4f654acb3e1db4eff7d9a0a7d137ca623fc25d85ca6d50ce2ee",
+ "prompt_store": "ai/store/prompts/79/79b1b64c6bf7f4f654acb3e1db4eff7d9a0a7d137ca623fc25d85ca6d50ce2ee.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -130,65 +149,19 @@
  },
  "runs": [
   {
-   "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.140928,
-   "cost_usd_reported": 1.140928,
-   "created_at": "2026-10-09T06:46:35Z",
-   "duration_api_seconds": 315.153,
-   "duration_seconds": 315.26,
-   "effort": "high",
-   "lint_warnings": [],
-   "model": "claude-opus-5-5",
-   "model_usage": {
-    "claude-opus-5-5": {
-     "cacheCreationInputTokens": 0,
-     "cacheReadInputTokens": 0,
-     "canonicalModel": "claude-opus-5-5",
-     "contextWindow": 1000000,
-     "costBasis": "list",
-     "costUSD": 1.140928,
-     "inputTokens": 78752,
-     "maxOutputTokens": 128000,
-     "outputTokens": 41296,
-     "provider": "firstParty",
-     "thinkingTokens": 18600,
-     "webSearchRequests": 0
-    }
-   },
-   "route": "claude-cli-print",
-   "run_id": "f16c95f1-1bb6-4c34-b5b2-a4e85b18830a",
-   "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/f16c95f1-1bb6-4c34-b5b2-a4e85b18830a.json",
+   "created_at": "2026-10-13T03:33:38Z",
+   "duration_seconds": 104.157163,
+   "prompt_transport": "stdin stream-json",
+   "route": "agy-cli-print",
+   "run_id": "df349d59-8dc8-41e6-a2d7-16eba08398ba",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/df349d59-8dc8-41e6-a2d7-16eba08398ba.jsonl",
    "usage": {
-    "cache_creation": {
-     "ephemeral_1h_input_tokens": 0,
-     "ephemeral_5m_input_tokens": 0
-    },
-    "cache_creation_input_tokens": 0,
-    "cache_read_input_tokens": 0,
-    "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 78752,
-    "output_tokens": 41296,
-    "output_tokens_details": {
-     "thinking_tokens": 18600
-    },
-    "server_tool_use": {
-     "web_fetch_requests": 0,
-     "web_search_requests": 0
-    },
-    "service_tier": "standard",
-    "speed": "standard"
-   },
-   "usage_normalized": {
-    "cache_write": 0,
-    "cached": 0,
-    "input_uncached": 78752,
-    "output": 41296,
-    "thinking": 18600
-   },
-   "wall_seconds": 316.949
+    "cache_read_tokens": 0,
+    "input_tokens": 58353,
+    "output_tokens": 37666,
+    "thinking_tokens": 23262,
+    "total_tokens": 96019
+   }
   }
  ],
  "schema": "ai-trace@2",

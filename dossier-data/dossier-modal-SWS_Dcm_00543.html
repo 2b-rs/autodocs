@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00543" class="dossier-modal dossier-workbench" data-dossier-sha="370f071cb7a2bc7d" aria-labelledby="dossier-modal-SWS_Dcm_00543-title">
+<dialog id="dossier-modal-SWS_Dcm_00543" class="dossier-modal dossier-workbench" data-dossier-sha="5bfac83bdac9192a" aria-labelledby="dossier-modal-SWS_Dcm_00543-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00543-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00543)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,310 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,765 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_SetProgConditions'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -212,24 +230,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9d7b25f13111917c653b3ac44221b937a93f7ea43dbee34c10f15738f83f5be4" data-trace-output="370f071cb7a2bc7de37869ab680ef94f3dba1e2b0c850b635da125c026eb0832" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="7125f1a0f508c0767636dffec0df5a7eaf2833e513d408a9e50ee111143556fa" data-trace-output="5bfac83bdac9192a2982667c01a698be683a1dd68dc2bc6a84c9010a74e8c31d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Sichert relevante Kontext- und Programmierbedingungen vor einem Steuergerätereset oder dem Sprung in den Bootloader." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
-  &lt;p&gt;Der Callout &lt;code&gt;Dcm_SetProgConditions&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;) erlaubt es dem Integrator, vor einem Sprung in den Bootloader oder vor einem Reset relevante Zustandsinformationen zu sichern. Das DCM stellt die Übergabeparameter in der Struktur &lt;code&gt;Dcm_ProgConditionsType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;) bereit. Wird ein UDS-Service 0x10 mit Subfunktion 0x02 empfangen, setzt das DCM vor dem Aufruf unter anderem die Flags &lt;code&gt;ReprogramingRequest&lt;/code&gt; sowie bei Bedarf &lt;code&gt;ResponseRequired&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01182" href="../../spec/record.html?id=SWS_Dcm_01182"&gt;[SWS_Dcm_01182]&lt;/a&gt;). Ist &lt;code&gt;DcmSendRespPendOnRestart&lt;/code&gt; auf &lt;code&gt;TRUE&lt;/code&gt; konfiguriert und eine Boot-Session aktiv, erfolgt der Aufruf nach erfolgreicher Übertragung von NRC 0x78 (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00535" href="../../spec/record.html?id=SWS_Dcm_00535"&gt;[SWS_Dcm_00535]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Asynchrone Semantik und Rückgabewerte&lt;/h4&gt;
-  &lt;p&gt;Die Funktion ist nicht reentrant und verhält sich asynchron (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;). Der Aufruf erfolgt unter Angabe des Operationsstatus &lt;code&gt;OpStatus&lt;/code&gt; (&lt;code&gt;DCM_INITIAL&lt;/code&gt;, &lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Programmierbedingungen wurden erfolgreich gespeichert. Das DCM löst daraufhin den Moduswechsel des Prototyps &lt;code&gt;DcmEcuReset&lt;/code&gt; zu &lt;code&gt;EXECUTE&lt;/code&gt; aus (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00719" href="../../spec/record.html?id=SWS_Dcm_00719"&gt;[SWS_Dcm_00719]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01163" href="../../spec/record.html?id=SWS_Dcm_01163"&gt;[SWS_Dcm_01163]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01180" href="../../spec/record.html?id=SWS_Dcm_01180"&gt;[SWS_Dcm_01180]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Der Vorgang wird asynchron fortgesetzt; das DCM ruft die API im nächsten Zyklus der DCM-Hauptfunktion erneut auf (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01184" href="../../spec/record.html?id=SWS_Dcm_01184"&gt;[SWS_Dcm_01184]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt;: Die Applikation fordert das Übermitteln einer Response Pending (NRC 0x78) an (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Bedingungen konnten nicht gesichert werden.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;Gibt der Callout &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, leitet das DCM keinen Reset und keinen Bootloader-Sprung ein und schaltet &lt;code&gt;DcmEcuReset&lt;/code&gt; nicht auf &lt;code&gt;EXECUTE&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01181" href="../../spec/record.html?id=SWS_Dcm_01181"&gt;[SWS_Dcm_01181]&lt;/a&gt;). Stattdessen bricht das DCM die Aktion ab und sendet eine negative Diagnoseantwort mit NRC 0x22 (Conditions not correct) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00715" href="../../spec/record.html?id=SWS_Dcm_00715"&gt;[SWS_Dcm_00715]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikationsanforderungen von AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;
+Die Callout-Funktion &lt;code&gt;Dcm_SetProgConditions&lt;/code&gt; ermöglicht dem Integrator das persistente Sichern relevanter Informationen vor einem Wechsel in den Bootloader oder einem Reset infolge einer ECUReset-Anforderung &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;. Die relevanten Kontextdaten werden über einen Zeiger auf die Struktur &lt;code&gt;Dcm_ProgConditionsType&lt;/code&gt; übergeben, welche unter anderem Verbindungs- und Tester-Quelladressen, Dienst- und Subfunktions-IDs sowie Steuerungs-Flags wie &lt;code&gt;ReprogramingRequest&lt;/code&gt; und &lt;code&gt;ResponseRequired&lt;/code&gt; bündelt &lt;a class="spec-record-ref" data-req="SWS_Dcm_00988" href="../../spec/record.html?id=SWS_Dcm_00988"&gt;[SWS_Dcm_00988]&lt;/a&gt;. Bei Empfang eines UDS-Dienstes 0x10 mit Subfunktion 0x02 setzt das DCM diese Flags und ruft die Schnittstelle auf &lt;a class="spec-record-ref" data-req="SWS_Dcm_01182" href="../../spec/record.html?id=SWS_Dcm_01182"&gt;[SWS_Dcm_01182]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+Der Aufruf erfolgt asynchron und ist nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;. Über den Parameter &lt;code&gt;OpStatus&lt;/code&gt; werden die Zustände &lt;code&gt;DCM_INITIAL&lt;/code&gt;, &lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt; gesteuert &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;. Sofern die Ausführung andauert und die Funktion &lt;code&gt;DCM_E_PENDING&lt;/code&gt; zurückgibt, ruft das DCM die Schnittstelle im nächsten Hauptfunktionszyklus erneut auf, um das Setzen abzuschließen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01184" href="../../spec/record.html?id=SWS_Dcm_01184"&gt;[SWS_Dcm_01184]&lt;/a&gt;. Mittels &lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt; kann die Übertragung einer Response-Pending-Antwort (NRC 0x78) erzwungen werden &lt;a class="spec-record-ref" data-req="SWS_Dcm_00543" href="../../spec/record.html?id=SWS_Dcm_00543"&gt;[SWS_Dcm_00543]&lt;/a&gt;. Abhängig von der Konfiguration erfolgt der Aufruf durch das DCM erst nach erfolgreicher Übertragung von NRC 0x78 &lt;a class="spec-record-ref" data-req="SWS_Dcm_00535" href="../../spec/record.html?id=SWS_Dcm_00535"&gt;[SWS_Dcm_00535]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;
+Wurden die Bedingungen fehlerfrei gesetzt und liefert das Callout &lt;code&gt;E_OK&lt;/code&gt; zurück, stößt das DCM den Moduswechsel des &lt;code&gt;ModeDeclarationGroupPrototype&lt;/code&gt; &lt;code&gt;DcmEcuReset&lt;/code&gt; nach &lt;code&gt;EXECUTE&lt;/code&gt; an &lt;a class="spec-record-ref" data-req="SWS_Dcm_00719" href="../../spec/record.html?id=SWS_Dcm_00719"&gt;[SWS_Dcm_00719]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01163" href="../../spec/record.html?id=SWS_Dcm_01163"&gt;[SWS_Dcm_01163]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01180" href="../../spec/record.html?id=SWS_Dcm_01180"&gt;[SWS_Dcm_01180]&lt;/a&gt;. Kann der Zustand hingegen nicht gesichert werden und antwortet die Funktion mit &lt;code&gt;E_NOT_OK&lt;/code&gt;, unterbleiben der Reset sowie der Bootloader-Sprung, der Moduswechsel wird unterbunden und das DCM sendet die negative Antwort NRC 0x22 (Conditions not correct) &lt;a class="spec-record-ref" data-req="SWS_Dcm_00715" href="../../spec/record.html?id=SWS_Dcm_00715"&gt;[SWS_Dcm_00715]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_01181" href="../../spec/record.html?id=SWS_Dcm_01181"&gt;[SWS_Dcm_01181]&lt;/a&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der Spezifikation AUTOSAR Classic Release R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -269,7 +283,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9d7b25f13111…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7125f1a0f508…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -407,4 +421,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00543","k":"function","d":"AUTOSAR","t":"","n":"Dcm_SetProgConditions"}],"inbound":[{"i":"SWS_Dcm_00988","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00988].","n":"SWS_Dcm_00988"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/af8ea794c5e2c47d.json?v=70f5bfc0" data-total="9" data-new="9" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00543","k":"function","d":"AUTOSAR","t":"","n":"Dcm_SetProgConditions"}],"inbound":[{"i":"SWS_Dcm_00988","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00988].","n":"SWS_Dcm_00988"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/af8ea794c5e2c47d.json?v=7c42624b" data-total="9" data-new="9" data-figures="2" data-used="0"></script></dialog>

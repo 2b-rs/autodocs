@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramTSCF_90275" class="dossier-modal dossier-workbench" data-dossier-sha="4ce08cc162f3ea91" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramTSCF_90275-title">
+<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramTSCF_90275" class="dossier-modal dossier-workbench" data-dossier-sha="e715bbd76838d266" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramTSCF_90275-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_rds_IEEE1722DatagramTSCF_90275-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_rds_IEEE1722DatagramTSCF_90275)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,651 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,233 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,14 +145,34 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::rds::IEEE1722DatagramTSCF' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_rds_IEEE1722DatagramTSCF_90275",
  "class_name": "ara::rds::IEEE1722DatagramTSCF",
  "description": "IEEE 1722 datagram representation: IEEE1722DatagramTSCF.",
- "dokumentstellen": [],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90275",
+   "page": 1,
+   "text": "[SWS_RDS_90275] ~IEEE1722DatagramTSCF() noexcept;\nVirtual destructor of the IEEE 1722 datagram type."
+  }
+ ],
  "member_requirements": [
   {
    "id": "SWS_RDS_90275",
@@ -208,60 +235,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="de4271354aece311239af66ed6de609ba8d0023f55fe749f5dadf587bb4dcfde" data-trace-output="4ce08cc162f3ea919f250516e1b056c27526f486a62808173e5b53bbc4ac5077" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="c88f010e5bc3d37e415193cc2687da68556fb82a69c355725fa1f5a5e8c577b6" data-trace-output="e715bbd76838d266a08e4f5285c30895eb52d029a75cf1ecf550e1dcaa0fcb58" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Repräsentiert IEEE-1722-TSCF-Datagramme im Raw-Data-Stream-Modul und stellt eine polymorphe Zerstörung sicher." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-The class &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; belongs to the functional cluster &lt;em&gt;Raw Data Stream&lt;/em&gt; (&lt;code&gt;rds&lt;/code&gt;) of the AUTOSAR Adaptive Platform in release R25-11. The module &lt;code&gt;rds&lt;/code&gt; provides mechanisms for high-efficiency transmission and reception of unstructured or protocol-specific data streams that are not handled via the classical service-oriented communication model. According to its specification, the class represents a representation form for IEEE 1722 datagrams, specifically for the format &lt;em&gt;IEEE1722DatagramTSCF&lt;/em&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-The standard protocol IEEE 1722 (Audio Video Transport Protocol, AVTP) defines transport formats for time-critical data streams in Ethernet networks. The specification assigns header &lt;code&gt;ara/rds/raw_data_stream_IEEE1722.h&lt;/code&gt; to the class &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;. As a technical interpretation, the acronym TSCF is likely to stand for the standardized &lt;em&gt;Time-Synchronous Control Format&lt;/em&gt;, meaning the class represents the representation layer for time-synchronized control and command data within the Ethernet streaming infrastructure. In the system architecture, &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; acts as a link between the low-level streaming drivers of the Raw Data Stream module and the consuming or producing application components of the Adaptive Platform by providing the data encapsulation for TSCF packets.
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Repräsentiert IEEE-1722-TSCF-Datagramme im Raw-Data-Stream-Modul und stellt eine polymorphe Zerstörung sicher.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; repräsentiert IEEE-1722-TSCF-Datagramme im Modul Raw Data Stream (RDS) der AUTOSAR Adaptive Platform und wird über den Header &lt;code&gt;ara/rds/raw_data_stream_IEEE1722.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;. Als wesentliche Schnittstelleneigenschaft besitzt sie einen virtuellen Destruktor, der eine polymorphe Zerstörung über Basiszeiger sicherstellt &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Virtual destructor of the IEEE 1722 datagram type“&lt;/a&gt;. Als zentrale Randbedingung garantiert die Deklaration mit &lt;code&gt;noexcept&lt;/code&gt; die vollkommen ausnahmefreie Bereinigung aller Ressourcen beim Objektlebensende.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; repräsentiert innerhalb der AUTOSAR Adaptive Platform ein spezifisches Datenformat für IEEE-1722-Datagramme, genauer für das Time-Sensitive Control Format (TSCF) gemäß der Spezifikation &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Virtual destructor of the IEEE 1722 datagram type“&lt;/a&gt;. Angesiedelt ist dieser Datentyp im Modul Raw Data Stream (RDS), welches die Erfassung und Weiterleitung unformatierter oder protokollspezifischer Datenströme in adaptiven Fahrzeuganwendungen ermöglicht. Für die Einbindung und Verwendung der Klasse ist die Bereitstellung über den standardisierten Header &lt;code&gt;#include "ara/rds/raw_data_stream_IEEE1722.h"&lt;/code&gt; im Namensraum &lt;code&gt;ara::rds&lt;/code&gt; spezifiziert &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-The lifecycle of instances of class &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; is decisively determined by their virtual destructor, which is explicitly specified by &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;:
-&lt;/p&gt;
-&lt;p&gt;
-&lt;code&gt;virtual ~IEEE1722DatagramTSCF() noexcept;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-The provision of a virtual destructor proves that &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; is designed for polymorphic use. Interpretation: The class is likely to serve either as a base class for specialized manifestations of TSCF datagrams or to inherit itself from a general IEEE 1722 datagram base interface, so that destruction of dynamically allocated objects via pointers to base classes can take place in a type-safe and resource-safe manner.
-&lt;/p&gt;
-&lt;p&gt;
-Regarding ownership and memory management, the polymorphic nature of the class requires careful handling of lifetime scopes. If datagram instances are held in receive buffers or streaming queues of module &lt;code&gt;rds&lt;/code&gt;, transfer to the application preferably takes place via smart pointers such as &lt;code&gt;std::unique_ptr&lt;/code&gt;. Due to the virtual destructor &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;, destruction of the object at the end of the processing chain always invokes the complete destructor chain of the actual dynamic instance, thereby preventing resource leaks.
-&lt;/p&gt;
-&lt;p&gt;
-The designation of the destructor as &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt; guarantees that no C++ exceptions are propagated outward during the deletion process. This is a central precondition for exception safety in the C++ standard, particularly during potential stack unwinding in error cases or during automatic cleanup within containers and smart pointers.
-&lt;/p&gt;
+&lt;p&gt;Als strukturierte Repräsentation eines IEEE-1722-TSCF-Datagramms dient die Klasse dazu, Steuer- und Sensordaten, die über zeitkritische Netzwerkverbindungen wie Ethernet im Automobilbereich übertragen werden, abzubilden. Interpretation: Die Klasse dürfte als standardisierter Träger für TSCF-Nutzlastdaten innerhalb der Datenstromverarbeitung des RDS-Moduls agieren, um anwendungsspezifischen Komponenten einen einheitlichen Zugriff auf entsprechende Datagramme zu erlauben, wie aus der Typbezeichnung hervorgeht &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Virtual destructor of the IEEE 1722 datagram type“&lt;/a&gt;. Dabei fungiert sie im C++-Typsystem als definierter Daten- oder Schnittstellentyp, der in Datenstrom-Pipelines des RDS-Subsystems eingebunden wird &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-To use the class &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; in an adaptive application, the corresponding header must first be included:
-&lt;/p&gt;
-&lt;p&gt;
-&lt;code&gt;#include "ara/rds/raw_data_stream_IEEE1722.h"&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-Interpretation: In a typical processing sequence, datagrams of this class are likely to be received or assembled within the scope of an active Raw Data Stream connection. The sequence is divided into the following phases:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Provision:&lt;/strong&gt; An instance of &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; is either created by the streaming infrastructure upon arrival of network packets or prepared on the transmission side by the application.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Processing:&lt;/strong&gt; The payload data of the TSCF datagram is read, evaluated, or populated with control values by the application logic.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Deallocation and destruction:&lt;/strong&gt; After processing or transmission is completed, the instance is deallocated. If deallocation occurs via a base class pointer, the virtual destructor &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt; ensures that the destructor of the derived class is executed without undefined behavior.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus von Instanzen der Klasse &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; umfasst deren Erzeugung, Nutzung zur Datenübermittlung und anschließende Freigabe. Die Spezifikation definiert für die Klasse explizit einen virtuellen Destruktor &lt;code&gt;~IEEE1722DatagramTSCF() noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;. Das Vorhandensein eines virtuellen Destruktors belegt, dass die Klasse auf polymorphe Verwendung ausgelegt ist &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Virtual destructor of the IEEE 1722 datagram type“&lt;/a&gt;. Interpretation: Instanzen von &lt;code&gt;ara::rds::IEEE1722DatagramTSCF&lt;/code&gt; dürften als Basisklasse fungieren oder über Zeiger beziehungsweise Referenzen auf übergeordnete Datagramm-Schnittstellen verwaltet werden, womit eine sichere Zerstörung abgeleiteter Klassen über Basisklassenzeiger gewährleistet wird.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-For the destruction of instances via the virtual destructor &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;, no error codes or C++ exceptions are defined due to the &lt;code&gt;noexcept&lt;/code&gt; specification. Under no circumstances may the destructor fail or throw exceptions, as this would lead to immediate program termination via &lt;code&gt;std::terminate&lt;/code&gt;. Error conditions occurring during transmission or validation of the underlying IEEE 1722 streams must therefore be signaled by the surrounding communication methods of module &lt;code&gt;rds&lt;/code&gt; and not via the destructor.
-&lt;/p&gt;
+&lt;p&gt;Hinsichtlich des Speichermanagements können Objekte der Klasse je nach Anwendungsfall und Datenstromarchitektur entweder auf dem Stack oder dynamisch auf dem Heap instanziiert werden. Beim Verlassen des Gültigkeitsbereichs oder bei expliziter Freigabe sorgt der virtuelle Destruktor für das deterministische Aufräumen aller zugeordneten Ressourcen &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;. Da der Destruktor mit dem Bezeichner &lt;code&gt;noexcept&lt;/code&gt; deklariert ist, garantiert die Implementierung, dass während des Zerstörungsvorgangs keine Ausnahmen nach außen propagiert werden, was für die Stabilität des Lebenszyklus und die sichere Freigabe in mehrfädigen Laufzeitumgebungen zwingend erforderlich ist &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Virtual destructor of the IEEE 1722 datagram type“&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Im Bereich der Fehlerbehandlung und Ausnahmebehandlung zeichnet sich die Schnittstelle durch strikte No-Fail-Garantien beim Abbau von Instanzen aus. Gemäß der Anforderung &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt; ist der Destruktor &lt;code&gt;~IEEE1722DatagramTSCF()&lt;/code&gt; mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; deklariert. Dadurch wird formal sichergestellt, dass bei der Zerstörung eines Datagramm-Objekts keine C++-Exceptions geworfen werden dürfen &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream §1 „Virtual destructor of the IEEE 1722 datagram type“&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Sollte es während des Aufräumvorgangs intern zu unerwarteten Fehlern kommen, darf die Methode diese keinesfalls über den Stack an den Aufrufer weiterleiten. Das Werfen einer Ausnahme aus einer als &lt;code&gt;noexcept&lt;/code&gt; deklarierten Funktion würde im C++-Laufzeitsystem unmittelbar den Aufruf von &lt;code&gt;std::terminate&lt;/code&gt; zur Folge haben. Interpretation: Eventuelle interne Bereinigungsfehler müssen daher defensiv behandelt oder intern protokolliert werden, um einen unkontrollierten Abbruch des Gesamtprozesses zu verhindern. Der Destruktor besitzt keine Fehlerrückgabewerte und erfordert keine Vorbedingungen über die Existenz eines gültigen Objekts hinaus, wodurch die sichere Beendigung auch in Ausnahmesituationen, wie etwa während eines Stack-Unwindings, gewährleistet bleibt &lt;a class="spec-record-ref" data-req="SWS_RDS_90275" href="../spec/record.html?id=SWS_RDS_90275"&gt;[SWS_RDS_90275]&lt;/a&gt;.&lt;/p&gt;
 
 &lt;!-- annahmen:
-1) Interpretation: Das Akronym TSCF steht für das in IEEE 1722 standardisierte Time-Synchronous Control Format zur Übertragung von Kontrollnachrichten. – Begründung: IEEE 1722 definiert TSCF als Time-Synchronous Control Format, und der Klassenname sowie das Modul rds beziehen sich direkt auf diese Norm.
-2) Interpretation: Die Klasse fungiert aufgrund ihres virtuellen Destruktors als Basisklasse oder polymorph nutzbare Schnittstelle in einer Vererbungshierarchie. – Begründung: Virtuelle Destruktoren werden in C++ primär eingesetzt, um das polymorphe Löschen über Zeiger auf Oberklassen zu ermöglichen.
-3) Interpretation: Datagramm-Instanzen werden innerhalb der Streaming-Pipeline des Moduls rds erzeugt, weitergeleitet und verarbeitet. – Begründung: Das Modul rds ist für Raw Data Streaming verantwortlich, in welchem Datagramme typischerweise als diskrete Pakete über Streams fließen.
+1) Die Klasse dient als Basisklasse oder polymorphe Schnittstelle für IEEE-1722-TSCF-Datagramme – Begründung: Spezifikation eines virtuellen Destruktors in [SWS_RDS_90275].
+2) Instanzen agieren als Träger für TSCF-Nutzlastdaten in RDS-Datenströmen – Begründung: Einordnung als Datagramm-Typ im RDS-Header ara/rds/raw_data_stream_IEEE1722.h.
+3) Fehler während des Zerstörungsvorgangs müssen defensiv abgefangen werden – Begründung: Deklaration des Destruktors mit noexcept in [SWS_RDS_90275].
 --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the specifications of the AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den technischen Spezifikationen der AUTOSAR Adaptive Platform R25-11 für das Modul Raw Data Stream (RDS) und wurde durch eine künstliche Intelligenz aufbereitet.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -303,9 +307,9 @@ For the destruction of instances via the virtual destructor &lt;a class="spec-re
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>de4271354aec…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c88f010e5bc3…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -362,7 +366,7 @@ For the destruction of instances via the virtual destructor &lt;a class="spec-re
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">1 von 1 Elementen angezeigt</span>
+              <span id="dossier-visible-count">2 von 2 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -378,11 +382,11 @@ For the destruction of instances via the virtual destructor &lt;a class="spec-re
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
           </div>
         </div>
 
@@ -441,4 +445,4 @@ For the destruction of instances via the virtual destructor &lt;a class="spec-re
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90275","k":"function","d":"RDS","t":"function ~IEEE1722DatagramTSCF [SWS_RDS_90275] ~IEEE1722DatagramTSCF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramTSCF class mono","n":"~IEEE1722DatagramTSCF"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/78a413cdb42df658.json?v=e97f479e" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90275","k":"function","d":"RDS","t":"function ~IEEE1722DatagramTSCF [SWS_RDS_90275] ~IEEE1722DatagramTSCF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramTSCF class mono","n":"~IEEE1722DatagramTSCF"}],"inbound":[{"i":"SNIP_rds_SWS_RDS_90275","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90275] ~IEEE1722DatagramTSCF() noexcept;\nVirtual destructor of the IEEE 1722 datagram type."}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/78a413cdb42df658.json?v=09fd826a" data-total="1" data-new="0" data-figures="0" data-used="1"></script></dialog>

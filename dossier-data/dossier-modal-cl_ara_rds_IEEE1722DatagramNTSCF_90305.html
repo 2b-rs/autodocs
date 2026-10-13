@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramNTSCF_90305" class="dossier-modal dossier-workbench" data-dossier-sha="f7233356a449e14d" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramNTSCF_90305-title">
+<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramNTSCF_90305" class="dossier-modal dossier-workbench" data-dossier-sha="998a007e9f368452" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramNTSCF_90305-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_rds_IEEE1722DatagramNTSCF_90305-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_rds_IEEE1722DatagramNTSCF_90305)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,009 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,865 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,14 +145,62 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::rds::IEEE1722DatagramNTSCF' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_rds_IEEE1722DatagramNTSCF_90305",
  "class_name": "ara::rds::IEEE1722DatagramNTSCF",
  "description": "IEEE 1722 datagram representation: IEEE1722DatagramNTSCF.",
- "dokumentstellen": [],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90306",
+   "page": 1,
+   "text": "[SWS_RDS_90306] std::uint16_t ntscf_data_length; 118 of 185 Document ID 1098: AUTOSAR_AP_SWS_RawDataStream Specification of Raw Data Stream AUTOSAR AP R25-11\nProtected IEEE 1722 datagram field mac_address."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90307",
+   "page": 1,
+   "text": "[SWS_RDS_90307] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; sequenceNum;\nProtected IEEE 1722 datagram field sequenceNum."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90308",
+   "page": 1,
+   "text": "[SWS_RDS_90308] ara::core::Optional&amp;lt;std::uint64_t&amp;gt; mac_address;\nProtected IEEE 1722 datagram field ntscf_data_length."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90309",
+   "page": 1,
+   "text": "[SWS_RDS_90309] ara::core::Optional&amp;lt;std::uint64_t&amp;gt; unique_id;\nProtected IEEE 1722 datagram field unique_id."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90310",
+   "page": 1,
+   "text": "[SWS_RDS_90310] ~IEEE1722DatagramNTSCF() noexcept;\nVirtual destructor of the IEEE 1722 datagram type."
+  }
+ ],
  "member_requirements": [
   {
    "id": "SWS_RDS_90306",
@@ -224,33 +279,43 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="03501c233e7bc48f7fd5991527dd26c4475f9b3e9197ccb4c32cefeed52b449b" data-trace-output="f7233356a449e14d2c1772a3506591952a97567d7fafdf5c16f1af85a41d0596" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="34ffc7c706f6e1548cecb894f8ccda75bac74fea7c346a2609781cdc5f7097d6" data-trace-output="998a007e9f36845288f94e4c1544b83bdb2a7d29ab6e12287713167f54b1f97e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt Kontrolldaten und Headerfelder von IEEE-1722-NTSCF-Datagrammen für die Verarbeitung in Rohdatenströmen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Within the module for raw data streams (Raw Data Stream, &lt;code&gt;rds&lt;/code&gt;), the class &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; represents a datagram-oriented data structure for the Non-Time-Synchronous Control Format (NTSCF) according to the IEEE 1722 network standard. On the Adaptive Platform, the module &lt;code&gt;rds&lt;/code&gt; is used for the structured transport and encapsulation of data streams in which protocol-level formats are transmitted or processed without additional protocol layers.&lt;/p&gt;
-&lt;p&gt;In this architecture, &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; encapsulates the specific fields of the NTSCF datagram. The class defines this core information as protected (&lt;code&gt;protected&lt;/code&gt;) data members. These include the sequence number &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt; for monitoring the datagram order, the unique identifier &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt; for assigning control streams, and protocol-specific length and addressing data via &lt;code&gt;ntscf_data_length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt; and &lt;code&gt;mac_address&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90306" href="../spec/record.html?id=SWS_RDS_90306"&gt;[SWS_RDS_90306]&lt;/a&gt;. Due to the protected visibility, the class functions as a polymorphic base abstraction whose fields are provided for specialized derivations or internal processing stages of the module.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt Kontrolldaten und Headerfelder von IEEE-1722-NTSCF-Datagrammen für die Verarbeitung in Rohdatenströmen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; repräsentiert die Datenstruktur für IEEE-1722-NTSCF-Kontrolldatagramme innerhalb des Moduls Raw Data Stream &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;SWS RawDataStream „Specification of Raw Data Stream“&lt;/a&gt;. Sie kapselt protokollspezifische Felder wie Sequenznummer, Adressangaben und eindeutige Kennungen in geschützten Attributen, die spezialisierten Datagrammklassen zur Verfügung stehen. Ein sicherer Lebenszyklus im polymorphen Einsatz wird über den virtuellen Destruktor &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt; gewährleistet. Die wichtigste Randbedingung besteht darin, dass die Zerstörung zwingend ausnahmefrei erfolgen muss und optionale Felder vor dem Zugriff auf ihr Vorhandensein geprüft werden müssen.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; repräsentiert innerhalb des AUTOSAR-Adaptive-Moduls &lt;code&gt;rds&lt;/code&gt; (Raw Data Stream) gemäß &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;SWS RawDataStream „Specification of Raw Data Stream“&lt;/a&gt; die Struktur eines IEEE-1722-Datagramms im NTSCF-Format (Non-Time-Synchronous Control Format). Die Klasse bündelt Protokollfelder, die für den Austausch unzeitkritischer Kontroll- und Nutzdatenströme spezifiziert sind. Die Header-Datei &lt;code&gt;#include "ara/rds/raw_data_stream_IEEE1722.h"&lt;/code&gt; deklariert die Klasse im Namensraum &lt;code&gt;ara::rds&lt;/code&gt;. Zu den spezifizierten Komponenten gehören die eindeutige Stromkennung &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt;, die Sequenznummer &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt; sowie die Längen- und Adressinformationen &lt;code&gt;ntscf_data_length&lt;/code&gt; und &lt;code&gt;mac_address&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90306" href="../spec/record.html?id=SWS_RDS_90306"&gt;[SWS_RDS_90306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Auffällig ist, dass alle Datenelemente den Zugriffsschutz &lt;code&gt;protected&lt;/code&gt; aufweisen. Als Interpretation lässt sich hieraus ableiten, dass die Klasse als fundamentale Basisklasse für abgeleitete, protokollspezifische Datagrammstrukturen dient und vermutlich nicht zur direkten Instanziierung durch reguläre Anwendungslogik vorgesehen ist.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The lifecycle of &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; is designed for the creation, handover, and controlled release of protocol messages. The class has a virtual destructor &lt;code&gt;~IEEE1722DatagramNTSCF() noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt;. The design as a virtual destructor confirms the inheritance concept of the interface and guarantees that specialized instances of derived classes are type-safely and completely released when deleted via pointers to the base type.&lt;/p&gt;
-&lt;p&gt;Interpretation: Since no public constructors or factory methods are specified in the payload, instantiation as well as initialization of the protected attributes is presumably performed primarily by derived classes or protocol-internal mechanisms of the module &lt;code&gt;rds&lt;/code&gt;. During the active usage phase, the instances manage the protocol data in memory. Several attributes—including &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt;, &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt;, and &lt;code&gt;mac_address&lt;/code&gt; or &lt;code&gt;ntscf_data_length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt;—are declared using &lt;code&gt;ara::core::Optional&lt;/code&gt;. This illustrates that the corresponding protocol fields do not necessarily have to be populated in every instance, but can remain unpopulated depending on the use case.&lt;/p&gt;
-&lt;p&gt;The release of the instances at the end of the processing phase is guaranteed to be exception-safe thanks to the specification with &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus von &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; ist auf den sicheren Betrieb in objektorientierten Vererbungshierarchien ausgelegt. Zentrales Element ist der virtuelle Destruktor &lt;code&gt;~IEEE1722DatagramNTSCF() noexcept&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt;. Durch die Virtualität wird garantiert, dass bei Zerstörung einer abgeleiteten Instanz über einen Zeiger auf die Basisklasse die Destruktorkette vollständig und korrekt abgearbeitet wird.&lt;/p&gt;
+&lt;p&gt;Die Deklaration mit &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt; sichert zu, dass die Zerstörung des Objekts unter keinen Umständen Ausnahmen wirft. Dies entspricht den Kernanforderungen des modernen C++-Ressourcenmanagements und gewährleistet die Ausnahme-Sicherheit im Fehlerfall.&lt;/p&gt;
+&lt;p&gt;Öffentliche Konstruktoren werden im Spezifikationsumfang nicht aufgeführt. Die Objekterzeugung dürfte daher entweder durch abgeleitete Klassen im Rahmen ihrer Initialisierung oder über interne Erzeugungsmechanismen des Raw-Data-Stream-Moduls erfolgen. Feste Zustände oder eine interne Zustandsmaschine besitzt die Klasse nicht; das Objekt verbleibt von der Erzeugung bis zur Zerstörung in einem konsistenten Zustand als Informationsträger.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical use of the structure &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; takes place in the context of data stream processing along the following steps:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Die Verwendung der Klasse erfolgt typischerweise im Zuge der Verarbeitung von Kontrolldatenströmen nach IEEE 1722. Abgeleitete Klassen oder Komponenten des Rohdatenstrom-Frameworks nutzen die geschützten Attribute zur Serialisierung oder Deserialisierung der übertragenen Pakete. Die Attribute sind als elementare Ganzzahltypen bzw. als &lt;code&gt;ara::core::Optional&lt;/code&gt; definiert. Die typische Verarbeitungskette gliedert sich in folgende Schritte:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Instantiation and field population:&lt;/strong&gt; A deriving class or a parsing component creates the object and populates the protected attributes based on the received raw data or the control message to be sent.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Sequence order management:&lt;/strong&gt; Via the sequence number &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt;, it is checked whether the message is in the seamless sequence of the data stream, or a new counter value is set for outgoing messages.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Control channel identification:&lt;/strong&gt; Via the field &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt;, the datagram is assigned to a specific control stream or logical communication endpoint.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Metadata and length comparison:&lt;/strong&gt; Based on &lt;code&gt;ntscf_data_length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt; and &lt;code&gt;mac_address&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90306" href="../spec/record.html?id=SWS_RDS_90306"&gt;[SWS_RDS_90306]&lt;/a&gt;, addressing and packet dimensions are verified or prepared for transmission.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Polymorphic teardown:&lt;/strong&gt; After completion of the processing, the object is destroyed, with the virtual destructor &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt; ensuring the proper cleanup of the derived instance.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Identifikation des Datenstroms:&lt;/strong&gt; Anhand von &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt; wird geprüft, zu welchem logischen Datenstrom das Datagramm gehört.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reihenfolgeprüfung:&lt;/strong&gt; Über die Sequenznummer &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt; lässt sich feststellen, ob Pakete in der erwarteten Reihenfolge eingetroffen sind oder Verluste vorliegen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Längen- und Adressauswertung:&lt;/strong&gt; Über die Felder &lt;code&gt;ntscf_data_length&lt;/code&gt; und &lt;code&gt;mac_address&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90306" href="../spec/record.html?id=SWS_RDS_90306"&gt;[SWS_RDS_90306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt; wird die Größe der Nutzdaten ermittelt und die Ziel- bzw. Quelladresse ausgewertet.&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;Nach Auswertung der Nutzdaten endet der Nutzungspfad mit der Freigabe der Instanz über den virtuellen Destruktor &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;In the area of error handling and preconditions, the interface declaration results in the following requirements:&lt;/p&gt;
-&lt;p&gt;The virtual destructor is specified as &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt;. This strictly precludes the throwing of C++ exceptions during object destruction and protects against uncontrolled program terminations during stack unwinding.&lt;/p&gt;
-&lt;p&gt;Interpretation: Since key fields such as &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt;, &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt;, and the addressing attributes &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt; are present as &lt;code&gt;ara::core::Optional&lt;/code&gt;, an essential precondition on the consumer side is to check for the presence of a value prior to data access. Unchecked direct access to empty optional attributes is likely to lead to runtime errors if a received NTSCF datagram transmitted incomplete header data.&lt;/p&gt;
-&lt;!-- annahmen: 1) Die Objekterzeugung und Initialisierung der geschützten Member erfolgt über spezialisierende abgeleitete Klassen oder interne Fabrikmechanismen des Moduls rds – Begründung: Der Payload enthält ausschließlich geschützte Attribute und einen virtuellen Destruktor, jedoch keine öffentlichen Konstruktoren. 2) Vorbedingungen zur Fehlervermeidung verlangen die explizite Prüfung des Belegungsstatus der als ara::core::Optional geführten Attribute – Begründung: Ungesicherter Zugriff auf leere Instanzen von ara::core::Optional verursacht Laufzeitfehler. --&gt;
-&lt;p class="ai-note"&gt;This guide is based exclusively on the AUTOSAR Adaptive specification R25-11 for the module rds and was prepared automatically.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Aufgrund des Charakters von &lt;code&gt;ara::rds::IEEE1722DatagramNTSCF&lt;/code&gt; als Datenstruktur und Basisklasse treten Fehler nicht in Form von Methoden-Rückgabecodes auf, sondern betreffen Vorbedingungen bei Datenzugriff und Zerstörung:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Ungeprüfter Zugriff auf optionale Felder:&lt;/strong&gt; Attribute wie &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90307" href="../spec/record.html?id=SWS_RDS_90307"&gt;[SWS_RDS_90307]&lt;/a&gt; und &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90309" href="../spec/record.html?id=SWS_RDS_90309"&gt;[SWS_RDS_90309]&lt;/a&gt; sind als &lt;code&gt;ara::core::Optional&lt;/code&gt; deklariert. Ein Zugriff ohne vorherige Prüfung mittels &lt;code&gt;has_value()&lt;/code&gt; führt bei unvollständigen Paketen zu Laufzeitfehlern oder undefiniertem Verhalten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Verletzung der noexcept-Garantie im Destruktor:&lt;/strong&gt; Da der Destruktor mit &lt;code&gt;noexcept&lt;/code&gt; spezifiziert ist &lt;a class="spec-record-ref" data-req="SWS_RDS_90310" href="../spec/record.html?id=SWS_RDS_90310"&gt;[SWS_RDS_90310]&lt;/a&gt;, führt jede Ausnahme, die während der Bereinigung in abgeleiteten Klassen geworfen und nicht lokal behandelt wird, zum sofortigen Programmabbruch via &lt;code&gt;std::terminate&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Inkonsistente Längenangaben:&lt;/strong&gt; Falls der Wert von &lt;code&gt;ntscf_data_length&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90306" href="../spec/record.html?id=SWS_RDS_90306"&gt;[SWS_RDS_90306]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_RDS_90308" href="../spec/record.html?id=SWS_RDS_90308"&gt;[SWS_RDS_90308]&lt;/a&gt; nicht mit der tatsächlichen Puffergröße des Netzwerktreibers übereinstimmt, kann es bei der Datenverarbeitung zu Pufferüberläufen oder unvollständigem Lesen kommen.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- annahmen: 1) Da alle Felder als protected deklariert sind und keine öffentlichen Konstruktoren spezifiziert wurden, dürfte die Klasse als Basisklasse für abgeleitete NTSCF-Datagrammstrukturen dienen – Begründung: Keine Instanziierungsmethoden im Payload auffindbar; 2) Die Verwendung von ara::core::Optional deutet darauf hin, dass Felder wie sequenceNum oder unique_id im NTSCF-Protokoll optional sind – Begründung: Spezifikationstypen enthalten ara::core::Optional; 3) Die Erzeugung und Zerstörung erfolgt vermutlich durch das übergeordnete Raw-Data-Stream-Framework im Rahmen des Stream-Transports – Begründung: Header ara/rds/raw_data_stream_IEEE1722.h bindet den Typ in das RDS-Subsystem ein. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden basiert auf der Spezifikation AUTOSAR AP R25-11 des Moduls Raw Data Stream (rds) und wurde automatisiert erstellt.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -292,9 +357,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>03501c233e7b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>34ffc7c706f6…</code></div>
               <div><strong>Konstituierende Records:</strong> 5</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 5</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -351,7 +416,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">5 von 5 Elementen angezeigt</span>
+              <span id="dossier-visible-count">10 von 10 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -367,11 +432,11 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (5 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
           </div>
         </div>
 
@@ -430,4 +495,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90306","k":"variable","d":"RDS","t":"variable mac_address [SWS_RDS_90306] std::uint16_t ntscf_data_length; 118 of 185 Document ID 1098: AUTOSAR_AP_SWS_RawDataStream Specification of Raw Data Stream AUTOSAR AP R25-11 Protected IEEE 1722 datagram field mac_address. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"mac_address"},{"i":"SWS_RDS_90308","k":"variable","d":"RDS","t":"variable ntscf_data_length [SWS_RDS_90308] ara::core::Optional\u003cstd::uint64_t> mac_address; Protected IEEE 1722 datagram field ntscf_data_length. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"ntscf_data_length"},{"i":"SWS_RDS_90307","k":"variable","d":"RDS","t":"variable sequenceNum [SWS_RDS_90307] ara::core::Optional\u003cstd::uint8_t> sequenceNum; Protected IEEE 1722 datagram field sequenceNum. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"sequenceNum"},{"i":"SWS_RDS_90309","k":"variable","d":"RDS","t":"variable unique_id [SWS_RDS_90309] ara::core::Optional\u003cstd::uint64_t> unique_id; Protected IEEE 1722 datagram field unique_id. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"unique_id"},{"i":"SWS_RDS_90310","k":"function","d":"RDS","t":"function ~IEEE1722DatagramNTSCF [SWS_RDS_90310] ~IEEE1722DatagramNTSCF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono","n":"~IEEE1722DatagramNTSCF"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/76ec3d2025b60eaf.json?v=8c7367e0" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90306","k":"variable","d":"RDS","t":"variable mac_address [SWS_RDS_90306] std::uint16_t ntscf_data_length; 118 of 185 Document ID 1098: AUTOSAR_AP_SWS_RawDataStream Specification of Raw Data Stream AUTOSAR AP R25-11 Protected IEEE 1722 datagram field mac_address. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"mac_address"},{"i":"SWS_RDS_90308","k":"variable","d":"RDS","t":"variable ntscf_data_length [SWS_RDS_90308] ara::core::Optional\u003cstd::uint64_t> mac_address; Protected IEEE 1722 datagram field ntscf_data_length. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"ntscf_data_length"},{"i":"SWS_RDS_90307","k":"variable","d":"RDS","t":"variable sequenceNum [SWS_RDS_90307] ara::core::Optional\u003cstd::uint8_t> sequenceNum; Protected IEEE 1722 datagram field sequenceNum. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"sequenceNum"},{"i":"SWS_RDS_90309","k":"variable","d":"RDS","t":"variable unique_id [SWS_RDS_90309] ara::core::Optional\u003cstd::uint64_t> unique_id; Protected IEEE 1722 datagram field unique_id. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono Zugriff protected","n":"unique_id"},{"i":"SWS_RDS_90310","k":"function","d":"RDS","t":"function ~IEEE1722DatagramNTSCF [SWS_RDS_90310] ~IEEE1722DatagramNTSCF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramNTSCF class mono","n":"~IEEE1722DatagramNTSCF"}],"inbound":[{"i":"SNIP_rds_SWS_RDS_90306","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90306] std::uint16_t ntscf_data_length; 118 of 185 Document ID 1098: AUTOSAR_AP_SWS_RawDataStream Specification of Raw Data Stream AUTOSAR AP R25-11\nProtected IEEE 1722 datagram field mac_address."},{"i":"SNIP_rds_SWS_RDS_90307","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90307] ara::core::Optional\u003cstd::uint8_t> sequenceNum;\nProtected IEEE 1722 datagram field sequenceNum."},{"i":"SNIP_rds_SWS_RDS_90308","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90308] ara::core::Optional\u003cstd::uint64_t> mac_address;\nProtected IEEE 1722 datagram field ntscf_data_length."},{"i":"SNIP_rds_SWS_RDS_90309","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90309] ara::core::Optional\u003cstd::uint64_t> unique_id;\nProtected IEEE 1722 datagram field unique_id."},{"i":"SNIP_rds_SWS_RDS_90310","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90310] ~IEEE1722DatagramNTSCF() noexcept;\nVirtual destructor of the IEEE 1722 datagram type."}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/76ec3d2025b60eaf.json?v=631be9dd" data-total="5" data-new="0" data-figures="0" data-used="5"></script></dialog>

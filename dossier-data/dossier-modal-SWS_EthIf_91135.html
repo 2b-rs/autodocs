@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91135" class="dossier-modal dossier-workbench" data-dossier-sha="2cfaefcb863881e9" aria-labelledby="dossier-modal-SWS_EthIf_91135-title">
+<dialog id="dossier-modal-SWS_EthIf_91135" class="dossier-modal dossier-workbench" data-dossier-sha="dd31b4c635404606" aria-labelledby="dossier-modal-SWS_EthIf_91135-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91135-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91135)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,573 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,028 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SwitchPortGetMaxFIFOBufferFillLevel'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,35 +198,18 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="b2beb397328e7da215ee61b85dbb8117cdbca63df6357cbd45a90175e08d515e" data-trace-output="2cfaefcb863881e95af3fba5bb323be7bed4580a51e56a6aac9d837443e6f9ae" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c2027ddc769c4865d743fec49006acfb58a2c3bd58393a7cafc3e2b5b80893f2" data-trace-output="dd31b4c635404606a57bf1329a1d075219ac3da0dde8415c447ba77563ad3a86" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermittelt asynchron den maximalen FIFO-Pufferfüllstand eines Ethernet-Switch-Ports seit dem letzten Auslesen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;EthIf_SwitchPortGetMaxFIFOBufferFillLevel&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;) is provided via the header &lt;code&gt;EthIf.h&lt;/code&gt; and can be called, for example, by a Complex Device Driver (CDD). It reads the maximum memory occupancy of the egress FIFO buffer (in bytes) since the previous read operation for the addressed Ethernet switch port. According to the specification, the function call is asynchronous (&lt;code&gt;Asynchronous&lt;/code&gt;).
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;SwitchPortIdx&lt;/code&gt;: Index of the Ethernet switch in the context of the Ethernet Switch Driver.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;PortIdx&lt;/code&gt;: Index of the egress port on the addressed Ethernet switch.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;SwitchPortEgressFifoIdx&lt;/code&gt;: Index of the egress FIFO of the addressed Ethernet switch port.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;SwitchPortEgressFifoBufferLevelPtr&lt;/code&gt;: Pointer to the memory location where the maximum buffer occupancy (in bytes) is stored.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    As return value, the function returns &lt;code&gt;E_OK&lt;/code&gt; upon successful execution or &lt;code&gt;E_NOT_OK&lt;/code&gt; if the maximum FIFO buffer fill level could not be determined (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Special Cases&lt;/h4&gt;
-  &lt;p&gt;
-    If the underlying hardware of the Ethernet switch does not support port-based detection of the maximum FIFO buffer fill level, the value at the memory location &lt;code&gt;SwitchPortEgressFifoBufferLevelPtr&lt;/code&gt; is set to &lt;code&gt;0xFFFFFFFF&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Concurrency and Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    The call is reentrant for different switch and port indices; for the same switch and port index, the function is specified as non-reentrant (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    In conjunction with the driver layers, &lt;code&gt;EthIf_SwitchPortGetMaxFIFOBufferFillLevel&lt;/code&gt; forwards the request directly to the function &lt;code&gt;EthSwt_GetMaxFIFOBufferFillLevel&lt;/code&gt; of the responsible Ethernet Switch Driver (&lt;code&gt;EthIfSwitchIdx&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00472" href="../../spec/record.html?id=SWS_EthIf_00472"&gt;[SWS_EthIf_00472]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was automatically generated based on the specification data.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufruf&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EthIf_SwitchPortGetMaxFIFOBufferFillLevel&lt;/code&gt; ermittelt den maximal allokierten FIFO-Pufferspeicher (in Bytes) seit dem letzten Lesezugriff für einen bestimmten Egress-Port eines Ethernet-Switches &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;. Der Aufruf kann beispielsweise durch einen Complex Device Driver (CDD) erfolgen &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;. Zur Adressierung werden der Switch-Index (&lt;code&gt;SwitchPortIdx&lt;/code&gt;), der Port-Index (&lt;code&gt;PortIdx&lt;/code&gt;) und der FIFO-Index (&lt;code&gt;SwitchPortEgressFifoIdx&lt;/code&gt;) übergeben. Der ermittelte Füllstand wird in den Speicherbereich geschrieben, auf den &lt;code&gt;SwitchPortEgressFifoBufferLevelPtr&lt;/code&gt; verweist &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Ausführung&lt;/h4&gt;
+&lt;p&gt;Die Funktion besitzt eine asynchrone Ausführungssemantik &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;. Sie ist reentrant für unterschiedliche Switch- und Port-Indizes, darf jedoch für dieselbe Kombination aus &lt;code&gt;SwitchPortIdx&lt;/code&gt; und &lt;code&gt;PortIdx&lt;/code&gt; nicht nebenläufig aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;. Wegen der asynchronen Semantik bei gleichzeitiger Zeigerübergabe dürfte der referenzierte Speicherbereich für das Ergebnis bis zum Abschluss der Operation gültig bleiben müssen.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Treiber-Interaktion&lt;/h4&gt;
+&lt;p&gt;Bei erfolgreichem Abruf liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; zurück, andernfalls &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;. Falls die Switch-Hardware die portbasierte Ermittlung des maximalen FIFO-Pufferfüllstands nicht unterstützt, wird der Wert an der Zieladresse &lt;code&gt;SwitchPortEgressFifoBufferLevelPtr&lt;/code&gt; auf &lt;code&gt;0xFFFFFFFF&lt;/code&gt; gesetzt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91135" href="../../spec/record.html?id=SWS_EthIf_91135"&gt;[SWS_EthIf_91135]&lt;/a&gt;. Das Modul leitet den Aufruf zur weiteren Ausführung an die Treiberfunktion &lt;code&gt;EthSwt_GetMaxFIFOBufferFillLevel&lt;/code&gt; des zugeordneten Ethernet-Switch-Treibers weiter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00472" href="../../spec/record.html?id=SWS_EthIf_00472"&gt;[SWS_EthIf_00472]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Puffergültigkeit – Begründung: Aus der asynchronen Signatur mit Ausgabepointer folgt vermutlich die Notwendigkeit, den Puffer bis zum Abschluss der Abfrage bereitzuhalten. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -248,7 +249,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>b2beb397328e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c2027ddc769c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

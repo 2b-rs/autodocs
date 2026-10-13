@@ -1,19 +1,12 @@
 {
  "annahmen": [
   "Text:",
-  "1) FrIf bildet FrIf_SetTransceiverMode/FrIf_GetTransceiverWUReason auf die gleichnamigen FrTrcv-Dienste ab – Begründung: Fig. 9.1 zeigt FrIf als Aufrufer von FrTrcv_SetTransceiverMode, die FrSM-Abläufe nutzen FrIf-Dienste mit gleicher Bedeutung, eine explizite Abbildung fehlt im Payload.",
-  "2) Die Konfigurationsstruktur aus R23-11 ff. (FrTrcvGeneral/FrTrcvChannel/FrTrcvAccess) gilt im Kern auch für R20-11 – Begründung: Für R20-11 liegt keine Konfigurationsdokumentstelle vor.",
-  "3) Die Meldung durch FrTrcv_CheckWakeupByTransceiver betrifft die von FrTrcv_MainFunction gespeicherten Weckereignisse – Begründung: Beide Aussagen stehen getrennt in der Spezifikation, ihr Zusammenhang ist nicht ausdrücklich formuliert. | diag-kontext:",
-  "1) wie Text-Annahme 1. | diag-standby:",
-  "1) Reihenfolge von Wartezeit und ICU-Freigabe innerhalb des STANDBY-Übergangs – Begründung: Das Schaubild zeigt nur Dio-Zugriffe, Wartezeit und ICU-Freigabe stammen aus eigenständigen Requirements. | diag-wakeup:",
-  "1) FrIf als Aufrufer von GetTransceiverWUReason/ClearTransceiverWakeup – Begründung: Die Spezifikation nennt nur „höhere Schicht“.",
-  "2) Die Meldung an EcuM erfolgt nur bei gespeichertem Ereignis – Begründung: wie Text-Annahme 3. | diag-dualwakeup:",
-  "1) wie Text-Annahme 1.",
-  "2) Die Kanalwahl für SetWakeupChannel hängt von den abgefragten Weckgründen ab – Begründung: Die Reihenfolge der FrSM-Schaubilder ist im Payload nur bruchstückhaft lesbar. | diag-fehlerpruefung:",
-  "1) Nach FRTRCV_E_UNINIT bzw. FRTRCV_E_PARAM_POINTER endet der Aufruf mit E_NOT_OK ohne Wirkung – Begründung: Der Rückgabewert ist nur für Indexfehler und Zustandswechselfehler belegt.",
-  "2) Prüfreihenfolge Init → Zeiger → Index → Hardware – Begründung: Die Spezifikation legt keine Reihenfolge fest. | diag-konfiguration:",
-  "1) wie Text-Annahme 2.",
-  "2) FrTrcvIcuChannelRef ist dem Kanal-Container zugeordnet – Begründung: Das Requirement nennt den Parameter, aber nicht seinen Container."
+  "1) EcuM ruft FrTrcv_Init innerhalb der Initialisierungssequenz auf – Begründung: Die Dokumentstelle S. 37 verweist auf die EcuM-Restart-Regel und die Init-Sequenz des Stacks, nennt aber keinen Aufrufer.",
+  "2) FrIf vermittelt die Aufrufe von FrSM an FrTrcv – Begründung: FrSM nutzt FrIf_GetTransceiverWUReason, und Fr_GeneralTypes ist zur Einbindung in FrIf vorgesehen.",
+  "3) EcuM stößt FrTrcv_CheckWakeupByTransceiver an – Begründung: Der Treiber meldet nach diesem Aufruf an EcuM, der Aufrufer selbst ist im Payload nicht genannt. Diagramm diag-modi:",
+  "1) Die Kanten zwischen den ACTIVE-Modi sind rekonstruiert – Begründung: Die Bildtexte der Abb. 7.1 sind abgeschnitten. Diagramm diag-zweig:",
+  "1) Die Entscheidung über Abschalten und Freigabe trifft die aufrufende Schicht – Begründung: Die Spezifikation definiert nur die Dienste. Diagramm diag-pruefung:",
+  "1) Die Reihenfolge der Prüfungen ist dargestellt, nicht spezifiziert – Begründung: Der Payload nennt nur die Fehlercodes."
  ],
  "diagrams": [
   {
@@ -23,8 +16,13 @@
   },
   {
    "art": "dot",
-   "id": "diag-zustand",
-   "quelle": "anchor_r20_11.diag-zustand.dot"
+   "id": "diag-modi",
+   "quelle": "anchor_r20_11.diag-modi.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-hochlauf",
+   "quelle": "anchor_r20_11.diag-hochlauf.seq.json"
   },
   {
    "art": "seq",
@@ -33,23 +31,23 @@
   },
   {
    "art": "seq",
-   "id": "diag-wakeup",
-   "quelle": "anchor_r20_11.diag-wakeup.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-dualwakeup",
-   "quelle": "anchor_r20_11.diag-dualwakeup.seq.json"
+   "id": "diag-wecken",
+   "quelle": "anchor_r20_11.diag-wecken.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-konfiguration",
-   "quelle": "anchor_r20_11.diag-konfiguration.dot"
+   "id": "diag-zweig",
+   "quelle": "anchor_r20_11.diag-zweig.dot"
   },
   {
    "art": "dot",
-   "id": "diag-fehlerpruefung",
-   "quelle": "anchor_r20_11.diag-fehlerpruefung.dot"
+   "id": "diag-pruefung",
+   "quelle": "anchor_r20_11.diag-pruefung.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-dem",
+   "quelle": "anchor_r20_11.diag-dem.dot"
   }
  ],
  "fragment": "content/ai/classic/modules/frtrcv/anchor_r20_11.html",
@@ -57,35 +55,79 @@
   "ausgelassen": {
    "budget": [],
    "dublette": {
-    "SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver": "SNIP_CLASSIC_FRTRCV_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver",
-    "SNIP_CLASSIC_FRTRCV_SECTION_8_3_1_FrTrcv_Init": "SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init"
+    "SNIP_CLASSIC_FRTRCV_SECTION_8_3_1_FrTrcv_Init": "SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init",
+    "SNIP_CLASSIC_FRTRCV_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver": "SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver"
    },
    "inhaltsverzeichnis": [],
    "ohne_inhalt": [
-    "SNIP_CLASSIC_FRTRCV_SECTION_8_4_Callback_notifications",
-    "SNIP_det_AUTOSAR_SWS_Flex_P100_273",
-    "SNIP_det_AUTOSAR_SWS_Flex_P23_307",
-    "SNIP_det_AUTOSAR_SWS_Flex_P26_308",
-    "SNIP_det_AUTOSAR_SWS_Flex_P26_309",
-    "SNIP_det_AUTOSAR_SWS_Flex_P28_311",
-    "SNIP_det_AUTOSAR_SWS_Flex_P33_316",
-    "SNIP_det_AUTOSAR_SWS_Flex_P33_317",
-    "SNIP_det_AUTOSAR_SWS_Flex_P34_318",
-    "SNIP_det_AUTOSAR_SWS_Flex_P36_322",
-    "SNIP_det_AUTOSAR_SWS_Flex_P36_323",
-    "SNIP_det_AUTOSAR_SWS_Flex_P47_333",
-    "SNIP_det_AUTOSAR_SWS_Flex_P52_336"
+    "SNIP_CLASSIC_FRTRCV_SECTION_8_4_Callback_notifications"
    ],
    "ohne_text": []
   },
-  "im_prompt": 36,
-  "im_prompt_schaubilder": 8,
-  "kandidaten": 51,
+  "im_prompt": 25,
+  "im_prompt_schaubilder": 2,
+  "kandidaten": 28,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "cbb74f60b37b26e3e89a4f2e057a4235ab6908b5643109041bc8542549af2c02",
- "output_store": "ai/store/outputs/cb/cbb74f60b37b26e3e89a4f2e057a4235ab6908b5643109041bc8542549af2c02.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-modi"
+  ],
+  "oneliner_chars": 102,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 74,
+   "3": 295,
+   "4": 1540
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_5_FrTrcv_GetVersionInfo: SWS_FlexRayTransceiverDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-3d07e06aacfb4684: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_2_3_FrTrcv_TrcvWUReasonType: SWS_FlexRayTransceiverDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_2_FrTrcv_SetTransceiverMode: SWS_FlexRayTransceiverDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init: SWS_FlexRayTransceiverDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_2_FrTrcv_SetTransceiverMode: SWS_FlexRayTransceiverDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_5_1_FrTrcv_MainFunction: SWS_FlexRayTransceiverDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_5_1_FrTrcv_MainFunction: SWS_FlexRayTransceiverDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver: SWS_FlexRayTransceiverDriver S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_4_FrTrcv_GetTransceiverWUReason: SWS_FlexRayTransceiverDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_2_3_FrTrcv_TrcvWUReasonType: SWS_FlexRayTransceiverDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_6_FrTrcv_ClearTransceiverWakeup: SWS_FlexRayTransceiverDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver: SWS_FlexRayTransceiverDriver S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_8_6_3_Configurable_interfaces_FLEXRAYTRANSCEIVERDRIVER: SWS_FlexRayTransceiverDriver S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_8_FrTrcv_GetTransceiverError: SWS_FlexRayTransceiverDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_9_FrTrcv_DisableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_10_FrTrcv_EnableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 51 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_9_FrTrcv_DisableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_10_FrTrcv_EnableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 51 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_10_2_2_FrTrcv: SWS_FlexRayTransceiverDriver S. 59 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-3d07e06aacfb4684: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_8_6_3_Configurable_interfaces_FLEXRAYTRANSCEIVERDRIVER: SWS_FlexRayTransceiverDriver S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_9_FrTrcv_DisableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_5_FrTrcv_GetVersionInfo: SWS_FlexRayTransceiverDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_3_FrTrcv_GetTransceiverMode: SWS_FlexRayTransceiverDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_8_FrTrcv_GetTransceiverError: SWS_FlexRayTransceiverDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_7_4_5_2_FRTRCV_E_FR_BUSERROR_TRCV__TrcvIdx: SWS_FlexRayTransceiverDriver S. 26 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_2_FrTrcv_SetTransceiverMode: SWS_FlexRayTransceiverDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init: SWS_FlexRayTransceiverDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-3d07e06aacfb4684: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver: SWS_FlexRayTransceiverDriver S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "ceaf250681f146c01a89374dcbe8a1dbcc20d68a7c3e7076c9f5287868646192",
+ "output_store": "ai/store/outputs/ce/ceaf250681f146c01a89374dcbe8a1dbcc20d68a7c3e7076c9f5287868646192.html",
  "params": {
   "module": "frtrcv",
   "platform": "classic",
@@ -114,9 +156,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "506114d84dd83ca0d7bbc1eb784f8e8b99087799a1adbc8433b801493a0c9aea",
- "prompt_store": "ai/store/prompts/50/506114d84dd83ca0d7bbc1eb784f8e8b99087799a1adbc8433b801493a0c9aea.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "d2a3c22cd47ce4748e54092ca935acb6aadd8eafd6d0ff66f10e7d825b0f7fc2",
+ "prompt_store": "ai/store/prompts/d2/d2a3c22cd47ce4748e54092ca935acb6aadd8eafd6d0ff66f10e7d825b0f7fc2.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -129,14 +171,56 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.055772,
-   "cost_usd_reported": 1.055772,
-   "created_at": "2026-10-09T07:08:24Z",
-   "duration_api_seconds": 340.328,
-   "duration_seconds": 340.408,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.038424,
+   "cost_usd_reported": 1.038424,
+   "created_at": "2026-10-13T02:57:38Z",
+   "duration_api_seconds": 337.486,
+   "duration_seconds": 340.097,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_5_FrTrcv_GetVersionInfo: SWS_FlexRayTransceiverDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-3d07e06aacfb4684: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_2_3_FrTrcv_TrcvWUReasonType: SWS_FlexRayTransceiverDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_2_FrTrcv_SetTransceiverMode: SWS_FlexRayTransceiverDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init: SWS_FlexRayTransceiverDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_2_FrTrcv_SetTransceiverMode: SWS_FlexRayTransceiverDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_5_1_FrTrcv_MainFunction: SWS_FlexRayTransceiverDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_5_1_FrTrcv_MainFunction: SWS_FlexRayTransceiverDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver: SWS_FlexRayTransceiverDriver S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_4_FrTrcv_GetTransceiverWUReason: SWS_FlexRayTransceiverDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_2_3_FrTrcv_TrcvWUReasonType: SWS_FlexRayTransceiverDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_6_FrTrcv_ClearTransceiverWakeup: SWS_FlexRayTransceiverDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver: SWS_FlexRayTransceiverDriver S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_8_6_3_Configurable_interfaces_FLEXRAYTRANSCEIVERDRIVER: SWS_FlexRayTransceiverDriver S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_8_FrTrcv_GetTransceiverError: SWS_FlexRayTransceiverDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_9_FrTrcv_DisableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_10_FrTrcv_EnableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 51 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_9_FrTrcv_DisableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_10_FrTrcv_EnableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 51 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_10_2_2_FrTrcv: SWS_FlexRayTransceiverDriver S. 59 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-3d07e06aacfb4684: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_8_6_3_Configurable_interfaces_FLEXRAYTRANSCEIVERDRIVER: SWS_FlexRayTransceiverDriver S. 52 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_9_FrTrcv_DisableTransceiverBranch: SWS_FlexRayTransceiverDriver S. 50 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_5_FrTrcv_GetVersionInfo: SWS_FlexRayTransceiverDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_3_FrTrcv_GetTransceiverMode: SWS_FlexRayTransceiverDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_8_FrTrcv_GetTransceiverError: SWS_FlexRayTransceiverDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DEM_SECTION_7_4_5_2_FRTRCV_E_FR_BUSERROR_TRCV__TrcvIdx: SWS_FlexRayTransceiverDriver S. 26 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRTRCV_SECTION_8_3_2_FrTrcv_SetTransceiverMode: SWS_FlexRayTransceiverDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_1_FrTrcv_Init: SWS_FlexRayTransceiverDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-3d07e06aacfb4684: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_PLATFORM_SECTION_7_3_5_Conditions: SWS_FlexRayStateManager S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-63e172ffa18e0e7b: AUTOSAR_CP_SWS_FlexRayTransceiverDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_ECUM_SECTION_8_3_7_FrTrcv_CheckWakeupByTransceiver: SWS_FlexRayTransceiverDriver S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -145,19 +229,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.055772,
-     "inputTokens": 41823,
+     "costUSD": 1.038424,
+     "inputTokens": 33446,
      "maxOutputTokens": 128000,
-     "outputTokens": 44424,
+     "outputTokens": 45232,
      "provider": "firstParty",
-     "thinkingTokens": 22282,
+     "thinkingTokens": 21614,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "68183357-69f3-4ce5-ba9a-b4ef4942ea44",
+   "run_id": "754ad69f-113e-4740-ad71-38b5753e5e14",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/68183357-69f3-4ce5-ba9a-b4ef4942ea44.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/754ad69f-113e-4740-ad71-38b5753e5e14.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -166,11 +250,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 41823,
-    "output_tokens": 44424,
+    "inference_geo": "global",
+    "input_tokens": 33446,
+    "output_tokens": 45232,
     "output_tokens_details": {
-     "thinking_tokens": 22282
+     "thinking_tokens": 21614
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -182,11 +266,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 41823,
-    "output": 44424,
-    "thinking": 22282
+    "input_uncached": 33446,
+    "output": 45232,
+    "thinking": 21614
    },
-   "wall_seconds": 342.175
+   "wall_seconds": 341.443
   }
  ],
  "schema": "ai-trace@2",

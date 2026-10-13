@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_std_hash_ara_core_Monostate_a73c80" class="dossier-modal dossier-workbench" data-dossier-sha="9b9c4f01fb7616f8" aria-labelledby="dossier-modal-cl_std_hash_ara_core_Monostate_a73c80-title">
+<dialog id="dossier-modal-cl_std_hash_ara_core_Monostate_a73c80" class="dossier-modal dossier-workbench" data-dossier-sha="00458072da538b35" aria-labelledby="dossier-modal-cl_std_hash_ara_core_Monostate_a73c80-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_std_hash_ara_core_Monostate_a73c80-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_std_hash_ara_core_Monostate_a73c80)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,682 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,205 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'std::hash&lt; ara::core::Monostate &gt;' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_std_hash_ara_core_Monostate_a73c80",
@@ -208,53 +227,33 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="9e4c595ea8de4a856e79d6fdd339093bee036df5234429e9201baf93575b5cae" data-trace-output="9b9c4f01fb7616f8a7aea88384248da6858689337a6d1429b61620c124f5d785" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="519ee200bb6259e45e1ba87fcae4ea0a2112b2e0b52dd0d26770b00a49d5f4c9" data-trace-output="00458072da538b350f65a02483c4283c3dc230152c3920a67ed415818cf45c9a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die Berechnung eines Hashwerts für leere Zustände zur Verwendung in assoziativen Hash-Containern." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-Template specialization &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; provides the hashing functionality for the utility type &lt;code&gt;ara::core::Monostate&lt;/code&gt; within module &lt;code&gt;core&lt;/code&gt; of the AUTOSAR Adaptive Platform &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. In modern C++ architectures, class template &lt;code&gt;std::hash&lt;/code&gt; serves as a standardized mechanism for calculating hash values, which are needed in particular for placing and retrieving keys in unordered associative containers. The specification anchors this specialization via header file &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;, coupling it directly to the type system of &lt;code&gt;ara::core::Variant&lt;/code&gt; and the associated helper classes.
-&lt;/p&gt;
-&lt;p&gt;
-Base type &lt;code&gt;ara::core::Monostate&lt;/code&gt; acts as the central interaction partner and is passed as an argument to the function call operator &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. In addition, the specialization typically interacts with generic data structures of the C++ standard library or the AUTOSAR runtime environment, such as unordered hash sets or hash tables (Interpretation: Providing the specialization is likely intended primarily to enable seamless embedding of &lt;code&gt;ara::core::Monostate&lt;/code&gt; into generic hash-based data structures and the calculation of composite hash values for &lt;code&gt;ara::core::Variant&lt;/code&gt;).
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die Berechnung eines Hashwerts für leere Zustände zur Verwendung in assoziativen Hash-Containern.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; stellt ein standardkonformes Funktionsobjekt zur Berechnung von Hashwerten für &lt;code&gt;ara::core::Monostate&lt;/code&gt; bereit &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Über den Aufrufoperator &lt;code&gt;operator()&lt;/code&gt; nimmt die Struktur eine konstante Referenz auf ein Monostate-Objekt entgegen und liefert den zugehörigen Hashwert als &lt;code&gt;size_t&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Interpretation: Da das Monostate-Objekt keinen internen Zustand besitzt, dürfte für jede Instanz ein einheitlicher, deterministischer Wert ermittelt werden. Als zentrale Randbedingung ist die Operation als &lt;code&gt;noexcept&lt;/code&gt; sowie ausnahmesicher spezifiziert und schließt Laufzeitfehler vollständig aus.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Template-Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; stellt das funktionale Bindeglied zwischen dem AUTOSAR-Adaptive-Basistyp &lt;code&gt;ara::core::Monostate&lt;/code&gt; und der Standard-Hashing-Infrastruktur dar &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; dient &lt;code&gt;ara::core::Monostate&lt;/code&gt; zur Repräsentation eines leeren Zustands, beispielsweise als alternativer Typ in Varianten. Um derartige Typen nahtlos in assoziativen Hash-Containern oder generischen Hashing-Algorithmen verwenden zu können, definiert die Spezifikation eine explizite Spezialisierung der Standard-Funktorklasse &lt;code&gt;std::hash&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Bereitgestellt wird die Struktur über die Header-Datei &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Als Hashing-Funktionsobjekt interagiert die Spezialisierung vorrangig mit generischen Container-Implementierungen wie Hashtabellen sowie mit Instanzen von &lt;code&gt;ara::core::Monostate&lt;/code&gt;. Durch die Einhaltung der Schnittstellenkonventionen der C++-Standardbibliothek fungiert sie als Adapter, der den einheitlichen Zugriff auf Hashwerte auch für zustandslose Komponenten sicherstellt &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-Function object &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; follows the usual semantics of C++ functors. It encapsulates no state and possesses no persistent internal data fields that would need to be managed across its lifetime. Instances of the structure can be created on the stack or inside container instances as needed and destroyed after completion of the hash calculation without deallocation or cleanup logic. Direct use via temporary anonymous objects is likewise common practice.
-&lt;/p&gt;
-&lt;p&gt;
-Regarding concurrency and thread safety, method &lt;code&gt;operator()&lt;/code&gt; is explicitly declared as &lt;code&gt;const&lt;/code&gt; and &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Because no modifications are made to the functor instance or to the passed argument during the calculation, execution is fully reentrant (Interpretation: The function object is stateless, and concurrent calls to &lt;code&gt;operator()&lt;/code&gt; from multiple concurrent threads may execute in parallel without additional synchronization measures).
-&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; ist als reguläres Funktionsobjekt konzipiert &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Da sie für die Berechnung des Hashwerts keine instanzspezifischen Daten benötigt, besitzt sie keinen eigenen veränderlichen Zustand. Die Erzeugung und Zerstörung von Instanzen der Spezialisierung erfordert keine besonderen Vorkehrungen und verursacht keinen dynamischen Speicheraufwand.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit und des Besitzverhältnisses ist das Funktionsobjekt vollständig zustandslos. Der Funktionsaufruf-Operator &lt;code&gt;operator()&lt;/code&gt; ist als &lt;code&gt;const&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Dies bedeutet, dass dieselbe Instanz gefahrlos und nebenläufig von mehreren Ausführungskontexten oder Threads parallel verwendet werden kann. Es bestehen keine exklusiven Besitzansprüche an den übergebenen Monostate-Objekten, da diese lediglich über eine konstante Referenz eingelesen werden &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The typical usage path is divided into the following sub-steps:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Header inclusion:&lt;/strong&gt; The application or library includes header &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt; to make the declaration of &lt;code&gt;ara::core::Monostate&lt;/code&gt; and the corresponding hash specialization available.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Object provision:&lt;/strong&gt; An instance of &lt;code&gt;ara::core::Monostate&lt;/code&gt; is available, for example as an empty placeholder state within a variant data structure.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Functor instantiation and invocation:&lt;/strong&gt; Hash operator &lt;code&gt;operator()&lt;/code&gt; is invoked with a const reference to the object (&lt;code&gt;ara::core::Monostate const &amp;amp;v&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Result processing:&lt;/strong&gt; The operator returns a hash value of type &lt;code&gt;size_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;, which can be used directly for addressing hash buckets or for hash combination.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-Because &lt;code&gt;ara::core::Monostate&lt;/code&gt; conceptually represents a type with exactly one discrete state, the behavior of the hash function is particularly deterministic (Interpretation: Because &lt;code&gt;ara::core::Monostate&lt;/code&gt; represents only a single state, the hash value returned by &lt;code&gt;operator()&lt;/code&gt; is likely a constant and identical value for all instances).
-&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad beginnt mit der Einbindung der Header-Datei &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt; in der jeweiligen Übersetzungseinheit. Sobald die Header-Datei inkludiert ist, steht die Spezialisierung automatisch im Namensraum &lt;code&gt;std&lt;/code&gt; zur Verfügung und wird von Hash-basierten Datenstrukturen bei Bedarf aufgelöst.&lt;/p&gt;
+&lt;p&gt;Die eigentliche Ausführung erfolgt über den überladenen Funktionsaufruf-Operator &lt;code&gt;operator()&lt;/code&gt;, welcher eine konstante Referenz auf ein &lt;code&gt;ara::core::Monostate&lt;/code&gt;-Objekt entgegennimmt &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;: &lt;code&gt;size_t operator() (ara::core::Monostate const &amp;amp;v) const noexcept;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Als Ergebnis liefert der Aufruf einen numerischen Hashwert vom Typ &lt;code&gt;size_t&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Interpretation: Da &lt;code&gt;ara::core::Monostate&lt;/code&gt; definitionsgemäß keinen variablen Zustand trägt, dürfte die Funktion für alle übergebenen Instanzen einen identischen, deterministischen Hashwert berechnen. In der Praxis geschieht dieser Aufruf meist transparent im Rahmen von Lookup- oder Einfügeoperationen übergeordneter Datenstrukturen.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-With regard to potential error scenarios, &lt;code&gt;std::hash&amp;lt;ara::core::Monostate&amp;gt;&lt;/code&gt; is characterized by strict error-freedom and robustness. The signature of &lt;code&gt;operator()&lt;/code&gt; is provided with specifier &lt;code&gt;noexcept&lt;/code&gt; and classified as exception safe according to the specification &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-This yields the following properties for the interface:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;No exceptions:&lt;/strong&gt; The invocation guarantees the complete absence of C++ exceptions. Neither allocation errors nor functional exceptions can occur during execution.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;No error codes:&lt;/strong&gt; The interface uses no return codes (such as &lt;code&gt;ara::core::Result&lt;/code&gt; or &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;), because the calculation of a hash value for a valid &lt;code&gt;ara::core::Monostate&lt;/code&gt; object always completes successfully.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Pre- and postconditions:&lt;/strong&gt; Passing a syntactically valid reference to a &lt;code&gt;ara::core::Monostate&lt;/code&gt; instance &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt; suffices as a precondition. Because the type cannot adopt an invalid internal state, no erroneous input data exists. As a postcondition, it is guaranteed that a reproducible value of type &lt;code&gt;size_t&lt;/code&gt; is always returned &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;!-- annahmen: 1) Die Spezialisierung dürfte primär der nahtlosen Einbettung in generische C++-Hash-Container und der Hash-Berechnung für ara::core::Variant dienen – Begründung: Der Header ara/core/variant.h verknüpft Monostate eng mit Variant, wo Monostate typischerweise als leerer Alternativtyp fungiert. 2) Das Funktionsobjekt ist zustandslos und Aufrufe dürfen parallel ohne Synchronisation erfolgen – Begründung: operator() ist const noexcept und std::hash-Spezialisierungen besitzen im C++-Standard üblicherweise keine veränderlichen Member. 3) Der gelieferte Hash-Wert dürfte für alle Instanzen identisch sein – Begründung: ara::core::Monostate repräsentiert als Ein-Zustands-Typ stets denselben Zustand. --&gt;
-&lt;p class="ai-note"&gt;This class guide was generated automatically based on the AUTOSAR specification for the Adaptive Platform (Release R25-11).&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Spezifikation legt für die Methode &lt;code&gt;operator()&lt;/code&gt; ein striktes Verhalten bezüglich Ausnahmen und Robustheit fest: Der Operator ist mit dem Spezifizierer &lt;code&gt;noexcept&lt;/code&gt; deklariert und explizit als ausnahmesicher (&lt;em&gt;exception safe&lt;/em&gt;) klassifiziert &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Dies garantiert, dass während des Hashing-Vorgangs unter keinen Umständen C++-Exceptions geworfen werden.&lt;/p&gt;
+&lt;p&gt;Spezifische Fehlercodes, Rückgabewerte zur Fehlersignalisierung oder Vorbedingungen jenseits einer syntaktisch gültigen Objektreferenz existieren nicht &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;. Der Aufruf kann daher niemals fehlschlagen. Nachbedingung des Aufrufs ist stets die erfolgreiche Bereitstellung eines ganzzahligen Hashwerts vom Typ &lt;code&gt;size_t&lt;/code&gt;, sodass Aufrufer keine Fallback- oder Fehlerbehandlungszweige implementieren müssen &lt;a class="spec-record-ref" data-req="SWS_CORE_01671" href="../spec/record.html?id=SWS_CORE_01671"&gt;[SWS_CORE_01671]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Da ara::core::Monostate keinen variablen Zustand trägt, dürfte der berechnete Hashwert für alle Instanzen ein deterministischer, konstanter Wert sein. – Begründung: ara::core::Monostate dient als zustandsloser Platzhaltertyp, wodurch alle Instanzen denselben Informationsgehalt aufweisen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Klassen-Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform Release R25-11 und dokumentiert die Anforderungen an die Hashing-Spezialisierung für Monostate.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -296,7 +295,7 @@ This yields the following properties for the interface:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9e4c595ea8de…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>519ee200bb62…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

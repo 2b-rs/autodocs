@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_DM_00763" class="dossier-modal dossier-workbench" data-dossier-sha="16fdcf0767a73107" aria-labelledby="dossier-modal-SWS_DM_00763-title">
+<dialog id="dossier-modal-SWS_DM_00763" class="dossier-modal dossier-workbench" data-dossier-sha="1494df815dec3d1e" aria-labelledby="dossier-modal-SWS_DM_00763-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_DM_00763-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_DM_00763)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,566 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,021 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für '~SecurityAccess'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [
@@ -204,20 +222,16 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="703e8ef5b040320f7d6d4dc09760ff5b0b998377fa5dd5363de1f4a731c5c4b8" data-trace-output="16fdcf0767a7310768617d40cfd8e52d27427f59250cb9fc6677a8221aa8ac96" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="34fedca7e76c1902b84084430510b6d812a700a2c8c9931ec01efcefcfa56bef" data-trace-output="1494df815dec3d1e6ec02706481431b44780113cf5d3ed17c4d448525fd9e917" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Gibt Instanzen für den Diagnose-Sicherheitszugriff synchron und ausnahmesicher frei, ist jedoch nicht threadsicher." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;The function &lt;code&gt;~SecurityAccess&lt;/code&gt; is the virtual destructor of class &lt;code&gt;ara::diag::SecurityAccess&lt;/code&gt; within the module Diagnostics (&lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;). It is described in document &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=511"&gt;AUTOSAR_AP_SWS_Diagnostics §8.24.2.1.1.3 “Destructor”&lt;/a&gt; and included via the header &lt;code&gt;#include &amp;quot;ara/diag/security_access.h&amp;quot;&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The destructor terminates the lifecycle of an instance of &lt;code&gt;ara::diag::SecurityAccess&lt;/code&gt; and releases its resources. The declaration as &lt;code&gt;virtual&lt;/code&gt; ensures that upon destruction of derived classes via a pointer to the base class, the destructors of the derived classes are invoked. Execution is synchronous; the function expects no input parameters and has no return value.&lt;/p&gt;
-
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;The specification declares the method as &lt;code&gt;noexcept&lt;/code&gt; and assigns it to the category &lt;em&gt;exception safe&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;). The destructor thus does not throw any exceptions. Specific error codes or notification mechanisms via DET or DEM are not provided for this destruction process.&lt;/p&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is explicitly specified as &lt;em&gt;not thread-safe&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;). It must not be executed concurrently with other method calls or accesses to the same instance of &lt;code&gt;ara::diag::SecurityAccess&lt;/code&gt;. Parallel accesses to the same instance during destruction must be excluded by the caller.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on AUTOSAR release R25-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der virtuelle Destruktor &lt;code&gt;~SecurityAccess&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt; beendet den Lebenszyklus einer Instanz der Service-Klasse &lt;code&gt;ara::diag::SecurityAccess&lt;/code&gt; im Modul Diagnostics &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=511"&gt;AUTOSAR_AP_SWS_Diagnostics §8.24.2.1.1.3 „Destructor“&lt;/a&gt;. Die Schnittstelle wird über den Header &lt;code&gt;#include "ara/diag/security_access.h"&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;. Die Ausführung erfolgt synchron, wobei die Funktion weder Übergabeparameter entgegennimmt noch einen Rückgabewert liefert &lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich der Fehlerbehandlung ist die Operation als &lt;code&gt;exception safe&lt;/code&gt; klassifiziert und mit &lt;code&gt;noexcept&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;. Sie löst folglich keine Exceptions aus. Spezifische Fehlercodes sowie Fehlermeldungen an Entwicklungs- oder Diagnose-Fehlermanager (DET oder DEM) sind für die Zerstörung des Objekts in der Spezifikation nicht vorgesehen &lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Bezüglich der Nebenläufigkeit ist die Funktion ausdrücklich als &lt;code&gt;not thread-safe&lt;/code&gt; eingestuft &lt;a class="spec-record-ref" data-req="SWS_DM_00763" href="../spec/record.html?id=SWS_DM_00763"&gt;[SWS_DM_00763]&lt;/a&gt;. Ein Zerstören des Objekts darf niemals zeitgleich mit Aufrufen anderer Methoden auf derselben Instanz erfolgen. Als Interpretation gilt: Es dürfte erforderlich sein, vor der Zerstörung alle laufenden Diagnose- und Sicherheitszugriffsaktivitäten dieser Instanz geordnet abzuschließen, da gleichzeitige Zugriffe zu undefiniertem Verhalten führen.&lt;/p&gt;
+  &lt;p&gt;Im Zusammenspiel mit der Plattform dient die Funktion der Realisierung der Upstream-Requirements RS_AP_00134 und RS_Diag_04005 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;amp;page=511"&gt;AUTOSAR_AP_SWS_Diagnostics §8.24.2.1.1.3 „Destructor“&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Es dürfte erforderlich sein, vor der Zerstörung alle laufenden Diagnose- und Sicherheitszugriffsaktivitäten dieser Instanz geordnet abzuschließen – Begründung: Die Schnittstelle ist als not thread-safe deklariert, Details zur Synchronisation vor der Objektzerstörung werden im Payload jedoch nicht ausgeführt. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Automatisch generierter Nutzungshinweis auf Basis der Spezifikation AUTOSAR Adaptive R25-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -257,9 +271,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>703e8ef5b040…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>34fedca7e76c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 4</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 4</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -395,4 +409,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_00763","k":"function","d":"AUTOSAR","t":"","n":"~SecurityAccess"}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P69_022","d":"AUTOSAR_AP_SWS_Diagnostics","p":69,"t":"[SWS_DM_00553] [SWS_DM_00584]\n[SWS_DM_00586] [SWS_DM_00588]\n[SWS_DM_00590] [SWS_DM_00635]\n[SWS_DM_00648] [SWS_DM_00665]\n[SWS_DM_00713] [SWS_DM_00723]\n[SWS_DM_00733] [SWS_DM_00743]\n[SWS_DM_00753] [SWS_DM_00763]\n[SWS_DM_00773] [SWS_DM_00788]\n[SWS_DM_00798] [SWS_DM_00807]\n[SWS_DM_00832] [SWS_DM_01365]\n[SWS_DM_01524] [SWS_DM_01706]\n[SWS_DM_01737] [SWS_DM_02090]\n[SWS_DM_02091] [SWS_DM_02092]\n[SWS_DM_02093] [SWS_DM_02151]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P74_036","d":"AUTOSAR_AP_SWS_Diagnostics","p":74,"t":"[SWS_DM_00103] [SWS_DM_00236]\n[SWS_DM_00270] [SWS_DM_00271]\n[SWS_DM_00272] [SWS_DM_00363]\n[SWS_DM_00421] [SWS_DM_00478]\n[SWS_DM_00479] [SWS_DM_00480]\n[SWS_DM_00507] [SWS_DM_00760]\n[SWS_DM_00761] [SWS_DM_00762]\n[SWS_DM_00763] [SWS_DM_00764]\n[SWS_DM_00765] [SWS_DM_00766]\n[SWS_DM_00767] [SWS_DM_00863]\n[SWS_DM_00864] [SWS_DM_01259]\n[SWS_DM_01260] [SWS_DM_01261]\n[SWS_DM_01758]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P511_834","d":"AUTOSAR_AP_SWS_Diagnostics","p":511,"t":"⌋\n8.24.2.1.1.3 Destructor\n[SWS_DM_00763] Definition of API function ara::diag::SecurityAc-\ncess::~SecurityAccess\nUpstream requirements:\nRS_AP_00134, RS_Diag_04005\n⌈"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P1111_2053","d":"AUTOSAR_AP_SWS_Diagnostics","p":1111,"t":"Definition of API function ara::diag::SecurityAccess::~SecurityAccess"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/afd06009db05a5e9.json?v=21fa8832" data-total="4" data-new="0" data-figures="0" data-used="4"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_DM_00763","k":"function","d":"AUTOSAR","t":"","n":"~SecurityAccess"}],"inbound":[{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P69_022","d":"AUTOSAR_AP_SWS_Diagnostics","p":69,"t":"[SWS_DM_00553] [SWS_DM_00584]\n[SWS_DM_00586] [SWS_DM_00588]\n[SWS_DM_00590] [SWS_DM_00635]\n[SWS_DM_00648] [SWS_DM_00665]\n[SWS_DM_00713] [SWS_DM_00723]\n[SWS_DM_00733] [SWS_DM_00743]\n[SWS_DM_00753] [SWS_DM_00763]\n[SWS_DM_00773] [SWS_DM_00788]\n[SWS_DM_00798] [SWS_DM_00807]\n[SWS_DM_00832] [SWS_DM_01365]\n[SWS_DM_01524] [SWS_DM_01706]\n[SWS_DM_01737] [SWS_DM_02090]\n[SWS_DM_02091] [SWS_DM_02092]\n[SWS_DM_02093] [SWS_DM_02151]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P74_036","d":"AUTOSAR_AP_SWS_Diagnostics","p":74,"t":"[SWS_DM_00103] [SWS_DM_00236]\n[SWS_DM_00270] [SWS_DM_00271]\n[SWS_DM_00272] [SWS_DM_00363]\n[SWS_DM_00421] [SWS_DM_00478]\n[SWS_DM_00479] [SWS_DM_00480]\n[SWS_DM_00507] [SWS_DM_00760]\n[SWS_DM_00761] [SWS_DM_00762]\n[SWS_DM_00763] [SWS_DM_00764]\n[SWS_DM_00765] [SWS_DM_00766]\n[SWS_DM_00767] [SWS_DM_00863]\n[SWS_DM_00864] [SWS_DM_01259]\n[SWS_DM_01260] [SWS_DM_01261]\n[SWS_DM_01758]"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P511_834","d":"AUTOSAR_AP_SWS_Diagnostics","p":511,"t":"⌋\n8.24.2.1.1.3 Destructor\n[SWS_DM_00763] Definition of API function ara::diag::SecurityAc-\ncess::~SecurityAccess\nUpstream requirements:\nRS_AP_00134, RS_Diag_04005\n⌈"},{"i":"SNIP_diag_AUTOSAR_AP_SWS_D_P1111_2053","d":"AUTOSAR_AP_SWS_Diagnostics","p":1111,"t":"Definition of API function ara::diag::SecurityAccess::~SecurityAccess"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/afd06009db05a5e9.json?v=cd7aa213" data-total="0" data-new="0" data-figures="0" data-used="4"></script></dialog>

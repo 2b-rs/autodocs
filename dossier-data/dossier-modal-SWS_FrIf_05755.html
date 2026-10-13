@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_FrIf_05755" class="dossier-modal dossier-workbench" data-dossier-sha="59670ac8b8e2f0a8" aria-labelledby="dossier-modal-SWS_FrIf_05755-title">
+<dialog id="dossier-modal-SWS_FrIf_05755" class="dossier-modal dossier-workbench" data-dossier-sha="159481adc2d575d3" aria-labelledby="dossier-modal-SWS_FrIf_05755-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_FrIf_05755-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_FrIf_05755)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,166 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,621 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'FrIf_StateType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,22 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="fc6b546af8243e800f0fc55023391e965e9146ab686efcad20867861e73153d5" data-trace-output="59670ac8b8e2f0a892b19182d2c0fbae4b1543d724d764e3a0d7a4762bf13ccd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d7aa755fda7e2d50327d4e1fbcdd6600ab4c720c6a23504075081111550f9d3a" data-trace-output="159481adc2d575d3851c49579b68fee82fde781a20f7e5354c5f08d9f1af4055" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Gibt an, ob ein FlexRay Communication Controller synchronisiert und bereit für die Kommunikation ist." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;The enumeration type &lt;code&gt;FrIf_StateType&lt;/code&gt; serves to represent the state of a FlexRay Communication Controller (FlexRay CC) &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;. Variables of this type are used in module &lt;code&gt;FrIf&lt;/code&gt; to represent the communication and synchronization status &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;. The declaration is available via the header file &lt;code&gt;FrIf.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Wertebereich&lt;/h4&gt;
+&lt;p&gt;Der Aufzählungstyp &lt;code&gt;FrIf_StateType&lt;/code&gt; wird in der Header-Datei &lt;code&gt;FrIf.h&lt;/code&gt; definiert und dient im FlexRay Interface dazu, den aktuellen Betriebszustand eines FlexRay Communication Controllers (FlexRay CC) abzubilden &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;. Variablen dieses Typs erfassen, ob ein Controller für den Kommunikationsbetrieb bereitsteht und ob eine Synchronisation mit dem FlexRay-Cluster vorliegt &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;p&gt;The range of values comprises the following states &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;FRIF_STATE_OFFLINE&lt;/code&gt;: The FlexRay CC is not ready for communication and the FlexRay cluster is not synchronized &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;FRIF_STATE_ONLINE&lt;/code&gt;: The FlexRay CC is ready for communication and the FlexRay cluster is synchronized &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;p&gt;Der Wertebereich umfasst zwei definierte Zustände &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;FRIF_STATE_OFFLINE&lt;/code&gt;: Der FlexRay CC ist nicht kommunikationsbereit, und der FlexRay-Cluster ist nicht synchronisiert &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;FRIF_STATE_ONLINE&lt;/code&gt;: Der FlexRay CC ist bereit für die Kommunikation, und der FlexRay-Cluster ist synchronisiert &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Interaction and Constraints&lt;/h4&gt;
-  &lt;p&gt;Variables of &lt;code&gt;FrIf_StateType&lt;/code&gt; record the communication state of the FlexRay CC &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;. Presumably, state &lt;code&gt;FRIF_STATE_ONLINE&lt;/code&gt; serves as a mandatory precondition for upper layers to perform regular transmit and receive operations, whereas in state &lt;code&gt;FRIF_STATE_OFFLINE&lt;/code&gt; transmission on the cluster is likely prevented. Since this is an elementary enumeration, this type element itself does not define runtime errors (DET/DEM), return values, or reentrancy requirements.&lt;/p&gt;
-
-  &lt;!-- annahmen: 1) Es wird interpretiert, dass FRIF_STATE_ONLINE die betriebliche Vorbedingung für regulären Datenaustausch ist – Begründung: Der Zustand ist laut Spezifikation als kommunikationsbereit und synchronisiert definiert, konkrete Funktionsaufrufe sind im Payload jedoch nicht enthalten. --&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI based on the AUTOSAR Classic R20-11 specification.&lt;/p&gt;
+&lt;h4&gt;Integration und Randbedingungen&lt;/h4&gt;
+&lt;p&gt;Die Zustände spiegeln fundamentale Kommunikationsphasen wider: Solange &lt;code&gt;FRIF_STATE_OFFLINE&lt;/code&gt; anliegt, kann keine reguläre Cluster-Kommunikation über den Controller erfolgen, während &lt;code&gt;FRIF_STATE_ONLINE&lt;/code&gt; den synchronisierten Sende- und Empfangsbetrieb kennzeichnet &lt;a class="spec-record-ref" data-req="SWS_FrIf_05755" href="../../spec/record.html?id=SWS_FrIf_05755"&gt;[SWS_FrIf_05755]&lt;/a&gt;. Da der Spezifikationsauszug keine weiteren API-Signaturen oder Fehlermeldungen nennt, dürfte der Typ primär in Statusabfragen oder Zustandsübergängen des FlexRay Interface Verwendung finden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Verwendung als Rückgabewert oder Statusindikator in Abfrage-APIs – Begründung: Der Payload spezifiziert den Typ und dessen Werte zur Zustandsrepräsentation eines CC, nennt aber keine konkreten Funktionssignaturen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und basiert auf der Spezifikation AUTOSAR R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -230,9 +249,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>fc6b546af824…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d7aa755fda7e…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 6 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (6 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 5 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (5 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -267,8 +286,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -305,7 +324,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 8 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -368,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrIf_05755","k":"type","d":"AUTOSAR","t":"","n":"FrIf_StateType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/bc6083253aef7615.json?v=6513890f" data-total="8" data-new="8" data-figures="6" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrIf_05755","k":"type","d":"AUTOSAR","t":"","n":"FrIf_StateType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/bc6083253aef7615.json?v=b85f9825" data-total="7" data-new="7" data-figures="5" data-used="0"></script></dialog>

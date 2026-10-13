@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00351" class="dossier-modal dossier-workbench" data-dossier-sha="671aa12b98209134" aria-labelledby="dossier-modal-SWS_Dcm_00351-title">
+<dialog id="dossier-modal-SWS_Dcm_00351" class="dossier-modal dossier-workbench" data-dossier-sha="aeca7a7e35e9c211" aria-labelledby="dossier-modal-SWS_Dcm_00351-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00351-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00351)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,991 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,446 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_TpTxConfirmation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -208,25 +226,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d3f211e63fa5538cec989b550a5cfc34ffe64be27b8fc71dba59f7d34390bc5b" data-trace-output="671aa12b9820913408588944f3ce9320abd35c052b2075e349373d3b5790523c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="e2141a66244bc3edfdbad49ffccc2f7f4453b517fd1e2c2e4f555fefcf7cca06" data-trace-output="aeca7a7e35e9c21170b7881a5ef2a31328eae3dd06360968e23dbffe29e73993" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bestätigt die abgeschlossene I-PDU-Übertragung an das DCM, stoppt P2-Server-Timeouts und gibt Ressourcen sowie Kanäle frei." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die synchrone und reentrante Callback-Funktion &lt;code&gt;Dcm_TpTxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00351" href="../../spec/record.html?id=SWS_Dcm_00351"&gt;[SWS_Dcm_00351]&lt;/a&gt;) wird aufgerufen, sobald eine I-PDU auf dem Netzwerk übertragen wurde. Über den Eingabeparameter &lt;code&gt;id&lt;/code&gt; wird die übertragene I-PDU identifiziert, während &lt;code&gt;result&lt;/code&gt; den Erfolg oder Misserfolg der Übertragung meldet. Die Funktion besitzt keinen Rückgabewert und darf auch im Interrupt-Kontext aufgerufen werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00351" href="../../spec/record.html?id=SWS_Dcm_00351"&gt;[SWS_Dcm_00351]&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callback-Funktion &lt;code&gt;Dcm_TpTxConfirmation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00351" href="../../spec/record.html?id=SWS_Dcm_00351"&gt;[SWS_Dcm_00351]&lt;/a&gt;) wird von der unteren Transportschicht synchron aufgerufen, nachdem eine diagnostische I-PDU auf dem Netzwerk übertragen wurde. Über den Parameter &lt;code&gt;id&lt;/code&gt; wird die betroffene I-PDU identifiziert, während &lt;code&gt;result&lt;/code&gt; den Erfolg oder Misserfolg des Sendevorgangs meldet (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00351" href="../../spec/record.html?id=SWS_Dcm_00351"&gt;[SWS_Dcm_00351]&lt;/a&gt;). Die Funktion besitzt keinen Rückgabewert, ist reentrant und darf explizit im Interrupt-Kontext ausgeführt werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00351" href="../../spec/record.html?id=SWS_Dcm_00351"&gt;[SWS_Dcm_00351]&lt;/a&gt;).&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerbehandlung und Übertragungsabbruch&lt;/h4&gt;
-  &lt;p&gt;Im Falle einer fehlgeschlagenen Übertragung oder einer negativen Bestätigung über &lt;code&gt;result&lt;/code&gt; wiederholt das DSD-Submodul die Übertragung der Diagnoseantwort nicht (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00118" href="../../spec/record.html?id=SWS_Dcm_00118"&gt;[SWS_Dcm_00118]&lt;/a&gt;). Wenn zuvor der Datentransfer über &lt;code&gt;Dcm_CopyTxData&lt;/code&gt; mit &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; abgebrochen wurde, ist der laufende Sendeauftrag erst dann abgeschlossen, wenn das Transportprotokoll den Abbruch durch den Aufruf von &lt;code&gt;Dcm_TpTxConfirmation&lt;/code&gt; mit Fehlerstatus bestätigt; erst danach kann eine neue Übertragung via &lt;code&gt;PduR_DcmTransmit()&lt;/code&gt; initiiert werden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00350" href="../../spec/record.html?id=SWS_Dcm_00350"&gt;[SWS_Dcm_00350]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Zusammenspiel und Zustandsverwaltung&lt;/h4&gt;
-  &lt;p&gt;Der Aufruf von &lt;code&gt;Dcm_TpTxConfirmation&lt;/code&gt; löst im DCM wesentliche Folgeaktionen und Zustandsbereinigungen aus:&lt;/p&gt;
+  &lt;p&gt;Beim Aufruf von &lt;code&gt;Dcm_TpTxConfirmation&lt;/code&gt; führt das DCM-Modul zentrale Bereinigungs- und Statusübergänge durch:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;Das DCM-Modul entsperrt den zugehörigen Sendepuffer (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00352" href="../../spec/record.html?id=SWS_Dcm_00352"&gt;[SWS_Dcm_00352]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Die Timeout-Überwachungen für Page-Buffer sowie &lt;code&gt;P2ServerMax&lt;/code&gt; und &lt;code&gt;P2*ServerMax&lt;/code&gt; werden gestoppt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00353" href="../../spec/record.html?id=SWS_Dcm_00353"&gt;[SWS_Dcm_00353]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Die seit dem Empfang blockierte &lt;code&gt;DcmPduId&lt;/code&gt; wird wieder freigegeben, sodass auf derselben Verbindung nachfolgende Anforderungen empfangen werden können (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00241" href="../../spec/record.html?id=SWS_Dcm_00241"&gt;[SWS_Dcm_00241]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Wurde eine positive oder negative Antwort ungleich NRC 0x78 bestätigt, gilt die Diagnoseanforderung als formal abgeschlossen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01378" href="../../spec/record.html?id=SWS_Dcm_01378"&gt;[SWS_Dcm_01378]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Das laufende Protokoll wird bei Bestätigung der durch das DSL-Submodul initiierten Antwort nicht gestoppt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00624" href="../../spec/record.html?id=SWS_Dcm_00624"&gt;[SWS_Dcm_00624]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Wird die Bestätigung für eine positive &lt;code&gt;EcuReset&lt;/code&gt;-Antwort empfangen, ignoriert das DCM während der weiteren Reset-Verarbeitung alle weiteren Anfragen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00834" href="../../spec/record.html?id=SWS_Dcm_00834"&gt;[SWS_Dcm_00834]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Der zugeordnete Sendepuffer wird entsperrt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00352" href="../../spec/record.html?id=SWS_Dcm_00352"&gt;[SWS_Dcm_00352]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Laufende Fehlerüberwachungen wie Page-Buffer-Timeouts sowie &lt;code&gt;P2ServerMax&lt;/code&gt;- und &lt;code&gt;P2*ServerMax&lt;/code&gt;-Timeouts werden gestoppt (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00353" href="../../spec/record.html?id=SWS_Dcm_00353"&gt;[SWS_Dcm_00353]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Die seit dem Empfang (&lt;code&gt;Dcm_TpRxIndication&lt;/code&gt;) blockierte &lt;code&gt;DcmPduId&lt;/code&gt; der Verbindung wird freigegeben, sodass nachfolgende Anforderungen empfangen werden können (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00241" href="../../spec/record.html?id=SWS_Dcm_00241"&gt;[SWS_Dcm_00241]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Das aktuelle Protokoll wird durch die Bestätigung der DSL-Antwort nicht beendet (kein Aufruf von &lt;code&gt;xxx_StopProtocol&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00624" href="../../spec/record.html?id=SWS_Dcm_00624"&gt;[SWS_Dcm_00624]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR Classic Release R20-11 erstellt.&lt;/p&gt;
+  &lt;p&gt;Im Fehlerfall (wenn &lt;code&gt;result&lt;/code&gt; einen Fehler anzeigt oder ein Abbruch nach einem fehlgeschlagenen &lt;code&gt;Dcm_CopyTxData&lt;/code&gt; bestätigt wird) verlangt &lt;a class="spec-record-ref" data-req="SWS_Dcm_00350" href="../../spec/record.html?id=SWS_Dcm_00350"&gt;[SWS_Dcm_00350]&lt;/a&gt; zwingend diesen abschließenden Aufruf, um den Sendeauftrag formell abzuschließen und neue Übertragungen via &lt;code&gt;PduR_DcmTransmit()&lt;/code&gt; zu ermöglichen. Bei einer fehlerhaften Bestätigung darf das DSD-Submodul die Diagnoseantwort nicht erneut senden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00118" href="../../spec/record.html?id=SWS_Dcm_00118"&gt;[SWS_Dcm_00118]&lt;/a&gt;).&lt;/p&gt;
+
+  &lt;p&gt;Zusätzlich markiert die Bestätigung einer Antwort (ungleich NRC 0x78) den regulären Abschluss eines Diagnose-Requests (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01378" href="../../spec/record.html?id=SWS_Dcm_01378"&gt;[SWS_Dcm_01378]&lt;/a&gt;). Nach der Bestätigung einer positiven Antwort auf einen &lt;code&gt;EcuReset&lt;/code&gt; ignoriert das DCM während der Reset-Verarbeitung alle weiteren Anfragen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00834" href="../../spec/record.html?id=SWS_Dcm_00834"&gt;[SWS_Dcm_00834]&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt; die Richtigkeit kann nicht garantiert werden.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -266,9 +283,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d3f211e63fa5…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e2141a66244b…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 47 <span class="dossier-meta-sub">(47 neu · 11 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 47 Belege dazugekommen (11 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 28 <span class="dossier-meta-sub">(28 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 28 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -303,8 +320,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">49</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">48</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">30</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">29</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -341,7 +358,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 47 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 28 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -404,4 +421,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00351","k":"function","d":"AUTOSAR","t":"","n":"Dcm_TpTxConfirmation"}],"inbound":[{"i":"SWS_Dcm_00118","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00118].","n":"SWS_Dcm_00118"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/176a0dccb15d96ec.json?v=88006390" data-total="47" data-new="47" data-figures="11" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00351","k":"function","d":"AUTOSAR","t":"","n":"Dcm_TpTxConfirmation"}],"inbound":[{"i":"SWS_Dcm_00352","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00352].","n":"SWS_Dcm_00352"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/176a0dccb15d96ec.json?v=1a5f31e8" data-total="28" data-new="28" data-figures="4" data-used="0"></script></dialog>

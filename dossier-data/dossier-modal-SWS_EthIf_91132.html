@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91132" class="dossier-modal dossier-workbench" data-dossier-sha="013c609b27e5d883" aria-labelledby="dossier-modal-SWS_EthIf_91132-title">
+<dialog id="dossier-modal-SWS_EthIf_91132" class="dossier-modal dossier-workbench" data-dossier-sha="8480c4c9eeb17c73" aria-labelledby="dossier-modal-SWS_EthIf_91132-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91132-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91132)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,250 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,705 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_RunCableDiagnostic'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,21 +193,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="41530572024912cc851110fb9993f7349810a07e4e1ccdb10574d5cc87e0336b" data-trace-output="013c609b27e5d883c2ba9fef79eb8cd411bef9f14a3bdffeda4e6ba3b87fe432" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="30a5efdd1b22c574975add1b073ea4d752c1a472d3673096acede2a669e6e3a4" data-trace-output="8480c4c9eeb17c730ec5b4da130cc87ad27b47216efcb586953153c9cc7fbb0f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Stößt die Kabeldiagnose für einen bestimmten Ethernet-Transceiver asynchron an." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;EthIf_RunCableDiagnostic&lt;/code&gt; initiates cable diagnostics for a specified Ethernet transceiver &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. The interface is provided via the header &lt;code&gt;EthIf.h&lt;/code&gt; and has the Service ID &lt;code&gt;0x62&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Execution takes place according to the following scheme &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Call semantics:&lt;/strong&gt; The function operates asynchronously &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. The call merely initiates the process and does not block until the diagnostic result is available.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Parameters:&lt;/strong&gt; The index of the Ethernet transceiver in the context of the Ethernet transceiver driver is specified via the input parameter &lt;code&gt;TrcvIdx&lt;/code&gt; (type &lt;code&gt;uint8&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. No further input or output parameters are defined &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Return value:&lt;/strong&gt; The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; reports the status of acceptance: &lt;code&gt;E_OK&lt;/code&gt; signals that the trigger was successfully accepted; &lt;code&gt;E_NOT_OK&lt;/code&gt; means that the trigger was rejected &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;Regarding concurrency, &lt;code&gt;EthIf_RunCableDiagnostic&lt;/code&gt; is reentrant for different transceiver indices (&lt;code&gt;TrcvIdx&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. For the same transceiver index (&lt;code&gt;TrcvIdx&lt;/code&gt;), the function is explicitly non-reentrant &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. Calling entities must therefore ensure that concurrent calls for the same transceiver do not occur until an ongoing process is completed.&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification for AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+  &lt;p&gt;Die Funktion &lt;code&gt;EthIf_RunCableDiagnostic&lt;/code&gt; stößt die Kabeldiagnose für einen spezifizierten Ethernet-Transceiver an &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. Sie wird über den Header &lt;code&gt;EthIf.h&lt;/code&gt; bereitgestellt und unter der Service-ID &lt;code&gt;0x62&lt;/code&gt; geführt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. Als Übergabeparameter dient &lt;code&gt;TrcvIdx&lt;/code&gt;, welcher den Index des Ziel-Transceivers im Kontext des Ethernet-Transceiver-Treibers abbildet &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Ausführung erfolgt asynchron &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. Der Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; signalisiert die Annahme des Triggers:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Trigger zur Kabeldiagnose wurde erfolgreich akzeptiert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Der Trigger wurde nicht akzeptiert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Wird die Kabeldiagnose abgewiesen, liefert die Funktion unmittelbar &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. Spezifische Entwicklungs- oder Produktionsfehler (DET/DEM) sind für diese Funktion in der vorliegenden Spezifikation nicht definiert.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+  &lt;p&gt;Hinsichtlich der Nebenläufigkeit ist &lt;code&gt;EthIf_RunCableDiagnostic&lt;/code&gt; reentrant für Aufrufe mit unterschiedlichen Indizes (&lt;code&gt;TrcvIdx&lt;/code&gt;), jedoch nicht reentrant für denselben Transceiver-Index &lt;a class="spec-record-ref" data-req="SWS_EthIf_91132" href="../../spec/record.html?id=SWS_EthIf_91132"&gt;[SWS_EthIf_91132]&lt;/a&gt;. Zeitgleiche Diagnoseanforderungen auf demselben Transceiver müssen vom Aufrufer unterbunden werden. Interpretation: Da die Funktion rein asynchron arbeitet und keine Ergebnisdaten zurückliefert, dürfte die Bereitstellung des Diagnoseergebnisses vermutlich über einen separaten Mechanismus erfolgen.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Die Abfrage oder Übermittlung des finalen Diagnoseergebnisses erfolgt über separate Schnittstellen – Begründung: EthIf_RunCableDiagnostic nimmt den Diagnose-Trigger lediglich asynchron entgegen und besitzt laut Spezifikation keine Ergebnisparameter. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch eine KI auf Basis der Spezifikation SWS_EthIf_91132 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -229,7 +249,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>415305720249…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>30a5efdd1b22…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -367,4 +387,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91132","k":"function","d":"AUTOSAR","t":"","n":"EthIf_RunCableDiagnostic"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/68f58ab8fc8c29e0.json?v=57800121" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91132","k":"function","d":"AUTOSAR","t":"","n":"EthIf_RunCableDiagnostic"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/68f58ab8fc8c29e0.json?v=69642d76" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

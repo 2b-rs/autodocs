@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dlt_91008" class="dossier-modal dossier-workbench" data-dossier-sha="a4ca8d5262e5ad0e" aria-labelledby="dossier-modal-SWS_Dlt_91008-title">
+<dialog id="dossier-modal-SWS_Dlt_91008" class="dossier-modal dossier-workbench" data-dossier-sha="bae7690569c9205e" aria-labelledby="dossier-modal-SWS_Dlt_91008-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dlt_91008-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dlt_91008)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,386 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,840 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dlt_CopyRxData'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,24 +193,17 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d0b1114ca91e801a043fc64dd434f147e8d9e23617ac1100eb6b92681c29f78c" data-trace-output="a4ca8d5262e5ad0efb1f91f1305dbaf15d3ff7deff57873a8a6e80b561feb9ae" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="50201aae16ae0e340fac3717480ed99f9fa78eb99ed45cd9df01c1fbbff9c574" data-trace-output="bae7690569c9205e963b0565ecc199a9f971df1bbc505adaa772641c9107ae22" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Übergibt empfangene Segmentdaten einer I-PDU an die obere Schicht und meldet die verbleibende Puffergröße zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Parameters&lt;/h4&gt;
-  &lt;p&gt;The synchronous and reentrant function &lt;code&gt;Dlt_CopyRxData&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;) is called to pass received data of an I-PDU segment (N-PDU) to the upper layer. Each call provides the respective next part of the I-PDU data.&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;id:&lt;/strong&gt; Unique identification of the received I-PDU.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;info:&lt;/strong&gt; Pointer to a structure of type &lt;code&gt;PduInfoType&lt;/code&gt;, which provides the source buffer (&lt;code&gt;SduDataPtr&lt;/code&gt;) as well as the number of bytes to be copied (&lt;code&gt;SduLength&lt;/code&gt;). A &lt;code&gt;SduLength&lt;/code&gt; of 0 can be used to query the currently available buffer size in the upper layer; in this case, &lt;code&gt;SduDataPtr&lt;/code&gt; may be a &lt;code&gt;NULL_PTR&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;bufferSizePtr:&lt;/strong&gt; Output parameter at whose address the remaining buffer size after the copying process is entered.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;The function reports the result of the copying process via the return type &lt;code&gt;BufReq_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_OK&lt;/code&gt;: Data was successfully copied into the buffer.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt;: Data could not be copied due to an error that occurred.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Context and properties&lt;/h4&gt;
-  &lt;p&gt;The service has the service ID &lt;code&gt;0x44&lt;/code&gt;, is specified as synchronous and reentrant, and is provided via the header &lt;code&gt;Dlt.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note is based on specification &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+  &lt;p&gt;Die synchrone Funktion &lt;code&gt;Dlt_CopyRxData&lt;/code&gt; wird aufgerufen, um empfangene Daten eines I-PDU-Segments (N-PDU) an die obere Schicht zu übergeben &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;. Jeder Aufruf stellt den jeweils nächsten Teil der I-PDU-Daten bereit, wobei die verbleibende Puffergröße an die über &lt;code&gt;bufferSizePtr&lt;/code&gt; referenzierte Speicherstelle geschrieben wird &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;. Die Deklaration ist über den Header &lt;code&gt;Dlt.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Parameter und Pufferabfrage&lt;/h4&gt;
+  &lt;p&gt;Über den Eingabeparameter &lt;code&gt;id&lt;/code&gt; wird die empfangene I-PDU identifiziert &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;. Der Zeiger &lt;code&gt;info&lt;/code&gt; stellt über &lt;code&gt;SduDataPtr&lt;/code&gt; den Quellpuffer sowie über &lt;code&gt;SduLength&lt;/code&gt; die Anzahl der zu kopierenden Bytes bereit &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;. Wird &lt;code&gt;SduLength&lt;/code&gt; mit dem Wert 0 übergeben, dient der Aufruf der reinen Abfrage des aktuell im oberen Modul verfügbaren Puffers; in diesem Fall darf &lt;code&gt;SduDataPtr&lt;/code&gt; ein &lt;code&gt;NULL_PTR&lt;/code&gt; sein &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;. Der Ausgabeparameter &lt;code&gt;bufferSizePtr&lt;/code&gt; gibt die nach dem Kopiervorgang noch freie Empfangspuffergröße zurück &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit und Rückgabewerte&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist reentrant ausgelegt und besitzt die Service-ID &lt;code&gt;0x44&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;. Der Rückgabewert vom Typ &lt;code&gt;BufReq_ReturnType&lt;/code&gt; signalisiert das Ergebnis des Kopiervorgangs: Bei erfolgreicher Datenübernahme liefert der Dienst &lt;code&gt;BUFREQ_OK&lt;/code&gt; zurück, während im Fehlerfall &lt;code&gt;BUFREQ_E_NOT_OK&lt;/code&gt; gemeldet wird &lt;a class="spec-record-ref" data-req="SWS_Dlt_91008" href="../../spec/record.html?id=SWS_Dlt_91008"&gt;[SWS_Dlt_91008]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Hinweis: Dieser Nutzungshinweis wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -232,7 +243,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d0b1114ca91e…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>50201aae16ae…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -370,4 +381,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dlt_91008","k":"function","d":"AUTOSAR","t":"","n":"Dlt_CopyRxData"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3b8e0dd773c6e94c.json?v=ace7e0f4" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dlt_91008","k":"function","d":"AUTOSAR","t":"","n":"Dlt_CopyRxData"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3b8e0dd773c6e94c.json?v=65fe21b6" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

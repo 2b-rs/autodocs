@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00051" class="dossier-modal dossier-workbench" data-dossier-sha="b8435fc90b3ad394" aria-labelledby="dossier-modal-SWS_KeyM_00051-title">
+<dialog id="dossier-modal-SWS_KeyM_00051" class="dossier-modal dossier-workbench" data-dossier-sha="a94757bfd9161e10" aria-labelledby="dossier-modal-SWS_KeyM_00051-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00051-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00051)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,513 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,968 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_Prepare'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,34 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="57620615e44b14c34d140114d2113117f0d5d239590d45e20c0d2aaca695243b" data-trace-output="b8435fc90b3ad39457e05a11f29498d085522d8985ece5248cc2ab6a0e3aa2d9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c5d2cf507992637844c52e282a0c767d1d7f6fe7b5a4bbafd5023f690c143e1b" data-trace-output="a94757bfd9161e10401ef1aa02237b8b4d74081c3d3a189f4038abdb95ef19fd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bereitet eine Schlüsselaktualisierung vor und übermittelt erforderliche Daten an den Schlüsselserver." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    According to &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;, function &lt;code&gt;KeyM_Prepare&lt;/code&gt; serves to prepare a key update (&lt;a class="docref internal-spec-ref" href="../../spec/record.html?doc=907&amp;amp;page=36"&gt;AUTOSAR_SWS_KeyManager p. 36&lt;/a&gt;). The primary purpose is to provide required information for the key operation to the key server or to start a negotiation of a common secret from which key material is derived in the further course. The function is available only if the configuration parameter &lt;code&gt;KeyMCryptoKeyPrepareFunctionEnabled&lt;/code&gt; is set to &lt;code&gt;TRUE&lt;/code&gt;, and is declared via header &lt;code&gt;KeyM.h&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;h4&gt;Call Context and Parameters&lt;/h4&gt;
-  &lt;p&gt;
-    The call is executed with service ID &lt;code&gt;0x05&lt;/code&gt;. The function signature is specified as synchronous and non-reentrant (Non Reentrant). The following parameters are processed:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Request Data&lt;/code&gt; (IN): Pointer to the data transmitted with the request.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Request Data Length&lt;/code&gt; (IN): Length of the data array in &lt;code&gt;Request Data&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Response Data&lt;/code&gt; (OUT): Output buffer for the payload returned by the function.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;Response Data Length&lt;/code&gt; (INOUT): Passes the maximum number of bytes available in buffer &lt;code&gt;Response Data&lt;/code&gt; on call and returns the actual number of written bytes on return.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Return values and behavior&lt;/h4&gt;
-  &lt;p&gt;
-    The status of the request is signaled via return type &lt;code&gt;Std_ReturnType&lt;/code&gt;:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The service call was accepted and is processed internally. The final results are provided via a subsequent callback.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The request was rejected due to an internal error.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt;: A passed parameter does not match the expected value.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_SIZE_MISMATCH&lt;/code&gt;: A passed parameter size deviates from the expected size.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically based on the specification AUTOSAR Classic R20-11.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;KeyM_Prepare&lt;/code&gt; dient zur Vorbereitung einer Schlüsselaktualisierung (Key Update Operation) und übermittelt die erforderlichen Informationen an den Schlüsselserver oder stößt die Aushandlung eines gemeinsamen Geheimnisses zur Schlüsselableitung an &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;. Die Funktion besitzt die Service-ID &lt;code&gt;0x05&lt;/code&gt;, ist über den Header &lt;code&gt;KeyM.h&lt;/code&gt; deklariert und steht ausschließlich zur Verfügung, wenn der Konfigurationsparameter &lt;code&gt;Key MCrypto Key Prepare Function Enabled&lt;/code&gt; auf &lt;code&gt;TRUE&lt;/code&gt; gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Beim Aufruf sind folgende Puffer und Längenangaben zu übergeben &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Request Data&lt;/code&gt; und &lt;code&gt;Request Data Length&lt;/code&gt;: Eingabedaten und deren Länge für die Anfrage &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Response Data&lt;/code&gt;: Zeiger auf den Puffer zur Aufnahme der Ausgabedaten &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Response Data Length&lt;/code&gt;: Ein-/Ausgabeparameter, der vor dem Aufruf die maximal verfügbare Puffergröße angibt und bei Rückkehr die tatsächlich geschriebene Bytezahl enthält &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Wird der Aufruf mit &lt;code&gt;E_OK&lt;/code&gt; quittiert, wurde der Dienst angenommen und wird intern verarbeitet; die finalen Ergebnisse werden anschließend über einen Callback bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;. Schlägt die Annahme fehl, liefert die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; bei internen Fehlern, &lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt; bei abweichenden Parameterwerten oder &lt;code&gt;KEYM_E_KEY_CERT_SIZE_MISMATCH&lt;/code&gt; bei unpassenden Größenangaben zurück &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Da &lt;code&gt;KeyM_Prepare&lt;/code&gt; als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert ist, dürfen keine gleichzeitigen oder verschachtelten Aufrufe erfolgen &lt;a class="spec-record-ref" data-req="SWS_KeyM_00051" href="../../spec/record.html?id=SWS_KeyM_00051"&gt;[SWS_KeyM_00051]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde automatisch anhand der Spezifikation AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -242,7 +246,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>57620615e44b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c5d2cf507992…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -380,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00051","k":"function","d":"AUTOSAR","t":"","n":"KeyM_Prepare"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/786498d7ee06752f.json?v=4988963b" data-total="9" data-new="9" data-figures="3" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00051","k":"function","d":"AUTOSAR","t":"","n":"KeyM_Prepare"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/786498d7ee06752f.json?v=1f258350" data-total="9" data-new="9" data-figures="3" data-used="0"></script></dialog>

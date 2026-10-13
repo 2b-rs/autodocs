@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_BswM_00104" class="dossier-modal dossier-workbench" data-dossier-sha="ca4bd80a4dd6b602" aria-labelledby="dossier-modal-SWS_BswM_00104-title">
+<dialog id="dossier-modal-SWS_BswM_00104" class="dossier-modal dossier-workbench" data-dossier-sha="c53ddbe077824424" aria-labelledby="dossier-modal-SWS_BswM_00104-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_BswM_00104-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_BswM_00104)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,268 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,723 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'BswM_NvM_CurrentBlockMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,20 +193,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="940c95e19f76237a2e8802809837144e97ec71cb904b395bd703b9329b5bab03" data-trace-output="ca4bd80a4dd6b60209e6fd70ae87d73639148eb01184bc22a77b8f0583f5f141" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="ce828c822f7e65260ed36d508393c131251d8a951c681f9387b395d5e8575fc0" data-trace-output="c53ddbe0778244249ee4b3a238d4afc06d87ff4c17e6237ca0bb6a3fe93ae316" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Nimmt Meldungen des NvM über den aktuellen Modus eines Blocks synchron und reentrant im BswM entgegen." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;BswM_NvM_CurrentBlockMode&lt;/code&gt; is called by the NVRAM Manager (NvM) to signal the current state of an NVRAM block to the BswM &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;. The declaration is provided via header file &lt;code&gt;BswM_NvM.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Call context and parameters:&lt;/strong&gt; Parameter &lt;code&gt;Block&lt;/code&gt; (type &lt;code&gt;NvM_BlockIdType&lt;/code&gt;) identifies the NVRAM block to which the status change refers &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;. Via &lt;code&gt;CurrentBlockMode&lt;/code&gt; (type &lt;code&gt;NvM_RequestResultType&lt;/code&gt;), the current mode or request result of the block is passed &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;. The function has no input/output or output parameters and returns no return value (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Execution behavior:&lt;/strong&gt; The interface has service ID &lt;code&gt;0x16&lt;/code&gt;, operates fully synchronously, and is specified as reentrant &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and system integration&lt;/h4&gt;
-  &lt;p&gt;Since the function is defined as &lt;em&gt;reentrant&lt;/em&gt;, it can also be called concurrently for different or successive blocks if needed &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;. The interface acts as a feedback channel for the NvM; the BswM is likely to use the passed block status internally to evaluate mode rules and control BswM actions.&lt;/p&gt;
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;The specification defines neither return codes nor explicit DET or DEM error notifications in the event of an error for &lt;code&gt;BswM_NvM_CurrentBlockMode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Der BswM nutzt den übermittelten NvM-Blockstatus intern zur Auswertung von Modusregeln und Triggerung von Aktionen – Begründung: Der Payload dokumentiert die Funktion als Statusindikation des NvM an den BswM ohne eigene Rückgabewerte. --&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;BswM_NvM_CurrentBlockMode&lt;/code&gt; wird vom NVRAM Manager (NvM) aufgerufen, um dem Basic Software Mode Manager (BswM) den aktuellen Blockmodus eines NVRAM-Blocks anzuzeigen &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;. Die Deklaration der Funktion ist über die Header-Datei &lt;code&gt;BswM_NvM.h&lt;/code&gt; verfügbar und in der Spezifikation der Service-ID &lt;code&gt;0x16&lt;/code&gt; zugeordnet &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Die Funktion liefert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) an den Aufrufer zurück und verarbeitet zwei Eingangsparameter &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Block&lt;/code&gt; (Typ &lt;code&gt;NvM_BlockIdType&lt;/code&gt;): Übergibt die Blockkennung des NVRAM-Blocks, auf den sich die neue Modusinformation bezieht &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CurrentBlockMode&lt;/code&gt; (Typ &lt;code&gt;NvM_RequestResultType&lt;/code&gt;): Überträgt den aktuellen Blockmodus beziehungsweise das Anfrageergebnis des NvM-Blocks &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Ausgangsparameter oder kombinierte Ein-/Ausgangsparameter sind für diese Schnittstelle nicht definiert &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Der Funktionsaufruf von &lt;code&gt;BswM_NvM_CurrentBlockMode&lt;/code&gt; wird synchron ausgeführt und ist als reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;. Damit ist die Schnittstelle für die reentrante Nutzung in nebenläufigen Ausführungskontexten ausgelegt &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Für diese Schnittstelle sind in den Spezifikationsvorgaben weder spezifische Fehlercodes noch Anforderungen an Fehlermeldungen über den Default Error Tracer (DET) oder das Diagnostic Event Manager (DEM) Modul ausgewiesen &lt;a class="spec-record-ref" data-req="SWS_BswM_00104" href="../../spec/record.html?id=SWS_BswM_00104"&gt;[SWS_BswM_00104]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert generiert und basiert ausschließlich auf den Spezifikationsdaten des AUTOSAR-Releases R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -228,7 +250,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>940c95e19f76…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ce828c822f7e…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -366,4 +388,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00104","k":"function","d":"AUTOSAR","t":"","n":"BswM_NvM_CurrentBlockMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ca6981cb2edbd5f9.json?v=8cae1f00" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_BswM_00104","k":"function","d":"AUTOSAR","t":"","n":"BswM_NvM_CurrentBlockMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ca6981cb2edbd5f9.json?v=bab09c26" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>

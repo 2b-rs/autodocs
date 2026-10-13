@@ -1,11 +1,9 @@
 {
  "annahmen": [
-  "Text:",
-  "1) Der Erfolg von Fr_StartCommunication wird über wiederholtes Fr_GetPOCStatus beobachtet – Begründung: Laut SWS ist der Zielzustand nach dem Aufruf nicht garantiert; Fr_GetPOCStatus ist der einzige belegte Weg, den Zustand zu lesen.",
-  "2) Ein Aufruf vor der Initialisierung meldet FR_E_INIT_FAILED – Begründung: Der zugehörige Requirement-Text ist abgeschnitten; SWS_Fr_91003 beschreibt FR_E_INIT_FAILED als „Fr module was not initialized“.",
-  "3) Der FrSM steuert Wakeup und Start über das FrIf – Begründung: Die FrSM-Zustände sind auf POC-Zustände abgebildet und der FrSM wertet vPOC!WakeupStatus aus; ein direkter Beleg im Fr-SWS fehlt. Diagramm diag-start:",
-  "1) Polling-Schleife mit Fr_GetPOCStatus (siehe Text-Annahme 1). Diagramm diag-timer:",
-  "1) Der Timer-Interrupt führt über eine ISR zur Behandlung im FrIf, das danach Status abfragt und quittiert – Begründung: Das FrIf verlangt die Timer-Dienste als Pflichtschnittstelle, und laut FrIf-Abbildungen startet eine ISR die Jobliste; die genaue Verdrahtung ist nicht belegt."
+  "1) Text (POC-Steuerung): Der Aufrufer verfolgt den Startup über Fr_GetPOCStatus – Begründung: Fr_StartCommunication garantiert den Zielzustand nicht, und Fr_GetPOCStatus liefert den POC-Zustand; ein Abfrageschema nennt der Payload nicht.",
+  "2) Diagramm diag-startup: Abfrageschleife bis normal active/passive – Begründung: wie 1).",
+  "3) Diagramm diag-poc: Fr_HaltCommunication ist auch aus POC:normal passive zulässig – Begründung: Vorbedingung ist nur Synchronität zur globalen Zeit; dass normal passive synchron ist, sagt der Payload nicht ausdrücklich.",
+  "4) Diagramm diag-fehler: Abbruch ohne Ausführung nach einem Entwicklungsfehler – Begründung: Die Dokumentstellen sind an dieser Stelle gekürzt."
  ],
  "diagrams": [
   {
@@ -20,8 +18,13 @@
   },
   {
    "art": "seq",
-   "id": "diag-start",
-   "quelle": "anchor_r20_11.diag-start.seq.json"
+   "id": "diag-startup",
+   "quelle": "anchor_r20_11.diag-startup.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-wakeup",
+   "quelle": "anchor_r20_11.diag-wakeup.seq.json"
   },
   {
    "art": "seq",
@@ -34,16 +37,6 @@
    "quelle": "anchor_r20_11.diag-rx.seq.json"
   },
   {
-   "art": "seq",
-   "id": "diag-timer",
-   "quelle": "anchor_r20_11.diag-timer.seq.json"
-  },
-  {
-   "art": "dot",
-   "id": "diag-index",
-   "quelle": "anchor_r20_11.diag-index.dot"
-  },
-  {
    "art": "dot",
    "id": "diag-fehler",
    "quelle": "anchor_r20_11.diag-fehler.dot"
@@ -54,8 +47,8 @@
   "ausgelassen": {
    "budget": [],
    "dublette": {
-    "SNIP_CLASSIC_BSWM_SECTION_7_3_8_Wakeup_Pattern_Transmission": "SNIP_CLASSIC_FRSM_SECTION_7_3_8_Wakeup_Pattern_Transmission",
-    "SNIP_CLASSIC_FR_SECTION_8_4_6_FrIf_GetWakeupRxStatus": "SNIP_CLASSIC_FRIF_SECTION_8_4_6_FrIf_GetWakeupRxStatus",
+    "SNIP_CLASSIC_FRIF_SECTION_8_4_6_FrIf_GetWakeupRxStatus": "SNIP_CLASSIC_FR_SECTION_8_4_6_FrIf_GetWakeupRxStatus",
+    "SNIP_CLASSIC_FRTP_SECTION_8_8_1_Mandatory_Interfaces": "SNIP_CLASSIC_FR_SECTION_8_8_1_Mandatory_Interfaces",
     "SNIP_CLASSIC_PLATFORM_SECTION_8_4_32_Fr_ReadCCConfig": "SNIP_CLASSIC_FR_SECTION_8_4_32_Fr_ReadCCConfig",
     "SNIP_CLASSIC_STD_SECTION_8_3_11_Fr_SlotAssignmentType": "SNIP_CLASSIC_FR_SECTION_8_3_11_Fr_SlotAssignmentType"
    },
@@ -67,19 +60,88 @@
     "SNIP_CLASSIC_FR_SECTION_4_2_3_8_Interface_and_API",
     "SNIP_CLASSIC_FR_SECTION_7_7_3_Production_Errors",
     "SNIP_CLASSIC_FR_SECTION_7_Functional_specification",
-    "SNIP_CLASSIC_FR_SECTION_9_2_Data_Reception",
-    "SNIP_det_AUTOSAR_SWS_Flex_P37_215"
+    "SNIP_CLASSIC_FR_SECTION_9_2_Data_Reception"
    ],
    "ohne_text": []
   },
-  "im_prompt": 105,
-  "im_prompt_schaubilder": 13,
-  "kandidaten": 116,
+  "im_prompt": 94,
+  "im_prompt_schaubilder": 6,
+  "kandidaten": 104,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "a08fd1e6f3c56a9965c65ab1a67f89638430c8054fd3d7ae69e07c8601b8906d",
- "output_store": "ai/store/outputs/a0/a08fd1e6f3c56a9965c65ab1a67f89638430c8054fd3d7ae69e07c8601b8906d.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-poc",
+   "diag-tx"
+  ],
+  "oneliner_chars": 115,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 73,
+   "3": 273,
+   "4": 1457
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_8_1_Mandatory_Interfaces: SWS_FlexRayInterface S. 95 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_8_2_Optional_Interfaces: SWS_FlexRayInterface S. 97 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_1_Fr_Init: SWS_FlexRayDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit: SWS_FlexRayDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication: SWS_FlexRayDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_5_Fr_AllSlots: SWS_FlexRayDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_6_Fr_HaltCommunication: SWS_FlexRayDriver S. 45 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_7_Fr_AbortCommunication: SWS_FlexRayDriver S. 47 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_9_Fr_SetWakeupChannel: SWS_FlexRayDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit: SWS_FlexRayDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication: SWS_FlexRayDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_4_Fr_AllowColdstart: SWS_FlexRayDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_9_Fr_SetWakeupChannel: SWS_FlexRayDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_8_Fr_SendWUP: SWS_FlexRayDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_7_3_3_Variables: SWS_FlexRayStateManager S. 19 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_9_Fr_SetWakeupChannel: SWS_FlexRayDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_8_Fr_SendWUP: SWS_FlexRayDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_24_Fr_GetWakeupRxStatus: SWS_FlexRayDriver S. 78 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_11_Fr_TransmitTxLPdu: SWS_FlexRayDriver S. 53 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_6_5_2_ProvideTxConfirmation: SWS_FlexRayInterface S. 38 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_12_Fr_CancelTxLPdu: SWS_FlexRayDriver S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_5_FIFO_support_and_message_ID_filtering: SWS_FlexRayDriver S. 22 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_6_5_5_ReceiveAndIndicate: SWS_FlexRayInterface S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_6_5_5_ReceiveAndIndicate: SWS_FlexRayInterface S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_6_Configuration_description: SWS_FlexRayDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_10_2_3_FrController: SWS_FlexRayDriver S. 98 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_3_1_Fr_ConfigType: SWS_FlexRayDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_3_Type_definitions: SWS_FlexRayDriver S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_15_Fr_PrepareLPdu: SWS_FlexRayDriver S. 61 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_6_5_6_PREP_ARE_LPDU: SWS_FlexRayInterface S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_17_Fr_DisableLPdu: SWS_FlexRayDriver S. 65 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_18_Fr_GetGlobalTime: SWS_FlexRayDriver S. 67 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_19_Fr_GetNmVector: SWS_FlexRayDriver S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_25_Fr_SetAbsoluteTimer: SWS_FlexRayDriver S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_Function_definitions: SWS_FlexRayDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_4_Fr_AllowColdstart: SWS_FlexRayDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_7_5_Extended_Production_Errors: SWS_FlexRayDriver S. 26 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_4_Fr_AllowColdstart: SWS_FlexRayDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_Function_definitions: SWS_FlexRayDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_6_5_3_ReceiveAndStore: SWS_FlexRayInterface S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_2_2_8_3_FrameIDFlexRay: SWS_BusMirroring S. 53 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_9_2_4_Cancel_Transmission: SWS_FlexRayInterface S. 113 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 2: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_6_Configuration_description: SWS_FlexRayDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_6_5_2_ProvideTxConfirmation: SWS_FlexRayInterface S. 38 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_8_4_Function_definitions: SWS_FlexRayDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+ ],
+ "output_sha256": "eb6b3aecb123ea6bcf937b7f339fb9b5a34f952e377d7d530cca94db6185f8dd",
+ "output_store": "ai/store/outputs/eb/eb6b3aecb123ea6bcf937b7f339fb9b5a34f952e377d7d530cca94db6185f8dd.html",
  "params": {
   "module": "fr",
   "platform": "classic",
@@ -108,9 +170,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "f2cfe937c92a341efcb00b78e9b86889866f068e49d4fa43168204671ebbc69f",
- "prompt_store": "ai/store/prompts/f2/f2cfe937c92a341efcb00b78e9b86889866f068e49d4fa43168204671ebbc69f.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "ff0400b6ca2653de5504edac7b5f64346e29b88e12e15c25e7cddf6cb5509089",
+ "prompt_store": "ai/store/prompts/ff/ff0400b6ca2653de5504edac7b5f64346e29b88e12e15c25e7cddf6cb5509089.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -123,14 +185,70 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.345296,
-   "cost_usd_reported": 1.3452959999999998,
-   "created_at": "2026-10-09T07:02:38Z",
-   "duration_api_seconds": 344.28,
-   "duration_seconds": 344.462,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.399696,
+   "cost_usd_reported": 1.399696,
+   "created_at": "2026-10-13T02:51:23Z",
+   "duration_api_seconds": 369.892,
+   "duration_seconds": 372.593,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_8_1_Mandatory_Interfaces: SWS_FlexRayInterface S. 95 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_8_2_Optional_Interfaces: SWS_FlexRayInterface S. 97 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_1_Fr_Init: SWS_FlexRayDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit: SWS_FlexRayDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication: SWS_FlexRayDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_5_Fr_AllSlots: SWS_FlexRayDriver S. 44 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_6_Fr_HaltCommunication: SWS_FlexRayDriver S. 45 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_7_Fr_AbortCommunication: SWS_FlexRayDriver S. 47 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_9_Fr_SetWakeupChannel: SWS_FlexRayDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit: SWS_FlexRayDriver S. 41 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication: SWS_FlexRayDriver S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_4_Fr_AllowColdstart: SWS_FlexRayDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_9_Fr_SetWakeupChannel: SWS_FlexRayDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_8_Fr_SendWUP: SWS_FlexRayDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_COMM_SECTION_7_3_3_Variables: SWS_FlexRayStateManager S. 19 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_9_Fr_SetWakeupChannel: SWS_FlexRayDriver S. 49 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_8_Fr_SendWUP: SWS_FlexRayDriver S. 48 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_24_Fr_GetWakeupRxStatus: SWS_FlexRayDriver S. 78 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_11_Fr_TransmitTxLPdu: SWS_FlexRayDriver S. 53 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_6_5_2_ProvideTxConfirmation: SWS_FlexRayInterface S. 38 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_12_Fr_CancelTxLPdu: SWS_FlexRayDriver S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_5_FIFO_support_and_message_ID_filtering: SWS_FlexRayDriver S. 22 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_6_5_5_ReceiveAndIndicate: SWS_FlexRayInterface S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_6_5_5_ReceiveAndIndicate: SWS_FlexRayInterface S. 41 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_6_Configuration_description: SWS_FlexRayDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_10_2_3_FrController: SWS_FlexRayDriver S. 98 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_3_1_Fr_ConfigType: SWS_FlexRayDriver S. 34 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_3_Type_definitions: SWS_FlexRayDriver S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_15_Fr_PrepareLPdu: SWS_FlexRayDriver S. 61 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_6_5_6_PREP_ARE_LPDU: SWS_FlexRayInterface S. 42 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_17_Fr_DisableLPdu: SWS_FlexRayDriver S. 65 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_18_Fr_GetGlobalTime: SWS_FlexRayDriver S. 67 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_19_Fr_GetNmVector: SWS_FlexRayDriver S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_25_Fr_SetAbsoluteTimer: SWS_FlexRayDriver S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_Function_definitions: SWS_FlexRayDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_4_Fr_AllowColdstart: SWS_FlexRayDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_7_5_Extended_Production_Errors: SWS_FlexRayDriver S. 26 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_4_Fr_AllowColdstart: SWS_FlexRayDriver S. 43 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_8_4_Function_definitions: SWS_FlexRayDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_7_6_5_3_ReceiveAndStore: SWS_FlexRayInterface S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FR_SECTION_7_4_2_2_8_3_FrameIDFlexRay: SWS_BusMirroring S. 53 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_FRIF_SECTION_9_2_4_Cancel_Transmission: SWS_FlexRayInterface S. 113 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 2: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_5_Dependencies_to_other_modules: SWS_FlexRayDriver S. 15 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_6_Configuration_description: SWS_FlexRayDriver S. 25 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control: SWS_FlexRayDriver S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_7_6_5_2_ProvideTxConfirmation: SWS_FlexRayInterface S. 38 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_FR_SECTION_8_4_Function_definitions: SWS_FlexRayDriver S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -139,19 +257,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.3452959999999998,
-     "inputTokens": 109204,
+     "costUSD": 1.399696,
+     "inputTokens": 102609,
      "maxOutputTokens": 128000,
-     "outputTokens": 45424,
+     "outputTokens": 49463,
      "provider": "firstParty",
-     "thinkingTokens": 20657,
+     "thinkingTokens": 26892,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "9b729a22-332d-434c-bec4-2ebeffaa9057",
+   "run_id": "1b7b4080-1484-469e-b0cd-39be5417b0ec",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/9b729a22-332d-434c-bec4-2ebeffaa9057.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/1b7b4080-1484-469e-b0cd-39be5417b0ec.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -160,11 +278,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 109204,
-    "output_tokens": 45424,
+    "inference_geo": "global",
+    "input_tokens": 102609,
+    "output_tokens": 49463,
     "output_tokens_details": {
-     "thinking_tokens": 20657
+     "thinking_tokens": 26892
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -176,11 +294,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 109204,
-    "output": 45424,
-    "thinking": 20657
+    "input_uncached": 102609,
+    "output": 49463,
+    "thinking": 26892
    },
-   "wall_seconds": 346.082
+   "wall_seconds": 374.004
   }
  ],
  "schema": "ai-trace@2",

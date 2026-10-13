@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_00183" class="dossier-modal dossier-workbench" data-dossier-sha="153ee19047facbc1" aria-labelledby="dossier-modal-SWS_Dem_00183-title">
+<dialog id="dossier-modal-SWS_Dem_00183" class="dossier-modal dossier-workbench" data-dossier-sha="4702e224cd7b19f8" aria-labelledby="dossier-modal-SWS_Dem_00183-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_00183-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_00183)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,824 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,279 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_SetEventStatus'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -240,31 +258,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="1f575a6b10524b67f0edbb2e233801854ce59403f9f5bc8f56d214132dddce1c" data-trace-output="153ee19047facbc180e1e8d09758905fad4cdc51ec79932d28a6e418d27b0f53" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="706d7cf70a2d7f65666035cf6f206bdffde14d9cd51bb23b8a8ea0655b8e2061" data-trace-output="4702e224cd7b19f8005686dac16673ced529aeda3c63b6a046761d970d508348" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient Software-Komponenten und Basissoftware-Modulen zur Meldung von Diagnose-Testergebnissen an das Fehlerspeicher-Modul." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
 &lt;p&gt;
-Die Funktion &lt;code&gt;Dem_SetEventStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;) wird von SW-Cs und BSW-Modulen aufgerufen, um Testergebnisse eines Diagnosemonitors an das DEM zu melden (&lt;a class="spec-record-ref" data-req="SWS_Dem_00330" href="../../spec/record.html?id=SWS_Dem_00330"&gt;[SWS_Dem_00330]&lt;/a&gt;). Das API steht nur zur Verfügung, wenn &lt;code&gt;DemEventReportingType&lt;/code&gt; auf &lt;code&gt;STANDARD_REPORTING&lt;/code&gt; konfiguriert ist (&lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;). Übergeben werden die Kennung &lt;code&gt;EventId&lt;/code&gt; sowie das Testergebnis &lt;code&gt;EventStatus&lt;/code&gt; vom Typ &lt;code&gt;Dem_EventStatusType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00926" href="../../spec/record.html?id=SWS_Dem_00926"&gt;[SWS_Dem_00926]&lt;/a&gt;). Der Rückgabewert (&lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Übernahme bzw. &lt;code&gt;E_NOT_OK&lt;/code&gt; bei Fehlern oder Ablehnung) darf von BSW-Modulen ignoriert werden (&lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;).
-&lt;/p&gt;
-
-&lt;h4&gt;Nebenläufigkeit und Ausführungszeitpunkt&lt;/h4&gt;
-&lt;p&gt;
-Die Funktion ist reentrant für unterschiedliche &lt;code&gt;EventId&lt;/code&gt;s, jedoch nicht reentrant für dieselbe &lt;code&gt;EventId&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;). Bereits nach &lt;code&gt;Dem_PreInit&lt;/code&gt; werden Statusmeldungen zur internen Verarbeitung und Entprellung unterstützt (&lt;a class="spec-record-ref" data-req="SWS_Dem_00180" href="../../spec/record.html?id=SWS_Dem_00180"&gt;[SWS_Dem_00180]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_01212" href="../../spec/record.html?id=SWS_Dem_01212"&gt;[SWS_Dem_01212]&lt;/a&gt;). Vor dem vollständigen &lt;code&gt;Dem_Init&lt;/code&gt; gemeldete qualifizierte (Passed/Failed) oder entprellende Ereignisse werden in einer Warteschlange der konfigurierbaren Größe &lt;code&gt;DemBswErrorBufferSize&lt;/code&gt; gepuffert; &lt;code&gt;DEM_EVENT_STATUS_FDC_THRESHOLD_REACHED&lt;/code&gt; wird dabei nicht gepuffert (&lt;a class="spec-record-ref" data-req="SWS_Dem_00167" href="../../spec/record.html?id=SWS_Dem_00167"&gt;[SWS_Dem_00167]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00207" href="../../spec/record.html?id=SWS_Dem_00207"&gt;[SWS_Dem_00207]&lt;/a&gt;). Zudem ist der Aufruf vor &lt;code&gt;Dem_Init&lt;/code&gt; sowie nach &lt;code&gt;Dem_Shutdown&lt;/code&gt; explizit von der Prüfung auf &lt;code&gt;DEM_E_UNINIT&lt;/code&gt; ausgenommen (&lt;a class="spec-record-ref" data-req="SWS_Dem_00124" href="../../spec/record.html?id=SWS_Dem_00124"&gt;[SWS_Dem_00124]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00368" href="../../spec/record.html?id=SWS_Dem_00368"&gt;[SWS_Dem_00368]&lt;/a&gt;).
-&lt;/p&gt;
-
-&lt;h4&gt;Fehlerbehandlung und Randbedingungen&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;Wird &lt;code&gt;Dem_SetEventStatus&lt;/code&gt; bei aktivierter Entwicklungserkennung vor &lt;code&gt;Dem_PreInit&lt;/code&gt; aufgerufen, setzt das DEM den Fehlercode &lt;code&gt;DEM_E_UNINIT&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_00364" href="../../spec/record.html?id=SWS_Dem_00364"&gt;[SWS_Dem_00364]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;Ist ein Event als nicht verfügbar markiert, schlägt der Aufruf fehl und liefert &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück (&lt;a class="spec-record-ref" data-req="SWS_Dem_01108" href="../../spec/record.html?id=SWS_Dem_01108"&gt;[SWS_Dem_01108]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;Meldungen werden akzeptiert, sobald alle event-spezifischen Enable-Conditions erfüllt sind (&lt;a class="spec-record-ref" data-req="SWS_Dem_00450" href="../../spec/record.html?id=SWS_Dem_00450"&gt;[SWS_Dem_00450]&lt;/a&gt;). Ist das DTC-Setting deaktiviert, werden eingehende Reports ignoriert (&lt;a class="spec-record-ref" data-req="SWS_Dem_00626" href="../../spec/record.html?id=SWS_Dem_00626"&gt;[SWS_Dem_00626]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
-&lt;p&gt;
-Ist &lt;code&gt;DemTriggerFiMReports&lt;/code&gt; aktiv, benachrichtigt das DEM das FiM über &lt;code&gt;FiM_DemTriggerOnEventStatus&lt;/code&gt; direkt im Kontext von &lt;code&gt;Dem_SetEventStatus&lt;/code&gt; über Statusänderungen (&lt;a class="spec-record-ref" data-req="SWS_Dem_00029" href="../../spec/record.html?id=SWS_Dem_00029"&gt;[SWS_Dem_00029]&lt;/a&gt;). Bei Konfiguration von &lt;code&gt;DemEnvironmentDataCapture&lt;/code&gt; auf &lt;code&gt;DEM_CAPTURE_SYNCHRONOUS_TO_REPORTING&lt;/code&gt; werden Freeze-Frame-Daten (ohne zeitbasierte Entprellung) sowie Extended Data synchron im Kontext von &lt;code&gt;Dem_SetEventStatus&lt;/code&gt; erfasst (&lt;a class="spec-record-ref" data-req="SWS_Dem_00805" href="../../spec/record.html?id=SWS_Dem_00805"&gt;[SWS_Dem_00805]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_01082" href="../../spec/record.html?id=SWS_Dem_01082"&gt;[SWS_Dem_01082]&lt;/a&gt;). Bei konfigurierter Mehrfachauslösung (&lt;code&gt;DemMultiEventTriggering&lt;/code&gt;) leitet das DEM den Aufruf an alle zugehörigen Slave-Events weiter (&lt;a class="spec-record-ref" data-req="SWS_Dem_01250" href="../../spec/record.html?id=SWS_Dem_01250"&gt;[SWS_Dem_01250]&lt;/a&gt;).
-&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
+    Die Funktion &lt;code&gt;Dem_SetEventStatus&lt;/code&gt; dient SW-Cs und BSW-Modulen zur Übermittlung von Monitor-Testergebnissen an das DEM &lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00330" href="../../spec/record.html?id=SWS_Dem_00330"&gt;[SWS_Dem_00330]&lt;/a&gt;. Sie steht zur Verfügung, wenn für das Ereignis &lt;code&gt;STANDARD_REPORTING&lt;/code&gt; konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;. Als Statuswerte übergeben werden qualifizierte Ergebnisse (&lt;code&gt;DEM_EVENT_STATUS_PASSED&lt;/code&gt;, &lt;code&gt;DEM_EVENT_STATUS_FAILED&lt;/code&gt;), Vorqualifizierungen für die DEM-interne Entprellung (&lt;code&gt;DEM_EVENT_STATUS_PREPASSED&lt;/code&gt;, &lt;code&gt;DEM_EVENT_STATUS_PREFAILED&lt;/code&gt;) oder das Erreichen der Entprellschwelle &lt;code&gt;DEM_EVENT_STATUS_FDC_THRESHOLD_REACHED&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00926" href="../../spec/record.html?id=SWS_Dem_00926"&gt;[SWS_Dem_00926]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Hinsichtlich der Nebenläufigkeit ist die API für unterschiedliche &lt;code&gt;EventId&lt;/code&gt;-Werte reentrant, für dieselbe &lt;code&gt;EventId&lt;/code&gt; jedoch nicht reentrant ausgeführt &lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;. Vor der Vorinitialisierung via &lt;code&gt;Dem_PreInit&lt;/code&gt; führt ein Aufruf bei aktiver Entwicklungserkennung zum Fehler &lt;code&gt;DEM_E_UNINIT&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00364" href="../../spec/record.html?id=SWS_Dem_00364"&gt;[SWS_Dem_00364]&lt;/a&gt;. Nach &lt;code&gt;Dem_PreInit&lt;/code&gt;, aber noch vor &lt;code&gt;Dem_Init&lt;/code&gt;, ist der Aufruf hingegen zulässig &lt;a class="spec-record-ref" data-req="SWS_Dem_00124" href="../../spec/record.html?id=SWS_Dem_00124"&gt;[SWS_Dem_00124]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00180" href="../../spec/record.html?id=SWS_Dem_00180"&gt;[SWS_Dem_00180]&lt;/a&gt;; qualifizierende Ereignisse werden in einer Queue gepuffert, deren Größe über &lt;code&gt;DemBswErrorBufferSize&lt;/code&gt; bestimmt wird, während FDC-Schwellen nicht gepuffert werden &lt;a class="spec-record-ref" data-req="SWS_Dem_00167" href="../../spec/record.html?id=SWS_Dem_00167"&gt;[SWS_Dem_00167]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_00207" href="../../spec/record.html?id=SWS_Dem_00207"&gt;[SWS_Dem_00207]&lt;/a&gt;. Auch nach &lt;code&gt;Dem_Shutdown&lt;/code&gt; erzeugt die Funktion keinen &lt;code&gt;DEM_E_UNINIT&lt;/code&gt;-Fehler &lt;a class="spec-record-ref" data-req="SWS_Dem_00368" href="../../spec/record.html?id=SWS_Dem_00368"&gt;[SWS_Dem_00368]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Rückgabewert ist &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Übernahme bzw. &lt;code&gt;E_NOT_OK&lt;/code&gt; bei Fehlern oder wenn das Event auf nicht verfügbar gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_01108" href="../../spec/record.html?id=SWS_Dem_01108"&gt;[SWS_Dem_01108]&lt;/a&gt;. BSW-Module dürfen den Rückgabewert ignorieren &lt;a class="spec-record-ref" data-req="SWS_Dem_00183" href="../../spec/record.html?id=SWS_Dem_00183"&gt;[SWS_Dem_00183]&lt;/a&gt;. Meldungen werden akzeptiert, sobald zugewiesene Enable-Conditions erfüllt sind &lt;a class="spec-record-ref" data-req="SWS_Dem_00450" href="../../spec/record.html?id=SWS_Dem_00450"&gt;[SWS_Dem_00450]&lt;/a&gt;; ist das DTC-Setting deaktiviert, ignoriert das DEM den Report für den UDS-Status &lt;a class="spec-record-ref" data-req="SWS_Dem_00626" href="../../spec/record.html?id=SWS_Dem_00626"&gt;[SWS_Dem_00626]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Im Aufrufkontext können synchrone Aktionen ausgelöst werden:
+  &lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Benachrichtigung des FiM bei Statusänderung via &lt;code&gt;FiM_DemTriggerOnEventStatus&lt;/code&gt;, sofern &lt;code&gt;DemTriggerFiMReports&lt;/code&gt; aktiv ist &lt;a class="spec-record-ref" data-req="SWS_Dem_00029" href="../../spec/record.html?id=SWS_Dem_00029"&gt;[SWS_Dem_00029]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Erfassung synchroner Freeze-Frame-Daten und Extended-Data-Records bei konfigurierter Option &lt;code&gt;DEM_CAPTURE_SYNCHRONOUS_TO_REPORTING&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_00805" href="../../spec/record.html?id=SWS_Dem_00805"&gt;[SWS_Dem_00805]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_01082" href="../../spec/record.html?id=SWS_Dem_01082"&gt;[SWS_Dem_01082]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Kaskadierende Aufrufe für konfigurierte Slave-Events bei aktiver &lt;code&gt;DemMultiEventTriggering&lt;/code&gt;-Konfiguration &lt;a class="spec-record-ref" data-req="SWS_Dem_01250" href="../../spec/record.html?id=SWS_Dem_01250"&gt;[SWS_Dem_01250]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;
+    Dieser Hinweis wurde automatisch auf Basis der AUTOSAR-Spezifikation R20-11 generiert.
+  &lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -304,9 +321,9 @@ Ist &lt;code&gt;DemTriggerFiMReports&lt;/code&gt; aktiv, benachrichtigt das DEM 
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1f575a6b1052…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>706d7cf70a2d…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 205 <span class="dossier-meta-sub">(205 neu · 24 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 205 Belege dazugekommen (24 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 205 <span class="dossier-meta-sub">(205 neu · 13 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 205 Belege dazugekommen (13 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -442,4 +459,4 @@ Ist &lt;code&gt;DemTriggerFiMReports&lt;/code&gt; aktiv, benachrichtigt das DEM 
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00183","k":"function","d":"AUTOSAR","t":"","n":"Dem_SetEventStatus"}],"inbound":[{"i":"SWS_Dem_00330","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00330].","n":"SWS_Dem_00330"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b00066885d5edef7.json?v=42529e28" data-total="205" data-new="205" data-figures="24" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_00183","k":"function","d":"AUTOSAR","t":"","n":"Dem_SetEventStatus"}],"inbound":[{"i":"SWS_Dem_00330","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dem_00330].","n":"SWS_Dem_00330"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b00066885d5edef7.json?v=f66d4721" data-total="205" data-new="205" data-figures="13" data-used="0"></script></dialog>

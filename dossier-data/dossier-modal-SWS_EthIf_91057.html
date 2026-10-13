@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91057" class="dossier-modal dossier-workbench" data-dossier-sha="4b4aeeb0cd19baa5" aria-labelledby="dossier-modal-SWS_EthIf_91057-title">
+<dialog id="dossier-modal-SWS_EthIf_91057" class="dossier-modal dossier-workbench" data-dossier-sha="333568946940c95e" aria-labelledby="dossier-modal-SWS_EthIf_91057-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91057-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91057)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,301 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,756 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SignalQualityResultType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,26 +202,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="207bff0f35c1bf1b5c3ec8f858eb89624e1c191587c98f4de47f3a0911cba51f" data-trace-output="4b4aeeb0cd19baa51260994a750492327b749b780aa3d1d8105c8802c218fc33" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c6d5744fb7a0d5d4539218470ed89420051d5ea9e23e042c4f20cae1ac0b45a3" data-trace-output="333568946940c95eb9f99fcc48856e011609bea398b0c1761f3a24e0ff5a0cde" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bündelt Messwerte zur aktuellen sowie minimalen und maximalen Signalqualität einer Ethernet-Verbindung." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The data type &lt;code&gt;EthIf_SignalQualityResultType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91057" href="../../spec/record.html?id=SWS_EthIf_91057"&gt;[SWS_EthIf_91057]&lt;/a&gt;) is a data structure for acquiring and providing statistical signal quality values of an Ethernet connection. The type is provided via the header &lt;code&gt;EthIf.h&lt;/code&gt; and comprises three attributes of base type &lt;code&gt;uint32&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Datenstruktur &lt;code&gt;EthIf_SignalQualityResultType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91057" href="../../spec/record.html?id=SWS_EthIf_91057"&gt;[SWS_EthIf_91057]&lt;/a&gt;) dient der Erfassung und Diagnose der Verbindungsqualität auf Ethernet-Ebene und wird über die Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; bereitgestellt.&lt;/p&gt;
+  &lt;p&gt;Die Struktur bündelt drei Messgrößen vom Basistyp &lt;code&gt;uint32&lt;/code&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;HighestSignalQuality&lt;/code&gt;: Highest measured signal quality of the connection since the last reset.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LowestSignalQuality&lt;/code&gt;: Lowest measured signal quality of the connection since the last reset.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ActualSignalQuality&lt;/code&gt;: Currently measured signal quality of the connection.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;ActualSignalQuality&lt;/code&gt;: repräsentiert die aktuell anliegende Signalqualität der Ethernet-Verbindung.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;HighestSignalQuality&lt;/code&gt;: hält die höchste gemessene Signalqualität der Verbindung seit dem letzten Zurücksetzen fest.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;LowestSignalQuality&lt;/code&gt;: dokumentiert die niedrigste gemessene Signalqualität der Verbindung seit dem letzten Zurücksetzen.&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Interaction and Lifecycle&lt;/h4&gt;
-  &lt;p&gt;The extreme values captured in the structure (&lt;code&gt;HighestSignalQuality&lt;/code&gt; and &lt;code&gt;LowestSignalQuality&lt;/code&gt;) refer to the period since the last reset operation. The module &lt;code&gt;EthIf&lt;/code&gt; provides functions for this purpose with which these values are selectively reset:&lt;/p&gt;
+  &lt;p&gt;Im Zusammenspiel mit dem Modul &lt;code&gt;EthIf&lt;/code&gt; spiegeln die Extremwerte den Verlauf der Verbindungsstabilität wider. Das Zurücksetzen der intern gespeicherten Historienwerte wird über dedizierte Schnittstellen gesteuert:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00400" href="../../spec/record.html?id=SWS_EthIf_00400"&gt;[SWS_EthIf_00400]&lt;/a&gt;, the function &lt;code&gt;EthIf_ClearTrcvSignalQuality&lt;/code&gt; clears the stored signal quality values of the Ethernet transceiver specified via &lt;code&gt;TrcvIdx&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;According to &lt;a class="spec-record-ref" data-req="SWS_EthIf_00404" href="../../spec/record.html?id=SWS_EthIf_00404"&gt;[SWS_EthIf_00404]&lt;/a&gt;, the function &lt;code&gt;EthIf_ClearSwitchPortSignalQuality&lt;/code&gt; clears the stored signal quality values of the switch port specified via &lt;code&gt;SwitchIdx&lt;/code&gt; and &lt;code&gt;SwitchPortIdx&lt;/code&gt;.&lt;/li&gt;
+    &lt;li&gt;Für einen über &lt;code&gt;TrcvIdx&lt;/code&gt; spezifizierten Transceiver setzt die Funktion &lt;code&gt;EthIf_ClearTrcvSignalQuality&lt;/code&gt; die gespeicherten Signalqualitätswerte zurück (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00400" href="../../spec/record.html?id=SWS_EthIf_00400"&gt;[SWS_EthIf_00400]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;Für einen über &lt;code&gt;SwitchIdx&lt;/code&gt; und &lt;code&gt;SwitchPortIdx&lt;/code&gt; identifizierten Switch-Port löscht &lt;code&gt;EthIf_ClearSwitchPortSignalQuality&lt;/code&gt; die gespeicherten Signalqualitätswerte (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00404" href="../../spec/record.html?id=SWS_EthIf_00404"&gt;[SWS_EthIf_00404]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;Interpretation: Reading out the structure values is likely to take place via separate read interfaces of &lt;code&gt;EthIf&lt;/code&gt;, since the type itself acts as a pure result and data container. In addition, the scaling, value range, and physical unit of the &lt;code&gt;uint32&lt;/code&gt; values are likely to depend on the respective transceiver or switch hardware, as the interface specification does not specify an explicit unit.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification CP R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Interpretation: Das Auslesen der Strukturwerte dürfte über gesonderte Lese-Schnittstellen des EthIf erfolgen – Begründung: Der Payload enthält nur Clear-Funktionen, der Zugriff auf die Datenstruktur setzt jedoch Abfragefunktionen voraus. 2) Interpretation: Skalierung und physikalische Bedeutung der uint32-Werte dürften hardware- bzw. treiberabhängig sein – Begründung: Die Spezifikation definiert für die drei Felder lediglich uint32 ohne Angabe eines Wertebereichs oder einer physikalischen Einheit. --&gt;
+  &lt;p&gt;Interpretation: Da der Payload keine spezifische Lese-Funktion nennt, dürfte die Struktur vermutlich als Ausgabeparameter entsprechender Statusabfragen für Transceiver und Switch-Ports dienen, um die aktuelle Signalqualität mit den Extremwerten abzugleichen.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Die Struktur dürfte vermutlich als Ausgabeparameter für Statusabfragen von Transceivern und Switch-Ports dienen – Begründung: Die Spezifikation definiert im Payload die Struktur und Löschfunktionen, führt jedoch keine explizite Abfragefunktion auf. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und basiert ausschließlich auf den Spezifikationsvorgaben aus R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -243,7 +260,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>207bff0f35c1…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c6d5744fb7a0…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -381,4 +398,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91057","k":"type","d":"AUTOSAR","t":"","n":"EthIf_SignalQualityResultType"}],"inbound":[{"i":"SWS_EthIf_00400","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00400].","n":"SWS_EthIf_00400"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ae21c4c424b32a58.json?v=cbbcf912" data-total="8" data-new="8" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91057","k":"type","d":"AUTOSAR","t":"","n":"EthIf_SignalQualityResultType"}],"inbound":[{"i":"SWS_EthIf_00400","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EthIf_00400].","n":"SWS_EthIf_00400"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ae21c4c424b32a58.json?v=5e610843" data-total="8" data-new="8" data-figures="0" data-used="0"></script></dialog>

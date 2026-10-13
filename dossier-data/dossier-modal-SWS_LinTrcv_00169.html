@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_LinTrcv_00169" class="dossier-modal dossier-workbench" data-dossier-sha="29d1146bcec6ba58" aria-labelledby="dossier-modal-SWS_LinTrcv_00169-title">
+<dialog id="dossier-modal-SWS_LinTrcv_00169" class="dossier-modal dossier-workbench" data-dossier-sha="d560d19ec1629a79" aria-labelledby="dossier-modal-SWS_LinTrcv_00169-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_LinTrcv_00169-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_LinTrcv_00169)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,191 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,646 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'LinTrcv_TrcvWakeupModeType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,19 +193,32 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="507e608db44d52b0a913c37b6f39f0203c73d826764c1eb3cd370a6ceb5329b0" data-trace-output="29d1146bcec6ba58a4c12899f090f2f7bab9d601ca06fe74c7e345c1e2f66b37" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="e813afb11b1ad26897af8593f0c956e0b90e255f545f7a83510df7948e117431" data-trace-output="d560d19ec1629a79e8787bbe8d913a4807f8549c24ac14246e99254f6d08de88" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Definiert die Betriebsmodi zur Aktivierung, Deaktivierung und Löschung von Wakeup-Ereignissen des LIN-Transceivers." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;, enumeration type &lt;code&gt;LinTrcv_TrcvWakeupModeType&lt;/code&gt; specifies the operating modes for controlling wake-up events in the LIN transceiver driver (module &lt;code&gt;LinTrcv&lt;/code&gt;). The type definition is provided via header file &lt;code&gt;Lin_GeneralTypes.h&lt;/code&gt; and is used for the uniform definition of wake-up modes for the respective addressed network (&lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;, three enumeration values are available:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Wertebereich&lt;/h4&gt;
+  &lt;p&gt;
+    Der Typ &lt;code&gt;LinTrcv_TrcvWakeupModeType&lt;/code&gt; ist eine Enumeration, die die Betriebsmodi für Wakeup-Ereignisse des LIN-Transceiver-Treibers definiert &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;. Er wird über die Header-Datei &lt;code&gt;Lin_GeneralTypes.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;p&gt;
+    Die Enumeration umfasst folgende Werte zur Steuerung des adressierten Netzwerks &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;:
+  &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;LINTRCV_WUMODE_ENABLE&lt;/code&gt;: Enables notification for wake-up events on the addressed network (&lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LINTRCV_WUMODE_DISABLE&lt;/code&gt;: Disables notification for wake-up events on the addressed network (&lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;LINTRCV_WUMODE_CLEAR&lt;/code&gt;: Clears a wake-up event stored on the addressed network (&lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;LINTRCV_WUMODE_ENABLE&lt;/code&gt;: Aktiviert die Benachrichtigung für Wakeup-Ereignisse auf dem adressierten Netzwerk &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;LINTRCV_WUMODE_DISABLE&lt;/code&gt;: Deaktiviert die Benachrichtigung für Wakeup-Ereignisse auf dem adressierten Netzwerk &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;LINTRCV_WUMODE_CLEAR&lt;/code&gt;: Löscht ein zuvor gespeichertes Wakeup-Ereignis auf dem adressierten Netzwerk &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;As a pure enumeration type, &lt;code&gt;LinTrcv_TrcvWakeupModeType&lt;/code&gt; has no direct execution semantics such as synchronous or asynchronous properties and does not define separate error codes for development (DET) or production (DEM). Aspects such as reentrancy, call contexts, or return values concern the driver functions that use this type as a pass parameter.&lt;/p&gt;
-  &lt;p&gt;Interpretation: Presumably, this type serves as a control parameter for interfaces of module &lt;code&gt;LinTrcv&lt;/code&gt; to enable, disable, or reset remaining wake-up flags in the transceiver for signaling wake-up pulses to higher layers on a channel-by-channel basis.&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was automatically generated based on AUTOSAR R20-11.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Der Typ dient vermutlich als Steuerparameter in Treiber-APIs zur netzwerkbezogenen Verwaltung von Weckereignissen – Begründung: SWS_LinTrcv_00169 definiert die Enumerationswerte, benennt an dieser Stelle jedoch keine konkreten Funktionssignaturen. --&gt;
+  &lt;h4&gt;Fehlerbehandlung und Randbedingungen&lt;/h4&gt;
+  &lt;p&gt;
+    Für den Typ selbst sind in der Spezifikation keine spezifischen Fehlercodes, Rückgabewerte oder DET-/DEM-Fehlermeldungen definiert &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;. Als Datentyp unterliegt er keinen direkten Reentranz- oder Ausführungsbeschränkungen.
+  &lt;/p&gt;
+  &lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;
+    Interpretation: Der Typ dürfte in API-Funktionen des LIN-Transceiver-Treibers als Übergabeparameter dienen, um die Wakeup-Erkennung netzwerkspezifisch ein- bzw. auszuschalten oder den Wakeup-Status zurückzusetzen &lt;a class="spec-record-ref" data-req="SWS_LinTrcv_00169" href="../../spec/record.html?id=SWS_LinTrcv_00169"&gt;[SWS_LinTrcv_00169]&lt;/a&gt;.
+  &lt;/p&gt;
+  &lt;!-- annahmen: 1) Der Typ dient vermutlich als Übergabeparameter in Steuerungsfunktionen des LIN-Transceivers – Begründung: Die Spezifikation definiert nur die Modi (Enable, Disable, Clear), nennt im vorliegenden Payload jedoch keine konkreten Funktionssignaturen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Er basiert ausschließlich auf den Spezifikationsdaten aus SWS_LinTrcv_00169.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -227,7 +258,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>507e608db44d…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e813afb11b1a…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -365,4 +396,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinTrcv_00169","k":"type","d":"AUTOSAR","t":"","n":"LinTrcv_TrcvWakeupModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/d884f88c54e0fb37.json?v=ac2f9f8e" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LinTrcv_00169","k":"type","d":"AUTOSAR","t":"","n":"LinTrcv_TrcvWakeupModeType"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/d884f88c54e0fb37.json?v=b46e723a" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

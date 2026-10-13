@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_fw_ara_fw_a83f01" class="dossier-modal dossier-workbench" data-dossier-sha="adb653c99417f0f4" aria-labelledby="dossier-modal-ns_fw_ara_fw_a83f01-title">
+<dialog id="dossier-modal-ns_fw_ara_fw_a83f01" class="dossier-modal dossier-workbench" data-dossier-sha="1944d96ba789638b" aria-labelledby="dossier-modal-ns_fw_ara_fw_a83f01-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_fw_ara_fw_a83f01-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_fw_ara_fw_a83f01)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,887 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,409 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace ara::fw' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -222,40 +241,77 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="a11a4d89800939523ca9ea7f1654eaa60ddcddc0e387417becb31f7d32c863aa" data-trace-output="adb653c99417f0f4ca9dc988f55e0d7f5a7fb673b44d5b1a9b9d71f1057078dc" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="6e0fe6eab1d5305fe0273f0cdba93368acedb6ff8b163dddc641c22904b7409b" data-trace-output="1944d96ba789638bf7b223d6c5d1ee8187a1786a18f8d8c27682be5268b1c813" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Stellt Schnittstellen zur zustandsabhängigen Firewall-Steuerung sowie standardisierte Fehlercodes bereit." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-The namespace &lt;code&gt;ara::fw&lt;/code&gt; provides functional interfaces and error mechanisms of the Adaptive Platform module for firewall functionality. Interaction centers on the control of firewall states via functional interfaces such as &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt; in conjunction with the adaptive application logic, as well as error handling based on the AUTOSAR standard model with &lt;code&gt;FwErrorDomain&lt;/code&gt; and &lt;code&gt;FwException&lt;/code&gt;. Typical interaction partners are expected to be the firewall service instance within the platform, state-managing functional clusters, and the consuming software component that requests or switches rule sets.
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Stellt Schnittstellen zur zustandsabhängigen Firewall-Steuerung sowie standardisierte Fehlercodes bereit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namensraum &lt;code&gt;ara::fw&lt;/code&gt; stellt Typen und Schnittstellen für die Firewall-Steuerung sowie deren standardisierte Fehlerbehandlung in der AUTOSAR Adaptive Platform bereit. Das Modul definiert mit &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt; eine Schnittstelle für Firewall-Zustände und erzeugt über die thread-sichere Funktion &lt;code&gt;MakeErrorCode&lt;/code&gt; typisierte Fehlerobjekte auf Basis der Fehlerdomäne &lt;code&gt;FwErrorDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;. Auftretende Probleme werden durch die Enumeration &lt;code&gt;FwErrc&lt;/code&gt; abgebildet, die unter anderem nicht verfügbare Dienste oder ungültige zustandsabhängige Konfigurationen anzeigt &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;. Alle Kernfunktionen zur Fehlererzeugung sind thread-sicher und als &lt;code&gt;noexcept&lt;/code&gt; deklariert.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namensraum &lt;code&gt;ara::fw&lt;/code&gt; bündelt die Programmierschnittstellen und Typen für die Firewall-Funktionalität der AUTOSAR Adaptive Platform im Release R25-11. Die primäre Rolle des Moduls besteht in der Bereitstellung von Mechanismen zur Filterung und Absicherung der fahrzeuginternen Netzwerkkommunikation. Zu den Kernbestandteilen des Namensraums gehören die Schnittstelle &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt; sowie die Komponenten zur standardisierten Fehlerbehandlung, bestehend aus &lt;code&gt;FwErrorDomain&lt;/code&gt;, &lt;code&gt;FwException&lt;/code&gt; und den zugehörigen Fehlercodes. Die Architektur fügt sich nahtlos in das Plattform-Fehlerkonzept von &lt;code&gt;ara::core&lt;/code&gt; ein. Externe Interaktionspartner wie zustandsverwaltende Plattformdienste oder Applikationen nutzen den Namensraum, um sicherheitsrelevante Firewall-Zustände zu steuern oder aufgetretene Ausführungsfehler aufzulösen. Interpretation: Die Klasse &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt; dient vermutlich als primäre Schnittstelle zur Aktivierung und Umschaltung von Regelsätzen in Abhängigkeit vom übergeordneten Systemzustand.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-For structured error detection and handling, the namespace uses the platform-wide error concept via the error domain &lt;code&gt;FwErrorDomain&lt;/code&gt;. Error states of the module are typed via the enumeration &lt;code&gt;FwErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-The following specific error codes are defined in the error domain:
-&lt;/p&gt;
+&lt;div class="diagram" id="diag-fw-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 290.24 232.80" style="max-width:387px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)"&gt;
+&lt;!-- Anwendung --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;Anwendung&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M148.03,-204C148.03,-204 102.26,-204 102.26,-204 96.26,-204 90.26,-198 90.26,-192 90.26,-192 90.26,-180 90.26,-180 90.26,-174 96.26,-168 102.26,-168 102.26,-168 148.03,-168 148.03,-168 154.03,-168 160.03,-174 160.03,-180 160.03,-180 160.03,-192 160.03,-192 160.03,-198 154.03,-204 148.03,-204"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="125.14" y="-182.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Anwendung&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- FirewallStateSwitchInterface --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;FirewallStateSwitchInterface&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M132.28,-120C132.28,-120 12,-120 12,-120 6,-120 0,-114 0,-108 0,-108 0,-96 0,-96 0,-90 6,-84 12,-84 12,-84 132.28,-84 132.28,-84 138.28,-84 144.28,-90 144.28,-96 144.28,-96 144.28,-108 144.28,-108 144.28,-114 138.28,-120 132.28,-120"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="72.14" y="-98.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_fw_FirewallStateSwitchInterface_a82001.html" href="../classes/cl_ara_fw_FirewallStateSwitchInterface_a82001.html"&gt;FirewallStateSwitchInterface&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;FirewallStateSwitchInterface --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;FirewallStateSwitchInterface&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M89.87,-172.58C79.88,-167.25 70.18,-159.9 64.46,-150 61.2,-144.36 60.68,-137.75 61.51,-131.29"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="64.88,-132.23 63.79,-121.69 58.07,-130.61 64.88,-132.23"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="119.3" y="-141" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Zustandswechsel anfordern&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- FwErrorDomain --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;FwErrorDomain&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M162.5,-36C162.5,-36 97.79,-36 97.79,-36 91.79,-36 85.79,-30 85.79,-24 85.79,-24 85.79,-12 85.79,-12 85.79,-6 91.79,0 97.79,0 97.79,0 162.5,0 162.5,0 168.5,0 174.5,-6 174.5,-12 174.5,-12 174.5,-24 174.5,-24 174.5,-30 168.5,-36 162.5,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="130.14" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_fw_FwErrorDomain_a83006.html" href="../classes/cl_ara_fw_FwErrorDomain_a83006.html"&gt;FwErrorDomain&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;FwErrorDomain --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;FwErrorDomain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M158.86,-167.51C165.01,-162.71 170.6,-156.88 174.14,-150 193.67,-112.06 192.68,-92.43 174.14,-54 172.49,-50.57 170.32,-47.37 167.82,-44.42"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="170.34,-41.99 160.76,-37.46 165.43,-46.97 170.34,-41.99"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="224.93" y="-99" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Fehlercode prüfen&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- FirewallStateSwitchInterface&amp;#45;&amp;gt;FwErrorDomain --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;FirewallStateSwitchInterface-&amp;gt;FwErrorDomain&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M77.08,-83.52C80.21,-74.24 84.87,-62.93 91.13,-54 93.45,-50.7 96.14,-47.49 98.99,-44.44"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="101.41,-46.97 106.13,-37.49 96.53,-41.96 101.41,-46.97"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="132.64" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Fehlercode erzeugen&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel von Anwendung, FirewallStateSwitchInterface und FwErrorDomain bei der Fehlerauflösung. Quellen: &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad im Namensraum &lt;code&gt;ara::fw&lt;/code&gt; umfasst die Initiierung von Zustandsänderungen sowie die Erzeugung, Weitergabe und Auswertung von Fehlerzuständen bei der Ausführung von Firewall-Funktionen. Schlägt eine Operation im Kontext von &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt; fehl oder kann eine Zustandsanforderung nicht erfüllt werden, greift das Modul auf die spezifische Fehlerdomäne zu, um dem Aufrufer ein präzises Diagnoseergebnis zu liefern. Zur Instanziierung eines solchen Fehlers wird die Funktion &lt;code&gt;MakeErrorCode&lt;/code&gt; aufgerufen &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;. Diese Funktion erzeugt einen &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, indem sie einen Fehlerwert aus &lt;code&gt;FwErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt; und optionale herstellerspezifische Zusatzdaten vom Typ &lt;code&gt;ara::core::ErrorDomain::SupportDataType&lt;/code&gt; entgegennimmt &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;. Da &lt;code&gt;MakeErrorCode&lt;/code&gt; als &lt;code&gt;constexpr&lt;/code&gt; und &lt;code&gt;noexcept&lt;/code&gt; deklariert ist, kann die Fehlercode-Erstellung ressourcenschonend und deterministisch erfolgen.&lt;/p&gt;
+&lt;p&gt;Aufruferseitig wird der zurückgegebene Fehler meist in einem Ergebnisobjekt (wie &lt;code&gt;ara::core::Result&lt;/code&gt;) empfangen. Zur programmgesteuerten Verifikation der Fehlerherkunft dient die freie Funktion &lt;code&gt;GetFwErrorDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt;, welche eine konstante Referenz auf das Singleton der Fehlerdomäne &lt;code&gt;FwErrorDomain&lt;/code&gt; liefert. Aufrufer können damit abgleichen, ob ein aufgetretener Fehler tatsächlich aus dem Firewall-Modul stammt, und dessen textuelle Beschreibung ermitteln. Interpretation: In Systemarchitekturen, die C++-Ausnahmen einsetzen, dient die Klasse &lt;code&gt;FwException&lt;/code&gt; vermutlich dem Zweck, den &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; abfangbar zu kapseln und synchron an übergeordnete Fehlerbehandlungsroutinen weiterzuleiten.&lt;/p&gt;
+
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Für Fehlersituationen definiert die Enumeration &lt;code&gt;FwErrc&lt;/code&gt; im Namensraum &lt;code&gt;ara::fw&lt;/code&gt; spezifische Fehlerursachen für die Fehlerdomäne &lt;code&gt;FwErrorDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;. Die Header-Datei &lt;code&gt;ara/fw/fw_error_domain.h&lt;/code&gt; deklariert dabei folgende standardisierte Fehlerzustände:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;FwErrc::kServiceNotAvailable&lt;/code&gt; (value: 1): Indicates situations where the underlying firewall service is not available or temporarily unreachable &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;FwErrc::kInvalidStateDependentFirewall&lt;/code&gt; (value: 2): Occurs when a state-dependent firewall configuration or switch is invalid or transitions to an impermissible state &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kServiceNotAvailable&lt;/code&gt; (Wert 1): Kennzeichnet, dass der adressierte Firewall-Dienst zur Laufzeit nicht erreichbar oder gegenwärtig nicht betriebsbereit ist &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;. Mögliche Ursachen liegen in noch nicht initialisierten Hintergrundkomponenten oder temporären Verbindungsabbrüchen. Vorbedingungen für nachfolgende Aufrufe sind nicht erfüllt, sodass Aufrufer den Dienststatus abfragen oder die Anfrage zu einem späteren Zeitpunkt wiederholen müssen.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kInvalidStateDependentFirewall&lt;/code&gt; (Wert 2): Tritt auf, wenn eine angeforderte zustandsabhängige Firewall-Konfiguration ungültig ist oder ein ungültiger Zustandsübergang angefordert wurde &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;. Vorbedingung für erfolgreiche Umschaltoperationen ist, dass die Ziel-Firewall die gewünschten Zustände unterstützt und das System sich in einem zulässigen Grundzustand befindet. Nach Auftreten dieses Fehlers verbleibt die Firewall unverändert im bisherigen Schutzmodus.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;
-The error domain can be obtained thread-safely via the free function &lt;code&gt;GetFwErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt;. Concrete instances of &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; are constructed with &lt;code&gt;MakeErrorCode()&lt;/code&gt;, which is likewise specified as &lt;code&gt;constexpr&lt;/code&gt; and thread-safe &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;. If an error occurs in contexts where exceptions rather than error codes are evaluated, &lt;code&gt;FwException&lt;/code&gt; represents this state in the namespace.
-&lt;/p&gt;
-
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The regular path for diagnosis and error code creation in the namespace comprises instantiating the error code and subsequent evaluation by the calling application:
-&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;Identification of an error case (for instance, service unavailability) in an interaction with &lt;code&gt;FirewallStateSwitchInterface&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;Creation of the module-specific &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; mittels &lt;code&gt;MakeErrorCode(ara::fw::FwErrc, ara::core::ErrorDomain::SupportDataType)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;Checking the error code against the reference of &lt;code&gt;GetFwErrorDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt; or direct evaluation of the enumeration &lt;code&gt;FwErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt; by the calling component to initiate adequate fallback measures.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;!-- annahmen: 1) Typische Interaktionspartner dürften die Firewall-Dienstinstanz, zustandsverwaltende Funktionscluster sowie die anwendende Software-Komponente sein – Begründung: Der Payload belegt Klassen- und Interfacenamen (FirewallStateSwitchInterface, FwException, FwErrorDomain), Details zu Interaktionspartnern sind im Payload jedoch nicht separat spezifiziert. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated automatically based on the specification for Release R25-11.&lt;/p&gt;
+&lt;p&gt;Beide Fehlerwerte basieren auf dem Basistyp &lt;code&gt;ara::core::ErrorDomain::CodeType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83001" href="../spec/record.html?id=AP_SWS_Fw_83001"&gt;[AP_SWS_Fw_83001]&lt;/a&gt;. Die Funktionen &lt;code&gt;GetFwErrorDomain&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83002" href="../spec/record.html?id=AP_SWS_Fw_83002"&gt;[AP_SWS_Fw_83002]&lt;/a&gt; und &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_Fw_83003" href="../spec/record.html?id=AP_SWS_Fw_83003"&gt;[AP_SWS_Fw_83003]&lt;/a&gt; sind ausdrücklich als thread-sicher (&lt;code&gt;thread-safe&lt;/code&gt;) und &lt;code&gt;noexcept&lt;/code&gt; deklariert, wodurch eine sichere Fehlerbehandlung auch in hochgradig nebenläufigen oder zeitkritischen Kontexten gewährleistet ist.&lt;/p&gt;
+&lt;!-- annahmen: 1) FirewallStateSwitchInterface dient vermutlich der Anforderung und Umschaltung von Firewall-Zuständen – Begründung: Der Klassenname und der Fehlercode kInvalidStateDependentFirewall deuten auf zustandsabhängige Filterregeln hin, während der Payload keine Methodensignaturen enthält. 2) FwException kapselt vermutlich Fehlercodes der FwErrorDomain für ausnahmebasierte Fehlerpfade – Begründung: Entspricht dem Entwurfsmuster der Adaptive Platform für modulspezifische Exceptions, Details fehlen jedoch im Payload. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationen der AUTOSAR Adaptive Platform R25-11 zum Modul fw.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -297,7 +353,7 @@ The regular path for diagnosis and error code creation in the namespace comprise
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a11a4d898009…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>6e0fe6eab1d5…</code></div>
               <div><strong>Konstituierende Records:</strong> 3</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -435,4 +491,4 @@ The regular path for diagnosis and error code creation in the namespace comprise
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"AP_SWS_Fw_83001","k":"enumeration","d":"FW","t":"enumeration FwErrc [AP_SWS_Fw_83001] enum class FwErrc : ara::core::ErrorDomain::CodeType {...}; Defines the error codes for FwErrorDomain. Header-Datei #include \"ara/fw/fw_error_domain.h\" class mono Scope namespace ara::fw class mono Werte kServiceNotAvailable=1; kInvalidStateDependentFirewall=2 class mono","n":"FwErrc"},{"i":"AP_SWS_Fw_83002","k":"function","d":"FW","t":"function GetFwErrorDomain [AP_SWS_Fw_83002] constexpr const ara::core::ErrorDomain &GetFwErrorDomain() noexcept; Returns a reference to the FwErrorDomain object. Header-Datei #include \"ara/fw/fw_error_domain.h\" class mono Scope namespace ara::fw class mono Thread-Sicherheit thread-safe","n":"GetFwErrorDomain"},{"i":"AP_SWS_Fw_83003","k":"function","d":"FW","t":"function MakeErrorCode [AP_SWS_Fw_83003] constexpr ara::core::ErrorCode MakeErrorCode(ara::fw::FwErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an ErrorCode instance. Header-Datei #include \"ara/fw/fw_error_domain.h\" class mono Scope namespace ara::fw class mono Thread-Sicherheit thread-safe","n":"MakeErrorCode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/3a4e301b6fe3b9c9.json?v=0c4458ca" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"AP_SWS_Fw_83001","k":"enumeration","d":"FW","t":"enumeration FwErrc [AP_SWS_Fw_83001] enum class FwErrc : ara::core::ErrorDomain::CodeType {...}; Defines the error codes for FwErrorDomain. Header-Datei #include \"ara/fw/fw_error_domain.h\" class mono Scope namespace ara::fw class mono Werte kServiceNotAvailable=1; kInvalidStateDependentFirewall=2 class mono","n":"FwErrc"},{"i":"AP_SWS_Fw_83002","k":"function","d":"FW","t":"function GetFwErrorDomain [AP_SWS_Fw_83002] constexpr const ara::core::ErrorDomain &GetFwErrorDomain() noexcept; Returns a reference to the FwErrorDomain object. Header-Datei #include \"ara/fw/fw_error_domain.h\" class mono Scope namespace ara::fw class mono Thread-Sicherheit thread-safe","n":"GetFwErrorDomain"},{"i":"AP_SWS_Fw_83003","k":"function","d":"FW","t":"function MakeErrorCode [AP_SWS_Fw_83003] constexpr ara::core::ErrorCode MakeErrorCode(ara::fw::FwErrc code, ara::core::ErrorDomain::SupportDataType data) noexcept; Creates an ErrorCode instance. Header-Datei #include \"ara/fw/fw_error_domain.h\" class mono Scope namespace ara::fw class mono Thread-Sicherheit thread-safe","n":"MakeErrorCode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/3a4e301b6fe3b9c9.json?v=b9f89df4" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>

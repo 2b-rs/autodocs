@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00065" class="dossier-modal dossier-workbench" data-dossier-sha="1fe9b1879f6ed21f" aria-labelledby="dossier-modal-SWS_KeyM_00065-title">
+<dialog id="dossier-modal-SWS_KeyM_00065" class="dossier-modal dossier-workbench" data-dossier-sha="ac91c6f7efa41360" aria-labelledby="dossier-modal-SWS_KeyM_00065-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00065-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00065)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,595 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,050 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_CertElementGetNext'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,43 +193,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="891c1c85c36289dfefb0d8dabd79bb30641d430848685bdcdfb15f27cd570e40" data-trace-output="1fe9b1879f6ed21fc0ace6ed55c72a2bc80cb4c422a01ecc178917bb0a2644bd" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d7d77461fd1db13cb475115da51cb3441231df72d6e3bf1cefe043124b1f8a59" data-trace-output="ac91c6f7efa413604d4f442a4bf443d2af73394c7cbda30d40743614f5b28455" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Liest weitere Daten eines Zertifikatselements nach einem initialen Erstaufruf sequenziell in einen Puffer aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Flow&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;KeyM_CertElementGetNext&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;) reads subsequent data of a certificate element if an element contains multiple data records to be retrieved sequentially. A prerequisite for the call is that &lt;code&gt;KeyM_CertElementGetFirst()&lt;/code&gt; has previously been called at least once. The declaration is provided via the header file &lt;code&gt;KeyM.h&lt;/code&gt;.
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;
+    Die synchrone Funktion &lt;code&gt;KeyM_CertElementGetNext&lt;/code&gt; (Service-ID &lt;code&gt;0x11&lt;/code&gt;, bereitgestellt über &lt;code&gt;KeyM.h&lt;/code&gt;) dient dem fortlaufenden Auslesen weiterer Daten aus einem Zertifikatselement, falls darin mehrere Datensätze sequenziell abgelegt sind &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;. Als zwingende Aufrufbedingung verlangt die Spezifikation, dass zuvor mindestens einmal die Funktion &lt;code&gt;KeyM_CertElementGetFirst()&lt;/code&gt; aufgerufen wurde &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;.
   &lt;/p&gt;
-  &lt;h4&gt;Parameters and buffers&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;code&gt;CertElementIterator&lt;/code&gt; (inout): Pointer to an iterator structure provided by the caller. It must neither be modified nor released by the application during the entire iteration process (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;CertElementData&lt;/code&gt; (out): Pointer to the buffer allocated by the caller, into which the element data is copied upon successful execution.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;code&gt;CertElementDataLength&lt;/code&gt; (inout): Passes on the input side the maximum length of the data buffer. Upon return of &lt;code&gt;E_OK&lt;/code&gt;, the value is overwritten with the actually written byte length (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;).
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
   &lt;p&gt;
-    The function returns the following status values via type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;):
+    Die Speicherbereiche für sämtliche Parameter müssen durch die aufrufende Applikation bereitgestellt werden &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;:
   &lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Element successfully found, data provided in the buffer, and iterator updated accordingly.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Element data was not found. The iterator must no longer be used for any further calls.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_SIZE_MISMATCH&lt;/code&gt;: The provided data buffer is too small for the certificate element.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt;: Invalid certificate ID or invalid certificate element ID.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_KEY_CERT_EMPTY&lt;/code&gt;: No certificate data is available (certificate is empty).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;KEYM_E_CERT_INVALID&lt;/code&gt;: The certificate is invalid or was not successfully verified.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CertElementIterator&lt;/code&gt;: Zeiger auf eine allokierte Iterator-Struktur, die von der Anwendung während des Durchlaufens weder modifiziert noch zerstört werden darf, bis alle Elemente vollständig ausgelesen sind &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CertElementData&lt;/code&gt;: Zeiger auf den Ausgabepuffer, in welchen die Funktion bei erfolgreicher Ausführung die Nutzdaten kopiert &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CertElementDataLength&lt;/code&gt;: Übergibt beim Aufruf die maximale Kapazität des Datenpuffers und wird bei erfolgreicher Rückgabe mit der tatsächlichen Länge der kopierten Daten überschrieben &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
   &lt;p&gt;
-    &lt;code&gt;KeyM_CertElementGetNext&lt;/code&gt; operates synchronously and is reentrant for exactly one iterator (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;). Parallel calls must therefore not use the same iterator.
+    Liefert der Aufruf &lt;code&gt;E_OK&lt;/code&gt;, wurde das nächste Element gefunden, in den Puffer geschrieben und der Iterator entsprechend weitergeführt &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;. Bei &lt;code&gt;E_NOT_OK&lt;/code&gt; konnten keine weiteren Elementdaten gefunden werden; in diesem Fall darf der Iterator für keine weiteren Aufrufe mehr genutzt werden &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;. Fehlersituationen werden über spezifische Rückgabewerte gemeldet: &lt;code&gt;KEYM_E_KEY_CERT_SIZE_MISMATCH&lt;/code&gt; zeigt einen zu klein dimensionierten Datenpuffer an, &lt;code&gt;KEYM_E_PARAMETER_MISMATCH&lt;/code&gt; eine ungültige Zertifikats- oder Element-ID, &lt;code&gt;KEYM_E_KEY_CERT_EMPTY&lt;/code&gt; ein leeres Zertifikat und &lt;code&gt;KEYM_E_CERT_INVALID&lt;/code&gt; ein ungültiges oder nicht erfolgreich verifiziertes Zertifikat &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;.
   &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note is based on the specification AUTOSAR Classic Release R20-11 (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;).
+  &lt;p&gt;
+    Bezüglich der Nebenläufigkeit ist die synchrone Funktion reentrant für jeweils einen Iterator spezifiziert &lt;a class="spec-record-ref" data-req="SWS_KeyM_00065" href="../../spec/record.html?id=SWS_KeyM_00065"&gt;[SWS_KeyM_00065]&lt;/a&gt;.
   &lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der AUTOSAR-Spezifikation erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -251,7 +254,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>891c1c85c362…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d7d77461fd1d…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -389,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00065","k":"function","d":"AUTOSAR","t":"","n":"KeyM_CertElementGetNext"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/01a7acec83b9d699.json?v=d6245ec6" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00065","k":"function","d":"AUTOSAR","t":"","n":"KeyM_CertElementGetNext"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/01a7acec83b9d699.json?v=ff676ff4" data-total="9" data-new="9" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Rte_91102" class="dossier-modal dossier-workbench" data-dossier-sha="1192ec681864600a" aria-labelledby="dossier-modal-SWS_Rte_91102-title">
+<dialog id="dossier-modal-SWS_Rte_91102" class="dossier-modal dossier-workbench" data-dossier-sha="0b7d8e3721f983aa" aria-labelledby="dossier-modal-SWS_Rte_91102-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Rte_91102-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Rte_91102)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,718 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,173 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Rte_DsmqStatusType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,38 +206,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="14be0be00598cfdb9ea85a720538af205b3dba372eb538be9c3a50ae5b8fd313" data-trace-output="1192ec681864600a82b2cb332a6920682c4658e1a14c3af475df143e1f0fced6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="cb8991cd989c2d1b8e638f4eb1a66abf53699b885aa4f2a5ab804e1425aee9d0" data-trace-output="0b7d8e3721f983aa5abfc2d408dca76d8afb464c6d7f441307fb4a33530f1d5e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Signalisiert den Status von Einreih- und Entnahmeoperationen in einer verteilten Modus-Warteschlange." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;
-The type &lt;code&gt;Rte_DsmqStatusType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt;) is derived from &lt;code&gt;uint8&lt;/code&gt; and represents the status of operations on a distributed shared mode queue (DSMQ). According to &lt;a class="spec-record-ref" data-req="SWS_Rte_80085" href="../../spec/record.html?id=SWS_Rte_80085"&gt;[SWS_Rte_80085]&lt;/a&gt;, the type is defined together with its associated literals in the header &lt;code&gt;Rte_Type.h&lt;/code&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-The value range comprises five defined states (&lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt;):
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;RTE_DSMQ_ENQUEUED_FIRST&lt;/code&gt; (0x01): The mode switch notification was enqueued into a previously empty DSMQ.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RTE_DSMQ_ENQUEUED_NOT_FIRST&lt;/code&gt; (0x02): The notification was enqueued into a non-empty DSMQ.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RTE_DSMQ_ENQUEUE_FAILED&lt;/code&gt; (0x03): Enqueueing into a non-empty DSMQ has failed.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RTE_DSMQ_DEQUEUED_LAST&lt;/code&gt; (0x04): The last mode switch notification was dequeued from the DSMQ.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;RTE_DSMQ_DEQUEUED_NOT_LAST&lt;/code&gt; (0x05): A mode switch notification was dequeued from the DSMQ, with further notifications remaining in the queue.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Error handling&lt;/h4&gt;
-&lt;p&gt;
-If enqueueing a mode switch notification into a non-empty DSMQ fails, this is indicated via the status value &lt;code&gt;RTE_DSMQ_ENQUEUE_FAILED&lt;/code&gt; (0x03) (&lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt;). Specific DET or DEM notifications are not defined for this data type.
-&lt;/p&gt;
-&lt;h4&gt;Interaction and Concurrency&lt;/h4&gt;
-&lt;p&gt;
-Values of this type are passed as input parameter &lt;code&gt;dsmqstatus&lt;/code&gt; to interfaces of the RTE Implementation Plug-In (RIPS):
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Rte_Rips_&amp;lt;PlugIn&amp;gt;_DsmqSwitch_&amp;lt;BswSwcI&amp;gt;_&amp;lt;MMI&amp;gt;&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_91103" href="../../spec/record.html?id=SWS_Rte_91103"&gt;[SWS_Rte_91103]&lt;/a&gt;) synchronously notifies the plug-in about enqueueing into a DSMQ.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Rte_Rips_&amp;lt;PlugIn&amp;gt;_DsmqTransitionEnd_&amp;lt;BswSwcI&amp;gt;_&amp;lt;MMI&amp;gt;&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Rte_91106" href="../../spec/record.html?id=SWS_Rte_91106"&gt;[SWS_Rte_91106]&lt;/a&gt;) synchronously signals to the plug-in the end of a specific mode transition in a DSMQ transition OsTask.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-Both calling RIPS services are specified as synchronous and reentrant (&lt;a class="spec-record-ref" data-req="SWS_Rte_91103" href="../../spec/record.html?id=SWS_Rte_91103"&gt;[SWS_Rte_91103]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Rte_91106" href="../../spec/record.html?id=SWS_Rte_91106"&gt;[SWS_Rte_91106]&lt;/a&gt;).
-&lt;/p&gt;
-&lt;p class="ai-note"&gt;This text was generated by an AI based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Der Datentyp &lt;code&gt;Rte_DsmqStatusType&lt;/code&gt; basiert auf &lt;code&gt;uint8&lt;/code&gt; und wird gemäß &lt;a class="spec-record-ref" data-req="SWS_Rte_80085" href="../../spec/record.html?id=SWS_Rte_80085"&gt;[SWS_Rte_80085]&lt;/a&gt; sowie &lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt; zusammen mit seinen Literalen in der Header-Datei &lt;code&gt;Rte_Type.h&lt;/code&gt; definiert. Er dient der Signalisierung des Status von Enqueue- und Dequeue-Operationen für Moduswechsel-Benachrichtigungen in einer Distributed Shared Mode Queue (DSMQ) &lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Der Wertebereich umfasst folgende Literale &lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;RTE_DSMQ_ENQUEUED_FIRST&lt;/code&gt; (0x01): Die Benachrichtigung wurde in eine zuvor leere DSMQ eingereiht.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;RTE_DSMQ_ENQUEUED_NOT_FIRST&lt;/code&gt; (0x02): Das Einreihen erfolgte in eine bereits befüllte (nicht leere) DSMQ.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;RTE_DSMQ_ENQUEUE_FAILED&lt;/code&gt; (0x03): Das Einreihen in eine nicht leere DSMQ ist fehlgeschlagen.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;RTE_DSMQ_DEQUEUED_LAST&lt;/code&gt; (0x04): Die letzte Moduswechsel-Benachrichtigung wurde aus der DSMQ entnommen.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;RTE_DSMQ_DEQUEUED_NOT_LAST&lt;/code&gt; (0x05): Eine Benachrichtigung wurde entnommen, während weitere Benachrichtigungen in der Queue verbleiben.&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;Zur Fehlerbehandlung signalisiert das Literal &lt;code&gt;RTE_DSMQ_ENQUEUE_FAILED&lt;/code&gt; ein Scheitern des Einreihvorgangs bei nicht leerer Warteschlange &lt;a class="spec-record-ref" data-req="SWS_Rte_91102" href="../../spec/record.html?id=SWS_Rte_91102"&gt;[SWS_Rte_91102]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Verwendet wird der Typ als Übergabeparameter &lt;code&gt;dsmqstatus&lt;/code&gt; an Schnittstellen des RTE Implementation Plug-Ins (RIPS). Die Funktion &lt;code&gt;Rte_Rips_&amp;lt;PlugIn&amp;gt;_DsmqSwitch_&amp;lt;BswSwcI&amp;gt;_&amp;lt;MMI&amp;gt;&lt;/code&gt; informiert das Plug-In synchron über das Einreihen in eine DSMQ &lt;a class="spec-record-ref" data-req="SWS_Rte_91103" href="../../spec/record.html?id=SWS_Rte_91103"&gt;[SWS_Rte_91103]&lt;/a&gt;. Zudem meldet &lt;code&gt;Rte_Rips_&amp;lt;PlugIn&amp;gt;_DsmqTransitionEnd_&amp;lt;BswSwcI&amp;gt;_&amp;lt;MMI&amp;gt;&lt;/code&gt; synchron den Abschluss eines Modusübergangs in einem DSMQ-Transition-OsTask an das RIPS &lt;a class="spec-record-ref" data-req="SWS_Rte_91106" href="../../spec/record.html?id=SWS_Rte_91106"&gt;[SWS_Rte_91106]&lt;/a&gt;. Beide Callback-Dienste sind als synchron und reentrant deklariert &lt;a class="spec-record-ref" data-req="SWS_Rte_91103" href="../../spec/record.html?id=SWS_Rte_91103"&gt;[SWS_Rte_91103]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Rte_91106" href="../../spec/record.html?id=SWS_Rte_91106"&gt;[SWS_Rte_91106]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der AUTOSAR-Spezifikation R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -259,7 +261,7 @@ Both calling RIPS services are specified as synchronous and reentrant (&lt;a cla
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>14be0be00598…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>cb8991cd989c…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -397,4 +399,4 @@ Both calling RIPS services are specified as synchronous and reentrant (&lt;a cla
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Rte_91102","k":"type","d":"AUTOSAR","t":"","n":"Rte_DsmqStatusType"}],"inbound":[{"i":"SWS_Rte_80085","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Rte_80085].","n":"SWS_Rte_80085"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/4d7f16a1212f65a3.json?v=4e6ba3d0" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Rte_91102","k":"type","d":"AUTOSAR","t":"","n":"Rte_DsmqStatusType"}],"inbound":[{"i":"SWS_Rte_80085","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Rte_80085].","n":"SWS_Rte_80085"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/4d7f16a1212f65a3.json?v=56af2b15" data-total="4" data-new="4" data-figures="0" data-used="0"></script></dialog>

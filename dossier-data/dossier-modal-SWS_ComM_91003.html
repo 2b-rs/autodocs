@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_ComM_91003" class="dossier-modal dossier-workbench" data-dossier-sha="9a93e0ff78b5ac28" aria-labelledby="dossier-modal-SWS_ComM_91003-title">
+<dialog id="dossier-modal-SWS_ComM_91003" class="dossier-modal dossier-workbench" data-dossier-sha="57a875a62cd691ab" aria-labelledby="dossier-modal-SWS_ComM_91003-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_ComM_91003-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_ComM_91003)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,514 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,968 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'ComM_Nm_ForwardSynchronizedPncShutdown'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,20 +193,16 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a41fe005749cba3fbda8a589fa88865ab830b0648669b45f8f434f4620865b75" data-trace-output="9a93e0ff78b5ac283efe94389d99d5895aa0a761b6e5c6cf4dae7d921126840f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="2636291ccf42af69690246c7feae547801c864d04e077e46e7c56641ad61a8b8" data-trace-output="57a875a62cd691ab8211d06e1db881b67f5a560688338a7928fa6dbe9ce3fa80" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Leitet als Zwischenkoordinator die Anforderung für einen synchronisierten PNC-Shutdown weiter." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous function &lt;code&gt;ComM_Nm_ForwardSynchronizedPncShutdown&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;) is used to forward a synchronized PNC shutdown request (Partial Network Cluster Shutdown). If an ECU acting as an intermediate PNC coordinator receives a PN shutdown message via a bus-specific Network Management (Nm), the Communication Manager (ComM) is informed immediately via this interface.&lt;/p&gt;
-&lt;p&gt;As the only input parameter, &lt;code&gt;Channel&lt;/code&gt; of type &lt;code&gt;NetworkHandleType&lt;/code&gt; is passed, which identifies the affected network channel; the function has no return value (&lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;). As a result, the ComM module immediately releases the state machines of the affected PNCs and forwards the PN information to the assigned ComM channels as well as the corresponding NM channels. This enables a nearly synchronous PNC shutdown across the entire PN topology from the higher-level top-level coordinator to the lower-level PNC nodes (&lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;).&lt;/p&gt;
-
-&lt;h4&gt;Concurrency and Properties&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Reentrancy:&lt;/strong&gt; The function is reentrant (&lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Service ID and Header:&lt;/strong&gt; The service ID is &lt;code&gt;0x6b&lt;/code&gt;; declaration is provided via the header file &lt;code&gt;ComM_Nm.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Specification Status:&lt;/strong&gt; The element is marked with the status &lt;em&gt;draft&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated by an AI based on AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;ComM_Nm_ForwardSynchronizedPncShutdown&lt;/code&gt; (Service-ID &lt;code&gt;0x6b&lt;/code&gt;) wird über den Header &lt;code&gt;ComM_Nm.h&lt;/code&gt; deklariert und dient der koordinierten Weiterleitung eines synchronisierten PNC-Shutdowns &lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Verwendung und Aufrufkontext:&lt;/strong&gt; Sie wird aufgerufen, wenn ein Steuergerät in der Rolle eines Zwischen-PNC-Koordinators (intermediate PNC coordinator) eine PN-Shutdown-Nachricht über ein Bus-spezifisches NM empfängt &lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;. Als einziger Eingabeparameter wird der betroffene Kommunikationskanal (&lt;code&gt;Channel&lt;/code&gt; vom Typ &lt;code&gt;NetworkHandleType&lt;/code&gt;) übergeben. Ein Rückgabewert ist nicht definiert (&lt;code&gt;void&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Zusammenspiel und Ablauf:&lt;/strong&gt; Nach der Indikation gibt das ComM unverzüglich die betroffenen PNC-Zustandsmaschinen frei. Zudem leitet es die PN-Informationen unmittelbar an die betroffenen ComM-Kanäle sowie die korrespondierenden NM-Kanäle weiter &lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;. Dadurch wird ein weitgehend synchroner PNC-Shutdown über die hierarchische PN-Topologie vom übergeordneten Top-Level-Koordinator bis zu den untergeordneten PNC-Knoten sichergestellt &lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Fehlerbehandlung und Randbedingungen:&lt;/strong&gt; Da die Schnittstelle keinen Rückgabewert aufweist und keine spezifischen Fehlercodes dokumentiert sind, dürfte eine Fehlerbehandlung intern oder über das DET erfolgen. Das Element ist in Release R20-11 als &lt;em&gt;Draft&lt;/em&gt; eingestuft &lt;a class="spec-record-ref" data-req="SWS_ComM_91003" href="../../spec/record.html?id=SWS_ComM_91003"&gt;[SWS_ComM_91003]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Fehlerhafte Kanalparameter dürften intern oder über das DET behandelt werden – Begründung: Der Funktionsprototyp liefert void und der Payload spezifiziert keine Fehlercodes. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation von AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -228,7 +242,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a41fe005749c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2636291ccf42…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_KeyM_00079" class="dossier-modal dossier-workbench" data-dossier-sha="78ba16f416a9d3f6" aria-labelledby="dossier-modal-SWS_KeyM_00079-title">
+<dialog id="dossier-modal-SWS_KeyM_00079" class="dossier-modal dossier-workbench" data-dossier-sha="c92acb53d5a9dacc" aria-labelledby="dossier-modal-SWS_KeyM_00079-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_KeyM_00079-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_KeyM_00079)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,326 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,780 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'KeyM_CryptoKeyFinalizeCallbackNotification'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,25 +193,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="0c572fac430c2448b44246f29eaf842a874be787c619a5a99784bb8e4c06287a" data-trace-output="78ba16f416a9d3f63017c659649d9e31bc2ec1a11d7fa038f4a4da4b8620b7a4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="abee51010fe8b9d55d869cf2281e27d2a13aeb8f15a6e450a20a664604e63318" data-trace-output="c92acb53d5a9daccfba449f438bdfea3752ec1576378c3c1476c63386fb302ee" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Informiert die Anwendung über den Abschluss einer Schlüssel-Finalisierung und übergibt das Ergebnis." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;The notification function &lt;code&gt;KeyM_CryptoKeyFinalizeCallbackNotification&lt;/code&gt; informs the application that a crypto key finalize operation (&lt;em&gt;crypto key finalize operation&lt;/em&gt;) has terminated (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;). It is available via the header file &lt;code&gt;KeyM_Externals.h&lt;/code&gt; and is typically provided by the application as a callback.&lt;/p&gt;
-  &lt;p&gt;The function returns no value (&lt;code&gt;void&lt;/code&gt;) and processes the following input parameters (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Result&lt;/code&gt; (&lt;code&gt;KeyM_ResultType&lt;/code&gt;): Contains information about the outcome or result of the performed operation.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ResultDataLength&lt;/code&gt; (&lt;code&gt;uint16&lt;/code&gt;): Indicates the length of the resulting data of this operation.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ResultDataPtr&lt;/code&gt; (&lt;code&gt;const uint8*&lt;/code&gt;): Points to the result data in the buffer that had been passed to the original service function.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Execution Context and Configuration&lt;/h4&gt;
-  &lt;p&gt;According to the specification, the function is defined as synchronous and reentrant (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;). Accordingly, the application-side handler routine must be designed for multiple or concurrent calls.&lt;/p&gt;
-  &lt;p&gt;The provision and invocation of this callback are optional and bound to the pre-configuration: The callback function is only invoked and required if the configuration parameter &lt;code&gt;KeyMCryptoKeyStartFinalizeFunctionEnabled&lt;/code&gt; is set to &lt;code&gt;TRUE&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;The result of the key finalization is signaled directly to the application via the parameter &lt;code&gt;Result&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;). Specific DET or DEM error notifications are not defined for this notification function in the specification.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callback-Funktion &lt;code&gt;KeyM_CryptoKeyFinalizeCallbackNotification&lt;/code&gt; benachrichtigt die Anwendung über den Abschluss einer Schlüssel-Finalisierungsoperation &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;. Sie ist als synchron sowie reentrant spezifiziert, besitzt keinen Rückgabewert und wird über die Header-Datei &lt;code&gt;KeyM_Externals.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Schnittstelle übergibt beim Aufruf folgende Parameter an die Anwendung &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Result&lt;/code&gt; (Typ &lt;code&gt;KeyM_ResultType&lt;/code&gt;): Übermittelt das Ergebnis und Statusinformationen der abgeschlossenen Operation &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Result Data Length&lt;/code&gt; (Typ &lt;code&gt;uint16&lt;/code&gt;): Gibt die Länge der resultierenden Daten dieser Operation an &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Result Data Ptr&lt;/code&gt; (Typ &lt;code&gt;const uint8*&lt;/code&gt;): Zeiger auf den Puffer mit den Ergebnisdaten, der der Service-Funktion zuvor bereitgestellt wurde &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Hinsichtlich der Konfiguration wird die Callback-Funktion nur aufgerufen und benötigt, wenn der Konfigurationsparameter &lt;code&gt;KeyMCryptoKeyStartFinalizeFunctionEnabled&lt;/code&gt; auf &lt;code&gt;TRUE&lt;/code&gt; gesetzt ist &lt;a class="spec-record-ref" data-req="SWS_KeyM_00079" href="../../spec/record.html?id=SWS_KeyM_00079"&gt;[SWS_KeyM_00079]&lt;/a&gt;. Spezifische DET- oder DEM-Fehlermeldungen sind für diese Callback-Funktion nicht definiert. Vermutlich implementiert die Anwendung diesen Callback, um die asynchronen Resultate einer zuvor initiierten Schlüssel-Finalisierung entgegenzunehmen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Vermutlich implementiert die Anwendung diesen Callback, um die Resultate einer zuvor initiierten Schlüssel-Finalisierung entgegenzunehmen. – Begründung: Der Payload dokumentiert die Benachrichtigung der Anwendung über KeyM_Externals.h, spezifiziert jedoch keinen konkreten Aufruferkontext oder Auslöser. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert anhand der AUTOSAR-Spezifikation R20-11 erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -233,7 +246,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>0c572fac430c…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>abee51010fe8…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -371,4 +384,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00079","k":"function","d":"AUTOSAR","t":"","n":"KeyM_CryptoKeyFinalizeCallbackNotification"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b47a1aaba795ed7d.json?v=3dc2b4d3" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_KeyM_00079","k":"function","d":"AUTOSAR","t":"","n":"KeyM_CryptoKeyFinalizeCallbackNotification"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b47a1aaba795ed7d.json?v=2e6d21d2" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>

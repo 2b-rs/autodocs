@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794" class="dossier-modal dossier-workbench" data-dossier-sha="12e9f5a5e505737b" aria-labelledby="dossier-modal-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794-title">
+<dialog id="dossier-modal-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794" class="dossier-modal dossier-workbench" data-dossier-sha="bc4491f5ab7c11f3" aria-labelledby="dossier-modal-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,616 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,139 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für '&lt;DataElement-Namespace&gt;::&lt;DataElementInterface&gt;::&lt;DataElement&gt;ReadOutput' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_DataElement_Namespace_DataElementInterface_DataElement_Read_b50794",
@@ -203,33 +222,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1065cd786aae04c0c069443b71e202db9d7a07f639cc1d7d74047272c0a2adc4" data-trace-output="12e9f5a5e505737b10c0d46b5840c8fffea44d3cf1c9ebe1255711fbfbe42683" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="b44a386da139d4f3d0f374d05a0a3e87852c51ec5f018302a83bd62c59c5cde8" data-trace-output="bc4491f5ab7c11f314840435f26f393d894f921e2188979476a1433bf46abc0a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt die Ausgabeargumente einer Leseoperation für ein Diagnose-Datenelement." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The structure &lt;code&gt;&amp;lt;DataElement-Namespace&amp;gt;::&amp;lt;DataElementInterface&amp;gt;::&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; is a generated C++ artifact within the AUTOSAR Adaptive Platform in the diagnostics module (&lt;code&gt;diag&lt;/code&gt;). Its primary responsibility is to aggregate and structurally encapsulate the output arguments for a read operation (&lt;code&gt;ReadOutput&lt;/code&gt;) on a specific diagnostic data element.&lt;/p&gt;
-&lt;p&gt;In modern vehicle systems, diagnostic services play a fundamental role in fault analysis and data retrieval via protocols such as UDS (Unified Diagnostic Services), for example in the context of queries via &lt;em&gt;ReadDataByIdentifier&lt;/em&gt; (Service 0x22). The adaptive diagnostic stack strictly separates infrastructure-side protocol handling from the application-specific provision of payload data. The module &lt;code&gt;diag&lt;/code&gt; acts as an intermediary: It receives external diagnostic requests, forwards them to the responsible software component, and converts the provided data into a formal diagnostic response.&lt;/p&gt;
-&lt;p&gt;At this interface, &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; functions as a typed data transport container. The placeholders in the type name reflect the adaptive design pattern: The identifier is derived based on the configured namespace, interface name, and data element. Interaction partners are the platform's generic diagnostic service and the application-specific service instance that determines the actual application data. Interpretation: The concrete member variables of the structure likely correspond exactly to the output parameters of the respective data element specified in the ARXML data model.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt die Ausgabeargumente einer Leseoperation für ein Diagnose-Datenelement.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; dient im adaptiven Diagnosemodul als Transportbehälter zur Kapselung aller Ausgabeargumente einer Datenelement-Leseoperation. Bei einer eingehenden Leseanforderung wird sie vom Dienstanbieter instanziiert, mit den ermittelten Werten befüllt und an den Aufrufer zurückgegeben. Die Instanzen besitzen reine Wertsemantik ohne eigene Zustandsverwaltung und dürften nach der Auswertung unmittelbar zerstört werden. Etwaige Fehler während der Abfrage werden als Interpretation über die Rückgabemechanismen der übergeordneten Plattformfunktion und nicht über die Struktur selbst behandelt.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; ist ein Bestandteil der Schnittstellendefinition des Diagnosemoduls (&lt;code&gt;diag&lt;/code&gt;) innerhalb der AUTOSAR Adaptive Platform im Release R25-11. Ihre primäre Rolle besteht darin, als Hüllstruktur (Wrapper) die Ausgabeargumente (&lt;code&gt;out arguments&lt;/code&gt;) einer Leseoperation (&lt;code&gt;ReadOutput&lt;/code&gt;) für ein bestimmtes Diagnose-Datenelement innerhalb des zugehörigen &lt;code&gt;&amp;lt;DataElementInterface&amp;gt;&lt;/code&gt; zusammenzufassen. In der Architektur von AUTOSAR Adaptive kommunizieren funktionale Software-Komponenten über klar definierte Service-Schnittstellen mit dem Plattform-Diagnose-Manager. &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; fungiert hierbei als reiner Datenübertragungsbehälter, der die Nutzdaten einer Leseabfrage bündelt. Vermutlich dient die Datenstruktur als Rückgabetyp einer asynchronen Lese-Operation (wie &lt;code&gt;Read()&lt;/code&gt;) innerhalb der Diagnoseschnittstelle &lt;code&gt;&amp;lt;DataElementInterface&amp;gt;&lt;/code&gt;, um Ausgabeparameter gebündelt bereitzustellen. Durch diese Kapselung wird eine einheitliche und typisierte Schnittstelle geschaffen, die auf Zeigerübergaben oder getrennte Ausgabeparameter verzichtet.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a pure data aggregate (C++ &lt;code&gt;struct&lt;/code&gt;), &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; has no internal state machine and no persistent identity. The lifecycle of the structure is directly bound to the duration of a single read access.&lt;/p&gt;
-&lt;p&gt;Instantiation occurs on the application side during the processing of a diagnostic request. As soon as the read call reaches the application, it instantiates the structure locally on the stack or initializes it directly in a return container. Ownership initially resides exclusively with the called application function, which populates the structure with the current sensor or state values. The data is then passed to the diagnostics runtime system. Interpretation: The instance is presumably transferred to the platform stack as a return value or packaged in an asynchronous result container (such as &lt;code&gt;ara::core::Result&lt;/code&gt; or &lt;code&gt;ara::core::Future&lt;/code&gt;) via move semantics or value copy.&lt;/p&gt;
-&lt;p&gt;After the diagnostic framework extracts the data from &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt;, serializes it, and inserts it into the UDS response packet, the functional purpose of the instance ends. It is automatically released upon leaving the corresponding scope. Since the structure does not have any synchronization mechanisms, it is not thread-safe. Concurrent access by multiple threads to the same instance without external synchronization is impermissible; instead, the design is based on the isolated passing of individual values along the call hierarchy.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Hinsichtlich des Lebenszyklus weist die Struktur &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; die Eigenschaften eines elementaren Wertetyps auf. Sie besitzt keine langlebige Identität und durchläuft keine komplexen internen Zustände. Die Erzeugung erfolgt dynamisch oder auf dem Stack durch diejenige Komponente, welche den Lesezugriff auf das Datenelement implementiert und die Ausgabedaten zusammenstellt. Die Instanzen der Struktur dürften typischerweise by-value oder via Move-Semantik übergeben und von der aufrufenden Diagnosekomponente bzw. dem Plattform-Framework nach Abschluss der Leseoperation konsumiert und zerstört werden. Der Besitzübergang erfolgt dabei unmittelbar an den Empfänger des Leseergebnisses. Sobald die verarbeitende Routine die benötigten Daten ausgelesen hat, wird die Struktur beim Verlassen des Gültigkeitsbereichs automatisch freigegeben. In Bezug auf Nebenläufigkeit bietet &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; keine interne Synchronisation. Da die Instanzen im regulären Aufruffluss exklusiv an den jeweiligen Aufrufer übergeben werden, ist eine geteilte Nutzung über Threadgrenzen hinweg im Standardbetrieb nicht vorgesehen.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The usage of the structure during a read query follows a fixed sequence of steps:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad erstreckt sich von der Auslösung einer Leseanforderung bis zur Verarbeitung der gelieferten Ausgabeparameter. Ein typischer Ablauf gestaltet sich wie folgt:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Step 1: Receipt of the read request&lt;/strong&gt; – A diagnostic tester sends a read request to the vehicle ECU. The diagnostic stack identifies the referenced data element and forwards the call to the application's registered handler.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Step 2: Data acquisition by the application&lt;/strong&gt; – The handler method of the application software is called. It determines the requested runtime data, reads internal sensor values, or queries system parameters.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Step 3: Instantiation and population&lt;/strong&gt; – The application creates an instance of &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; and populates its fields with the determined values.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Step 4: Return to the framework&lt;/strong&gt; – The fully populated structure is reported back to the diagnostic framework, confirming the successful completion of the read operation.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Step 5: Serialization and response transmission&lt;/strong&gt; – The diagnostic stack reads the fields of the structure, transforms them into the target format, and sends the positive UDS response to the diagnostic tester.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Anforderung:&lt;/strong&gt; Ein Diagnoseclient oder das adaptive Framework fordert das Lesen eines Datenelements über die Methode der Schnittstelle &lt;code&gt;&amp;lt;DataElementInterface&amp;gt;&lt;/code&gt; an.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Instanziierung und Befüllung:&lt;/strong&gt; Die bereitstellende Software-Komponente ermittelt die aktuellen Diagnosedaten, instanziiert eine Instanz von &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; und setzt deren Datenfelder mit den erfassten Werten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Rückgabe:&lt;/strong&gt; Die befüllte Struktur wird als Ergebnis der Operation an das anfragende Framework übermittelt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Konsumierung:&lt;/strong&gt; Das Framework oder die aufrufende Komponente greift auf die enthaltenen Ausgabeargumente zu, formatiert die Diagnoseantwort und beendet die Verarbeitung der Abfrage.&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;Nach erfolgreicher Übergabe und Entnahme der Datenfelder verliert die Instanz ihre Gültigkeit und wird ohne weitere Interaktionsschritte verworfen.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;The structure &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; exclusively maps the successful data path of a read operation. It acts as a carrier of valid output data and is not designed to accommodate error signaling within its own data fields.&lt;/p&gt;
-&lt;p&gt;If the requested data cannot be determined on the application side – for example due to faulty sensors, unmet preconditions, or temporarily blocked resources –, the precondition is that no valid instance of &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; is processed. In these cases, the error handling of the adaptive framework takes effect: Instead of the structure, the handler returns a corresponding error code (such as via an error-holding &lt;code&gt;ara::core::Result&lt;/code&gt; with an &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;). The diagnostic stack subsequently aborts response generation for payload data and instead transmits a negative response code (NRC) to the tester. The postcondition for evaluating &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; is therefore always the successful and error-free determination of all contained data fields.&lt;/p&gt;
-&lt;!-- annahmen: 1) Die konkreten Membervariablen der Struktur dürften den im ARXML-Datenmodell spezifizierten Ausgabeparametern entsprechen – Begründung: Der Payload zeigt nur die generische Syntax struct &lt;DataElement&gt;ReadOutput {...}. 2) Die Instanz wird vermutlich als Rückgabewert oder Teil eines ara::core::Result bzw. ara::core::Future übertragen – Begründung: Der Payload belegt nur ein struct als out-Argument-Wrapper, nennt jedoch keine konkrete Aufrufsignatur. --&gt;
-&lt;p class="ai-note"&gt;This guide was prepared by an AI assistant based on the AUTOSAR specification R25-11.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Interpretation: Das Fehlschlagen einer Leseoperation wird voraussichtlich nicht über die Struktur selbst abgebildet, sondern über den umschließenden Ergebnis- oder Fehlermechanismus der Plattform (etwa &lt;code&gt;ara::core::Result&lt;/code&gt; bzw. &lt;code&gt;ara::core::Future&lt;/code&gt;). Als reine Datenstruktur deklariert &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; keine eigenen Methoden, Vorbedingungen oder Fehlercodes. Sollte der Lesezugriff auf ein Datenelement fehlschlagen – beispielsweise durch unzureichende Berechtigungen, ungültige Systemzustände oder Kommunikationsprobleme mit der zugrundeliegenden Sensorik –, signalisiert die implementierende Schnittstelle diesen Fehler über den übergeordneten Plattformfehlerkanal. In einem solchen Fehlerfall wird keine gültige Instanz von &lt;code&gt;&amp;lt;DataElement&amp;gt;ReadOutput&lt;/code&gt; zur Auswertung bereitgestellt, wodurch Fehlinterpretationen unvollständiger Nutzdaten auf Aufruferseite vermieden werden.&lt;/p&gt;
+
+&lt;!-- annahmen: 1) Vermutlich dient die Struktur als Rückgabetyp einer asynchronen Lese-Operation (wie Read()) innerhalb der Diagnoseschnittstelle &lt;DataElementInterface&gt;, um Ausgabeparameter gebündelt bereitzustellen – Begründung: Der Typname und die Beschreibung als Wrapper für Ausgabeargumente weisen auf diese Standard-Signatur in ara::diag hin. 2) Die Instanzen der Struktur dürften typischerweise by-value oder via Move-Semantik übergeben und von der aufrufenden Diagnosekomponente bzw. dem Plattform-Framework nach Abschluss der Leseoperation konsumiert und zerstört werden – Begründung: Als reine Datenhülle ohne eigene Identität folgt die Struktur der üblichen C++-Wertsemantik. 3) Interpretation: Das Fehlschlagen einer Leseoperation wird voraussichtlich nicht über die Struktur selbst abgebildet, sondern über den umschließenden Ergebnis- oder Fehlermechanismus der Plattform (etwa ara::core::Result bzw. ara::core::Future) – Begründung: Der Payload beschreibt die Struktur rein als Wertehülle ohne eigene Fehlercodes oder Fehlerfelder. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf den Spezifikationsdaten des AUTOSAR-Releases R25-11 für die Adaptive Platform.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -271,7 +294,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1065cd786aae…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>b44a386da139…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

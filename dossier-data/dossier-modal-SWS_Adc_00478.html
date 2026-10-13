@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Adc_00478" class="dossier-modal dossier-workbench" data-dossier-sha="8741896e6e1ac0bc" aria-labelledby="dossier-modal-SWS_Adc_00478-title">
+<dialog id="dossier-modal-SWS_Adc_00478" class="dossier-modal dossier-workbench" data-dossier-sha="779613cf463c40b8" aria-labelledby="dossier-modal-SWS_Adc_00478-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Adc_00478-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Adc_00478)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,466 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,920 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Adc_PreparePowerState'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,39 +198,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="8847792721d823ad6fe6e91f53353a7ab53aa33489716f6de07a34087d29ef30" data-trace-output="8741896e6e1ac0bc3faaf78bd5df7b17202066f7792c4f1e96055fefd9255278" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="af5e7dcf1943b607db7e59e7d854905bd40f3d520b29cc820d5cd3a25fb6a7e7" data-trace-output="779613cf463c40b8da6453c4310b1e7bc683197b18ecb455ca8654e918bda2cb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bereitet die Hardware auf den Wechsel in einen spezifizierten Energiezustand vor und prüft dessen Durchführbarkeit." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;Adc_PreparePowerState&lt;/code&gt; starts the required preparation process to enable the ADC hardware module to transition to the desired target power state (&lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;). The caller passes the target power state via parameter &lt;code&gt;PowerState&lt;/code&gt; and receives the detailed result of the request via output pointer &lt;code&gt;Result&lt;/code&gt;. The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals the acceptance or rejection of the service (&lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The preparation process was started; status &lt;code&gt;ADC_SERVICE_ACCEPTED&lt;/code&gt; is reported via &lt;code&gt;Result&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The service request was rejected (&lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Adc_PreparePowerState&lt;/code&gt; stößt den erforderlichen Vorbereitungsprozess an, um das ADC-Hardwaremodul in einen angeforderten Energiezustand zu überführen &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;. Als Parameter werden der gewünschte Zielzustand &lt;code&gt;PowerState&lt;/code&gt; sowie ein Zeiger &lt;code&gt;Result&lt;/code&gt; übergeben, über den der Status der Anforderung zurückgemeldet wird &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;. Der Rückgabewert signalisiert mit &lt;code&gt;E_OK&lt;/code&gt;, dass der Vorbereitungsprozess gestartet wurde, oder mit &lt;code&gt;E_NOT_OK&lt;/code&gt;, dass der Dienst abgewiesen wurde &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;
-    If a call is rejected with &lt;code&gt;E_NOT_OK&lt;/code&gt;, &lt;code&gt;Result&lt;/code&gt; specifies the exact cause of the error (&lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;ADC_NOT_INIT&lt;/code&gt;: The ADC module is not initialized.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ADC_SEQUENCE_ERROR&lt;/code&gt;: Invalid call sequence, since the current power state already matches the target state.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ADC_POWER_STATE_NOT_SUPP&lt;/code&gt;: The requested power state is not supported by the ADC module.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;ADC_TRANS_NOT_POSSIBLE&lt;/code&gt;: A direct transition from the current state to the target state is not possible, or the hardware peripheral is still busy.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;h4&gt;Ergebnis- und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Im Erfolgsfall (&lt;code&gt;E_OK&lt;/code&gt;) liefert der Ausgabeparameter &lt;code&gt;Result&lt;/code&gt; den Statuswert &lt;code&gt;ADC_SERVICE_ACCEPTED&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;. Wurde der Dienst mit &lt;code&gt;E_NOT_OK&lt;/code&gt; abgewiesen, spezifiziert &lt;code&gt;Result&lt;/code&gt; die genaue Ursache &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ADC_NOT_INIT&lt;/code&gt;: Das ADC-Modul ist noch nicht initialisiert &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ADC_SEQUENCE_ERROR&lt;/code&gt;: Unzulässige Aufrufsequenz, da der aktuelle Zustand bereits dem Zielzustand entspricht &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ADC_POWER_STATE_NOT_SUPP&lt;/code&gt;: Der angeforderte Energiezustand wird vom Modul nicht unterstützt &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ADC_TRANS_NOT_POSSIBLE&lt;/code&gt;: Ein direkter Übergang ist nicht möglich oder die Hardware-Peripherie ist noch beschäftigt &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    &lt;code&gt;Adc_PreparePowerState&lt;/code&gt; is specified as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) and synchronous (&lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;). It must therefore not be called concurrently from multiple contexts.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Interaction&lt;/h4&gt;
-  &lt;p&gt;
-    The function prepares the transition; subsequent actions that cannot be executed immediately to finalize the transition requested by &lt;code&gt;Adc_PreparePowerState&lt;/code&gt; are handled via a separate API (&lt;a class="spec-record-ref" data-req="SWS_Adc_00499" href="../../spec/record.html?id=SWS_Adc_00499"&gt;[SWS_Adc_00499]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist als nicht reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Adc_00478" href="../../spec/record.html?id=SWS_Adc_00478"&gt;[SWS_Adc_00478]&lt;/a&gt;. Daher muss der Aufrufer sicherstellen, dass Aufrufe sequenziell und ohne Überlappung erfolgen. Aufrufer dürften laufende Wandlungen vorab abschließen oder stoppen müssen, da eine aktive Hardware-Peripherie zur Abweisung führt. Nach erfolgreicher Vorbereitung durch &lt;code&gt;Adc_PreparePowerState&lt;/code&gt; werden nachfolgende, nicht unmittelbar wirksame Aktionen zur Finalisierung des Zustandsübergangs über eine zugehörige Folge-API ausgeführt &lt;a class="spec-record-ref" data-req="SWS_Adc_00499" href="../../spec/record.html?id=SWS_Adc_00499"&gt;[SWS_Adc_00499]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Aufrufer dürften laufende Wandlungen vorab beenden müssen – Begründung: SWS_Adc_00478 führt eine beschäftigte HW-Peripherie als Ursache für eine Rückweisung mit ADC_TRANS_NOT_POSSIBLE an. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch generiert und basiert ausschließlich auf den Spezifikationsdaten aus SWS_Adc_00478 und SWS_Adc_00499.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -252,9 +257,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>8847792721d8…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>af5e7dcf1943…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -289,8 +294,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">9</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">8</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -327,7 +332,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 5 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -390,4 +395,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Adc_00478","k":"function","d":"AUTOSAR","t":"","n":"Adc_PreparePowerState"}],"inbound":[{"i":"SWS_Adc_00499","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Adc_00499].","n":"SWS_Adc_00499"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/35a9797f843d3da4.json?v=6186d2ec" data-total="7" data-new="7" data-figures="4" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Adc_00478","k":"function","d":"AUTOSAR","t":"","n":"Adc_PreparePowerState"}],"inbound":[{"i":"SWS_Adc_00499","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Adc_00499].","n":"SWS_Adc_00499"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/35a9797f843d3da4.json?v=cfcebaaf" data-total="5" data-new="5" data-figures="2" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_01011" class="dossier-modal dossier-workbench" data-dossier-sha="b7202f95c1413d97" aria-labelledby="dossier-modal-SWS_Csm_01011-title">
+<dialog id="dossier-modal-SWS_Csm_01011" class="dossier-modal dossier-workbench" data-dossier-sha="8c18c0bb1ed5cbe6" aria-labelledby="dossier-modal-SWS_Csm_01011-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_01011-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_01011)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,225 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,680 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Crypto_PrimitiveInfoType'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,27 +193,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a026f1e2a6eed3742295f22ad75004a36d829fcfd8414df254948dc865399e0f" data-trace-output="b7202f95c1413d977d12a714d5f212d58c21826104edb90b670d2e965324f7f9" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="2568ec5e2d15ec14dd01f911220ece6f5f0b483690d884dff86442dfe178e355" data-trace-output="8c18c0bb1ed5cbe6d2b6d59da59a50e58ea6cae528b4b1ff500e4c81ba933bf0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bündelt grundlegende Informationen zu Dienst und Algorithmus eines kryptografischen Primitivs im CSM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Usage of &lt;code&gt;Crypto_PrimitiveInfoType&lt;/code&gt;&lt;/h4&gt;
-&lt;p&gt;
-According to &lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;, the data type &lt;code&gt;Crypto_PrimitiveInfoType&lt;/code&gt; is a structure that provides basic information about a cryptographic primitive within the Crypto Service Manager (CSM) module. The type is provided via the header &lt;code&gt;Crypto_GeneralTypes.h&lt;/code&gt;.
-&lt;/p&gt;
-&lt;p&gt;
-The structure comprises two fixed data elements:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;service&lt;/code&gt; (type: &lt;code&gt;const Crypto_ServiceInfoType&lt;/code&gt;): Holds the enumeration value of the used cryptographic service, such as &lt;code&gt;Encrypt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;algorithm&lt;/code&gt; (type: &lt;code&gt;const Crypto_AlgorithmInfoType&lt;/code&gt;): Contains the detailed information on the respectively applied cryptographic algorithm (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-Due to the marking of both elements as &lt;code&gt;const&lt;/code&gt;, the structure is likely designed primarily as a static descriptor that immutably describes the properties and algorithm mappings of a primitive and serves as a reference within cryptographic flows.
-&lt;/p&gt;
-&lt;p&gt;
-Since &lt;code&gt;Crypto_PrimitiveInfoType&lt;/code&gt; is a pure data structure and not an executable interface function, no separate return values, reentrancy restrictions, or specific error codes for the Default Error Tracer (DET) exist for this element.
-&lt;/p&gt;
-&lt;!-- annahmen: 1) Die const-Elemente deuten darauf hin, dass die Struktur als statischer, schreibgeschützter Deskriptor für kryptografische Operationen dient – Begründung: Die Typdefinition deklariert die Strukturfelder service und algorithm explizit als const. --&gt;
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;Crypto_PrimitiveInfoType&lt;/code&gt; dient im Crypto Service Manager (CSM) der Bereitstellung grundlegender Metadaten zu einem kryptografischen Primitiv (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;). Sie wird über die Header-Datei &lt;code&gt;Crypto_GeneralTypes.h&lt;/code&gt; deklariert und bündelt die statischen Charakteristika der jeweiligen Operation (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;).&lt;/p&gt;
+  
+  &lt;p&gt;Die Struktur setzt sich aus zwei Elementen zusammen (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;):&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;service&lt;/code&gt; (Typ: &lt;code&gt;const Crypto_ServiceInfoType&lt;/code&gt;): Bestimmt den genutzten kryptografischen Dienst über eine Enumeration, beispielsweise eine Verschlüsselung (&lt;code&gt;Encrypt&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;algorithm&lt;/code&gt; (Typ: &lt;code&gt;const Crypto_AlgorithmInfoType&lt;/code&gt;): Enthält die Detailinformationen zum verwendeten Algorithmus (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
+
+  &lt;p&gt;Da beide Elemente als &lt;code&gt;const&lt;/code&gt; typisiert sind, dürfte es sich um schreibgeschützte Konfigurations- oder Metadaten handeln, die zur Konfigurationszeit festgelegt und zur Laufzeit durch Treiber oder den CSM rein lesend ausgewertet werden (&lt;a class="spec-record-ref" data-req="SWS_Csm_01011" href="../../spec/record.html?id=SWS_Csm_01011"&gt;[SWS_Csm_01011]&lt;/a&gt;). Spezifische Fehlercodes, Fehlerbehandlungsroutinen oder Nebenläufigkeitsbeschränkungen sind für diesen Datenstrukturtyp nicht definiert.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die const-Typisierung der Strukturmitglieder service und algorithm deutet auf rein lesenden Zugriff zur Laufzeit bzw. statische Konfigurationsdaten hin. – Begründung: Der Spezifikationstext deklariert beide Elemente explizit als const, spezifiziert jedoch keine Speicherklasse oder Lebenszyklusvorgaben. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt. Überprüfen Sie sicherheitskritische Details anhand der Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -235,7 +247,7 @@ Since &lt;code&gt;Crypto_PrimitiveInfoType&lt;/code&gt; is a pure data structure
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a026f1e2a6ee…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2568ec5e2d15…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

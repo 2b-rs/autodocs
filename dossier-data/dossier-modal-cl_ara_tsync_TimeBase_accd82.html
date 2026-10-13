@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_tsync_TimeBase_accd82" class="dossier-modal dossier-workbench" data-dossier-sha="3a18cd02f64e2706" aria-labelledby="dossier-modal-cl_ara_tsync_TimeBase_accd82-title">
+<dialog id="dossier-modal-cl_ara_tsync_TimeBase_accd82" class="dossier-modal dossier-workbench" data-dossier-sha="4676fdc43a572128" aria-labelledby="dossier-modal-cl_ara_tsync_TimeBase_accd82-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_tsync_TimeBase_accd82-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_tsync_TimeBase_accd82)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,083 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,605 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::tsync::TimeBase' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_tsync_TimeBase_accd82",
@@ -224,40 +243,95 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="1afcfc0f9fb547262de39c019f9c63fe541ed4b82ba90d70135ee85e445c2ade" data-trace-output="3a18cd02f64e2706f8a2aee172b19be9d699d4dbf01a3eddc666d05a190fd101" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="f515350f98f7f1e8459041070fbd4486b9825d5d568e11bfb5b0ed754074b358" data-trace-output="4676fdc43a572128d0713b07dda5ca0d2d7de0680cf11fdc239415e10ec8c63a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als Pseudo-Clock für std::chrono::time_point zur Abbildung lokaler Zeitpunkte einer Zeitbasis-Ressource." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-The structure &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; serves as a pseudo-clock in the module &lt;code&gt;tsync&lt;/code&gt; of the AUTOSAR Adaptive Platform. Its primary function is to act as the first template argument for &lt;code&gt;std::chrono::time_point&lt;/code&gt; to designate points in time that relate to a local time base in the context of an as yet unspecified time resource (&lt;em&gt;timeBaseResource&lt;/em&gt;).
-&lt;/p&gt;
-&lt;p&gt;
-By defining the basic type aliases and constants, &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; satisfies the formal requirements for a standard C++ clock (&lt;em&gt;C++ Clock requirements&lt;/em&gt;). The ticks are represented via the signed 64-bit integer type &lt;code&gt;rep&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;) with a period duration in the nanosecond range via &lt;code&gt;period&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;). The time span since the beginning of the epoch is expressed via the type alias &lt;code&gt;duration&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;). A specific point in time is mapped as &lt;code&gt;time_point&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;). Since it is a pseudo-clock whose time reference depends on an external resource and can potentially exhibit jumps or corrections, the property &lt;code&gt;is_steady&lt;/code&gt; is specified with the value &lt;code&gt;false&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265"&gt;[SWS_TS_01265]&lt;/a&gt;).
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als Pseudo-Clock für std::chrono::time_point zur Abbildung lokaler Zeitpunkte einer Zeitbasis-Ressource.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; fungiert als Pseudo-Clock im C++-Standardbibliothekssystem und dient als Clock-Template-Argument für &lt;code&gt;std::chrono::time_point&lt;/code&gt; zur Repräsentation lokaler Zeiten bezüglich einer Zeitbasis-Ressource &lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;. Zur Erfüllung der Clock-Anforderungen stellt sie standardisierte Typ-Aliase für Nanosekunden-Auflösung und Dauer bereit. Als maßgebliche Randbedingung ist die Uhr über &lt;code&gt;is_steady = false&lt;/code&gt; als nicht-monoton spezifiziert, wodurch Zeitsprünge infolge von Synchronisationsvorgängen berücksichtigt werden &lt;a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265"&gt;[SWS_TS_01265]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse bzw. Struktur &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; übernimmt im Modul &lt;code&gt;tsync&lt;/code&gt; der AUTOSAR Adaptive Platform die Rolle einer Pseudo-Uhr (Pseudo-Clock). Sie dient auf C++-Ebene primär als erstes Template-Argument für &lt;code&gt;std::chrono::time_point&lt;/code&gt;, um semantisch festzulegen, dass ein Zeitstempel die lokale Zeit im Verhältnis zu einer noch nicht näher spezifizierten Zeitbasis-Ressource (&lt;code&gt;timeBaseResource&lt;/code&gt;) darstellt &lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;. Anstatt selbst als aktive Zeitquelle mit einer statischen Zeitabfrage zu agieren, fungiert &lt;code&gt;TimeBase&lt;/code&gt; als formales Bindeglied innerhalb der Standardbibliothek &lt;code&gt;std::chrono&lt;/code&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-As a pure type and tag structure, &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; possesses no dynamic state of its own and no instance data. It is not instantiated or managed as a runtime object, but used exclusively at the type level in the C++ type system. Consequently, it is not subject to a classic lifecycle involving creation, state transitions, or explicit destruction. Instances of &lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt; behave in accordance with the regular value semantics of the standard library &lt;code&gt;std::chrono&lt;/code&gt; and can be copied and used concurrently without restriction.
-&lt;/p&gt;
+&lt;p&gt;Durch die Bereitstellung der standardisierten Typdefinitionen bindet &lt;code&gt;TimeBase&lt;/code&gt; die generischen Mechanismen der C++-Zeitmessung an das Synchronisationsmodul an. Konsumenten und Komponenten, die mit Zeitpunkten oder Zeiträumen arbeiten, nutzen die Alias-Typen der Struktur, um typisierte Zeitstempel auszutauschen. Auf diese Weise wird garantiert, dass Zeitwerte über &lt;code&gt;std::chrono::time_point&lt;/code&gt; eindeutig einer lokalen Zeitbasis zugeordnet sind und nicht fälschlicherweise mit absoluten Systemuhren oder abweichenden Zeitquellen vermischt werden.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The typical use of &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; is purely declarative in the definition and handling of timestamps:
-&lt;/p&gt;
+&lt;div class="diagram" id="diag-timebase-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 683.17 118.80" style="max-width:911px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 104.4)"&gt;
+&lt;title&gt;TimeBaseKontext&lt;/title&gt;
+&lt;!-- time_point --&gt;
+&lt;g id="node1" class="node"&gt;
+&lt;title&gt;time_point&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M642.37,-53C642.37,-53 490.09,-53 490.09,-53 484.09,-53 478.09,-47 478.09,-41 478.09,-41 478.09,-29 478.09,-29 478.09,-23 484.09,-17 490.09,-17 490.09,-17 642.37,-17 642.37,-17 648.37,-17 654.37,-23 654.37,-29 654.37,-29 654.37,-41 654.37,-41 654.37,-47 648.37,-53 642.37,-53"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="566.23" y="-31.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;std::chrono::time_point&amp;lt;&lt;a class="diag-ref" data-ref="classes/cl_ara_tsync_TimeBase_accd82.html" href="../classes/cl_ara_tsync_TimeBase_accd82.html"&gt;TimeBase&lt;/a&gt;&amp;gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- TimeBase --&gt;
+&lt;g id="node2" class="node"&gt;
+&lt;title&gt;TimeBase&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M332.78,-90C332.78,-90 247.31,-90 247.31,-90 241.31,-90 235.31,-84 235.31,-78 235.31,-78 235.31,-66 235.31,-66 235.31,-60 241.31,-54 247.31,-54 247.31,-54 332.78,-54 332.78,-54 338.78,-54 344.78,-60 344.78,-66 344.78,-66 344.78,-78 344.78,-78 344.78,-84 338.78,-90 332.78,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="290.04" y="-75.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_tsync_TimeBase_accd82.html" href="../classes/cl_ara_tsync_TimeBase_accd82.html"&gt;ara::tsync::TimeBase&lt;/a&gt;&lt;/text&gt;
+&lt;text text-anchor="middle" x="290.04" y="-62.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(Pseudo-Clock)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- TimeBase&amp;#45;&amp;gt;time_point --&gt;
+&lt;g id="edge1" class="edge"&gt;
+&lt;title&gt;TimeBase-&amp;gt;time_point&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M345.21,-64.69C379.73,-60.03 425.49,-53.86 466.34,-48.34"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="466.62,-51.84 476.06,-47.03 465.69,-44.9 466.62,-51.84"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="412.05" y="-65.08" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;dient als Typ-Argument&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- timeBaseResource --&gt;
+&lt;g id="node3" class="node"&gt;
+&lt;title&gt;timeBaseResource&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M85.86,-90C85.86,-90 12,-90 12,-90 6,-90 0,-84 0,-78 0,-78 0,-66 0,-66 0,-60 6,-54 12,-54 12,-54 85.86,-54 85.86,-54 91.86,-54 97.86,-60 97.86,-66 97.86,-66 97.86,-78 97.86,-78 97.86,-84 91.86,-90 85.86,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="48.93" y="-75.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;timeBaseResource&lt;/text&gt;
+&lt;text text-anchor="middle" x="48.93" y="-62.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(lokale Zeitbasis)&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- timeBaseResource&amp;#45;&amp;gt;TimeBase --&gt;
+&lt;g id="edge2" class="edge"&gt;
+&lt;title&gt;timeBaseResource-&amp;gt;TimeBase&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M98.32,-72C134.26,-72 183.69,-72 223.23,-72"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="223.22,-75.5 233.22,-72 223.22,-68.5 223.22,-75.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="165.97" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Referenz fuer lokale Zeit&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung --&gt;
+&lt;g id="node4" class="node"&gt;
+&lt;title&gt;Anwendung&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M334,-36C334,-36 246.08,-36 246.08,-36 240.08,-36 234.08,-30 234.08,-24 234.08,-24 234.08,-12 234.08,-12 234.08,-6 240.08,0 246.08,0 246.08,0 334,0 334,0 340,0 346,-6 346,-12 346,-12 346,-24 346,-24 346,-30 340,-36 334,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="290.04" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Anwendungssoftware&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Anwendung&amp;#45;&amp;gt;time_point --&gt;
+&lt;g id="edge3" class="edge"&gt;
+&lt;title&gt;Anwendung-&amp;gt;time_point&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M346.25,-21.16C379.28,-23.08 422.09,-25.61 460.09,-28 462.16,-28.13 464.25,-28.26 466.35,-28.4"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="465.88,-31.87 476.08,-29.02 466.33,-24.89 465.88,-31.87"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="412.05" y="-31" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;/g&gt;
+&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Einbettung von TimeBase als Pseudo-Clock in das C++-Chrono-Typsystem zur Bindung von Zeitpunkten an eine Zeitbasis-Ressource. Quellen: &lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als reine Daten- und Typstruktur (deklariert als &lt;code&gt;struct TimeBase&lt;/code&gt; im Header &lt;code&gt;ara/tsync/timestamp.h&lt;/code&gt;) besitzt &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; keine dynamischen Lebenszyklusphasen im Sinne einer initialisierten oder betriebenen Laufzeitkomponente. Eine Instanziierung von Objekten dieser Struktur ist für die vorgesehene Funktion nicht zwingend erforderlich; sie existiert primär auf der Ebene des C++-Typsystems zur Compile-Zeit.&lt;/p&gt;
+
+&lt;p&gt;Zur Erfüllung der formalen Anforderungen an eine C++-Clock (C++ Clock Requirements) definiert &lt;code&gt;TimeBase&lt;/code&gt; alle geforderten Typ-Aliase und Konstanten. Hierzu zählt der fundamentale Zählertyp &lt;code&gt;rep&lt;/code&gt; als &lt;code&gt;std::int64_t&lt;/code&gt; zur Repräsentation der Anzahl von Zeitticks &lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt; sowie das Zeittick-Intervall &lt;code&gt;period&lt;/code&gt; als &lt;code&gt;std::nano&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;, was einer Auflösung im Nanosekundenbereich entspricht. Die Dauer zur Messung der Zeit seit einer Epoche wird über den Typalias &lt;code&gt;duration&lt;/code&gt; als &lt;code&gt;std::chrono::duration&amp;lt;rep, period&amp;gt;&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit und des Verhaltens im laufenden System deklariert die Struktur die statische Konstante &lt;code&gt;is_steady&lt;/code&gt; mit dem booleschen Wert &lt;code&gt;false&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_01265" href="../spec/record.html?id=SWS_TS_01265"&gt;[SWS_TS_01265]&lt;/a&gt;. Dies signalisiert dem C++-Chrono-Framework, dass die zugrundeliegende Uhr nicht monoton (steady) ist. Interpretation: Dies dürfte darauf zurückzuführen sein, dass Zeitsynchronisationsvorgänge im Modul &lt;code&gt;tsync&lt;/code&gt; Anpassungen oder Sprünge der lokalen Zeitbasis bewirken können, weshalb aufeinanderfolgende Messungen keine strenge Monotonie garantieren. Da die Struktur selbst keinen veränderlichen Zustand kapselt, sind sämtliche Typverwendungen und Zugriffe auf Konstanten inhärent nebenläufigkeitssicher.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; liegt in der Deklaration, Verarbeitung und Weitergabe von Zeitwerten innerhalb synchronisierter Anwendungen. Entwickler und adaptive Softwarekomponenten instanziieren nicht die Uhr selbst, sondern greifen auf den zentralen Typalias &lt;code&gt;time_point&lt;/code&gt; zu, der als &lt;code&gt;std::chrono::time_point&amp;lt;TimeBase&amp;gt;&lt;/code&gt; definiert ist &lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;.&lt;/p&gt;
+
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Interface inclusion:&lt;/strong&gt; Inclusion of the header file &lt;code&gt;#include "ara/tsync/timestamp.h"&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Typing of points in time:&lt;/strong&gt; Using the type &lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;) or &lt;code&gt;std::chrono::time_point&amp;lt;ara::tsync::TimeBase&amp;gt;&lt;/code&gt; for the typed identification of local timestamps.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Arithmetic and conversion:&lt;/strong&gt; Differences between two points in time yield values of type &lt;code&gt;ara::tsync::TimeBase::duration&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;), which can be processed with nanosecond-exact resolution (&lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Typdefinition und Schnittstellenspezifikation:&lt;/strong&gt; Die Anwendung bindet den Header &lt;code&gt;ara/tsync/timestamp.h&lt;/code&gt; ein und verwendet &lt;code&gt;ara::tsync::TimeBase::time_point&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt;, um Signaturen für Zeitstempel zu deklarieren. Interpretation: Dadurch wird sichergestellt, dass Zeitpunkte semantisch an die spezifische lokale Zeitbasis gekoppelt bleiben.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Arithmetik und Differenzbildung:&lt;/strong&gt; Werden zwei Zeitpunkte voneinander subtrahiert, liefert der Ausdruck automatisch den Typ &lt;code&gt;ara::tsync::TimeBase::duration&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_01263" href="../spec/record.html?id=SWS_TS_01263"&gt;[SWS_TS_01263]&lt;/a&gt;. Dieser basiert auf Nanosekundenschritten (&lt;code&gt;period&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_TS_01262" href="../spec/record.html?id=SWS_TS_01262"&gt;[SWS_TS_01262]&lt;/a&gt; und 64-Bit-Ganzzahlen (&lt;code&gt;rep&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_TS_01261" href="../spec/record.html?id=SWS_TS_01261"&gt;[SWS_TS_01261]&lt;/a&gt;, womit standardkonforme Dauerberechnungen und Konvertierungen in andere Zeiteinheiten möglich sind.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Interoperabilität mit Standardalgorithmen:&lt;/strong&gt; Durch die vollständige Erfüllung der Clock-Typanforderungen können Zeitpunkte und Zeitspannen nahtlos an Standardbibliotheksfunktionen von &lt;code&gt;std::chrono&lt;/code&gt; übergeben werden, ohne dass proprietäre Zeitstrukturen verwendet werden müssen.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;
-Since &lt;code&gt;TimeBase&lt;/code&gt; functions as a pure pseudo-clock, it presumably does not provide a static member function &lt;code&gt;now()&lt;/code&gt;; timestamps are instead likely generated and output by the synchronization mechanisms of module &lt;code&gt;tsync&lt;/code&gt;.
-&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-Since &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; represents a compile-time definition of type aliases and a constant, no runtime errors, return codes, or exceptions occur in the class itself. Preconditions and postconditions exclusively concern type safety at compile time: operations between &lt;code&gt;TimeBase::time_point&lt;/code&gt; and other clock types (such as &lt;code&gt;std::chrono::steady_clock&lt;/code&gt;) are prevented by the C++ type system unless an explicit conversion takes place.
-&lt;/p&gt;
-&lt;!-- annahmen: 1) Fehlende Memberfunktion now() – Begründung: Der Payload enthält TimeBase als struct/Pseudo-Clock ohne now()-Methode, daher werden Zeitstempel vermutlich durch externe tsync-Mechanismen bereitgestellt. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated automatically based on the specification requirements of AUTOSAR R25-11.&lt;/p&gt;
+&lt;p&gt;Interpretation: Da &lt;code&gt;TimeBase&lt;/code&gt; als Pseudo-Clock konzipiert ist, stellt sie selbst keine statische Memberfunktion &lt;code&gt;now()&lt;/code&gt; bereit; die konkrete Zeitwertermittlung für einen solchen &lt;code&gt;time_point&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_01264" href="../spec/record.html?id=SWS_TS_01264"&gt;[SWS_TS_01264]&lt;/a&gt; dürfte durch andere Dienste oder Schnittstellen des Moduls &lt;code&gt;tsync&lt;/code&gt; erfolgen, die an die referenzierte &lt;code&gt;timeBaseResource&lt;/code&gt; angebunden sind.&lt;/p&gt;
+
+&lt;!-- annahmen: 1) Die Eigenschaft is_steady = false dürfte auf Zeitsynchronisationsanpassungen und -sprünge im Modul tsync zurückgehen – Begründung: Als Pseudo-Clock für eine timeBaseResource reflektiert die Uhr externe Synchronisationsereignisse. 2) Die Bindung an TimeBase stellt die semantische Trennung von Zeitpunkten unterschiedlicher Zeitbasen sicher – Begründung: std::chrono::time_point verwendet den Clock-Typ zur Typunterscheidung. 3) TimeBase stellt selbst keine now()-Funktion bereit – Begründung: Der Payload deklariert nur Typ-Aliase und is_steady, weshalb die Zeitwerterfassung über gesonderte tsync-Ressourcen erfolgen dürfte. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation AUTOSAR Adaptive Platform R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -299,9 +373,9 @@ Since &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; represents a compile-time de
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>1afcfc0f9fb5…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f515350f98f7…</code></div>
               <div><strong>Konstituierende Records:</strong> 5</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 18 <span class="dossier-meta-sub">(18 neu · 9 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 18 Belege dazugekommen (9 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 9 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (9 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -336,8 +410,8 @@ Since &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; represents a compile-time de
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">23</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">18</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">14</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">9</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">4</span></button>
               </div>
@@ -374,7 +448,7 @@ Since &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; represents a compile-time de
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 18 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 9 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -437,4 +511,4 @@ Since &lt;code&gt;ara::tsync::TimeBase&lt;/code&gt; represents a compile-time de
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_TS_01263","k":"type","d":"TSYNC","t":"type alias duration [SWS_TS_01263] Upstream: RS_AP_00130 , RS_TS_00005 using duration = std::chrono::duration \u003c rep , period >; required type declaration to fulfill the C++ Clock requirements used to measure the time since epoch Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol duration class mono","n":"alias"},{"i":"SWS_TS_01262","k":"type","d":"TSYNC","t":"type alias period [SWS_TS_01262] Upstream: RS_AP_00130 , RS_TS_00005 using period = std::nano ; required type declaration to fulfill the C++ Clock requirements representing the tick period of the duration Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol period class mono","n":"alias"},{"i":"SWS_TS_01261","k":"type","d":"TSYNC","t":"type alias rep [SWS_TS_01261] Upstream: RS_AP_00130 , RS_TS_00005 using rep = std::int64_t ; required type declaration to fulfill the C++ Clock requirements representing the number of ticks Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol rep class mono","n":"alias"},{"i":"SWS_TS_01264","k":"type","d":"TSYNC","t":"type alias time_point [SWS_TS_01264] Upstream: RS_AP_00130 , RS_TS_00005 using time_point = std::chrono::time_point \u003c TimeBase >; represents a point in time Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol time_point class mono","n":"alias"},{"i":"SWS_TS_01265","k":"variable","d":"TSYNC","t":"variable is_steady [SWS_TS_01265] Upstream: RS_AP_00130 , RS_TS_00005 static constexpr bool is_steady = false; required constant to fulfill the C++ Clock requirements as steady clock Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol is_steady class mono Typ bool class mono","n":"is_steady"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/754e5f6df84a5574.json?v=a71ac9f3" data-total="18" data-new="18" data-figures="9" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_TS_01263","k":"type","d":"TSYNC","t":"type alias duration [SWS_TS_01263] Upstream: RS_AP_00130 , RS_TS_00005 using duration = std::chrono::duration \u003c rep , period >; required type declaration to fulfill the C++ Clock requirements used to measure the time since epoch Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol duration class mono","n":"alias"},{"i":"SWS_TS_01262","k":"type","d":"TSYNC","t":"type alias period [SWS_TS_01262] Upstream: RS_AP_00130 , RS_TS_00005 using period = std::nano ; required type declaration to fulfill the C++ Clock requirements representing the tick period of the duration Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol period class mono","n":"alias"},{"i":"SWS_TS_01261","k":"type","d":"TSYNC","t":"type alias rep [SWS_TS_01261] Upstream: RS_AP_00130 , RS_TS_00005 using rep = std::int64_t ; required type declaration to fulfill the C++ Clock requirements representing the number of ticks Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol rep class mono","n":"alias"},{"i":"SWS_TS_01264","k":"type","d":"TSYNC","t":"type alias time_point [SWS_TS_01264] Upstream: RS_AP_00130 , RS_TS_00005 using time_point = std::chrono::time_point \u003c TimeBase >; represents a point in time Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol time_point class mono","n":"alias"},{"i":"SWS_TS_01265","k":"variable","d":"TSYNC","t":"variable is_steady [SWS_TS_01265] Upstream: RS_AP_00130 , RS_TS_00005 static constexpr bool is_steady = false; required constant to fulfill the C++ Clock requirements as steady clock Header-Datei #include \"ara/tsync/timestamp.h\" class mono Scope struct ara::tsync::TimeBase class mono Symbol is_steady class mono Typ bool class mono","n":"is_steady"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/754e5f6df84a5574.json?v=d88d0c17" data-total="9" data-new="9" data-figures="9" data-used="0"></script></dialog>

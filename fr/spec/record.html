@@ -388,6 +388,9 @@
         <tbody id="rec-versions-tbody"></tbody>
       </table>
 
+      <!-- Revisions-Zeitachse mit Vergleich wie im Versions-Explorer (VersionsExplorerCore.revisionKit) -->
+      <div id="rec-timeline" class="rec-timeline" hidden></div>
+
       <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
         <a id="rec-open-diff-btn" href="../versions.html" class="btn" style="display:inline-flex; align-items:center; gap:0.4rem; padding: 8px 16px; background: var(--primary, #01696f); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px;">
           ⚡ Vollständigen Revisions-Diff im Versions-Explorer öffnen →
@@ -400,6 +403,9 @@
   </article>
 </div>
 
+<script src="../../static/text-diff.js" defer></script>
+<script src="../../static/versions-explorer-i18n.js" defer></script>
+<script src="../../static/versions-explorer.js" defer></script>
 <script>
 (function() {
   function initRecordPage() {
@@ -1748,6 +1754,7 @@
       '</tr>';
     }).join('');
     versionsTbody.innerHTML = tbodyRows;
+    mountRevisionTimeline(data);
 
     openDiffBtn.href = '../versions.html?id=' + encodeURIComponent(reqId);
     copyLinkBtn.onclick = function() {
@@ -1756,6 +1763,28 @@
         setTimeout(() => { copyLinkBtn.textContent = t.copy_link; }, 2000);
       });
     };
+  }
+
+  // Revisions-Zeitachse mit Links/Rechts-Auswahl und Vergleich (Nebeneinander, Unified, Volltext) wie im
+  // Versions-Explorer: derselbe Code (VersionsExplorerCore.revisionKit, static/text-diff.js), Texte aus
+  // versions-explorer-i18n.js in der Seitensprache. Einmal je Kennung; Release-Chips oben ändern sie nicht.
+  function mountRevisionTimeline(data) {
+    const box = document.getElementById('rec-timeline');
+    const C = window.VersionsExplorerCore, TD = window.TextDiff;
+    if (!box || !C || !C.revisionKit || !TD || !data || !Array.isArray(data.versions)) return;
+    if (box.dataset.rid === reqId) return;
+    box.dataset.rid = reqId;
+    const I = window.VE_I18N || {}, T = I[currentLang] || I.en || {}, DE = I.de || {};
+    const tr = (key, vars) => {
+      let s = T[key] != null ? T[key] : (DE[key] != null ? DE[key] : key);
+      if (vars) Object.keys(vars).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); });
+      return s;
+    };
+    const K = C.revisionKit({ t: tr, TD: TD, root: rootPrefix });
+    const rec = K.prepareRecord(Object.assign({}, data, { allVersions: null }));
+    const pair = K.initialPair(rec);
+    box.hidden = false;
+    K.mountElement(box, rec, { from: pair[0], to: pair[1], mode: 'side' });
   }
 
   } // end initRecordPage

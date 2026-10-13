@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_shwa_ara_shwa_59c3fa" class="dossier-modal dossier-workbench" data-dossier-sha="1fe54ef6e441e46d" aria-labelledby="dossier-modal-ns_shwa_ara_shwa_59c3fa-title">
+<dialog id="dossier-modal-ns_shwa_ara_shwa_59c3fa" class="dossier-modal dossier-workbench" data-dossier-sha="949561b5d49a2121" aria-labelledby="dossier-modal-ns_shwa_ara_shwa_59c3fa-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_shwa_ara_shwa_59c3fa-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_shwa_ara_shwa_59c3fa)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,119 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,641 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace ara::shwa' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -249,273 +268,196 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="c755c3a6b565c99f920f41ce215e81f1bb434983950dd4c39c28c218ff94da52" data-trace-output="1fe54ef6e441e46d5ba274946e595a379ee260de42e1bd291092ebfcd527f9e7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="94872e9e2305640052989f364479f10f52cdc752cd864f05f348ea246ce292e5" data-trace-output="949561b5d49a21219e4a9b5375058587674c587ef4060f84086d5ca1fb4b766d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermöglicht die sichere Auslagerung rechenintensiver Aufgaben auf spezialisierte Hardwarebeschleuniger." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    The namespace &lt;code&gt;ara::shwa&lt;/code&gt; (Safe Hardware Acceleration) provides interfaces for the discovery, allocation, and use of hardware accelerators (such as GPUs or CPUs) for compute-intensive tasks on the AUTOSAR Adaptive Platform. Structurally, the module separates system discovery, resource management, and actual asynchronous job processing.
-  &lt;/p&gt;
-  &lt;p&gt;
-    The central discovery entity is &lt;code&gt;Platform&lt;/code&gt;, via which hardware accelerator platforms available in the system are determined and the connected &lt;code&gt;Device&lt;/code&gt; instances are queried. For selecting specific execution targets, the namespace provides selectors such as &lt;code&gt;DeviceSelector&lt;/code&gt;, &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;GpuSelector&lt;/code&gt;, and &lt;code&gt;AcceleratorSelector&lt;/code&gt;, which are used to determine a suitable &lt;code&gt;Device&lt;/code&gt; based on application-specific ranks or target architectures.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Tasks are not started directly on the &lt;code&gt;Device&lt;/code&gt;, but are coordinated via a &lt;code&gt;Queue&lt;/code&gt;, which controls parallel processing on the selected target. Data is provided via &lt;code&gt;Buffer&lt;/code&gt;, whose sizing is determined via &lt;code&gt;Range&lt;/code&gt; and whose memory access is protected via &lt;code&gt;Accessor&lt;/code&gt;. The interaction of the core components thus covers selection, memory management, and parallel execution.
-  &lt;/p&gt;
-
-  &lt;div class="diagram" id="diag-shwa-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 706.36 234.80" style="max-width:942px"&gt;
-&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 220.4)"&gt;
-&lt;title&gt;ShwaKontext&lt;/title&gt;
-&lt;!-- Platform --&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Ermöglicht die sichere Auslagerung rechenintensiver Aufgaben auf spezialisierte Hardwarebeschleuniger.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::shwa&lt;/code&gt; bietet Schnittstellen für sichere Hardwarebeschleunigung und ermöglicht die gezielte Auslagerung paralleler Rechenaufgaben auf Geräte wie GPUs oder CPUs über das Zielformat &lt;code&gt;Target&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;). Anwendungen selektieren Beschleuniger über Selektoren, erzeugen exklusiv verwaltete Ausführungswarteschlangen und steuern den Speicherzugriff über Puffer-Accessoren. Als zentrale Randbedingung gilt ein striktes Besitzmodell mit nicht kopierbaren Ressourcen sowie eine ausnahmsfreie Fehlersignalisierung über &lt;code&gt;ShwaErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301"&gt;[AP_SWS_SHWA_01301]&lt;/a&gt;).&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;ara::shwa&lt;/code&gt; (Safe Hardware Acceleration) stellt innerhalb der AUTOSAR Adaptive Platform Schnittstellen bereit, um rechenintensive Aufgaben auf spezialisierte Hardwarebeschleuniger auszulagern. Das Modul ermöglicht die Einbindung unterschiedlicher Beschleunigertypen wie Grafikprozessoren (GPU), digitaler Signalprozessoren oder dedizierter Hauptprozessoren (CPU).&lt;/p&gt;
+&lt;p&gt;Die Erkennung der Systemumgebung erfolgt über die Klasse &lt;code&gt;Platform&lt;/code&gt;, welche die auf dem Steuergerät verfügbaren Hardwareplattformen ermittelt und die zugehörigen &lt;code&gt;Device&lt;/code&gt;-Instanzen auflistet. Die Auswahl eines geeigneten Geräts kann dynamisch oder statisch über spezialisierte Selektoren gesteuert werden: &lt;code&gt;DeviceSelector&lt;/code&gt; agiert als aufrufbares Funktionsobjekt zur Priorisierung verfügbarer Einheiten anhand eines ganzzahligen Rangs, während &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;GpuSelector&lt;/code&gt; und &lt;code&gt;AcceleratorSelector&lt;/code&gt; gezielt spezifische Ausführungseinheiten adressieren. Der aktuelle Betriebszustand eines Beschleunigers wird über die Enumeration &lt;code&gt;DeviceStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;) abgebildet.&lt;/p&gt;
+&lt;p&gt;Für die parallele Ausführung von Rechenoperationen ist die &lt;code&gt;Queue&lt;/code&gt; zuständig. Berechnungsaufträge werden über &lt;code&gt;TaskHandler&lt;/code&gt; gekapselt, wobei der Ausführungsort über &lt;code&gt;Target&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;) wahlweise auf dem Beschleuniger (&lt;code&gt;kDevice&lt;/code&gt;) oder auf der Host-CPU (&lt;code&gt;kHostTask&lt;/code&gt;) festgelegt wird. Speicherbereiche für Ein- und Ausgabedaten werden über &lt;code&gt;Buffer&lt;/code&gt; unter Verwendung der Dimensionsangabe &lt;code&gt;Range&lt;/code&gt; allokiert. Der Zugriff auf diese Puffer wird durch &lt;code&gt;Accessor&lt;/code&gt;-Objekte geregelt, welche den Zugriffsmodus über &lt;code&gt;AccessMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;) einschränken.&lt;/p&gt;
+&lt;div class="diagram" id="diag-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 396.64 325.80" style="max-width:529px"&gt;
+&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 311.4)"&gt;
+&lt;title&gt;context&lt;/title&gt;
+&lt;!-- Application --&gt;
 &lt;g id="node1" class="node"&gt;
-&lt;title&gt;Platform&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M56.84,-206C56.84,-206 26.35,-206 26.35,-206 20.35,-206 14.35,-200 14.35,-194 14.35,-194 14.35,-182 14.35,-182 14.35,-176 20.35,-170 26.35,-170 26.35,-170 56.84,-170 56.84,-170 62.84,-170 68.84,-176 68.84,-182 68.84,-182 68.84,-194 68.84,-194 68.84,-200 62.84,-206 56.84,-206"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="41.59" y="-184.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Platform&lt;/text&gt;
+&lt;title&gt;Application&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M55.93,-215C55.93,-215 12,-215 12,-215 6,-215 0,-209 0,-203 0,-203 0,-191 0,-191 0,-185 6,-179 12,-179 12,-179 55.93,-179 55.93,-179 61.93,-179 67.93,-185 67.93,-191 67.93,-191 67.93,-203 67.93,-203 67.93,-209 61.93,-215 55.93,-215"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="33.97" y="-193.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Application&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- Device --&gt;
+&lt;!-- Platform --&gt;
 &lt;g id="node2" class="node"&gt;
-&lt;title&gt;Device&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M207.53,-152C207.53,-152 177.53,-152 177.53,-152 171.53,-152 165.53,-146 165.53,-140 165.53,-140 165.53,-128 165.53,-128 165.53,-122 171.53,-116 177.53,-116 177.53,-116 207.53,-116 207.53,-116 213.53,-116 219.53,-122 219.53,-128 219.53,-128 219.53,-140 219.53,-140 219.53,-146 213.53,-152 207.53,-152"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="192.53" y="-130.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Device&lt;/text&gt;
+&lt;title&gt;Platform&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M191.59,-297C191.59,-297 161.09,-297 161.09,-297 155.09,-297 149.09,-291 149.09,-285 149.09,-285 149.09,-273 149.09,-273 149.09,-267 155.09,-261 161.09,-261 161.09,-261 191.59,-261 191.59,-261 197.59,-261 203.59,-267 203.59,-273 203.59,-273 203.59,-285 203.59,-285 203.59,-291 197.59,-297 191.59,-297"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="176.34" y="-275.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Platform&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- Platform&amp;#45;&amp;gt;Device --&gt;
+&lt;!-- Application&amp;#45;&amp;gt;Platform --&gt;
 &lt;g id="edge1" class="edge"&gt;
-&lt;title&gt;Platform-&amp;gt;Device&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M69.22,-178.35C92.94,-169.75 127.89,-157.07 154.36,-147.47"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="155.36,-150.84 163.56,-144.14 152.97,-144.26 155.36,-150.84"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="119.65" y="-168.84" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;listet&lt;/text&gt;
+&lt;title&gt;Application-&amp;gt;Platform&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M63.65,-215.36C70.88,-219.89 78.65,-224.68 85.93,-229 103.12,-239.19 122.45,-250.07 138.73,-259.07"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="137.02,-262.13 147.47,-263.89 140.4,-256 137.02,-262.13"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="101.34" y="-248.92" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;fragt ab&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- DeviceSelector --&gt;
 &lt;g id="node3" class="node"&gt;
 &lt;title&gt;DeviceSelector&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M71.19,-152C71.19,-152 12,-152 12,-152 6,-152 0,-146 0,-140 0,-140 0,-128 0,-128 0,-122 6,-116 12,-116 12,-116 71.19,-116 71.19,-116 77.19,-116 83.19,-122 83.19,-128 83.19,-128 83.19,-140 83.19,-140 83.19,-146 77.19,-152 71.19,-152"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="41.59" y="-130.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_DeviceSelector_128fbb.html" href="../classes/cl_ara_shwa_DeviceSelector_128fbb.html"&gt;DeviceSelector&lt;/a&gt;&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M205.94,-243C205.94,-243 146.75,-243 146.75,-243 140.75,-243 134.75,-237 134.75,-231 134.75,-231 134.75,-219 134.75,-219 134.75,-213 140.75,-207 146.75,-207 146.75,-207 205.94,-207 205.94,-207 211.94,-207 217.94,-213 217.94,-219 217.94,-219 217.94,-231 217.94,-231 217.94,-237 211.94,-243 205.94,-243"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="176.34" y="-221.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_DeviceSelector_128fbb.html" href="../classes/cl_ara_shwa_DeviceSelector_128fbb.html"&gt;DeviceSelector&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- DeviceSelector&amp;#45;&amp;gt;Device --&gt;
+&lt;!-- Application&amp;#45;&amp;gt;DeviceSelector --&gt;
 &lt;g id="edge2" class="edge"&gt;
-&lt;title&gt;DeviceSelector-&amp;gt;Device&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M83.68,-134C105.52,-134 132.19,-134 153.54,-134"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="153.44,-137.5 163.44,-134 153.44,-130.5 153.44,-137.5"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="119.65" y="-137" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;selektiert&lt;/text&gt;
+&lt;title&gt;Application-&amp;gt;DeviceSelector&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M68.23,-203.64C84.54,-206.89 104.56,-210.88 122.86,-214.53"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="122.16,-217.96 132.65,-216.48 123.53,-211.1 122.16,-217.96"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="101.34" y="-215.68" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- Queue --&gt;
 &lt;g id="node4" class="node"&gt;
 &lt;title&gt;Queue&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M56.59,-82C56.59,-82 26.59,-82 26.59,-82 20.59,-82 14.59,-76 14.59,-70 14.59,-70 14.59,-58 14.59,-58 14.59,-52 20.59,-46 26.59,-46 26.59,-46 56.59,-46 56.59,-46 62.59,-46 68.59,-52 68.59,-58 68.59,-58 68.59,-70 68.59,-70 68.59,-76 62.59,-82 56.59,-82"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="41.59" y="-60.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Queue&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M191.34,-189C191.34,-189 161.34,-189 161.34,-189 155.34,-189 149.34,-183 149.34,-177 149.34,-177 149.34,-165 149.34,-165 149.34,-159 155.34,-153 161.34,-153 161.34,-153 191.34,-153 191.34,-153 197.34,-153 203.34,-159 203.34,-165 203.34,-165 203.34,-177 203.34,-177 203.34,-183 197.34,-189 191.34,-189"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="176.34" y="-167.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Queue&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- Queue&amp;#45;&amp;gt;Device --&gt;
+&lt;!-- Application&amp;#45;&amp;gt;Queue --&gt;
 &lt;g id="edge3" class="edge"&gt;
-&lt;title&gt;Queue-&amp;gt;Device&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M68.88,-76.35C92.73,-87.56 128.14,-104.21 154.79,-116.73"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="153.21,-119.86 163.75,-120.94 156.19,-113.52 153.21,-119.86"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="119.65" y="-110.33" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;bindet an&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- TaskHandler --&gt;
-&lt;g id="node5" class="node"&gt;
-&lt;title&gt;TaskHandler&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M216.93,-90C216.93,-90 168.12,-90 168.12,-90 162.12,-90 156.12,-84 156.12,-78 156.12,-78 156.12,-66 156.12,-66 156.12,-60 162.12,-54 168.12,-54 168.12,-54 216.93,-54 216.93,-54 222.93,-54 228.93,-60 228.93,-66 228.93,-66 228.93,-78 228.93,-78 228.93,-84 222.93,-90 216.93,-90"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="192.53" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt;&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- Queue&amp;#45;&amp;gt;TaskHandler --&gt;
-&lt;g id="edge4" class="edge"&gt;
-&lt;title&gt;Queue-&amp;gt;TaskHandler&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M68.98,-63.43C88.18,-63.22 114.79,-63.36 138.12,-65 140.08,-65.14 142.07,-65.3 144.08,-65.48"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="143.71,-68.96 154.02,-66.53 144.44,-62 143.71,-68.96"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="119.65" y="-68" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- Event --&gt;
-&lt;g id="node6" class="node"&gt;
-&lt;title&gt;Event&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M207.53,-36C207.53,-36 177.53,-36 177.53,-36 171.53,-36 165.53,-30 165.53,-24 165.53,-24 165.53,-12 165.53,-12 165.53,-6 171.53,0 177.53,0 177.53,0 207.53,0 207.53,0 213.53,0 219.53,-6 219.53,-12 219.53,-12 219.53,-24 219.53,-24 219.53,-30 213.53,-36 207.53,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="192.53" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Event&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- Queue&amp;#45;&amp;gt;Event --&gt;
-&lt;g id="edge5" class="edge"&gt;
-&lt;title&gt;Queue-&amp;gt;Event&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M68.88,-55.88C92.62,-48.55 127.83,-37.67 154.44,-29.46"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="155.14,-32.9 163.66,-26.61 153.08,-26.21 155.14,-32.9"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="119.65" y="-48.12" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- Accessor --&gt;
-&lt;g id="node9" class="node"&gt;
-&lt;title&gt;Accessor&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M329.24,-90C329.24,-90 296.93,-90 296.93,-90 290.93,-90 284.93,-84 284.93,-78 284.93,-78 284.93,-66 284.93,-66 284.93,-60 290.93,-54 296.93,-54 296.93,-54 329.24,-54 329.24,-54 335.24,-54 341.24,-60 341.24,-66 341.24,-66 341.24,-78 341.24,-78 341.24,-84 335.24,-90 329.24,-90"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="313.08" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Accessor&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- TaskHandler&amp;#45;&amp;gt;Accessor --&gt;
-&lt;g id="edge8" class="edge"&gt;
-&lt;title&gt;TaskHandler-&amp;gt;Accessor&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M229.42,-72C243.26,-72 259.13,-72 273.24,-72"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="272.93,-75.5 282.93,-72 272.93,-68.5 272.93,-75.5"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="256.93" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
+&lt;title&gt;Application-&amp;gt;Queue&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M68.37,-189.56C74.21,-188.32 80.24,-187.09 85.93,-186 102.97,-182.73 121.92,-179.5 137.97,-176.87"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="138.12,-180.4 147.43,-175.34 137,-173.49 138.12,-180.4"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="101.34" y="-189" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;besitzt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- Buffer --&gt;
-&lt;g id="node7" class="node"&gt;
+&lt;g id="node5" class="node"&gt;
 &lt;title&gt;Buffer&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M503.09,-90C503.09,-90 473.09,-90 473.09,-90 467.09,-90 461.09,-84 461.09,-78 461.09,-78 461.09,-66 461.09,-66 461.09,-60 467.09,-54 473.09,-54 473.09,-54 503.09,-54 503.09,-54 509.09,-54 515.09,-60 515.09,-66 515.09,-66 515.09,-78 515.09,-78 515.09,-84 509.09,-90 503.09,-90"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="488.09" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Buffer&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M191.34,-90C191.34,-90 161.34,-90 161.34,-90 155.34,-90 149.34,-84 149.34,-78 149.34,-78 149.34,-66 149.34,-66 149.34,-60 155.34,-54 161.34,-54 161.34,-54 191.34,-54 191.34,-54 197.34,-54 203.34,-60 203.34,-66 203.34,-66 203.34,-78 203.34,-78 203.34,-84 197.34,-90 191.34,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="176.34" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Buffer&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Application&amp;#45;&amp;gt;Buffer --&gt;
+&lt;g id="edge4" class="edge"&gt;
+&lt;title&gt;Application-&amp;gt;Buffer&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M55.68,-178.56C79.66,-157.2 119.32,-121.88 146.36,-97.81"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="148.62,-100.48 153.76,-91.22 143.96,-95.26 148.62,-100.48"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="101.34" y="-152.37" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;besitzt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Device --&gt;
+&lt;g id="node6" class="node"&gt;
+&lt;title&gt;Device&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M346.43,-260C346.43,-260 316.43,-260 316.43,-260 310.43,-260 304.43,-254 304.43,-248 304.43,-248 304.43,-236 304.43,-236 304.43,-230 310.43,-224 316.43,-224 316.43,-224 346.43,-224 346.43,-224 352.43,-224 358.43,-230 358.43,-236 358.43,-236 358.43,-248 358.43,-248 358.43,-254 352.43,-260 346.43,-260"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="331.43" y="-238.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Device&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Platform&amp;#45;&amp;gt;Device --&gt;
+&lt;g id="edge5" class="edge"&gt;
+&lt;title&gt;Platform-&amp;gt;Device&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M204.01,-272.56C228.6,-266.61 265.34,-257.73 292.89,-251.07"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="293.56,-254.51 302.45,-248.76 291.91,-247.71 293.56,-254.51"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-266.81" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;listet&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- DeviceSelector&amp;#45;&amp;gt;Device --&gt;
+&lt;g id="edge6" class="edge"&gt;
+&lt;title&gt;DeviceSelector-&amp;gt;Device&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M218.37,-229.56C241.49,-232.12 270.17,-235.31 292.73,-237.81"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="292.25,-241.28 302.58,-238.91 293.02,-234.32 292.25,-241.28"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-239.02" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;wählt aus&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Queue&amp;#45;&amp;gt;Device --&gt;
+&lt;g id="edge7" class="edge"&gt;
+&lt;title&gt;Queue-&amp;gt;Device&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M203.67,-182.64C223.83,-191.6 252.27,-204.39 277.03,-216 282.43,-218.53 288.13,-221.25 293.7,-223.94"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="292.14,-227.07 302.66,-228.29 295.19,-220.78 292.14,-227.07"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-219" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;bindet&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- TaskHandler --&gt;
+&lt;g id="node7" class="node"&gt;
+&lt;title&gt;TaskHandler&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M355.84,-198C355.84,-198 307.03,-198 307.03,-198 301.03,-198 295.03,-192 295.03,-186 295.03,-186 295.03,-174 295.03,-174 295.03,-168 301.03,-162 307.03,-162 307.03,-162 355.84,-162 355.84,-162 361.84,-162 367.84,-168 367.84,-174 367.84,-174 367.84,-186 367.84,-186 367.84,-192 361.84,-198 355.84,-198"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="331.43" y="-176.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt;&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Queue&amp;#45;&amp;gt;TaskHandler --&gt;
+&lt;g id="edge8" class="edge"&gt;
+&lt;title&gt;Queue-&amp;gt;TaskHandler&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M203.62,-170.74C223.74,-170.73 252.17,-171.13 277.03,-173 278.98,-173.15 280.98,-173.32 282.99,-173.51"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="282.61,-176.98 292.93,-174.57 283.36,-170.02 282.61,-176.98"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-176" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Event --&gt;
+&lt;g id="node8" class="node"&gt;
+&lt;title&gt;Event&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M346.43,-144C346.43,-144 316.43,-144 316.43,-144 310.43,-144 304.43,-138 304.43,-132 304.43,-132 304.43,-120 304.43,-120 304.43,-114 310.43,-108 316.43,-108 316.43,-108 346.43,-108 346.43,-108 352.43,-108 358.43,-114 358.43,-120 358.43,-120 358.43,-132 358.43,-132 358.43,-138 352.43,-144 346.43,-144"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="331.43" y="-122.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Event&lt;/text&gt;
+&lt;/g&gt;
+&lt;!-- Queue&amp;#45;&amp;gt;Event --&gt;
+&lt;g id="edge9" class="edge"&gt;
+&lt;title&gt;Queue-&amp;gt;Event&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M203.66,-163.26C228.3,-156.02 265.39,-145.12 293.09,-136.98"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="293.74,-140.43 302.35,-134.25 291.77,-133.72 293.74,-140.43"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-155.53" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- Range --&gt;
-&lt;g id="node8" class="node"&gt;
+&lt;g id="node9" class="node"&gt;
 &lt;title&gt;Range&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M665.56,-90C665.56,-90 635.56,-90 635.56,-90 629.56,-90 623.56,-84 623.56,-78 623.56,-78 623.56,-66 623.56,-66 623.56,-60 629.56,-54 635.56,-54 635.56,-54 665.56,-54 665.56,-54 671.56,-54 677.56,-60 677.56,-66 677.56,-66 677.56,-78 677.56,-78 677.56,-84 671.56,-90 665.56,-90"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="650.56" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Range&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M346.43,-90C346.43,-90 316.43,-90 316.43,-90 310.43,-90 304.43,-84 304.43,-78 304.43,-78 304.43,-66 304.43,-66 304.43,-60 310.43,-54 316.43,-54 316.43,-54 346.43,-54 346.43,-54 352.43,-54 358.43,-60 358.43,-66 358.43,-66 358.43,-78 358.43,-78 358.43,-84 352.43,-90 346.43,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="331.43" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Range&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- Buffer&amp;#45;&amp;gt;Range --&gt;
-&lt;g id="edge6" class="edge"&gt;
+&lt;g id="edge10" class="edge"&gt;
 &lt;title&gt;Buffer-&amp;gt;Range&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M515.59,-72C541.8,-72 582.17,-72 611.74,-72"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="611.62,-75.5 621.62,-72 611.62,-68.5 611.62,-75.5"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="569.32" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;konfiguriert ueber&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M203.66,-72C228.09,-72 264.73,-72 292.35,-72"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="292.28,-75.5 302.28,-72 292.28,-68.5 292.28,-75.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;beschreibt&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- Accessor&amp;#45;&amp;gt;Buffer --&gt;
-&lt;g id="edge7" class="edge"&gt;
-&lt;title&gt;Accessor-&amp;gt;Buffer&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M341.5,-72C370.6,-72 416.81,-72 449.34,-72"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="448.99,-75.5 458.99,-72 448.99,-68.5 448.99,-75.5"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="401.17" y="-75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;verwaltet Zugriff auf&lt;/text&gt;
+&lt;!-- Accessor --&gt;
+&lt;g id="node10" class="node"&gt;
+&lt;title&gt;Accessor&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M347.59,-36C347.59,-36 315.28,-36 315.28,-36 309.28,-36 303.28,-30 303.28,-24 303.28,-24 303.28,-12 303.28,-12 303.28,-6 309.28,0 315.28,0 315.28,0 347.59,0 347.59,0 353.59,0 359.59,-6 359.59,-12 359.59,-12 359.59,-24 359.59,-24 359.59,-30 353.59,-36 347.59,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="331.43" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Accessor&lt;/text&gt;
 &lt;/g&gt;
-&lt;/g&gt;
-&lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Context diagram: Interaction of the core classes during discovery, allocation, and execution in ara::shwa. Sources: Payload class descriptions Platform, Device, Queue, Buffer, Accessor.&lt;/p&gt;
-
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    In the lifecycle of the involved objects, &lt;code&gt;ara::shwa&lt;/code&gt; strictly distinguishes between resource-owning and non-owning entities:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Resource-owning objects:&lt;/strong&gt; &lt;code&gt;Queue&lt;/code&gt;, &lt;code&gt;Buffer&lt;/code&gt;, and &lt;code&gt;Accessor&lt;/code&gt; own concrete hardware or memory resources. They are explicitly non-copyable and designed to be managed exclusively via &lt;code&gt;std::unique_ptr&lt;/code&gt; and moved as needed.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Resource-free reference objects:&lt;/strong&gt; &lt;code&gt;Platform&lt;/code&gt;, &lt;code&gt;Device&lt;/code&gt;, &lt;code&gt;DeviceMonitor&lt;/code&gt;, &lt;code&gt;Id&lt;/code&gt;, and &lt;code&gt;Range&lt;/code&gt; do not own the underlying resources themselves. They are designed as copyable descriptors and handles.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Queue-bound objects:&lt;/strong&gt; Instances of &lt;code&gt;Event&lt;/code&gt; (for synchronization between host and HWA) and &lt;code&gt;TaskHandler&lt;/code&gt; (for controlling task executions) can only be instantiated within a &lt;code&gt;Queue&lt;/code&gt;; outside a queue, they have no functional significance.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    A &lt;code&gt;Device&lt;/code&gt; reflects discrete operating states regarding its availability, which are mapped via the enumeration &lt;code&gt;DeviceStatus&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;. Prior to task allocation, state &lt;code&gt;kReady&lt;/code&gt; signals execution readiness, while &lt;code&gt;kNotAccesible&lt;/code&gt;, &lt;code&gt;kFailure&lt;/code&gt;, or &lt;code&gt;kUnknown&lt;/code&gt; restrict or prevent use.
-  &lt;/p&gt;
-
-  &lt;div class="diagram" id="diag-shwa-device-status"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 488.61 169.70" style="max-width:651px"&gt;
-&lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 155.3)"&gt;
-&lt;title&gt;ShwaDeviceStatus&lt;/title&gt;
-&lt;!-- kUnknown --&gt;
-&lt;g id="node1" class="node"&gt;
-&lt;title&gt;kUnknown&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M52.89,-36C52.89,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 52.89,0 52.89,0 58.89,0 64.89,-6 64.89,-12 64.89,-12 64.89,-24 64.89,-24 64.89,-30 58.89,-36 52.89,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="32.44" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kUnknown&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kReady --&gt;
-&lt;g id="node2" class="node"&gt;
-&lt;title&gt;kReady&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M252.36,-88C252.36,-88 222.36,-88 222.36,-88 216.36,-88 210.36,-82 210.36,-76 210.36,-76 210.36,-64 210.36,-64 210.36,-58 216.36,-52 222.36,-52 222.36,-52 252.36,-52 252.36,-52 258.36,-52 264.36,-58 264.36,-64 264.36,-64 264.36,-76 264.36,-76 264.36,-82 258.36,-88 252.36,-88"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="237.36" y="-66.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kReady&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kUnknown&amp;#45;&amp;gt;kReady --&gt;
-&lt;g id="edge1" class="edge"&gt;
-&lt;title&gt;kUnknown-&amp;gt;kReady&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M65.15,-26.12C101.31,-35.39 160.39,-50.53 198.82,-60.38"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="197.87,-63.75 208.43,-62.84 199.61,-56.97 197.87,-63.75"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="134.12" y="-59.05" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Initialisierung erfolgreich&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kNotAccesible --&gt;
-&lt;g id="node3" class="node"&gt;
-&lt;title&gt;kNotAccesible&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M447.81,-53C447.81,-53 390.45,-53 390.45,-53 384.45,-53 378.45,-47 378.45,-41 378.45,-41 378.45,-29 378.45,-29 378.45,-23 384.45,-17 390.45,-17 390.45,-17 447.81,-17 447.81,-17 453.81,-17 459.81,-23 459.81,-29 459.81,-29 459.81,-41 459.81,-41 459.81,-47 453.81,-53 447.81,-53"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="419.13" y="-31.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kNotAccesible&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kUnknown&amp;#45;&amp;gt;kNotAccesible --&gt;
-&lt;g id="edge2" class="edge"&gt;
-&lt;title&gt;kUnknown-&amp;gt;kNotAccesible&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M65.15,-16.2C123.73,-13.35 252.75,-9.35 360.45,-22 362.5,-22.24 364.58,-22.52 366.68,-22.84"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="365.88,-26.25 376.33,-24.53 367.09,-19.36 365.88,-26.25"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="237.36" y="-18.07" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Nicht verfuegbar&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kReady&amp;#45;&amp;gt;kNotAccesible --&gt;
-&lt;g id="edge4" class="edge"&gt;
-&lt;title&gt;kReady-&amp;gt;kNotAccesible&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M264.62,-65.61C289.39,-61.38 327.52,-54.67 360.45,-48 362.6,-47.56 364.79,-47.11 367,-46.64"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="367.48,-50.12 376.52,-44.6 366.01,-43.28 367.48,-50.12"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="324.91" y="-64.02" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Zugriff verloren&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kFailure --&gt;
-&lt;g id="node4" class="node"&gt;
-&lt;title&gt;kFailure&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M434.13,-140C434.13,-140 404.13,-140 404.13,-140 398.13,-140 392.13,-134 392.13,-128 392.13,-128 392.13,-116 392.13,-116 392.13,-110 398.13,-104 404.13,-104 404.13,-104 434.13,-104 434.13,-104 440.13,-104 446.13,-110 446.13,-116 446.13,-116 446.13,-128 446.13,-128 446.13,-134 440.13,-140 434.13,-140"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="419.13" y="-118.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;kFailure&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kReady&amp;#45;&amp;gt;kFailure --&gt;
-&lt;g id="edge3" class="edge"&gt;
-&lt;title&gt;kReady-&amp;gt;kFailure&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M264.5,-77.56C295.03,-86.39 345.79,-101.07 380.54,-111.13"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="379.49,-114.47 390.06,-113.88 381.43,-107.74 379.49,-114.47"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="324.91" y="-108.18" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Geraetefehler&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kNotAccesible&amp;#45;&amp;gt;kReady --&gt;
-&lt;g id="edge5" class="edge"&gt;
-&lt;title&gt;kNotAccesible-&amp;gt;kReady&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M377.98,-27.8C352.06,-24.74 317.97,-23.72 289.37,-33 281.36,-35.6 273.55,-39.98 266.55,-44.84"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="264.75,-41.81 258.89,-50.64 268.98,-47.4 264.75,-41.81"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="324.91" y="-36" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Wiederhergestellt&lt;/text&gt;
-&lt;/g&gt;
-&lt;!-- kFailure&amp;#45;&amp;gt;kReady --&gt;
-&lt;g id="edge6" class="edge"&gt;
-&lt;title&gt;kFailure-&amp;gt;kReady&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M391.84,-126.45C364.98,-129.82 322.63,-131.79 289.37,-118 278.08,-113.32 267.79,-104.92 259.46,-96.43"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="262.27,-94.32 252.94,-89.29 257.1,-99.04 262.27,-94.32"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="324.91" y="-131.9" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Reset erfolgreich&lt;/text&gt;
+&lt;!-- Buffer&amp;#45;&amp;gt;Accessor --&gt;
+&lt;g id="edge11" class="edge"&gt;
+&lt;title&gt;Buffer-&amp;gt;Accessor&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M203.66,-62.72C228,-54.13 264.49,-41.26 292.07,-31.53"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="293.08,-34.89 301.34,-28.26 290.75,-28.29 293.08,-34.89"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="256.48" y="-52.84" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt&lt;/text&gt;
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;State diagram: Operating states of a hardware accelerator device according to DeviceStatus. Sources: [AP_SWS_SHWA_00103].&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Zusammenspiel der Kernklassen zur Hardwareauswahl, Speicherverwaltung und Aufgabenausführung. Quellen: &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;&lt;/p&gt;
 
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    A typical processing workflow spans several classes of the namespace and follows a fixed sequence of device selection, creation of the execution pipeline, memory buffering, and synchronized execution:
-  &lt;/p&gt;
-  &lt;ol&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Platform and device selection:&lt;/strong&gt; The application reads available devices via &lt;code&gt;Platform&lt;/code&gt; or uses a &lt;code&gt;DeviceSelector&lt;/code&gt; (or &lt;code&gt;GpuSelector&lt;/code&gt;, &lt;code&gt;CpuSelector&lt;/code&gt;, &lt;code&gt;AcceleratorSelector&lt;/code&gt;) to select the most suitable &lt;code&gt;Device&lt;/code&gt; instance with the highest rank.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Queue instantiation:&lt;/strong&gt; For parallel processing, a &lt;code&gt;Queue&lt;/code&gt; is created as a &lt;code&gt;std::unique_ptr&amp;lt;Queue&amp;gt;&lt;/code&gt; for the selected &lt;code&gt;Device&lt;/code&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Memory allocation and access management:&lt;/strong&gt; The dimensions are defined via &lt;code&gt;Range&lt;/code&gt;. Subsequently, a &lt;code&gt;Buffer&lt;/code&gt; is created for memory allocation on the host or accelerator. For controlled read and write operations, a &lt;code&gt;Accessor&lt;/code&gt; is instantiated whose mode is defined via &lt;code&gt;AccessMode&lt;/code&gt; as &lt;code&gt;kRead&lt;/code&gt;, &lt;code&gt;kWrite&lt;/code&gt;, or &lt;code&gt;kReadWrite&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Task submission and synchronization:&lt;/strong&gt; Via the &lt;code&gt;Queue&lt;/code&gt;, a &lt;code&gt;TaskHandler&lt;/code&gt; is enqueued for execution on the target (specified via &lt;code&gt;Target::kDevice&lt;/code&gt; or &lt;code&gt;Target::kHostTask&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;). By means of a &lt;code&gt;Event&lt;/code&gt; created within the queue, synchronization between host application and HWA processing takes place.
-    &lt;/li&gt;
-  &lt;/ol&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Das Ressourcen- und Lebenszyklusmodell in &lt;code&gt;ara::shwa&lt;/code&gt; unterscheidet strikt zwischen ressourcenbesitzenden Objekten, deskriptiven Handles und warteschlangenabhängigen Komponenten:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Ressourcenbesitzende Klassen:&lt;/strong&gt; &lt;code&gt;Queue&lt;/code&gt;, &lt;code&gt;Buffer&lt;/code&gt; und &lt;code&gt;Accessor&lt;/code&gt; verwalten Hardwareressourcen und Speicherbereiche exklusiv. Sie sind nicht kopierbar (&lt;em&gt;not copyable&lt;/em&gt;) und müssen zwingend über &lt;code&gt;std::unique_ptr&lt;/code&gt; verwaltet werden. Eine Weitergabe oder Übergabe ist ausschließlich über Move-Semantik gestattet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Deskriptive Handles und Hilfsklassen:&lt;/strong&gt; &lt;code&gt;Platform&lt;/code&gt;, &lt;code&gt;Device&lt;/code&gt;, &lt;code&gt;DeviceMonitor&lt;/code&gt;, &lt;code&gt;Id&lt;/code&gt;, &lt;code&gt;Range&lt;/code&gt; und &lt;code&gt;PropertyList&lt;/code&gt; besitzen keine Hardwareressourcen exklusiv. Sie sind kopierbar ausgelegt. Eine Instanz von &lt;code&gt;Device&lt;/code&gt; stellt lediglich eine Zugriffsschnittstelle auf ein Gerät dar, kontrolliert dieses jedoch nicht exklusiv. Interpretation: Die Initialisierung einer Ausführungswarteschlange (&lt;code&gt;Queue&lt;/code&gt;) bindet sich an ein spezifisches, zuvor ausgewähltes &lt;code&gt;Device&lt;/code&gt;, da &lt;code&gt;Queue&lt;/code&gt; Ressourcen exklusiv verwaltet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Abhängige Komponenten:&lt;/strong&gt; Die Klassen &lt;code&gt;Event&lt;/code&gt; (zur Synchronisation) und &lt;code&gt;TaskHandler&lt;/code&gt; (zur Aufgabenabarbeitung) können ausschließlich innerhalb einer &lt;code&gt;Queue&lt;/code&gt; erzeugt werden; außerhalb des Kontexts einer Warteschlange besitzen sie keine funktionale Bedeutung.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Der Lebenszyklus eines Geräts spiegelt sich in &lt;code&gt;DeviceStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;) wider: Neben dem betriebsbereiten Zustand &lt;code&gt;kReady&lt;/code&gt; kann ein Gerät als nicht zugänglich (&lt;code&gt;kNotAccesible&lt;/code&gt;), fehlerhaft (&lt;code&gt;kFailure&lt;/code&gt;) oder unbekannt (&lt;code&gt;kUnknown&lt;/code&gt;) ausgewiesen werden. Interpretation: Zustandsänderungen eines Geräts zwischen &lt;code&gt;kReady&lt;/code&gt;, &lt;code&gt;kNotAccesible&lt;/code&gt; und &lt;code&gt;kFailure&lt;/code&gt; werden zur Laufzeit über Hilfsklassen wie den &lt;code&gt;DeviceMonitor&lt;/code&gt; bzw. die Plattform erkannt.&lt;/p&gt;
 
-  &lt;div class="diagram" id="diag-shwa-nutzungspfad"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1320 553" font-family="Helvetica,sans-Serif" style="max-width:1320px"&gt;&lt;text x="660.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Nutzungspfad &lt;a class="diag-ref" data-ref="modules/shwa.html" href="../modules/shwa.html"&gt;ara::shwa&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="765" y1="102" x2="765" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="975" y1="102" x2="975" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="1185" y1="102" x2="1185" y2="539" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Selector / Platform&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Device&lt;/text&gt;&lt;rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Queue&lt;/text&gt;&lt;rect x="882" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="975" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Buffer / Accessor&lt;/text&gt;&lt;rect x="1092" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="1185" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt; / Event&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;line x1="40" y1="120" x2="1280" y2="120" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="135" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 1. Geraeteauswahl&lt;/text&gt;&lt;text x="240.0" y="163" text-anchor="middle" font-size="11" fill="#28251d"&gt;Waehle Device (&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_DeviceSelector_128fbb.html" href="../classes/cl_ara_shwa_DeviceSelector_128fbb.html"&gt;DeviceSelector&lt;/a&gt; / Platform)&lt;/text&gt;&lt;line x1="135" y1="169" x2="345" y2="169" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="197" text-anchor="middle" font-size="11" fill="#28251d"&gt;Device&lt;/text&gt;&lt;line x1="345" y1="203" x2="135" y2="203" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="225" x2="1280" y2="225" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="240" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 2. Queue und Puffer initialisieren&lt;/text&gt;&lt;text x="450.0" y="268" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_Queue_49e139.html" href="../classes/cl_ara_shwa_Queue_49e139.html"&gt;Queue&lt;/a&gt;(Device) via std::unique_ptr&lt;/text&gt;&lt;line x1="135" y1="274" x2="765" y2="274" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="302" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_Buffer_63e774.html" href="../classes/cl_ara_shwa_Buffer_63e774.html"&gt;Buffer&lt;/a&gt;(Range) und &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_Accessor_f7ce9a.html" href="../classes/cl_ara_shwa_Accessor_f7ce9a.html"&gt;Accessor&lt;/a&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101" href="../namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101"&gt;AccessMode&lt;/a&gt;)&lt;/text&gt;&lt;line x1="135" y1="308" x2="975" y2="308" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;line x1="40" y1="330" x2="1280" y2="330" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="345" font-size="11" font-style="italic" fill="#28251d"&gt;Use Case: 3. Task-Einreihung und Synchronisation&lt;/text&gt;&lt;text x="450.0" y="373" text-anchor="middle" font-size="11" fill="#28251d"&gt;Reihe Task ein (Target)&lt;/text&gt;&lt;line x1="135" y1="379" x2="765" y2="379" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="975.0" y="407" text-anchor="middle" font-size="11" fill="#28251d"&gt;Erzeuge &lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt; und Event in Queue&lt;/text&gt;&lt;line x1="765" y1="413" x2="1185" y2="413" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="870.0" y="441" text-anchor="middle" font-size="11" fill="#28251d"&gt;Fuehre Task auf Hardware aus&lt;/text&gt;&lt;line x1="1185" y1="447" x2="555" y2="447" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="870.0" y="475" text-anchor="middle" font-size="11" fill="#28251d"&gt;Signalisiere Abschluss via Event&lt;/text&gt;&lt;line x1="555" y1="481" x2="1185" y2="481" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="660.0" y="509" text-anchor="middle" font-size="11" fill="#28251d"&gt;Task beendet / synchronisiert&lt;/text&gt;&lt;line x1="1185" y1="515" x2="135" y2="515" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
-  &lt;p class="diagram-note"&gt;Sequence diagram: Typical workflow of device selection, buffer management, queue allocation, and task synchronization. Sources: Payload class descriptions Platform, DeviceSelector, Queue, Buffer, Accessor, TaskHandler, Event as well as [AP_SWS_SHWA_00101], [AP_SWS_SHWA_00102].&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Die typische Verwendung von &lt;code&gt;ara::shwa&lt;/code&gt; zur Ausführung einer beschleunigten Berechnung gliedert sich in fünf Schritte:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Plattform- und Geräteauswahl:&lt;/strong&gt; Die Anwendung ruft über &lt;code&gt;Platform&lt;/code&gt; die vorhandenen Hardwareplattformen und deren zugeordnete &lt;code&gt;Device&lt;/code&gt;-Instanzen ab. Ein Selektor (wie &lt;code&gt;DeviceSelector&lt;/code&gt;, &lt;code&gt;GpuSelector&lt;/code&gt; oder &lt;code&gt;CpuSelector&lt;/code&gt;) ermittelt das am besten geeignete Gerät, dessen &lt;code&gt;DeviceStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;) den Status &lt;code&gt;kReady&lt;/code&gt; aufweist.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Warteschlange instanziieren:&lt;/strong&gt; Für das ausgewählte &lt;code&gt;Device&lt;/code&gt; wird eine &lt;code&gt;Queue&lt;/code&gt; erzeugt und als &lt;code&gt;std::unique_ptr&lt;/code&gt; gehalten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Speicher allokieren und vorbereiten:&lt;/strong&gt; Für Eingabe- und Ausgabedaten wird ein &lt;code&gt;Buffer&lt;/code&gt; mit den geforderten Dimensionen über &lt;code&gt;Range&lt;/code&gt; erzeugt. Zur Befüllung oder Auswertung fordert die Anwendung einen &lt;code&gt;Accessor&lt;/code&gt; an, wobei der Zugriffsmodus über &lt;code&gt;AccessMode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;) als &lt;code&gt;kRead&lt;/code&gt;, &lt;code&gt;kWrite&lt;/code&gt; oder &lt;code&gt;kReadWrite&lt;/code&gt; deklariert wird.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Task registrieren und ausführen:&lt;/strong&gt; Innerhalb der &lt;code&gt;Queue&lt;/code&gt; wird ein &lt;code&gt;TaskHandler&lt;/code&gt; erstellt. Die Ausführung wird gestartet, wobei über &lt;code&gt;Target&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;) festgelegt ist, ob der Task auf dem Beschleuniger (&lt;code&gt;kDevice&lt;/code&gt;) oder auf dem Host (&lt;code&gt;kHostTask&lt;/code&gt;) läuft.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Synchronisation:&lt;/strong&gt; Die &lt;code&gt;Queue&lt;/code&gt; stellt ein &lt;code&gt;Event&lt;/code&gt; bereit, mit dem die Host-Anwendung die asynchrone Beendigung der Berechnungen auf dem Hardwarebeschleuniger überwacht und den Datenabgleich synchronisiert.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="diagram" id="diag-ablauf"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1110 476" font-family="Helvetica,sans-Serif" style="max-width:1110px"&gt;&lt;text x="555.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Nutzungspfad zur Aufgabenverarbeitung in &lt;a class="diag-ref" data-ref="modules/shwa.html" href="../modules/shwa.html"&gt;ara::shwa&lt;/a&gt;&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="462" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="462" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="462" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="765" y1="102" x2="765" y2="462" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="975" y1="102" x2="975" y2="462" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Platform&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_DeviceSelector_128fbb.html" href="../classes/cl_ara_shwa_DeviceSelector_128fbb.html"&gt;DeviceSelector&lt;/a&gt;&lt;/text&gt;&lt;rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Queue&lt;/text&gt;&lt;rect x="882" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="975" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Buffer&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Verfügbare Geräte abfragen&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;Liste von Device-Objekten&lt;/text&gt;&lt;line x1="345" y1="166" x2="135" y2="166" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;Gerät auswählen&lt;/text&gt;&lt;line x1="135" y1="200" x2="555" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="228" text-anchor="middle" font-size="11" fill="#28251d"&gt;Ausgewähltes Device&lt;/text&gt;&lt;line x1="555" y1="234" x2="135" y2="234" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="450.0" y="262" text-anchor="middle" font-size="11" fill="#28251d"&gt;Queue für Device instanziieren&lt;/text&gt;&lt;line x1="135" y1="268" x2="765" y2="268" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="296" text-anchor="middle" font-size="11" fill="#28251d"&gt;Buffer mit Range erzeugen&lt;/text&gt;&lt;line x1="135" y1="302" x2="975" y2="302" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="330" text-anchor="middle" font-size="11" fill="#28251d"&gt;Accessor mit &lt;a class="diag-ref" data-ref="namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101" href="../namespaces/ns_shwa_ara_shwa_59c3fa.html#AP_SWS_SHWA_00101"&gt;AccessMode&lt;/a&gt; anfordern&lt;/text&gt;&lt;line x1="135" y1="336" x2="975" y2="336" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="555.0" y="364" text-anchor="middle" font-size="11" fill="#28251d"&gt;Accessor bereitstellen&lt;/text&gt;&lt;line x1="975" y1="370" x2="135" y2="370" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="450.0" y="398" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_shwa_TaskHandler_71c103.html" href="../classes/cl_ara_shwa_TaskHandler_71c103.html"&gt;TaskHandler&lt;/a&gt; mit Target übergeben&lt;/text&gt;&lt;line x1="135" y1="404" x2="765" y2="404" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="450.0" y="432" text-anchor="middle" font-size="11" fill="#28251d"&gt;Event zur Synchronisation erzeugen&lt;/text&gt;&lt;line x1="765" y1="438" x2="135" y2="438" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Ablauf von der Plattformabfrage über die Pufferallokation bis zur synchronisierten Ausführung. Quellen: &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00101" href="../spec/record.html?id=AP_SWS_SHWA_00101"&gt;[AP_SWS_SHWA_00101]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00102" href="../spec/record.html?id=AP_SWS_SHWA_00102"&gt;[AP_SWS_SHWA_00102]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_00103" href="../spec/record.html?id=AP_SWS_SHWA_00103"&gt;[AP_SWS_SHWA_00103]&lt;/a&gt;&lt;/p&gt;
 
-  &lt;h4&gt;Error Scenarios&lt;/h4&gt;
-  &lt;p&gt;
-    The API of Safe Hardware Acceleration is designed fundamentally exception-free. Operations signal errors via error codes of type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;, which are assigned to the specific error domain &lt;code&gt;ShwaErrorDomain&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Access to the domain takes place via &lt;code&gt;GetShwaDomain()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01311" href="../spec/record.html?id=AP_SWS_SHWA_01311"&gt;[AP_SWS_SHWA_01311]&lt;/a&gt;, while standardized error codes are constructed via the helper function &lt;code&gt;MakeErrorCode()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01312" href="../spec/record.html?id=AP_SWS_SHWA_01312"&gt;[AP_SWS_SHWA_01312]&lt;/a&gt;. The enumeration &lt;code&gt;ShwaErrorCode&lt;/code&gt; defines the following causes, among others &lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301"&gt;[AP_SWS_SHWA_01301]&lt;/a&gt;:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;kRuntime&lt;/code&gt;: General runtime error during operation.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kTaskExecutionFailure&lt;/code&gt;: Execution error of a submitted task on the accelerator or host.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kMemoryNotAllocated&lt;/code&gt;: Allocation of main memory by &lt;code&gt;Buffer&lt;/code&gt; failed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kIntegrityCorrupted&lt;/code&gt;: The memory integrity of a &lt;code&gt;Buffer&lt;/code&gt; could not be maintained.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kResourceBusy&lt;/code&gt;: A requested device or queue resource is busy.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kInvalidAccessMode&lt;/code&gt; and &lt;code&gt;kAccessorFailure&lt;/code&gt;: Impermissible access mode for &lt;code&gt;AccessMode&lt;/code&gt; or failure during creation or use of &lt;code&gt;Accessor&lt;/code&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kEventInvalidOperation&lt;/code&gt;: Impermissible operation on a &lt;code&gt;Event&lt;/code&gt; synchronization object.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kFeatureNotSupported&lt;/code&gt;: The requested hardware feature is not supported by the backend or driver.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kInvalidIndex&lt;/code&gt;, &lt;code&gt;kInvalidParameter&lt;/code&gt;, and &lt;code&gt;kInvalidObject&lt;/code&gt;: Erroneous input values, invalid indices, or the use of already destroyed or invalid objects.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;kTimedOut&lt;/code&gt;: Timeout during execution or synchronization.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    For architectures based on C++ exceptions, the class &lt;code&gt;ShwaException&lt;/code&gt; is available. The API itself does not throw this exception; however, applications can convert error codes into exceptions and forward them if necessary. For asynchronous error handling at the HWA level, the application also integrates &lt;code&gt;ErrorHandler&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This guide is based exclusively on the specification requirements of the module shwa in Release R25-11.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Programmierschnittstelle von &lt;code&gt;ara::shwa&lt;/code&gt; ist ausnahmsfrei (&lt;em&gt;exception-free&lt;/em&gt;) gestaltet. Fehlerzustände werden synchron über &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; zurückgegeben. Die Erzeugung der Fehlercodes erfolgt über die Fabrikfunktion &lt;code&gt;MakeErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01312" href="../spec/record.html?id=AP_SWS_SHWA_01312"&gt;[AP_SWS_SHWA_01312]&lt;/a&gt;) unter Bezugnahme auf die Fehlerdomäne &lt;code&gt;GetShwaDomain&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01311" href="../spec/record.html?id=AP_SWS_SHWA_01311"&gt;[AP_SWS_SHWA_01311]&lt;/a&gt;). Sofern die Anwendungsarchitektur ein ausnahmebasiertes Fehlermodell vorsieht, kann der Fehlercode in eine &lt;code&gt;ShwaException&lt;/code&gt; konvertiert und geworfen werden.&lt;/p&gt;
+&lt;p&gt;Die Enumeration &lt;code&gt;ShwaErrorCode&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="AP_SWS_SHWA_01301" href="../spec/record.html?id=AP_SWS_SHWA_01301"&gt;[AP_SWS_SHWA_01301]&lt;/a&gt;) spezifiziert standardisierte Fehlerursachen:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Speicher- und Zugriffsprobleme:&lt;/strong&gt; Schlägt die Allokation von Arbeitsspeicher fehl, resultiert dies in &lt;code&gt;kMemoryNotAllocated&lt;/code&gt;. Kann die Datenkonsistenz eines Puffers nicht aufrechterhalten werden, wird &lt;code&gt;kIntegrityCorrupted&lt;/code&gt; gemeldet. Unzulässige Zugriffsmodi oder fehlschlagende Operationen an &lt;code&gt;Accessor&lt;/code&gt;-Objekten führen zu &lt;code&gt;kInvalidAccessMode&lt;/code&gt; bzw. &lt;code&gt;kAccessorFailure&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ausführungs- und Synchronisationsfehler:&lt;/strong&gt; Scheitert die Abarbeitung einer Aufgabe auf dem Zielgerät, wird &lt;code&gt;kTaskExecutionFailure&lt;/code&gt; signalisiert. Unerlaubte Operationen auf Synchronisationsobjekten führen zu &lt;code&gt;kEventInvalidOperation&lt;/code&gt;, während blockierte Ressourcen &lt;code&gt;kResourceBusy&lt;/code&gt; auslösen. Bei Überschreiten konfigurierter Ausführungszeiten wird &lt;code&gt;kTimedOut&lt;/code&gt; zurückgegeben.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ungültige Parameter und Objektzustände:&lt;/strong&gt; Der Aufruf von Methoden an zerstörten oder ungültigen Objekten führt zu &lt;code&gt;kInvalidObject&lt;/code&gt;. Ungültige Indizes oder Parameter werden über &lt;code&gt;kInvalidIndex&lt;/code&gt; bzw. &lt;code&gt;kInvalidParameter&lt;/code&gt; abgewiesen. Nicht unterstützte Funktionen melden &lt;code&gt;kFeatureNotSupported&lt;/code&gt;, während allgemeine Fehler über &lt;code&gt;kRuntime&lt;/code&gt; erfasst werden.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Für die Behandlung von Fehlern, die während asynchroner Berechnungen auf dem Beschleuniger auftreten, wird die Klasse &lt;code&gt;ErrorHandler&lt;/code&gt; eingesetzt.&lt;/p&gt;
+&lt;!-- annahmen: 1) Interpretation: Die Initialisierung einer Ausführungswarteschlange (Queue) bindet sich an ein spezifisches, zuvor ausgewähltes Device, da Queue Ressourcen exklusiv verwaltet. – Begründung: Die Klasse Queue verwaltet parallele Verarbeitung auf einem ausgewählten Device und besitzt ihre Ressourcen exklusiv via std::unique_ptr. 2) Interpretation: Zustandsänderungen eines Geräts zwischen kReady, kNotAccesible und kFailure werden zur Laufzeit über Hilfsklassen wie den DeviceMonitor bzw. die Plattform erkannt. – Begründung: Device ist nicht ressourcenbesitzend und steuert die Hardware nicht selbst; DeviceMonitor dient als Überwachungsschnittstelle. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert ausschließlich auf der Spezifikation für ara::shwa in AUTOSAR R25-11.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -557,9 +499,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>c755c3a6b565…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>94872e9e2305…</code></div>
               <div><strong>Konstituierende Records:</strong> 6</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 5 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (5 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 4 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (4 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -594,8 +536,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">10</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">4</span></button>
               </div>
@@ -632,7 +574,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 4 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -695,4 +637,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"AP_SWS_SHWA_00101","k":"enumeration","d":"SHWA","t":"enumeration AccessMode [AP_SWS_SHWA_00101] Upstream: RS_SHWA_00017 enum class AccessMode : std::uint32_t {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kRead — Nur-Lesen-Modus. kWrite — Nur-Schreiben-Modus. kReadWrite — Lese-/Schreibmodus.","n":"AccessMode"},{"i":"AP_SWS_SHWA_00103","k":"enumeration","d":"SHWA","t":"enumeration DeviceStatus [AP_SWS_SHWA_00103] Upstream: RS_SHWA_00004 enum class DeviceStatus : std::uint32_t {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kReady (= 0) — Device ist für die Task-Ausführung bereit. kNotAccesible (= 1) — Device ist nicht zugänglich. kFailure (= 2) — Device im Fehlerzustand. kUnknown (= 255) — Status kann nicht bestimmt werden.","n":"DeviceStatus"},{"i":"AP_SWS_SHWA_00102","k":"enumeration","d":"SHWA","t":"enumeration Target [AP_SWS_SHWA_00102] Upstream: RS_SHWA_00001 , RS_SHWA_00017 enum class Target : std::uint32_t {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kDevice — Task läuft auf dem Gerät beziehungsweise Beschleuniger. kHostTask — Task läuft auf dem Host (CPU).","n":"Target"},{"i":"AP_SWS_SHWA_01301","k":"enumeration","d":"SHWA","t":"enumeration ShwaErrorCode [AP_SWS_SHWA_01301] Upstream: RS_AP_00122 , RS_AP_00125 , RS_AP_00127 , RS_AP_00149 enum class ShwaErrorCode : ara::core::ErrorDomain::CodeType {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kRuntime (= 1) — allgemeiner Laufzeitfehler. kTaskExecutionFailure (= 2) — Fehler bei der Task-Ausführung. kMemoryNotAllocated (= 3) — Speicherallokation fehlgeschlagen. kIntegrityCorrupted (= 4) — Integrität eines Buffer-Speichers nicht herstellbar. kResourceBusy (= 5) — Ressource ist belegt. kInvalidAccessMode (= 6) — Zugriffsmodus ist unzulässig. kAccessorFailure (= 7) — Accessor-Nutzung oder -Erzeugung fehlgeschlagen. kEventInvalidOperation (= 8) — unzulässige Event-Operation. kFeatureNotSupported (= 9) — Feature wird nicht unterstützt. kInvalidIndex (= 10) — Index ist ungültig. kInvalidParameter (= 11) — ungültiger API-Parameter. kInvalidObject (= 12) — ungültiges oder zerstörtes Objekt verwendet. kTimedOut (= 13) — Operation überschritt die Zeitgrenze.","n":"ShwaErrorCode"},{"i":"AP_SWS_SHWA_01311","k":"function","d":"SHWA","t":"function GetShwaDomain [AP_SWS_SHWA_01311] Upstream: RS_AP_00119 , RS_AP_00120 , RS_AP_00159 constexpr const ara::core::ErrorDomain & GetShwaDomain () noexcept; Liest die durch die Signatur bezeichnete Information oder Eigenschaft aus dem Objekt. Thread Safety thread-safe Exception Safety exception safe","n":"GetShwaDomain"},{"i":"AP_SWS_SHWA_01312","k":"function","d":"SHWA","t":"function MakeErrorCode [AP_SWS_SHWA_01312] Upstream: RS_AP_00119 , RS_AP_00120 , RS_AP_00121 , RS_AP_00135 constexpr ara::core::ErrorCode MakeErrorCode (ShwaErrorCode code, ara::core::ErrorDomain::SupportDataType data) noexcept; Die Spezifikation definiert diese Deklaration mit der in der Signatur ausgewiesenen Semantik. Thread Safety thread-safe Exception Safety exception safe","n":"MakeErrorCode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/fd35811f212206df.json?v=4a467675" data-total="5" data-new="5" data-figures="5" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"AP_SWS_SHWA_00101","k":"enumeration","d":"SHWA","t":"enumeration AccessMode [AP_SWS_SHWA_00101] Upstream: RS_SHWA_00017 enum class AccessMode : std::uint32_t {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kRead — Nur-Lesen-Modus. kWrite — Nur-Schreiben-Modus. kReadWrite — Lese-/Schreibmodus.","n":"AccessMode"},{"i":"AP_SWS_SHWA_00103","k":"enumeration","d":"SHWA","t":"enumeration DeviceStatus [AP_SWS_SHWA_00103] Upstream: RS_SHWA_00004 enum class DeviceStatus : std::uint32_t {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kReady (= 0) — Device ist für die Task-Ausführung bereit. kNotAccesible (= 1) — Device ist nicht zugänglich. kFailure (= 2) — Device im Fehlerzustand. kUnknown (= 255) — Status kann nicht bestimmt werden.","n":"DeviceStatus"},{"i":"AP_SWS_SHWA_00102","k":"enumeration","d":"SHWA","t":"enumeration Target [AP_SWS_SHWA_00102] Upstream: RS_SHWA_00001 , RS_SHWA_00017 enum class Target : std::uint32_t {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kDevice — Task läuft auf dem Gerät beziehungsweise Beschleuniger. kHostTask — Task läuft auf dem Host (CPU).","n":"Target"},{"i":"AP_SWS_SHWA_01301","k":"enumeration","d":"SHWA","t":"enumeration ShwaErrorCode [AP_SWS_SHWA_01301] Upstream: RS_AP_00122 , RS_AP_00125 , RS_AP_00127 , RS_AP_00149 enum class ShwaErrorCode : ara::core::ErrorDomain::CodeType {...}; Die Enumeration definiert die folgenden standardisierten Werte. Werte kRuntime (= 1) — allgemeiner Laufzeitfehler. kTaskExecutionFailure (= 2) — Fehler bei der Task-Ausführung. kMemoryNotAllocated (= 3) — Speicherallokation fehlgeschlagen. kIntegrityCorrupted (= 4) — Integrität eines Buffer-Speichers nicht herstellbar. kResourceBusy (= 5) — Ressource ist belegt. kInvalidAccessMode (= 6) — Zugriffsmodus ist unzulässig. kAccessorFailure (= 7) — Accessor-Nutzung oder -Erzeugung fehlgeschlagen. kEventInvalidOperation (= 8) — unzulässige Event-Operation. kFeatureNotSupported (= 9) — Feature wird nicht unterstützt. kInvalidIndex (= 10) — Index ist ungültig. kInvalidParameter (= 11) — ungültiger API-Parameter. kInvalidObject (= 12) — ungültiges oder zerstörtes Objekt verwendet. kTimedOut (= 13) — Operation überschritt die Zeitgrenze.","n":"ShwaErrorCode"},{"i":"AP_SWS_SHWA_01311","k":"function","d":"SHWA","t":"function GetShwaDomain [AP_SWS_SHWA_01311] Upstream: RS_AP_00119 , RS_AP_00120 , RS_AP_00159 constexpr const ara::core::ErrorDomain & GetShwaDomain () noexcept; Liest die durch die Signatur bezeichnete Information oder Eigenschaft aus dem Objekt. Thread Safety thread-safe Exception Safety exception safe","n":"GetShwaDomain"},{"i":"AP_SWS_SHWA_01312","k":"function","d":"SHWA","t":"function MakeErrorCode [AP_SWS_SHWA_01312] Upstream: RS_AP_00119 , RS_AP_00120 , RS_AP_00121 , RS_AP_00135 constexpr ara::core::ErrorCode MakeErrorCode (ShwaErrorCode code, ara::core::ErrorDomain::SupportDataType data) noexcept; Die Spezifikation definiert diese Deklaration mit der in der Signatur ausgewiesenen Semantik. Thread Safety thread-safe Exception Safety exception safe","n":"MakeErrorCode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/fd35811f212206df.json?v=211f4bfd" data-total="4" data-new="4" data-figures="4" data-used="0"></script></dialog>

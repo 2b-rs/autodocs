@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramCRF_90293" class="dossier-modal dossier-workbench" data-dossier-sha="8df8e5c421b9ace6" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramCRF_90293-title">
+<dialog id="dossier-modal-cl_ara_rds_IEEE1722DatagramCRF_90293" class="dossier-modal dossier-workbench" data-dossier-sha="dcb1881e0f5ec675" aria-labelledby="dossier-modal-cl_ara_rds_IEEE1722DatagramCRF_90293-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_rds_IEEE1722DatagramCRF_90293-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_rds_IEEE1722DatagramCRF_90293)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,448 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~3,454 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,14 +145,83 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::rds::IEEE1722DatagramCRF' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_rds_IEEE1722DatagramCRF_90293",
  "class_name": "ara::rds::IEEE1722DatagramCRF",
  "description": "IEEE 1722 datagram representation: IEEE1722DatagramCRF.",
- "dokumentstellen": [],
+ "dokumentstellen": [
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90294",
+   "page": 1,
+   "text": "[SWS_RDS_90294] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; mr;\nProtected IEEE 1722 datagram field unique_id."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90295",
+   "page": 1,
+   "text": "[SWS_RDS_90295] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; fs;\nProtected IEEE 1722 datagram field base_frequency."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90296",
+   "page": 1,
+   "text": "[SWS_RDS_90296] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; tu;\nProtected IEEE 1722 datagram field tu."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90297",
+   "page": 1,
+   "text": "[SWS_RDS_90297] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; sequenceNum;\nProtected IEEE 1722 datagram field pull."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90298",
+   "page": 1,
+   "text": "[SWS_RDS_90298] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; type;\nProtected IEEE 1722 datagram field sequenceNum."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90299",
+   "page": 1,
+   "text": "[SWS_RDS_90299] ara::core::Optional&amp;lt;std::uint64_t&amp;gt; mac_address;\nProtected IEEE 1722 datagram field mac_address."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90300",
+   "page": 1,
+   "text": "[SWS_RDS_90300] ara::core::Optional&amp;lt;std::uint16_t&amp;gt; unique_id;\nProtected IEEE 1722 datagram field type."
+  },
+  {
+   "doc": "AUTOSAR_AP_SWS_RawDataStream",
+   "figure": false,
+   "id": "SNIP_rds_SWS_RDS_90301",
+   "page": 1,
+   "text": "[SWS_RDS_90301] ara::core::Optional&amp;lt;std::uint8_t&amp;gt; pull;\nProtected IEEE 1722 datagram field mr."
+  }
+ ],
  "member_requirements": [
   {
    "id": "SWS_RDS_90295",
@@ -248,51 +324,35 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="f8fdb27237b0d21cdae9179c51e2297d59bb6710f241978323f29d458c1a3a72" data-trace-output="8df8e5c421b9ace686b8aa099d35a8fcf1515f062b0d815e009b84e990a6a882" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="5538d6188cf19d17e12ea1cb68e332dbe93dcba3356611002ee85683f7408bc9" data-trace-output="dcb1881e0f5ec67537e19ab04a9d110ec7fdc1474ea8a9a0f26150a9e7360ebf" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt und verwaltet Datagramme des IEEE-1722-Clock-Reference-Formats zur Zeitsynchronisation in Rohdatenströmen." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;
-Within module &lt;code&gt;rds&lt;/code&gt; (Raw Data Stream) of the AUTOSAR Adaptive Platform, class &lt;code&gt;ara::rds::IEEE1722DatagramCRF&lt;/code&gt; provides a structured representation of IEEE 1722 datagrams. Interpretation: The name suffix CRF presumably refers to the &lt;em&gt;Clock Reference Format&lt;/em&gt; of the IEEE 1722 transport protocol, which is used in time-synchronized automotive Ethernet networks (such as AVB/TSN) for transmitting clock information. In a typical system architecture, the class acts as an intermediary layer between the network stack for raw data streams and application-specific time or audio/video services.
-&lt;/p&gt;
-&lt;p&gt;
-To map the protocol structure, the class encapsulates standardized protocol fields as protected member variables (&lt;code&gt;protected&lt;/code&gt;). These include network addressing via the MAC address (&lt;a class="spec-record-ref" data-req="SWS_RDS_90299" href="../spec/record.html?id=SWS_RDS_90299"&gt;[SWS_RDS_90299]&lt;/a&gt;), sequence and control information such as the sequence number (&lt;a class="spec-record-ref" data-req="SWS_RDS_90298" href="../spec/record.html?id=SWS_RDS_90298"&gt;[SWS_RDS_90298]&lt;/a&gt;), the datagram type (&lt;a class="spec-record-ref" data-req="SWS_RDS_90300" href="../spec/record.html?id=SWS_RDS_90300"&gt;[SWS_RDS_90300]&lt;/a&gt;), pull indicators (&lt;a class="spec-record-ref" data-req="SWS_RDS_90297" href="../spec/record.html?id=SWS_RDS_90297"&gt;[SWS_RDS_90297]&lt;/a&gt;), media clock restart or control bits (&lt;a class="spec-record-ref" data-req="SWS_RDS_90301" href="../spec/record.html?id=SWS_RDS_90301"&gt;[SWS_RDS_90301]&lt;/a&gt;), as well as unique identifiers (&lt;a class="spec-record-ref" data-req="SWS_RDS_90294" href="../spec/record.html?id=SWS_RDS_90294"&gt;[SWS_RDS_90294]&lt;/a&gt;). Parameters relevant for clock reconstruction and synchronization are represented by time and frequency attributes: the timestamp interval &lt;code&gt;timestamp_interval&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90303" href="../spec/record.html?id=SWS_RDS_90303"&gt;[SWS_RDS_90303]&lt;/a&gt;), time base units &lt;code&gt;tu&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90296" href="../spec/record.html?id=SWS_RDS_90296"&gt;[SWS_RDS_90296]&lt;/a&gt;), base frequencies &lt;code&gt;base_frequency&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90295" href="../spec/record.html?id=SWS_RDS_90295"&gt;[SWS_RDS_90295]&lt;/a&gt;), and sampling frequencies &lt;code&gt;fs&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90302" href="../spec/record.html?id=SWS_RDS_90302"&gt;[SWS_RDS_90302]&lt;/a&gt;).
-&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt und verwaltet Datagramme des IEEE-1722-Clock-Reference-Formats zur Zeitsynchronisation in Rohdatenströmen.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Klasse dient im Modul rds als Repräsentation für Clock-Reference-Format-Datagramme nach dem Standard IEEE 1722 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream S. 1&lt;/a&gt;. Sie kapselt protokollspezifische Header- und Taktinformationen in geschützten, optionalen Datenfeldern und stellt einen virtuellen Destruktor für die polymorphe Speicherfreigabe bereit &lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;. Anwendungen nutzen abgeleitete Strukturen zur Konfiguration von Taktdaten und müssen vor dem Zugriff die Gültigkeit der enthaltenen optionalen Werte prüfen. Dies gewährleistet eine flexible und fehlerfreie Handhabung heterogener Datenströme.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::rds::IEEE1722DatagramCRF&lt;/code&gt; repräsentiert innerhalb des Funktionsclusters Raw Data Stream (&lt;code&gt;rds&lt;/code&gt;) der AUTOSAR Adaptive Platform ein Datagramm für das Clock Reference Format (CRF) nach dem Standard IEEE 1722 &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream S. 1&lt;/a&gt;. Definiert wird die Struktur in der Header-Datei &lt;code&gt;ara/rds/raw_data_stream_IEEE1722.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;. Die Klasse dient der Kapselung und Bereitstellung protokollspezifischer Metadaten und Synchronisationsattribute, die für die Übertragung von Taktreferenzen über Ethernet-Verbindungen erforderlich sind.&lt;/p&gt;
+&lt;p&gt;Alle Datenfelder der Klasse sind mit dem Zugriffsmodifikator &lt;code&gt;protected&lt;/code&gt; deklariert und verwenden den Wrapper &lt;code&gt;ara::core::Optional&lt;/code&gt;. Hierzu gehören die IEEE-1722-Headerfelder &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90294" href="../spec/record.html?id=SWS_RDS_90294"&gt;[SWS_RDS_90294]&lt;/a&gt;, &lt;code&gt;base_frequency&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90295" href="../spec/record.html?id=SWS_RDS_90295"&gt;[SWS_RDS_90295]&lt;/a&gt;, &lt;code&gt;tu&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90296" href="../spec/record.html?id=SWS_RDS_90296"&gt;[SWS_RDS_90296]&lt;/a&gt;, &lt;code&gt;pull&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90297" href="../spec/record.html?id=SWS_RDS_90297"&gt;[SWS_RDS_90297]&lt;/a&gt;, &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90298" href="../spec/record.html?id=SWS_RDS_90298"&gt;[SWS_RDS_90298]&lt;/a&gt;, &lt;code&gt;mac_address&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90299" href="../spec/record.html?id=SWS_RDS_90299"&gt;[SWS_RDS_90299]&lt;/a&gt;, &lt;code&gt;type&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90300" href="../spec/record.html?id=SWS_RDS_90300"&gt;[SWS_RDS_90300]&lt;/a&gt;, &lt;code&gt;mr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90301" href="../spec/record.html?id=SWS_RDS_90301"&gt;[SWS_RDS_90301]&lt;/a&gt;, &lt;code&gt;fs&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90302" href="../spec/record.html?id=SWS_RDS_90302"&gt;[SWS_RDS_90302]&lt;/a&gt; und &lt;code&gt;timestamp_interval&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90303" href="../spec/record.html?id=SWS_RDS_90303"&gt;[SWS_RDS_90303]&lt;/a&gt;. Da der direkte Zugriff auf diese Member geschützt ist, dürfte die Klasse primär als Vererbungsbasis für konkrete, anwendungsspezifische CRF-Datagrammimplementierungen oder Serialisierungstreiber innerhalb des Datenstroms fungieren.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;
-The creation and destruction of &lt;code&gt;ara::rds::IEEE1722DatagramCRF&lt;/code&gt; instances is tightly coupled to the lifecycle of buffer structures in the Raw Data Stream module. All contained data fields are encapsulated in &lt;code&gt;ara::core::Optional&lt;/code&gt;, so that datagram objects can also exist with partially set attributes.
-&lt;/p&gt;
-&lt;p&gt;
-Since all attributes are declared as &lt;code&gt;protected&lt;/code&gt; and the class has a virtual destructor &lt;code&gt;~IEEE1722DatagramCRF() noexcept&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;), the class is likely designed primarily as a polymorphic base class for specialized datagram instances or driver structures. The virtual destructor ensures that when deleting derived instances via pointers to &lt;code&gt;IEEE1722DatagramCRF&lt;/code&gt;, all resources of the derived classes are released properly and without memory leaks. The declaration as &lt;code&gt;noexcept&lt;/code&gt; also guarantees that no exceptions are thrown during destruction, which is essential for stability in real-time environments and during stack unwinding operations.
-&lt;/p&gt;
-&lt;p&gt;
-With regard to concurrency, &lt;code&gt;ara::rds::IEEE1722DatagramCRF&lt;/code&gt; provides no inherent thread safety. Concurrent write access or concurrent reading and writing to the same instance from multiple threads requires external synchronization mechanisms, for example through the allocation of exclusive buffers or locking mechanisms in the processing context.
-&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Zerstörung von Instanzen erfolgt über den virtuellen Destruktor &lt;code&gt;~IEEE1722DatagramCRF() noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;. Durch die Deklaration als &lt;code&gt;virtual&lt;/code&gt; ist die ordnungsgemäße Freigabe aller Ressourcen auch dann gewährleistet, wenn Objekte abgeleiteter Klassen über einen Zeiger auf die Basisklasse verwaltet und zerstört werden. Die Kennzeichnung mit &lt;code&gt;noexcept&lt;/code&gt; stellt sicher, dass der Zerstörungsvorgang garantiert ausnahmefrei abläuft.&lt;/p&gt;
+&lt;p&gt;Die Erzeugung und Initialisierung von Instanzen erfolgt mangels eines eigenständigen öffentlichen Konstruktors im Payload vermutlich über abgeleitete Klassen oder modulspezifische Fabrikmechanismen. Hinsichtlich der Nebenläufigkeit sind die Instanzen der Klasse nicht eigenständig threadsicher; da die Attribute aus einfachen optionalen skalaren Werten bestehen, muss ein nebenläufiger Lese- und Schreibzugriff durch übergeordnete Synchronisationsmechanismen der Anwendung koordiniert werden.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;
-The typical sequence when using &lt;code&gt;IEEE1722DatagramCRF&lt;/code&gt; is divided into the following phases:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Creation and initialization:&lt;/strong&gt; An application or a stack driver instantiates a derived class or populates the datagram during the deserialization process of received network packets. The header file &lt;code&gt;#include &amp;quot;ara/rds/raw_data_stream_IEEE1722.h&amp;quot;&lt;/code&gt; is included for this purpose.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Parameterization of protocol fields:&lt;/strong&gt; The relevant fields are populated with values. For example, the MAC address (&lt;a class="spec-record-ref" data-req="SWS_RDS_90299" href="../spec/record.html?id=SWS_RDS_90299"&gt;[SWS_RDS_90299]&lt;/a&gt;), the sequence number (&lt;a class="spec-record-ref" data-req="SWS_RDS_90298" href="../spec/record.html?id=SWS_RDS_90298"&gt;[SWS_RDS_90298]&lt;/a&gt;), and the type (&lt;a class="spec-record-ref" data-req="SWS_RDS_90300" href="../spec/record.html?id=SWS_RDS_90300"&gt;[SWS_RDS_90300]&lt;/a&gt;) are set. For clock transmissions, the timestamp interval (&lt;a class="spec-record-ref" data-req="SWS_RDS_90303" href="../spec/record.html?id=SWS_RDS_90303"&gt;[SWS_RDS_90303]&lt;/a&gt;) as well as frequency values such as &lt;code&gt;fs&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90302" href="../spec/record.html?id=SWS_RDS_90302"&gt;[SWS_RDS_90302]&lt;/a&gt;) and &lt;code&gt;base_frequency&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_RDS_90295" href="../spec/record.html?id=SWS_RDS_90295"&gt;[SWS_RDS_90295]&lt;/a&gt;) are passed.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Processing or transmission:&lt;/strong&gt; The configured datagram is handed over to the Ethernet network via the corresponding transmission or serialization interfaces of module &lt;code&gt;rds&lt;/code&gt; or forwarded to downstream clock consumers.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Release:&lt;/strong&gt; After successful transmission or processing, the datagram is released, invoking the virtual destructor (&lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Ein typischer Anwendungsfall umfasst die Erstellung, Konfiguration und Verarbeitung eines CRF-Datagramms im Datenstrom, gefolgt von dessen Freigabe.&lt;/p&gt;
+&lt;div class="diagram" id="diag-crf-ablauf"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 340" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Verarbeitungsablauf eines CRF-Datagramms&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="326" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="326" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="326" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;Anwendung&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramCRF_90293.html" href="../classes/cl_ara_rds_IEEE1722DatagramCRF_90293.html"&gt;IEEE1722DatagramCRF&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;RawDataStream&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Instanziierung (abgeleitete Klasse)&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d"&gt;CRF-Felder belegen (fs, tu, &lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramCRF_90293.html#SWS_RDS_90303" href="../classes/cl_ara_rds_IEEE1722DatagramCRF_90293.html#SWS_RDS_90303"&gt;timestamp_interval&lt;/a&gt;)&lt;/text&gt;&lt;line x1="135" y1="166" x2="345" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d"&gt;Datagramm an Datenstrom übergeben&lt;/text&gt;&lt;line x1="135" y1="200" x2="555" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="345.0" y="228" text-anchor="middle" font-size="11" fill="#28251d"&gt;Verarbeitung / Übertragung quittieren&lt;/text&gt;&lt;line x1="555" y1="234" x2="135" y2="234" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;text x="240.0" y="262" text-anchor="middle" font-size="11" fill="#28251d"&gt;~&lt;a class="diag-ref" data-ref="classes/cl_ara_rds_IEEE1722DatagramCRF_90293.html" href="../classes/cl_ara_rds_IEEE1722DatagramCRF_90293.html"&gt;IEEE1722DatagramCRF&lt;/a&gt;()&lt;/text&gt;&lt;line x1="135" y1="268" x2="345" y2="268" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="296" text-anchor="middle" font-size="11" fill="#28251d"&gt;Ressourcen freigegeben&lt;/text&gt;&lt;line x1="345" y1="302" x2="135" y2="302" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Typischer Verarbeitungsablauf und Lebenszyklus eines IEEE1722DatagramCRF-Objekts. Quellen: &lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;, &lt;a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_RawDataStream&amp;amp;page=1"&gt;AUTOSAR_AP_SWS_RawDataStream S. 1&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Zunächst instanziiert die Anwendung eine konkrete Ausprägung der CRF-Datagrammklasse. Anschließend werden die für die Taktreferenz relevanten Parameter belegt. So können beispielsweise die MAC-Adresse &lt;code&gt;mac_address&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90299" href="../spec/record.html?id=SWS_RDS_90299"&gt;[SWS_RDS_90299]&lt;/a&gt;, die Abtastfrequenz über &lt;code&gt;fs&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90302" href="../spec/record.html?id=SWS_RDS_90302"&gt;[SWS_RDS_90302]&lt;/a&gt; bzw. &lt;code&gt;base_frequency&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90295" href="../spec/record.html?id=SWS_RDS_90295"&gt;[SWS_RDS_90295]&lt;/a&gt; sowie das Zeitstempelintervall &lt;code&gt;timestamp_interval&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90303" href="../spec/record.html?id=SWS_RDS_90303"&gt;[SWS_RDS_90303]&lt;/a&gt; gesetzt werden. Da alle Felder optional sind, können nicht benötigte oder unvollständige Header-Einträge im Zustand &lt;code&gt;ara::core::nullopt&lt;/code&gt; belassen werden. Nach der Konfiguration wird das Datagramm an den Raw-Data-Stream-Kanal übergeben. Sobald die Verarbeitung abgeschlossen ist, wird die Instanz über &lt;code&gt;~IEEE1722DatagramCRF()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt; sicher destruiert.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;
-Due to the use of &lt;code&gt;ara::core::Optional&lt;/code&gt; for all data elements (&lt;a class="spec-record-ref" data-req="SWS_RDS_90295" href="../spec/record.html?id=SWS_RDS_90295"&gt;[SWS_RDS_90295]&lt;/a&gt; to &lt;a class="spec-record-ref" data-req="SWS_RDS_90303" href="../spec/record.html?id=SWS_RDS_90303"&gt;[SWS_RDS_90303]&lt;/a&gt;), the primary source of errors lies in inadvertent access to unset optional values. If a caller attempts to retrieve the value of an empty &lt;code&gt;ara::core::Optional&lt;/code&gt; via the dereference operator, this results in undefined behavior, whereas access via &lt;code&gt;value()&lt;/code&gt; triggers an exception or abort. Consumers must therefore check before access whether the respective field has been initialized.
-&lt;/p&gt;
-&lt;p&gt;
-Interpretation: Since the specification of the class itself does not define any specific error codes or exception types, the validation of semantic consistency (such as the plausibility of timestamp intervals and frequencies) is likely located in the higher-level processing and validation routines of the &lt;code&gt;rds&lt;/code&gt; driver.
-&lt;/p&gt;
-&lt;!-- annahmen:
-1) Die Klasse dient der Repräsentation des Clock Reference Formats (CRF) nach IEEE 1722 im Kontext von TSN/AVB-Netzwerken. – Begründung: Der Klassenname IEEE1722DatagramCRF sowie die Felder base_frequency, fs und timestamp_interval entsprechen der IEEE-1722-CRF-Spezifikation.
-2) Die Klasse ist als polymorphe Basisklasse ausgelegt. – Begründung: Alle Felder sind protected und der Destruktor ist virtuell deklariert.
-3) Fehlerbehandlung und Konsistenzprüfung erfolgen auf übergeordneter Ebene im Modul rds. – Begründung: Die Klasse enthält lediglich Attribute und einen noexcept-Destruktor, aber keine eigenen Validierungsroutinen oder Fehlerrückgaben.
---&gt;
-&lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive standard R25-11 (module rds). All technical statements have been substantiated using the referenced requirements.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Der virtuelle Destruktor &lt;code&gt;~IEEE1722DatagramCRF()&lt;/code&gt; ist als &lt;code&gt;noexcept&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_RDS_90304" href="../spec/record.html?id=SWS_RDS_90304"&gt;[SWS_RDS_90304]&lt;/a&gt;, sodass während des Aufräumens keine C++-Ausnahmen entweichen können und ein Programmabbruch während der Stack-Entfaltung vermieden wird.&lt;/p&gt;
+&lt;p&gt;Bei der Verwendung der Datenfelder liegt das Hauptrisiko im fehlerhaften Auslesen nicht gesetzter Werte. Vor dem Zugriff auf Werte wie &lt;code&gt;unique_id&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90294" href="../spec/record.html?id=SWS_RDS_90294"&gt;[SWS_RDS_90294]&lt;/a&gt;, &lt;code&gt;sequenceNum&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90298" href="../spec/record.html?id=SWS_RDS_90298"&gt;[SWS_RDS_90298]&lt;/a&gt; oder &lt;code&gt;tu&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_RDS_90296" href="../spec/record.html?id=SWS_RDS_90296"&gt;[SWS_RDS_90296]&lt;/a&gt; muss die Anwendung stets prüfen, ob das jeweilige &lt;code&gt;ara::core::Optional&lt;/code&gt; tatsächlich einen Wert enthält (z.&amp;nbsp;B. via &lt;code&gt;has_value()&lt;/code&gt;). Ein direkter dereferenzierender Zugriff auf ein leeres Optional stellt eine Vorbedingungsverletzung dar und führt zu undefiniertem Verhalten oder Fehlern.&lt;/p&gt;
+&lt;!-- annahmen: 1) Da die Attribute protected sind, dürfte die Klasse als Vererbungsbasis für konkrete CRF-Telegrammstrukturen im Modul rds dienen. – Begründung: Ein direkter Zugriff auf geschützte Variablen ist von außen nicht möglich; 2) Die CRF-Felder dürften zur Taktreferenzierung und Synchronisation von Ethernet-Audiovideo-Streams eingesetzt werden. – Begründung: IEEE 1722 CRF definiert das Clock Reference Format für AVB/TSN-Netzwerke. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde von einer KI auf Basis der AUTOSAR-Spezifikation R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -334,9 +394,9 @@ Interpretation: Since the specification of the class itself does not define any 
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>f8fdb27237b0…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>5538d6188cf1…</code></div>
               <div><strong>Konstituierende Records:</strong> 11</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(12 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 12 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 8</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -393,7 +453,7 @@ Interpretation: Since the specification of the class itself does not define any 
               <button type="button" class="curation-btn btn-regenerate-from-context" id="btn-regenerate-from-context" title="Geänderten Kontext in Prompt übernehmen und Neugenerierung anstoßen" style="margin-left:auto; background:var(--color-brand, #006d73); color:#fff; font-weight:600; padding:5px 12px; border-radius:4px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.85em;">⚡ Aus Kontext neu generieren</button>
             </div>
             <div class="dossier-filter-summary">
-              <span id="dossier-visible-count">11 von 11 Elementen angezeigt</span>
+              <span id="dossier-visible-count">19 von 19 Elementen angezeigt</span>
               <button type="button" class="btn-reset-dossier-filters" id="btn-reset-dossier-filters" hidden>Filter zurücksetzen</button>
             </div>
           </div>
@@ -409,11 +469,11 @@ Interpretation: Since the specification of the class itself does not define any 
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 12 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (8 im Prompt · 4 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-<p style="color:#666; font-style:italic;">Keine Inbound-Snippets im Kontext hinterlegt.</p>
+<p class="dossier-hydrate-hint" style="color:#666; font-style:italic;">Die Karten werden beim Öffnen des Dossiers geladen.</p>
           </div>
         </div>
 
@@ -472,4 +532,4 @@ Interpretation: Since the specification of the class itself does not define any 
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90295","k":"variable","d":"RDS","t":"variable base_frequency [SWS_RDS_90295] ara::core::Optional\u003cstd::uint8_t> fs; Protected IEEE 1722 datagram field base_frequency. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"base_frequency"},{"i":"SWS_RDS_90302","k":"variable","d":"RDS","t":"variable fs [SWS_RDS_90302] ara::core::Optional\u003cstd::uint32_t> base_frequency; Protected IEEE 1722 datagram field fs. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"fs"},{"i":"SWS_RDS_90299","k":"variable","d":"RDS","t":"variable mac_address [SWS_RDS_90299] ara::core::Optional\u003cstd::uint64_t> mac_address; Protected IEEE 1722 datagram field mac_address. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"mac_address"},{"i":"SWS_RDS_90301","k":"variable","d":"RDS","t":"variable mr [SWS_RDS_90301] ara::core::Optional\u003cstd::uint8_t> pull; Protected IEEE 1722 datagram field mr. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"mr"},{"i":"SWS_RDS_90297","k":"variable","d":"RDS","t":"variable pull [SWS_RDS_90297] ara::core::Optional\u003cstd::uint8_t> sequenceNum; Protected IEEE 1722 datagram field pull. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"pull"},{"i":"SWS_RDS_90298","k":"variable","d":"RDS","t":"variable sequenceNum [SWS_RDS_90298] ara::core::Optional\u003cstd::uint8_t> type; Protected IEEE 1722 datagram field sequenceNum. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"sequenceNum"},{"i":"SWS_RDS_90303","k":"variable","d":"RDS","t":"variable timestamp_interval [SWS_RDS_90303] ara::core::Optional\u003cstd::uint16_t> timestamp_interval; Protected IEEE 1722 datagram field timestamp_interval. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"timestamp_interval"},{"i":"SWS_RDS_90296","k":"variable","d":"RDS","t":"variable tu [SWS_RDS_90296] ara::core::Optional\u003cstd::uint8_t> tu; Protected IEEE 1722 datagram field tu. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"tu"},{"i":"SWS_RDS_90300","k":"variable","d":"RDS","t":"variable type [SWS_RDS_90300] ara::core::Optional\u003cstd::uint16_t> unique_id; Protected IEEE 1722 datagram field type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"type"},{"i":"SWS_RDS_90294","k":"variable","d":"RDS","t":"variable unique_id [SWS_RDS_90294] ara::core::Optional\u003cstd::uint8_t> mr; Protected IEEE 1722 datagram field unique_id. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"unique_id"},{"i":"SWS_RDS_90304","k":"function","d":"RDS","t":"function ~IEEE1722DatagramCRF [SWS_RDS_90304] ~IEEE1722DatagramCRF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono","n":"~IEEE1722DatagramCRF"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/f25f816d13f63b50.json?v=49093761" data-total="12" data-new="12" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_RDS_90295","k":"variable","d":"RDS","t":"variable base_frequency [SWS_RDS_90295] ara::core::Optional\u003cstd::uint8_t> fs; Protected IEEE 1722 datagram field base_frequency. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"base_frequency"},{"i":"SWS_RDS_90302","k":"variable","d":"RDS","t":"variable fs [SWS_RDS_90302] ara::core::Optional\u003cstd::uint32_t> base_frequency; Protected IEEE 1722 datagram field fs. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"fs"},{"i":"SWS_RDS_90299","k":"variable","d":"RDS","t":"variable mac_address [SWS_RDS_90299] ara::core::Optional\u003cstd::uint64_t> mac_address; Protected IEEE 1722 datagram field mac_address. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"mac_address"},{"i":"SWS_RDS_90301","k":"variable","d":"RDS","t":"variable mr [SWS_RDS_90301] ara::core::Optional\u003cstd::uint8_t> pull; Protected IEEE 1722 datagram field mr. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"mr"},{"i":"SWS_RDS_90297","k":"variable","d":"RDS","t":"variable pull [SWS_RDS_90297] ara::core::Optional\u003cstd::uint8_t> sequenceNum; Protected IEEE 1722 datagram field pull. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"pull"},{"i":"SWS_RDS_90298","k":"variable","d":"RDS","t":"variable sequenceNum [SWS_RDS_90298] ara::core::Optional\u003cstd::uint8_t> type; Protected IEEE 1722 datagram field sequenceNum. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"sequenceNum"},{"i":"SWS_RDS_90303","k":"variable","d":"RDS","t":"variable timestamp_interval [SWS_RDS_90303] ara::core::Optional\u003cstd::uint16_t> timestamp_interval; Protected IEEE 1722 datagram field timestamp_interval. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"timestamp_interval"},{"i":"SWS_RDS_90296","k":"variable","d":"RDS","t":"variable tu [SWS_RDS_90296] ara::core::Optional\u003cstd::uint8_t> tu; Protected IEEE 1722 datagram field tu. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"tu"},{"i":"SWS_RDS_90300","k":"variable","d":"RDS","t":"variable type [SWS_RDS_90300] ara::core::Optional\u003cstd::uint16_t> unique_id; Protected IEEE 1722 datagram field type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"type"},{"i":"SWS_RDS_90294","k":"variable","d":"RDS","t":"variable unique_id [SWS_RDS_90294] ara::core::Optional\u003cstd::uint8_t> mr; Protected IEEE 1722 datagram field unique_id. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono Zugriff protected","n":"unique_id"},{"i":"SWS_RDS_90304","k":"function","d":"RDS","t":"function ~IEEE1722DatagramCRF [SWS_RDS_90304] ~IEEE1722DatagramCRF() noexcept; Virtual destructor of the IEEE 1722 datagram type. Header-Datei #include \"ara/rds/raw_data_stream_IEEE1722.h\" class mono Scope class ara::rds::IEEE1722DatagramCRF class mono","n":"~IEEE1722DatagramCRF"}],"inbound":[{"i":"SNIP_rds_SWS_RDS_90294","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90294] ara::core::Optional\u003cstd::uint8_t> mr;\nProtected IEEE 1722 datagram field unique_id."},{"i":"SNIP_rds_SWS_RDS_90295","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90295] ara::core::Optional\u003cstd::uint8_t> fs;\nProtected IEEE 1722 datagram field base_frequency."},{"i":"SNIP_rds_SWS_RDS_90296","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90296] ara::core::Optional\u003cstd::uint8_t> tu;\nProtected IEEE 1722 datagram field tu."},{"i":"SNIP_rds_SWS_RDS_90297","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90297] ara::core::Optional\u003cstd::uint8_t> sequenceNum;\nProtected IEEE 1722 datagram field pull."},{"i":"SNIP_rds_SWS_RDS_90298","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90298] ara::core::Optional\u003cstd::uint8_t> type;\nProtected IEEE 1722 datagram field sequenceNum."},{"i":"SNIP_rds_SWS_RDS_90299","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90299] ara::core::Optional\u003cstd::uint64_t> mac_address;\nProtected IEEE 1722 datagram field mac_address."},{"i":"SNIP_rds_SWS_RDS_90300","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90300] ara::core::Optional\u003cstd::uint16_t> unique_id;\nProtected IEEE 1722 datagram field type."},{"i":"SNIP_rds_SWS_RDS_90301","d":"AUTOSAR_AP_SWS_RawDataStream","p":1,"t":"[SWS_RDS_90301] ara::core::Optional\u003cstd::uint8_t> pull;\nProtected IEEE 1722 datagram field mr."}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/f25f816d13f63b50.json?v=9ef15e5a" data-total="12" data-new="4" data-figures="1" data-used="8"></script></dialog>

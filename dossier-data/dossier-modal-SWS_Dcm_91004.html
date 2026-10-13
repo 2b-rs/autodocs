@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91004" class="dossier-modal dossier-workbench" data-dossier-sha="5e2db3f0bae1e6c5" aria-labelledby="dossier-modal-SWS_Dcm_91004-title">
+<dialog id="dossier-modal-SWS_Dcm_91004" class="dossier-modal dossier-workbench" data-dossier-sha="2b81a40b07d3052d" aria-labelledby="dossier-modal-SWS_Dcm_91004-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91004-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91004)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,040 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,495 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_CompareKey'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -200,28 +218,22 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="0e182c8c815f8e4dd4c16715eeba1fba1850c6440722910b5183a4c7e9f74f36" data-trace-output="5e2db3f0bae1e6c5a8e457c6806dd7759d2051bccdfc0e525f7fc73dcce60c67" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="e106fb6bb9676816bb67ec0f1805bc1273998d6c780c1bb5ea8b365e96c42edb" data-trace-output="2b81a40b07d3052dab9b5d6c54b6dae12c03d66c8515a0b8dd885b04eb306c87" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem asynchronen Abgleich eines übermittelten Schlüssels bei einer UDS-Sicherheitszugriffs-Anfrage." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
-  &lt;p&gt;Die Funktion &lt;code&gt;Xxx_CompareKey&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;) dient der anwendungsseitigen, asynchronen Schlüsselprüfung im Rahmen des UDS-Dienstes &lt;em&gt;SecurityAccess&lt;/em&gt; (0x27) bei Empfang der Unterfunktion &lt;code&gt;sendKey&lt;/code&gt;. Das DSP-Submodul des DCM ruft diese nicht-reentrante Funktion auf, wenn die geforderte Sicherheitsstufe noch nicht aktiv ist und zuvor erfolgreich ein Seed ermittelt wurde (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00324" href="../../spec/record.html?id=SWS_Dcm_00324"&gt;[SWS_Dcm_00324]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00863" href="../../spec/record.html?id=SWS_Dcm_00863"&gt;[SWS_Dcm_00863]&lt;/a&gt;). Verfügbar ist die Schnittstelle über &lt;code&gt;Dcm_Externals.h&lt;/code&gt; für die Konfigurationen &lt;code&gt;USE_ASYNCH_CLIENT_SERVER&lt;/code&gt; bzw. &lt;code&gt;USE_ASYNCH_FNC&lt;/code&gt; am Parameter &lt;code&gt;DcmDspSecurityUsePort&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Xxx_CompareKey&lt;/code&gt; wird vom Diagnostic Communication Manager (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;) asynchron und nicht-reentrant aufgerufen, um einen empfangenen Schlüssel im Rahmen des UDS-Dienstes &lt;em&gt;SecurityAccess&lt;/em&gt; (0x27, Subfunktion &lt;em&gt;sendKey&lt;/em&gt;) gegen die interne Logik der Applikation abzugleichen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00863" href="../../spec/record.html?id=SWS_Dcm_00863"&gt;[SWS_Dcm_00863]&lt;/a&gt;). Sie kommt zum Einsatz, wenn der Zugriffsstatus noch nicht aktiv ist, die Seed-Anfrage erfolgreich war und der Konfigurationsparameter &lt;code&gt;DcmDspSecurityUsePort&lt;/code&gt; auf &lt;code&gt;USE_ASYNCH_CLIENT_SERVER&lt;/code&gt; gesetzt ist (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00324" href="../../spec/record.html?id=SWS_Dcm_00324"&gt;[SWS_Dcm_00324]&lt;/a&gt;) bzw. laut &lt;a class="spec-record-ref" data-req="SWS_Dcm_00863" href="../../spec/record.html?id=SWS_Dcm_00863"&gt;[SWS_Dcm_00863]&lt;/a&gt; die Funktionsschnittstelle über &lt;code&gt;USE_ASYNCH_FNC&lt;/code&gt;/&lt;code&gt;DcmDspSecurityCompareKeyFnc&lt;/code&gt; konfiguriert wurde. Deklariert ist die Schnittstelle in &lt;code&gt;Dcm_Externals.h&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;).&lt;/p&gt;
 
-  &lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
-  &lt;p&gt;Über &lt;code&gt;Key&lt;/code&gt; wird der zu vergleichende Schlüssel übergeben, während &lt;code&gt;OpStatus&lt;/code&gt; den Fortschritt der asynchronen Operation signalisiert. Der Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; steuert den weiteren Ablauf (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;):&lt;/p&gt;
+  &lt;p&gt;Die Übergabe umfasst den zu prüfenden Schlüsselzeiger &lt;code&gt;Key&lt;/code&gt;, den aktuellen Operationsstatus &lt;code&gt;OpStatus&lt;/code&gt; (vom Typ &lt;code&gt;Dcm_OpStatusType&lt;/code&gt;) sowie den Zeiger &lt;code&gt;ErrorCode&lt;/code&gt; für den im Fehlerfall auszugebenden negativen Antwortcode (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;). Als Rückgabewerte sind spezifiziert:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Schlüsselvergleich war erfolgreich.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Operation ist noch nicht abgeschlossen; weitere Aufrufe sind erforderlich.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_COMPARE_KEY_FAILED&lt;/code&gt;: Der übergebene Schlüssel stimmt nicht überein.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Prüfung war nicht erfolgreich; der über &lt;code&gt;ErrorCode&lt;/code&gt; gesetzte NRC wird an den Client gesendet.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Schlüsselprüfung erfolgreich (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Prüfung noch nicht abgeschlossen; weitere Aufrufe durch das DCM-Modul zur Beendigung sind erforderlich (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Verarbeitung nicht erfolgreich. Der DCM sendet daraufhin eine negative UDS-Antwort mit dem in &lt;code&gt;ErrorCode&lt;/code&gt; gesetzten NRC, ohne den internen Sicherheitslevel zu verändern oder den Fehlversuchszähler (AttemptCounter) zu erhöhen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01150" href="../../spec/record.html?id=SWS_Dcm_01150"&gt;[SWS_Dcm_01150]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DCM_E_COMPARE_KEY_FAILED&lt;/code&gt;: Schlüssel stimmt nicht überein (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91004" href="../../spec/record.html?id=SWS_Dcm_91004"&gt;[SWS_Dcm_91004]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Fehlerbehandlung und Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;Das Modul DCM reagiert differenziert auf Fehlerzustände:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;Gibt &lt;code&gt;Xxx_CompareKey&lt;/code&gt; den Status &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, sendet das DCM eine negative Antwort mit dem NRC aus &lt;code&gt;ErrorCode&lt;/code&gt;. Der Fehlversuchszähler (&lt;code&gt;AttemptCounter&lt;/code&gt;) wird dabei nicht inkrementiert und die Sicherheitsstufe bleibt unverändert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01150" href="../../spec/record.html?id=SWS_Dcm_01150"&gt;[SWS_Dcm_01150]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;Wird &lt;code&gt;DCM_E_COMPARE_KEY_FAILED&lt;/code&gt; zurückgegeben und ist &lt;code&gt;DcmDspSecurityNumAttDelay&lt;/code&gt; konfiguriert, inkrementiert das DCM den &lt;code&gt;AttemptCounter&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01397" href="../../spec/record.html?id=SWS_Dcm_01397"&gt;[SWS_Dcm_01397]&lt;/a&gt;). Ist der Zählerstand kleiner als &lt;code&gt;DcmDspSecurityNumAttDelay&lt;/code&gt;, sendet das DCM den negativen Response-Code NRC 0x35 (&lt;em&gt;InvalidKey&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00660" href="../../spec/record.html?id=SWS_Dcm_00660"&gt;[SWS_Dcm_00660]&lt;/a&gt;). Erreicht oder überschreitet er den Grenzwert, wird der &lt;code&gt;SecurityDelayTimer&lt;/code&gt; gestartet und NRC 0x36 (&lt;em&gt;exceededNumberOfAttempts&lt;/em&gt;) übertragen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01349" href="../../spec/record.html?id=SWS_Dcm_01349"&gt;[SWS_Dcm_01349]&lt;/a&gt;). In beiden Fällen bleibt die interne Sicherheitsstufe unverändert.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikationsanforderungen von AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
+  &lt;p&gt;Schlägt der Schlüsselvergleich fehl (&lt;code&gt;DCM_E_COMPARE_KEY_FAILED&lt;/code&gt;), wird bei konfiguriertem &lt;code&gt;DcmDspSecurityNumAttDelay&lt;/code&gt; der &lt;code&gt;AttemptCounter&lt;/code&gt; inkrementiert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01397" href="../../spec/record.html?id=SWS_Dcm_01397"&gt;[SWS_Dcm_01397]&lt;/a&gt;). Liegt der Zähler unterhalb des Grenzwerts, sendet der DCM den NRC 0x35 (&lt;em&gt;InvalidKey&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00660" href="../../spec/record.html?id=SWS_Dcm_00660"&gt;[SWS_Dcm_00660]&lt;/a&gt;). Erreicht oder überschreitet die Anzahl der Fehlversuche das konfigurierte Limit &lt;code&gt;DcmDspSecurityNumAttDelay&lt;/code&gt;, startet der DCM den &lt;code&gt;SecurityDelayTimer&lt;/code&gt; mit der Zeitdauer &lt;code&gt;DcmDspSecurityDelayTime&lt;/code&gt; und sendet den NRC 0x36 (&lt;em&gt;exceededNumberOfAttempts&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01349" href="../../spec/record.html?id=SWS_Dcm_01349"&gt;[SWS_Dcm_01349]&lt;/a&gt;). In beiden Fällen verbleibt der Sicherheitslevel unverändert.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert generiert und basiert auf den Spezifikationen des AUTOSAR Classic R20-11 DCM-Moduls.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -261,9 +273,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>0e182c8c815f…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>e106fb6bb967…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 8 <span class="dossier-meta-sub">(8 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 8 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -298,8 +310,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">10</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">9</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -336,7 +348,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 8 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 9 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -399,4 +411,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91004","k":"function","d":"AUTOSAR","t":"","n":"Xxx_CompareKey"}],"inbound":[{"i":"SWS_Dcm_00324","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00324].","n":"SWS_Dcm_00324"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/93cec2d7baa2ff29.json?v=000d0568" data-total="8" data-new="8" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91004","k":"function","d":"AUTOSAR","t":"","n":"Xxx_CompareKey"}],"inbound":[{"i":"SWS_Dcm_00863","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00863].","n":"SWS_Dcm_00863"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/93cec2d7baa2ff29.json?v=ff63d156" data-total="9" data-new="9" data-figures="2" data-used="0"></script></dialog>

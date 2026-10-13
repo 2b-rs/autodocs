@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91037" class="dossier-modal dossier-workbench" data-dossier-sha="d509924a4971ec87" aria-labelledby="dossier-modal-SWS_Dcm_91037-title">
+<dialog id="dossier-modal-SWS_Dcm_91037" class="dossier-modal dossier-workbench" data-dossier-sha="bfdb4fc1a224bda1" aria-labelledby="dossier-modal-SWS_Dcm_91037-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91037-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91037)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,149 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,604 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'ControlDTCSettingModeSwitchInterface'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,35 +193,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="e8e84a18adb95cadb5d69eae19192ab2ab3329248f0f33febf42a54a44355c81" data-trace-output="d509924a4971ec87954e002b4149627eb16f0fb79329a03af43e455129b0ae0c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="0b1a5bf3d04f13b5c41872d96a2fb57e0580a530222ae53d77d5236873c23008" data-trace-output="bfdb4fc1a224bda1aa04ed4c63034a02f92aa0a686875d5b2a2652bf8d8f8c07" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Benachrichtigt Software-Komponenten über den aktuellen Modus der DTC-Einstellung." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung und Zweck&lt;/h4&gt;
-  &lt;p&gt;
-    Das Element &lt;code&gt;ControlDTCSettingModeSwitchInterface&lt;/code&gt; ist im Modul &lt;code&gt;Dcm&lt;/code&gt; als bereitgestellter Port-Prototyp (&lt;code&gt;ProvidedPort&lt;/code&gt;) mit dem Interface &lt;code&gt;Dcm_ControlDTCSettingModeSwitchInterface&lt;/code&gt; definiert &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt;. Der Port dient dazu, Software-Komponenten (SW-Cs) über den aktuellen Modus der DTC-Einstellung (&lt;em&gt;DTC Setting mode&lt;/em&gt;) zu benachrichtigen &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt;.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Zweck&lt;/h4&gt;
+  &lt;p&gt;Das Element &lt;code&gt;ControlDTCSettingModeSwitchInterface&lt;/code&gt; ist gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt; ein als Provided-Port (&lt;code&gt;PPortPrototype&lt;/code&gt;) bereitgestelltes &lt;code&gt;ModeSwitchInterface&lt;/code&gt; des Diagnose-Kommunikationsmanagers (DCM). Seine primäre Aufgabe besteht darin, verbundene Software-Komponenten (SW-Cs) über den aktuellen Zustand des DTC-Einstellmodus (&lt;em&gt;DTC Setting mode&lt;/em&gt;) zu benachrichtigen.&lt;/p&gt;
+  
+  &lt;p&gt;Als Port-Schnittstelle wird hierbei &lt;code&gt;Dcm_ControlDTCSettingModeSwitchInterface&lt;/code&gt; eingesetzt &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt;. Da der DCM diesen Port als Provided-Port deklariert, übernimmt das Diagnose-Modul die Rolle des Modus-Managers bzw. Senders. Anwendungskomponenten können sich über korrespondierende Required-Ports anbinden, um Statuswechsel zu empfangen und ihr internes Verhalten anzupassen.&lt;/p&gt;
 
-  &lt;h4&gt;Kommunikationssemantik und Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;
-    Als &lt;code&gt;ModeSwitchInterface&lt;/code&gt; stellt dieser Port einen Kommunikationsmechanismus zur Benachrichtigung über Modusänderungen bereit. Das Zusammenspiel gestaltet sich wie folgt:
-  &lt;/p&gt;
+  &lt;h4&gt;Zusammenspiel und Systemintegration&lt;/h4&gt;
+  &lt;p&gt;Das Zusammenspiel im Systemverbund konzentriert sich auf die Entkopplung von Diagnosebefehlen und Anwendungslogik:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Senderolle des DCM:&lt;/strong&gt; Da das Element als &lt;code&gt;ProvidedPort&lt;/code&gt; modelliert ist, agiert das &lt;code&gt;Dcm&lt;/code&gt; als Sender des Moduswechsels an verbundene Software-Komponenten &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Empfänger in SW-Cs:&lt;/strong&gt; Vermutlich verbinden sich interessierte SW-Cs über korrespondierende Empfänger-Ports (&lt;code&gt;RPortPrototype&lt;/code&gt;), um über RTE-Moduswechselereignisse über Änderungen des DTC-Setting-Status in Kenntnis gesetzt zu werden.
-    &lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Modus-Propagierung:&lt;/strong&gt; Über den bereitgestellten Port teilt der DCM den SW-Cs mit, ob die Speicherung und Aktualisierung von Diagnose-Fehlercodes aktiv oder gesperrt ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt;. Die Benachrichtigung der SW-Cs dürfte in der AUTOSAR-Laufzeitumgebung über standardmäßige Mode-Switch-Events der RTE erfolgen.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Diagnostischer Ursprung:&lt;/strong&gt; Die Umschaltung des DTC-Setting-Modus steht vermutlich im direkten Kontext von UDS-Diagnosediensten wie &lt;em&gt;ControlDTCSetting&lt;/em&gt; (Service 0x85), über welche ein externer Tester das Fehler-Logging vorübergehend unterbinden kann.&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Einschränkungen und Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;
-    Zu konkreten Parametern, Fehlercodes (DET/DEM) sowie Nebenläufigkeits- oder Reentranzbedingungen enthält die Spezifikation dieses Ports keine weiteren Angaben &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt;.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    Dieser Hinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR Classic Release R20-11 erstellt.
-  &lt;/p&gt;
-  &lt;!-- annahmen: 1) Angebundene SW-Cs nutzen einen RPortPrototype und RTE-Moduswechselereignisse zur Reaktion – Begründung: Ein ModeSwitchInterface dient im AUTOSAR-Portmodell typischerweise der Modusübertragung zwischen Provider und Consumer, im Payload wird jedoch nur der PPortPrototype beschrieben. --&gt;
+  &lt;h4&gt;Fehlerbehandlung und Randbedingungen&lt;/h4&gt;
+  &lt;p&gt;Da die Spezifikation in &lt;a class="spec-record-ref" data-req="SWS_Dcm_91037" href="../../spec/record.html?id=SWS_Dcm_91037"&gt;[SWS_Dcm_91037]&lt;/a&gt; weder spezifische Fehlercodes noch DET-Meldungen oder Rückgabewerte definiert, erfolgt die Modusübertragung rein deklarativ über die Mechanismen der RTE. Besondere Aufrufkontexte oder Reentranz-Vorgaben sind für die Port-Deklaration selbst nicht ausgewiesen.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Die Benachrichtigung der SW-Cs dürfte über standardmäßige Mode-Switch-Events der RTE abgewickelt werden. – Begründung: SWS_Dcm_91037 definiert einen ModeSwitchInterface-PPort zur Benachrichtigung von SW-Cs. 2) Der Moduswechsel steht vermutlich im Zusammenhang mit dem UDS-Dienst ControlDTCSetting (Service 0x85). – Begründung: Der Name und die Beschreibung des Dcm-Ports beziehen sich explizit auf den DTC Setting mode. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI basierend auf der Spezifikation AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -243,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e8e84a18adb9…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>0b1a5bf3d04f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -381,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91037","k":"type","d":"AUTOSAR","t":"","n":"ControlDTCSettingModeSwitchInterface"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a02e4277c35a7174.json?v=ac0c6e8b" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91037","k":"type","d":"AUTOSAR","t":"","n":"ControlDTCSettingModeSwitchInterface"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a02e4277c35a7174.json?v=058d53c6" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

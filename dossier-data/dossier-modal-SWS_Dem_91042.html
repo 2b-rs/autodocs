@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_91042" class="dossier-modal dossier-workbench" data-dossier-sha="b10095f388186b07" aria-labelledby="dossier-modal-SWS_Dem_91042-title">
+<dialog id="dossier-modal-SWS_Dem_91042" class="dossier-modal dossier-workbench" data-dossier-sha="387e8623ca7114d1" aria-labelledby="dossier-modal-SWS_Dem_91042-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_91042-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_91042)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,376 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,831 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_CallbackEventSyncStorageProcessed'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,15 +198,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="c8715f984c2b48cf6d2cc59e7ccdb20ce436841c4180c1de97f00e3658968d69" data-trace-output="b10095f388186b073fba85c0f907cad870540b5db966ea3a813fe9d900e9864d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d0c8e2a4847f947f9c0420a745e72a1767717eda14900e637d0fbfbd9c722a0b" data-trace-output="387e8623ca7114d1e0a1e4c60d4ec0e95ec951e4a2f73bbd64de044225296c0f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Meldet den Abschluss der synchronen Freeze-Frame-Verarbeitung zur erneuten Verwendung derselben Ereignis-ID." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
-&lt;p&gt;Die Callback-Funktion &lt;code&gt;Dem_CallbackEventSyncStorageProcessed&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;) wird vom DEM aufgerufen, sobald die interne Verarbeitung von &lt;code&gt;Dem_SetEventFailedWithSyncFreezeFrame&lt;/code&gt; abgeschlossen ist. Der Aufruf signalisiert, dass ein weiterer Aufruf von &lt;code&gt;Dem_SetEventFailedWithSyncFreezeFrame&lt;/code&gt; mit derselben Event-ID vom DEM verarbeitet werden kann.&lt;/p&gt;
-&lt;p&gt;Die Funktion erwartet keine Übergabeparameter. Als Rückgabewert liefert sie &lt;code&gt;Std_ReturnType&lt;/code&gt;; aus Gründen der RTE-Kompatibilität ist ausschließlich der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; zulässig und vom Aufrufer zurückzugeben (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;). Spezifische Fehlercodes oder Mechanismen zur Fehlerbehandlung (wie DET-Meldungen) sind nicht spezifiziert.&lt;/p&gt;
-&lt;h4&gt;Nebenläufigkeit und Zusammenspiel&lt;/h4&gt;
-&lt;p&gt;Die Schnittstelle besitzt die Service-ID &lt;code&gt;0xc0&lt;/code&gt;, arbeitet synchron und ist als reentrant spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;). Sie regelt die zeitliche Reihenfolge bei der Ereignismeldung: Ein erneutes Melden desselben Fehlers mit synchronem Freeze-Frame darf erst nach erfolgtem Callback angestoßen werden.&lt;/p&gt;
-&lt;p&gt;Für die Konfiguration gilt gemäß &lt;a class="spec-record-ref" data-req="SWS_Dem_01356" href="../../spec/record.html?id=SWS_Dem_01356"&gt;[SWS_Dem_01356]&lt;/a&gt; die Einschränkung, dass &lt;code&gt;Dem_CallbackEventSyncStorageProcessed&lt;/code&gt; nur für Events konfiguriert werden darf, deren Parameter &lt;code&gt;DemEventReportingType&lt;/code&gt; auf &lt;code&gt;IMMEDIATE_FAIL_AND_SYNCHRONOUS_PROCESSING&lt;/code&gt; gesetzt ist. Die Funktion ist über die Header-Datei &lt;code&gt;Dem.h&lt;/code&gt; verfügbar und besitzt den Status &lt;em&gt;draft&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_01356" href="../../spec/record.html?id=SWS_Dem_01356"&gt;[SWS_Dem_01356]&lt;/a&gt;).&lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callback-Funktion &lt;code&gt;Dem_CallbackEventSyncStorageProcessed&lt;/code&gt; wird synchron vom Diagnostic Event Manager (DEM) aufgerufen, sobald die interne Verarbeitung von &lt;code&gt;Dem_SetEventFailedWithSyncFreezeFrame&lt;/code&gt; abgeschlossen ist (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;). Sie teilt der aufrufenden Komponente mit, dass ein weiterer Aufruf von &lt;code&gt;Dem_SetEventFailedWithSyncFreezeFrame&lt;/code&gt; für dieselbe Ereignis-ID vom DEM verarbeitet werden kann (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Für die Verwendung und Einbindung gelten folgende Schnittstellen- und Ausführungseigenschaften:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;Parameter und Rückgabewert:&lt;/strong&gt; Die Schnittstelle besitzt weder Eingabe-, Ausgabe- noch Ein-/Ausgabeparameter (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;). Der Rückgabetyp ist &lt;code&gt;Std_ReturnType&lt;/code&gt;, wobei aus Gründen der RTE-Kompatibilität einzig der Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; zulässig ist und geliefert wird (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Nebenläufigkeit:&lt;/strong&gt; Die Funktion ist als reentrant spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;Fehlerbehandlung:&lt;/strong&gt; Es sind keine spezifischen Fehlercodes oder Meldungen an das Entwicklungsfehler-Tracking (DET) vorgesehen (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p&gt;Hinsichtlich des Zusammenspiels und der Konfiguration besteht eine feste Voraussetzung: &lt;code&gt;Dem_CallbackEventSyncStorageProcessed&lt;/code&gt; darf ausschließlich für Diagnoseereignisse konfiguriert werden, deren Parameter &lt;code&gt;DemEventReportingType&lt;/code&gt; auf &lt;code&gt;IMMEDIATE_FAIL_AND_SYNCHRONOUS_PROCESSING&lt;/code&gt; gesetzt ist (&lt;a class="spec-record-ref" data-req="SWS_Dem_01356" href="../../spec/record.html?id=SWS_Dem_01356"&gt;[SWS_Dem_01356]&lt;/a&gt;). Zudem ist das Element im Release R20-11 mit dem Status &lt;em&gt;draft&lt;/em&gt; annotiert (&lt;a class="spec-record-ref" data-req="SWS_Dem_91042" href="../../spec/record.html?id=SWS_Dem_91042"&gt;[SWS_Dem_91042]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dem_01356" href="../../spec/record.html?id=SWS_Dem_01356"&gt;[SWS_Dem_01356]&lt;/a&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikationsanforderungen generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -228,7 +250,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>c8715f984c2b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d0c8e2a4847f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

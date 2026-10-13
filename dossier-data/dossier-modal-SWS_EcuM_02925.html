@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EcuM_02925" class="dossier-modal dossier-workbench" data-dossier-sha="b425874eb5aac402" aria-labelledby="dossier-modal-SWS_EcuM_02925-title">
+<dialog id="dossier-modal-SWS_EcuM_02925" class="dossier-modal dossier-workbench" data-dossier-sha="9fd59815654446d5" aria-labelledby="dossier-modal-SWS_EcuM_02925-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EcuM_02925-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EcuM_02925)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,258 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,713 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EcuM_CheckValidation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,21 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="6a4df1e75cb24b94ed06cc909068b021984b4aee2d86f7ee02c9a7a3da2b8dd1" data-trace-output="b425874eb5aac4025956fc5d6d98886174b681f770b2e7c15ab21a28c16dbd8e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c36dd6936c2318d4da7ba776cf070bded7236befaf7b82ad32991309bb21b65f" data-trace-output="9fd59815654446d5c73c6d6a431a176cad666d558d529e189002e50c3eff2466" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Validiert eine Weckquelle für den ECU State Manager und meldet ein gültiges Ereignis an diesen zurück." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The callout function &lt;code&gt;EcuM_CheckValidation&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;) is called by module &lt;code&gt;EcuM&lt;/code&gt; to validate a wakeup source that has occurred. It is specified as a synchronous interface with the Service ID &lt;code&gt;0x47&lt;/code&gt; and declared via header &lt;code&gt;EcuM_Externals.h&lt;/code&gt;. Via the input parameter &lt;code&gt;wakeupSource&lt;/code&gt; (type &lt;code&gt;EcuM_WakeupSourceType&lt;/code&gt;), the wakeup source to be checked is communicated to the callout. The function has neither input/output parameters nor output parameters and provides no return value (&lt;code&gt;void&lt;/code&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EcuM_CheckValidation&lt;/code&gt; dient als Callout-Schnittstelle des ECU State Managers zur Überprüfung einer Weckquelle &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. Der EcuM ruft diese Funktion auf, um festzustellen, ob ein detektiertes Weckereignis valide ist &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Interaction&lt;/h4&gt;
-&lt;p&gt;If the check determines that a valid wakeup event is present, this must be reported to the &lt;code&gt;EcuM&lt;/code&gt; via the call to &lt;code&gt;EcuM_ValidateWakeupEvent()&lt;/code&gt; according to &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. The confirmation of the wakeup event therefore does not occur as a direct return value of the callout, but via this separate notification function.&lt;/p&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Der Callout besitzt die Service-ID &lt;code&gt;0x47&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;EcuM_Externals.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. Als Übergabeparameter dient &lt;code&gt;wakeupSource&lt;/code&gt; vom Typ &lt;code&gt;EcuM_WakeupSourceType&lt;/code&gt;, über den die zu validierende Weckquelle identifiziert wird &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. Die Funktion liefert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) und besitzt keine Ausgangs- oder Ein-/Ausgangsparameter &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. Die Ausführung erfolgt synchron &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;With regard to concurrency, &lt;code&gt;EcuM_CheckValidation&lt;/code&gt; is defined as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;). The calling system or the &lt;code&gt;EcuM&lt;/code&gt; must ensure that no simultaneous or overlapping executions of the function take place.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Spezifische Fehlercodes, Rückgabewerte im Fehlerfall oder Meldungen an das DET oder DEM sind für diesen Callout in der Spezifikation nicht definiert.&lt;/p&gt;
 
-&lt;h4&gt;Error handling&lt;/h4&gt;
-&lt;p&gt;Neither error codes nor reports to DET or DEM are specified for &lt;code&gt;EcuM_CheckValidation&lt;/code&gt; in the specification.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Hinsichtlich der Nebenläufigkeit ist &lt;code&gt;EcuM_CheckValidation&lt;/code&gt; als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) festgelegt &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. Der aufrufende Kontext des EcuM muss gewährleisten, dass keine parallelen oder verschachtelten Aufrufe für dieselbe oder unterschiedliche Weckquellen stattfinden.&lt;/p&gt;
 
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Wurde bei der Ausführung ein valides Weckereignis erkannt, ist dieses zwingend über den Funktionsaufruf &lt;code&gt;EcuM_ValidateWakeupEvent()&lt;/code&gt; an den EcuM zurückzumelden &lt;a class="spec-record-ref" data-req="SWS_EcuM_02925" href="../../spec/record.html?id=SWS_EcuM_02925"&gt;[SWS_EcuM_02925]&lt;/a&gt;. Interpretation: Die gerätespezifische Logik zur Überprüfung der Hardware sowie die Entscheidung zur Gültigkeit dürfte vollständig im Integrationscode implementiert werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die konkrete Validierungslogik für Weckquellen liegt beim Systemintegrator – Begründung: Der Callout wird vom EcuM aufgerufen und in EcuM_Externals.h deklariert, enthält in der Spezifikation jedoch keine vordefinierte Implementierung. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -229,9 +251,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>6a4df1e75cb2…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c36dd6936c23…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 19 <span class="dossier-meta-sub">(19 neu · 14 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 19 Belege dazugekommen (14 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 16 <span class="dossier-meta-sub">(16 neu · 10 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 16 Belege dazugekommen (10 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -266,8 +288,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">20</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">19</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">17</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">16</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -304,7 +326,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 19 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 16 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -367,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02925","k":"function","d":"AUTOSAR","t":"","n":"EcuM_CheckValidation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/87ce147027312be1.json?v=28754d7c" data-total="19" data-new="19" data-figures="14" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02925","k":"function","d":"AUTOSAR","t":"","n":"EcuM_CheckValidation"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/87ce147027312be1.json?v=8cb02f58" data-total="16" data-new="16" data-figures="10" data-used="0"></script></dialog>

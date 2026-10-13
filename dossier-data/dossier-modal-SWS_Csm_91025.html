@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_91025" class="dossier-modal dossier-workbench" data-dossier-sha="9fa7d3a90eef4f1e" aria-labelledby="dossier-modal-SWS_Csm_91025-title">
+<dialog id="dossier-modal-SWS_Csm_91025" class="dossier-modal dossier-workbench" data-dossier-sha="2f103ab9314200e5" aria-labelledby="dossier-modal-SWS_Csm_91025-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_91025-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_91025)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,701 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,155 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_KeyElementCopyPartial'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,35 +193,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="d50bd5a28bbb3226377f82124cc409b88168daffba97c15c497cc90d85b738f6" data-trace-output="9fa7d3a90eef4f1e011b4e7875cfdcbbf52196cb28c77ab3afdfd46ba30dd2e6" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8cfc9f82d007945a8d1a254818c9ae85e7f3a3eaebd62d2a8d0f67dd096a5151" data-trace-output="2f103ab9314200e59bde09926d365b1bafe6f8b73f821696dc0d6446f2cd8014" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kopiert synchron einen Teilbereich eines Schlüsselelements in ein anderes Element desselben Krypto-Treibers." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;Csm_KeyElementCopyPartial&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;) copies a sub-range of a source key element to a destination key element within the same crypto driver. It is declared via the header &lt;code&gt;Csm.h&lt;/code&gt; and has the service ID &lt;code&gt;0x79&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;The parameters specify the source and destination keys, the associated elements, as well as the start positions and copy scope (&lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;):&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Csm_KeyElementCopyPartial&lt;/code&gt; kopiert einen definierten Teilbereich eines Schlüsselelements in ein anderes Schlüsselelement innerhalb desselben Crypto-Treibers &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;. Über die Parameter &lt;code&gt;keyElementSourceOffset&lt;/code&gt; und &lt;code&gt;keyElementCopyLength&lt;/code&gt; wird bestimmt, ab welchem Byte und in welcher Länge das Quell-Element (identifiziert durch &lt;code&gt;keyId&lt;/code&gt; und &lt;code&gt;keyElementId&lt;/code&gt;) kopiert wird. Die Startposition im Ziel-Element (&lt;code&gt;targetKeyId&lt;/code&gt;, &lt;code&gt;targetKeyElementId&lt;/code&gt;) wird über &lt;code&gt;keyElementTargetOffset&lt;/code&gt; angegeben &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Der Rückgabewert liefert den Ausführungsstatus sowie spezifische Fehlerursachen &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;keyId&lt;/code&gt;: Identifier of the source key.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;keyElementId&lt;/code&gt;: Identifier of the source key element.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;keyElementSourceOffset&lt;/code&gt;: Start offset in the source key element in bytes.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;keyElementTargetOffset&lt;/code&gt;: Start offset in the destination key element in bytes.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;keyElementCopyLength&lt;/code&gt;: Number of bytes to copy.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;targetKeyId&lt;/code&gt;: Identifier of the destination key.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;targetKeyElementId&lt;/code&gt;: Identifier of the destination key element.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Kopiervorgang wurde erfolgreich ausgeführt.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Das Crypto-Driver-Objekt ist belegt.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;: Das angeforderte Schlüsselelement ist nicht verfügbar.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Das Auslesen des Quell-Schlüsselelements ist nicht gestattet.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Das Beschreiben des Ziel-Schlüsselelements ist nicht gestattet.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Die Größen der beteiligten Schlüsselelemente sind inkompatibel.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Quell-Schlüsselelement ist uninitialisiert.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage ist aus allgemeinen Gründen fehlgeschlagen.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;The function returns the status as &lt;code&gt;Std_ReturnType&lt;/code&gt;. Possible return values are (&lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Copy operation successfully performed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Request failed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The responsible Crypto Driver Object is busy.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;: The requested key element is not available.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_READ_FAIL&lt;/code&gt;: Reading the source key element is not permitted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Writing to the destination key element is not permitted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Sizes of the key elements involved are not compatible.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: The source key element is uninitialized.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;According to &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;, &lt;code&gt;Csm_KeyElementCopyPartial&lt;/code&gt; is designed to be reentrant, but explicitly not for the same &lt;code&gt;keyId&lt;/code&gt;. In addition, the function requires that the source and destination keys are managed in the same crypto driver.&lt;/p&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic R20-11.&lt;/p&gt;
+  &lt;p&gt;Die Funktion ist reentrant implementiert, darf jedoch nicht zeitgleich für dieselbe &lt;code&gt;keyId&lt;/code&gt; aufgerufen werden &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;. Zudem setzt die Schnittstelle voraus, dass Quelle und Ziel im selben Crypto-Treiber verwaltet werden &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;. Die Deklaration ist über den Header &lt;code&gt;Csm.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_Csm_91025" href="../../spec/record.html?id=SWS_Csm_91025"&gt;[SWS_Csm_91025]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -243,7 +250,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>d50bd5a28bbb…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8cfc9f82d007…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -381,4 +388,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_91025","k":"function","d":"AUTOSAR","t":"","n":"Csm_KeyElementCopyPartial"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/753133f6b32123cd.json?v=d7e66ac5" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_91025","k":"function","d":"AUTOSAR","t":"","n":"Csm_KeyElementCopyPartial"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/753133f6b32123cd.json?v=7b513e09" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

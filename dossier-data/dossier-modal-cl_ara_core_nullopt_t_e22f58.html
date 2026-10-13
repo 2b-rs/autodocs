@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_core_nullopt_t_e22f58" class="dossier-modal dossier-workbench" data-dossier-sha="312221ae33b380f5" aria-labelledby="dossier-modal-cl_ara_core_nullopt_t_e22f58-title">
+<dialog id="dossier-modal-cl_ara_core_nullopt_t_e22f58" class="dossier-modal dossier-workbench" data-dossier-sha="7854bd33ce2db176" aria-labelledby="dossier-modal-cl_ara_core_nullopt_t_e22f58-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_core_nullopt_t_e22f58-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_core_nullopt_t_e22f58)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,567 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,089 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::core::nullopt_t' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_core_nullopt_t_e22f58",
@@ -203,35 +222,38 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="e634bc8fc1e031d70e7bf9233e18bc6c3ca722e5501b084f29b5fb4f58fd2867" data-trace-output="312221ae33b380f563a734fd2942b1b13771fb026425927d6eefa47764ff555c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="27da0d5f44cb9d8182910ee42a657fc7d1b8563d8891bf387604a0cdf0075d02" data-trace-output="7854bd33ce2db176b9465b6c07ec8af741512122b2b739c41939c2e93968a55c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient als eindeutiger Indikatortyp zur typsicheren Kennzeichnung unbesetzter Zustände in optionalen Wertbehältern." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The type &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; is a core component of the module &lt;code&gt;core&lt;/code&gt; within the AUTOSAR Adaptive Platform in Release R25-11. According to the description, this structure type serves to implement the behavior of &lt;code&gt;std::nullopt_t&lt;/code&gt; in the context of optional value containers. The primary role of the structure is to act as a unique indicator type (tag type). This type explicitly signals at the language level of C++ that an optional state contains no value (disengagement).&lt;/p&gt;
-&lt;p&gt;As an interaction partner, &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; is directly related to generic container structures for optional values, in particular the AUTOSAR counterpart to &lt;code&gt;std::optional&lt;/code&gt;. While the container itself stores the actual payload value or manages the state of the absence of a value, &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; serves as a type-based key. The type makes it possible to define function overloads and constructors semantically unmistakably. The functional responsibility is thus limited to the typed representation of the empty state without providing its own data fields or complex logic. Interpretation: In AUTOSAR Adaptive, the type is likely to serve primarily as an overload parameter for constructors and assignment operators of the platform class &lt;code&gt;ara::core::Optional&lt;/code&gt; to preclude ambiguities with regular values.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Dient als eindeutiger Indikatortyp zur typsicheren Kennzeichnung unbesetzter Zustände in optionalen Wertbehältern.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; dient im Modul &lt;code&gt;core&lt;/code&gt; als standardkonformer Tag-Typ zur Repräsentation eines nicht vorhandenen Wertes in optionalen Objekten gemäß der Semantik von &lt;code&gt;std::nullopt_t&lt;/code&gt;. Der Typ ist zustandslos und ermöglicht die typsichere Initialisierung sowie das Zurücksetzen von optionalen Werten ohne dynamische Speicherverwaltung. Laufzeitfehler oder Ausnahmebedingungen treten bei der direkten Nutzung dieses Indikatortyps nicht auf.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; ist ein zentraler Hilfstyp innerhalb des Moduls &lt;code&gt;core&lt;/code&gt; der AUTOSAR Adaptive Platform. Die Spezifikation definiert diesen Typ als Implementierung des Standardtyps &lt;code&gt;std::nullopt_t&lt;/code&gt; im Umfeld der optionalen Wertsemantik. Seine primäre Rolle besteht darin, als eindeutiger Tag-Typ (Indikatortyp) zu dienen, um das Fehlen eines Wertes in optionalen Containern wie &lt;code&gt;ara::core::Optional&lt;/code&gt; explizit und typsicher auszudrücken. In modernen C++-Architekturen vermeidet dieser Ansatz die Verwendung fehleranfälliger Sentinel-Werte oder magischer Konstanten und ermöglicht eine klare semantische Trennung zwischen einem uninitialisierten bzw. leeren Zustand und einem regulären Datenwert.&lt;/p&gt;
+&lt;p&gt;Die Interaktionspartner von &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; sind vor allem generische Datenstrukturen zur Repräsentation optionaler Zustände sowie Anwendungscode und Middleware-Komponenten, die Datenflüsse mit unvollständigen oder bedingten Werten verarbeiten. Interpretation: Die Klasse dürfte eng mit einer globalen oder statischen Konstanten zusammenwirken, die den konkreten leeren Zustand signalisiert und Zuweisungen sowie Vergleiche an Schnittstellen von &lt;code&gt;ara::core::Optional&lt;/code&gt; ermöglicht. Durch die Ausrichtung an &lt;code&gt;std::nullopt_t&lt;/code&gt; fügt sich der Typ nahtlos in die idiomatische C++17-Programmierung ein, die in der AUTOSAR Adaptive Platform vorausgesetzt wird.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a pure tag type, the structure &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; possesses an elementary and lightweight lifecycle. Since the structure by definition models the behavior of &lt;code&gt;std::nullopt_t&lt;/code&gt; and does not store mutable payload data, it is completely stateless. The creation of an instance occurs without runtime overhead and requires no dynamic memory allocation.&lt;/p&gt;
-&lt;p&gt;Regarding ownership and concurrency, the type is considered completely free of side effects. Instances of &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; own no resources, hold no references to external objects, and manage no internal states. Interpretation: Instantiation and destruction are likely to be trivial and declared as &lt;code&gt;noexcept&lt;/code&gt;, so that objects can easily be created and copied as compile-time constants (&lt;code&gt;constexpr&lt;/code&gt;). There is no fixed sequence of life phases; instances can be created temporarily as pass arguments or kept permanently as typed constants in program memory. Multiple threads can access instances of this type concurrently or create copies without requiring synchronization mechanisms or locks.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Als leerer Tag-Typ besitzt &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; einen denkbar einfachen und unkritischen Lebenszyklus. Interpretation: Der Typ dürfte trivial konstruierbar, kopierbar sowie zerstörbar sein und keinerlei dynamische Betriebsmittel oder Heap-Speicher verwalten. Instanzen können daher ohne spürbaren Laufzeit-Overhead auf dem Stack instanziiert oder direkt als temporäre Werte an Funktionen und Konstruktoren übergeben werden. Ein Besitzverhältnis im klassischen Sinne entsteht nicht, da die Struktur zustandslos ist und lediglich über ihr Typsystem wirkt.&lt;/p&gt;
+&lt;p&gt;In nebenläufigen Systemen ist &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; aufgrund seiner Zustandslosigkeit von Natur aus threadsicher. Mehrere Ausführungsstränge können unabhängig voneinander Instanzen des Typs erzeugen, übergeben oder zur Prüfung heranziehen, ohne dass Synchronisationsmechanismen wie Mutexe oder atomare Operationen erforderlich sind. Es existieren keine internen Zustandsübergänge, die während des Lebenszyklus einer Instanz durchlaufen werden müssten.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The typical use of &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; is divided into use cases where explicit resetting or initialization of an empty container is required. Typically, the structure itself is not instantiated manually; instead, a predefined literal or a typed constant is used.&lt;/p&gt;
-&lt;p&gt;The sequence in practical programming is typically as follows:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Construction of an empty state:&lt;/strong&gt; When creating an object of &lt;code&gt;ara::core::Optional&lt;/code&gt;, a value of type &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; is passed to the corresponding constructor. This clearly documents in the source code the intent to deliberately initialize the container in the disengaged state, in contrast to a potentially implicit default construction.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Resetting existing instances:&lt;/strong&gt; If an optional value container contains a valid value in the course of program execution and this state is to be discarded, an assignment via a &lt;code&gt;nullopt_t&lt;/code&gt; object is performed. As a result, the contained payload value is destroyed and the container is transitioned to the disengaged state.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Return from function calls:&lt;/strong&gt; Functions that cannot provide a result value when a condition is not met return a &lt;code&gt;nullopt_t&lt;/code&gt; signal instead of a placeholder or error object. This allows the calling site a type-safe evaluation without using pointers or magic values.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Interpretation: In AUTOSAR Adaptive, a global constant such as &lt;code&gt;ara::core::nullopt&lt;/code&gt; is presumably provided, which is passed as a concrete instance of &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; for these calls.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad von &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; ist deklarativ und syntaktisch geprägt. Er gliedert sich im Wesentlichen in die drei Schritte der expliziten Initialisierung, der Statusrücksetzung und des logischen Zustandsvergleichs bei der Arbeit mit optionalen Objekten:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Initialisierung:&lt;/strong&gt; Eine optionale Variable wird bei der Definition explizit mit dem Indikator für einen leeren Zustand initialisiert, um zu dokumentieren, dass zum Initialisierungszeitpunkt bewusst kein Nutzdatum vorliegt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Rücksetzung:&lt;/strong&gt; Ein bestehendes Objekt, das zuvor einen Wert enthalten hat, wird durch Zuweisung des Tag-Typs bzw. dessen zugehöriger Konstante in den unbesetzten Zustand zurückversetzt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Auswertung und Fallunterscheidung:&lt;/strong&gt; In Kontrollstrukturen wird der Tag-Typ als Argument oder Vergleichsobjekt genutzt, um zwischen vorliegenden Nutzdaten und dem leeren Zustand zu unterscheiden.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Interpretation: Typischerweise wird in der Praxis selten der Typname &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; direkt instanziiert, sondern es dürfte eine zugehörige Instanzkonstante (analog zu &lt;code&gt;std::nullopt&lt;/code&gt;) an Funktionsaufrufe und Operatoren übergeben werden. Dies gewährleistet eine kompakte und ausdrucksstarke Syntax im Anwendungsquellcode.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Due to the minimalist nature of &lt;code&gt;ara::core::nullopt_t&lt;/code&gt;, no platform-specific error codes, exceptions, or failure modes exist for this type itself. Construction and copying cannot fail under any regular circumstances. Preconditions for using the structure do not exist, and postconditions are limited to the passed tag object being evaluated by the receiving container to toggle its internal validity status.&lt;/p&gt;
-&lt;p&gt;Relevant error scenarios arise exclusively in the surrounding context of the consuming container: If developers attempt to dereference values from a container emptied by &lt;code&gt;nullopt_t&lt;/code&gt; without previously checking its validity, this leads to access violations or exceptions in the container type. The type &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; functions here as a static safety measure of the type system to minimize such logical programming errors already at compile time through clear type distinctions.&lt;/p&gt;
-&lt;!-- annahmen:
-1) ara::core::nullopt_t dient vorrangig als Tag-Typ zur Unterscheidung von Konstruktor- und Zuweisungsüberladungen in ara::core::Optional. – Begründung: Der Payload verweist auf das Verhalten von std::nullopt_t im Kontext von [optional], nennt jedoch keine konkreten Plattformüberladungen.
-2) Erzeugung, Kopie und Zerstörung von nullopt_t sind trivial und noexcept. – Begründung: Der Payload gibt lediglich struct nullopt_t {...}; an; die Nachbildung von std::nullopt_t erfordert semantisch Trivialität und Zustandslosigkeit.
-3) In der Plattform existiert vermutlich eine vordefinierte Konstante (z. B. ara::core::nullopt) als konkreter Wert des Typs. – Begründung: std::nullopt_t wird im C++-Standard stets zusammen mit der Instanz std::nullopt eingesetzt, der Payload führt das Mitglied/die Konstante aber nicht explizit auf.
---&gt;
-&lt;p class="ai-note"&gt;This guide was generated automatically based on the specification metadata for AUTOSAR Adaptive R25-11.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Da &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; keine komplexen Algorithmen ausführt, keine Systemressourcen allokiert und keine Member-Funktionen mit Vorbedingungen bereitstellt, existieren für diesen Typ keine spezifischen Fehlercodes oder Ausnahmebedingungen. Fehlerszenarien beschränken sich in der Regel auf syntaktische oder semantische Typkonflikte zur Kompilierzeit, beispielsweise wenn fälschlicherweise versucht wird, aus dem Tag-Typ Nutzdaten zu dereferenzieren oder ihn an Schnittstellen zu übergeben, die zwingend einen konkreten Nutzwert verlangen.&lt;/p&gt;
+&lt;p&gt;Zur Laufzeit kann eine fehlerhafte Behandlung auftreten, wenn Anwendungscode den durch &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; signalisierten Leerzustand eines umgebenden Optionals ignoriert und ungeprüft auf enthaltene Werte zugreift. Dies ist jedoch ein Fehlverhalten des aufrufenden Codes oder des umgebenden Containers und begründet keinen Fehlerzustand innerhalb der Struktur &lt;code&gt;ara::core::nullopt_t&lt;/code&gt; selbst.&lt;/p&gt;
+&lt;!-- annahmen: 1) ara::core::nullopt_t fungiert als leerer Tag-Typ zur Kennzeichnung des disengaged-Zustands in ara::core::Optional. – Begründung: Die Beschreibung verlangt die Implementierung gemäß std::nullopt_t im Kontext von [optional]. 2) Die Verwendung erfolgt typischerweise über eine zugehörige Konstante oder direkte Übergabe zur Signalisation des Leerzustands. – Begründung: Dies entspricht dem Standardentwurfsmuster für std::nullopt_t in C++. 3) Der Typ ist zustandslos, trivial kopierbar und verwaltet keine Ressourcen. – Begründung: Dies ist die universelle Anforderung an C++ Tag-Typen und std::nullopt_t. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde automatisiert auf Basis der AUTOSAR-Spezifikationsvorgaben für R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -273,7 +295,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e634bc8fc1e0…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>27da0d5f44cb…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

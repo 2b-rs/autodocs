@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ara_crypto_cryp_PublicKey_11ccb6" class="dossier-modal dossier-workbench" data-dossier-sha="43d7bc45d09d3254" aria-labelledby="dossier-modal-cl_ara_crypto_cryp_PublicKey_11ccb6-title">
+<dialog id="dossier-modal-cl_ara_crypto_cryp_PublicKey_11ccb6" class="dossier-modal dossier-workbench" data-dossier-sha="a0fa471e1fafc042" aria-labelledby="dossier-modal-cl_ara_crypto_cryp_PublicKey_11ccb6-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ara_crypto_cryp_PublicKey_11ccb6-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ara_crypto_cryp_PublicKey_11ccb6)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,662 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,185 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'ara::crypto::cryp::PublicKey' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ara_crypto_cryp_PublicKey_11ccb6",
@@ -208,28 +227,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="89195e6d31139132e68faa745aebe9d75dbc588008f34ffd243b3341c6177f4c" data-trace-output="43d7bc45d09d32540c09094c8e10e342cd3cfc2a61918ab43afde3e9a619d7e3" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="49ae23e669f896dbc1e24cc90f37157649b9e59800c2e82eaa7f0c687066f2f1" data-trace-output="a0fa471e1fafc042e5feb50455e0e3664f04ec959736771d6d2ec942d9e8903e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Stellt die allgemeine Schnittstelle und den geteilten Zeiger für asymmetrische öffentliche Schlüssel bereit." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Class &lt;code&gt;ara::crypto::cryp::PublicKey&lt;/code&gt; forms the general interface for asymmetric public keys in the crypto subsystem of the AUTOSAR Adaptive Platform. According to the class declaration, the interface inherits from &lt;code&gt;ara::crypto::cryp::CryptoObject&lt;/code&gt;, whereby it is integrated into the general object and resource model of the crypto stack. As an interface for asymmetric keys, it represents the public part of a key pair. Interpretation: The concrete instantiation and provision of objects implementing this interface is likely to be performed by specialized crypto providers or loading routines, because interfaces in AUTOSAR Adaptive are designed to be purely virtual and ensure the platform-specific encapsulation of cryptographic algorithms.&lt;/p&gt;
-&lt;p&gt;In the cryptographic context, public keys play a central role in operations that do not require secrecy of the key material, such as verifying digital signatures or in asymmetric encryption and key agreement procedures. By deriving from &lt;code&gt;CryptoObject&lt;/code&gt;, &lt;code&gt;PublicKey&lt;/code&gt; acts as a typed pass parameter for downstream crypto operations, allowing cryptographic primitives to be passed to the processing contexts in an algorithm-neutral and type-safe manner.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Stellt die allgemeine Schnittstelle und den geteilten Zeiger für asymmetrische öffentliche Schlüssel bereit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Schnittstelle &lt;code&gt;ara::crypto::cryp::PublicKey&lt;/code&gt; repräsentiert ein allgemeines asymmetrisches öffentliches Schlüsselobjekt im Modul &lt;code&gt;crypto&lt;/code&gt; und leitet sich von &lt;code&gt;CryptoObject&lt;/code&gt; ab. Für die Referenzierung und Weitergabe stellt die Klasse den Typ-Alias &lt;code&gt;Sptr&lt;/code&gt; als &lt;code&gt;std::shared_ptr&amp;lt;PublicKey&amp;gt;&lt;/code&gt; bereit, der über den Header &lt;code&gt;"ara/crypto/cryp/cryobj/public_key.h"&lt;/code&gt; eingebunden wird &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;. Interpretation: Anwendungen dürften Instanzen von &lt;code&gt;PublicKey::Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt; zur asymmetrischen Verifikation oder Verschlüsselung an kryptografische Kontextklassen übergeben. Die Lebensdauer und Freigabe des öffentlichen Schlüssels wird dabei vollständig über den Referenzzähler des geteilten Smart Pointers gesteuert.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;ara::crypto::cryp::PublicKey&lt;/code&gt; definiert die allgemeine Schnittstelle für asymmetrische öffentliche Schlüssel (&lt;em&gt;General Asymmetric Public Key interface&lt;/em&gt;) innerhalb des Moduls &lt;code&gt;crypto&lt;/code&gt; der AUTOSAR Adaptive Platform. Gemäß ihrer syntaktischen Deklaration erbt die Klasse öffentlich von &lt;code&gt;CryptoObject&lt;/code&gt;. In dieser Rolle fungiert sie als Basistyp und einheitlicher Schnittstellenvertrag für alle asymmetrischen öffentlichen Schlüsselstrukturen, die in kryptografischen Operationen eingesetzt werden. Als öffentlicher Schlüssel repräsentiert ein Objekt dieser Klasse den mathematisch offenen Teil eines asymmetrischen Schlüsselpaars, welcher für Verifikations- oder Verschlüsselungszwecke bestimmt ist und keine sensiblen privaten Schlüsselparameter enthält. Der Zugriff auf die Schnittstellendefinition erfolgt über die Header-Datei &lt;code&gt;#include "ara/crypto/cryp/cryobj/public_key.h"&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;. Interpretation: Da &lt;code&gt;PublicKey&lt;/code&gt; direkt von &lt;code&gt;CryptoObject&lt;/code&gt; abgeleitet ist, dürfte die Schnittstelle gemeinsame Eigenschaften und Konventionen für kryptografische Objekte der Plattform teilen, während sie gleichzeitig die spezifische Abstraktion eines asymmetrischen Schlüssels bereitstellt.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;For managing and passing instances of the interface, the specification defines alias type &lt;code&gt;Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;. This type alias refers to &lt;code&gt;std::shared_ptr&amp;lt;PublicKey&amp;gt;&lt;/code&gt; and establishes shared ownership as the default model for referencing keys. Header file &lt;code&gt;#include "ara/crypto/cryp/cryobj/public_key.h"&lt;/code&gt; provides this definition &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;The use of &lt;code&gt;std::shared_ptr&lt;/code&gt; ensures that the underlying key object remains in memory as long as at least one consumer or active operational context holds a reference to it. As soon as the last shared pointer leaves scope or is reset, the object is automatically released. Destruction and cleanup of the referenced key material are presumably subject to the overriding rules of the &lt;code&gt;CryptoObject&lt;/code&gt; class hierarchy to ensure that hardware- or driver-related bindings in the crypto stack are properly torn down.&lt;/p&gt;
-&lt;p&gt;Regarding concurrency, sharing via &lt;code&gt;std::shared_ptr&lt;/code&gt; means that multiple program components can access the same instance simultaneously. Because public keys encapsulate immutable data (such as modulus and exponent in RSA or curve points in elliptic curves), read-only access across threads is fundamentally conflict-free, provided the concrete crypto backend manages no mutable internal states in the key object.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Für die Verwaltung und Weitergabe von Instanzen stellt die Klasse den Typ-Alias &lt;code&gt;Sptr&lt;/code&gt; bereit, der als &lt;code&gt;std::shared_ptr&amp;lt;PublicKey&amp;gt;&lt;/code&gt; definiert ist &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;. Die Besitzverhältnisse eines öffentlichen Schlüssels basieren somit auf geteiltem Besitz (Shared Ownership). Dies ermöglicht es unterschiedlichen Systemkomponenten und Aufrufern, dieselbe Schlüsselinstanz parallel zu referenzieren, ohne dass zwingend ein exklusiver Besitzer festgelegt werden muss. Der Lebenszyklus einer konkreten Schlüsselinstanz wird über den Referenzzähler des Standard-Smart-Pointers gesteuert. Sobald die letzte Referenz freigegeben wird und der Zähler null erreicht, erfolgt die kontrollierte Zerstörung des Objekts. Interpretation: Das explizite Bereitstellen des Alias &lt;code&gt;Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt; dürfte darauf hinweisen, dass Instanzen von &lt;code&gt;PublicKey&lt;/code&gt; üblicherweise über Fabriken oder Laderoutinen des Krypto-Moduls erzeugt und direkt als Shared Pointer an Anwender übergeben werden, anstatt als rohe Zeiger oder Wertobjekte verwaltet zu werden. Hinsichtlich der Nebenläufigkeit erlaubt die Referenzierung über &lt;code&gt;std::shared_ptr&lt;/code&gt; die threadübergreifende Weitergabe des Zeigers, wobei parallele Modifikationen bei einem reinen öffentlichen Schlüssel typischerweise nicht anfallen, da dieser vorrangig als unveränderlicher Referenzparameter dient.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;A typical usage path for &lt;code&gt;ara::crypto::cryp::PublicKey&lt;/code&gt; comprises acquiring, providing, and passing the key to crypto contexts:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Acquisition and passing:&lt;/strong&gt; A consumer receives or loads the public key via the appropriate factories or storage structures of the crypto stack as a shared pointer of type &lt;code&gt;ara::crypto::cryp::PublicKey::Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Assignment to crypto operations:&lt;/strong&gt; Interpretation: The primary purpose of the interface is likely to be passed as an argument to verification or crypto contexts, for example to verify received manifests, certificates, or messages for their integrity and authenticity.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Release:&lt;/strong&gt; After completion of the operations, the shared pointer is removed from the application context; destruction of the object takes place automatically as soon as no further references exist.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The consistent use of &lt;code&gt;Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt; decouples the lifetime of the key from the lifetime of individual function calls and enables flexible reuse of the same key across multiple verification steps.&lt;/p&gt;
-
-&lt;!-- annahmen: 1) Die Instanziierung erfolgt durch Krypto-Provider/Laderoutinen – Begründung: PublicKey ist ein abstraktes Interface. 2) Ressourcenfreigabe folgt den Mechanismen von CryptoObject – Begründung: PublicKey erbt öffentlich von CryptoObject. 3) Verwendung zur Verifikation oder asymmetrischen Krypto-Operation – Begründung: PublicKey stellt das allgemeine asymmetrische Public-Key-Interface dar. --&gt;
-&lt;p class="ai-note"&gt;This guide was generated automatically based on the AUTOSAR Adaptive R25-11 specification.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Ein typischer Nutzungspfad für &lt;code&gt;ara::crypto::cryp::PublicKey&lt;/code&gt; beginnt mit dem Einbinden der entsprechenden Header-Datei &lt;code&gt;"ara/crypto/cryp/cryobj/public_key.h"&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;. Im Anschluss bezieht die Anwendung eine Referenz auf das Schlüsselobjekt in Form des typisierten Smart Pointers &lt;code&gt;ara::crypto::cryp::PublicKey::Sptr&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt;. Dieser Zeiger repräsentiert das einsatzbereite asymmetrische Schlüsselobjekt. Interpretation: Die bezogene &lt;code&gt;Sptr&lt;/code&gt;-Instanz &lt;a class="spec-record-ref" data-req="SWS_CRYPT_22701" href="../spec/record.html?id=SWS_CRYPT_22701"&gt;[SWS_CRYPT_22701]&lt;/a&gt; dürfte in nachfolgenden Schritten an kryptografische Kontextklassen übergeben werden, beispielsweise um digitale Signaturen zu verifizieren oder Daten asymmetrisch zu verschlüsseln. Nach Abschluss der kryptografischen Verifikations- oder Rechenoperationen verbleibt das Schlüsselobjekt entweder im geteilten Besitz für künftige Prüfvorgänge oder wird automatisch freigegeben, sobald der Scope des lokalen &lt;code&gt;Sptr&lt;/code&gt; verlassen wird. Durch die Kapselung als abstrakte Schnittstelle müssen Aufrufer die internen Algorithmusdetails des Schlüssels nicht kennen, sondern interagieren über die einheitliche Schnittstelle von &lt;code&gt;PublicKey&lt;/code&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Interpretation: Da PublicKey von CryptoObject erbt, dürfte die Schnittstelle gemeinsame Eigenschaften und Konventionen für kryptografische Objekte der Plattform teilen. – Begründung: Der Payload belegt die Vererbung class PublicKey : public CryptoObject, führt aber keine Basisklassenmethoden auf.
+2) Interpretation: Das Bereitstellen des Alias Sptr dürfte darauf hinweisen, dass Instanzen von PublicKey üblicherweise über Fabriken oder Laderoutinen erzeugt und als Shared Pointer übergeben werden. – Begründung: [SWS_CRYPT_22701] definiert Sptr als std::shared_ptr&lt;PublicKey&gt;, spezifiziert jedoch keine Konstruktoren oder Erzeugungsmethoden im Payload.
+3) Interpretation: Die bezogene Sptr-Instanz dürfte in nachfolgenden Schritten an kryptografische Kontextklassen übergeben werden, beispielsweise zur Signaturprüfung. – Begründung: Die Kurzbeschreibung definiert die Klasse als allgemeine asymmetrische Schlüsselschnittstelle, nennt jedoch keine Zielkontexte im Payload. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der AUTOSAR-Adaptive-Spezifikation R25-11 und wurde automatisiert erstellt.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -271,9 +290,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>89195e6d3113…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>49ae23e669f8…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 6 <span class="dossier-meta-sub">(6 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 6 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>
           </div>
 
@@ -308,8 +327,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">1</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">0</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">1</span></button>
               </div>
@@ -346,7 +365,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 6 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 0 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -409,4 +428,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_22701","k":"type","d":"CRYPTO","t":"type alias Sptr [SWS_CRYPT_22701] Upstream: RS_CRYPTO_02202 using Sptr = std::shared_ptr \u003c PublicKey >; Shared smart pointer of the interface. Header-Datei #include \"ara/crypto/cryp/cryobj/public_key.h\" class mono Scope class ara::crypto::cryp::PublicKey class mono Symbol Sptr class mono","n":"alias"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/a4e5339739fb13cd.json?v=2a565fbe" data-total="6" data-new="6" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CRYPT_22701","k":"type","d":"CRYPTO","t":"type alias Sptr [SWS_CRYPT_22701] Upstream: RS_CRYPTO_02202 using Sptr = std::shared_ptr \u003c PublicKey >; Shared smart pointer of the interface. Header-Datei #include \"ara/crypto/cryp/cryobj/public_key.h\" class mono Scope class ara::crypto::cryp::PublicKey class mono Symbol Sptr class mono","n":"alias"}],"inbound":[]}</script></dialog>

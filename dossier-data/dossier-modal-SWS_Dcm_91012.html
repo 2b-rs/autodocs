@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91012" class="dossier-modal dossier-workbench" data-dossier-sha="8adce2fa0d867b3b" aria-labelledby="dossier-modal-SWS_Dcm_91012-title">
+<dialog id="dossier-modal-SWS_Dcm_91012" class="dossier-modal dossier-workbench" data-dossier-sha="8ecb4be17f83d831" aria-labelledby="dossier-modal-SWS_Dcm_91012-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91012-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91012)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,648 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,103 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_GetScalingInformation'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,33 +202,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9a4af323e25a203d15348a7ba8c41c3df839200cb3f390f5fc40d782870ae6be" data-trace-output="8adce2fa0d867b3b274883f80806233e6cb07b2b2c8dd496bdf0ff4d1d46fe70" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="9208fcf4cae31b4c43f04b00417d65ced14747f23327efd42377f76b5838a685" data-trace-output="8ecb4be17f83d83142414b26c1cc6c96a60a2757b6985fd76b8bb551e1270bfe" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ruft Skalierungsinformationen eines Datenelements beim Dienst ReadScalingByIdentifier aus der Applikation ab." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion &lt;code&gt;Xxx_GetScalingInformation&lt;/code&gt; wird vom Modul &lt;code&gt;Dcm&lt;/code&gt; aufgerufen, um von der Applikation Skalierungsinformationen zu einem Datum abzufragen (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;). Der Aufruf wird ausgelöst, sobald eine Anfrage für den UDS-Dienst &lt;em&gt;ReadScalingByIdentifier&lt;/em&gt; empfangen wird; dabei ruft das DCM-Modul die Funktion für jedes Datum des im Request empfangenen DID auf und fügt die erhaltenen Daten in die Antwort ein (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00394" href="../../spec/record.html?id=SWS_Dcm_00394"&gt;[SWS_Dcm_00394]&lt;/a&gt;). Die Schnittstelle wird über &lt;code&gt;Dcm_Externals.h&lt;/code&gt; deklariert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    Gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt; arbeitet diese Ausprägung asynchron (Service-ID &lt;code&gt;0x38&lt;/code&gt;). Über den Eingangsparameter &lt;code&gt;OpStatus&lt;/code&gt; übergibt das DCM den Fortschrittsstatus der Operation. Die Applikation schreibt die Skalierungsdaten (&lt;code&gt;scalingByte&lt;/code&gt; und &lt;code&gt;scalingByteExtension&lt;/code&gt;) in den Puffer &lt;code&gt;ScalingInfo&lt;/code&gt;. Als Rückgabewerte vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; gelten:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Operation wurde erfolgreich abgeschlossen.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Die Anfrage ist noch nicht abgeschlossen; zur Fertigstellung sind weitere Aufrufe erforderlich.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Operation war nicht erfolgreich.&lt;/li&gt;
-  &lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die asynchrone Schnittstelle &lt;code&gt;Xxx_GetScalingInformation&lt;/code&gt; wird über den Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt und dient dazu, Skalierungsinformationen eines Datenelements aus der Applikation anzufordern &lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;. Das DCM-Modul ruft diese Funktion auf, sobald eine Diagnoseanfrage für den UDS-Dienst &lt;em&gt;ReadScalingByIdentifier&lt;/em&gt; empfangen wird, und zwar für jedes Datum, das für die angefragte DID konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_Dcm_00394" href="../../spec/record.html?id=SWS_Dcm_00394"&gt;[SWS_Dcm_00394]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;
-    Gibt die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, liest das DCM den Parameter &lt;code&gt;ErrorCode&lt;/code&gt; aus und sendet eine negative Diagnoseantwort (Negative Response) mit dem entsprechenden NRC-Code an den Tester (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Die Funktion definiert folgende Parameter und Semantik &lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;OpStatus&lt;/code&gt; (in): Übergibt den aktuellen Status der laufenden Operation.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ScalingInfo&lt;/code&gt; (out): Puffer zur Aufnahme der Skalierungsinformationen (&lt;code&gt;scalingByte&lt;/code&gt; und &lt;code&gt;scalingByteExtension&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ErrorCode&lt;/code&gt; (out): Nimmt den negativen Antwortcode auf, falls die Operation fehlschlägt.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Als Rückgabewerte sind &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreichem Abschluss, &lt;code&gt;E_NOT_OK&lt;/code&gt; bei einem Fehler sowie &lt;code&gt;DCM_E_PENDING&lt;/code&gt; spezifiziert, falls die Bearbeitung noch nicht abgeschlossen ist und weitere Aufrufe zur Fertigstellung benötigt &lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Nebenläufigkeit und Varianten&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;). Neben dieser asynchronen Schnittstelle existiert unter &lt;a class="spec-record-ref" data-req="SWS_Dcm_00798" href="../../spec/record.html?id=SWS_Dcm_00798"&gt;[SWS_Dcm_00798]&lt;/a&gt; eine synchrone Variante (Service-ID &lt;code&gt;0x4b&lt;/code&gt;), welche ohne &lt;code&gt;OpStatus&lt;/code&gt; aufgerufen wird und unmittelbar &lt;code&gt;E_OK&lt;/code&gt; oder &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückliefert.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation von AUTOSAR Classic R20-11 generiert.
-  &lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+&lt;p&gt;Gibt der Aufruf &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, muss das DCM-Modul eine negative Antwort versenden, deren NRC dem über den Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; bereitgestellten Wert entspricht &lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;. Die Funktion ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Dcm_91012" href="../../spec/record.html?id=SWS_Dcm_91012"&gt;[SWS_Dcm_91012]&lt;/a&gt;. Interpretation: Ob diese asynchrone Funktion mit &lt;code&gt;OpStatus&lt;/code&gt; oder die alternativ spezifizierte synchrone Variante ohne &lt;code&gt;OpStatus&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00798" href="../../spec/record.html?id=SWS_Dcm_00798"&gt;[SWS_Dcm_00798]&lt;/a&gt; aufgerufen wird, dürfte von der Konfiguration der jeweiligen DID abhängen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Auswahl zwischen asynchroner und synchroner Funktionsvariante dürfte von der Konfiguration des jeweiligen Datenelements abhängen. – Begründung: Der Payload enthält neben der asynchronen Funktion auch eine synchrone Signatur, ohne den genauen Konfigurationsmechanismus zu spezifizieren. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI erstellt; die Richtigkeit und Vollständigkeit der Angaben kann nicht garantiert werden.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -250,7 +260,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9a4af323e25a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>9208fcf4cae3…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -388,4 +398,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91012","k":"function","d":"AUTOSAR","t":"","n":"Xxx_GetScalingInformation"}],"inbound":[{"i":"SWS_Dcm_00394","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00394].","n":"SWS_Dcm_00394"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/396ad21642e588bd.json?v=5fc12616" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91012","k":"function","d":"AUTOSAR","t":"","n":"Xxx_GetScalingInformation"}],"inbound":[{"i":"SWS_Dcm_00394","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00394].","n":"SWS_Dcm_00394"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/396ad21642e588bd.json?v=334cf906" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>

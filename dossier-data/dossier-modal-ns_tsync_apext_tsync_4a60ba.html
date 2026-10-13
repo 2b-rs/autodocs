@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_tsync_apext_tsync_4a60ba" class="dossier-modal dossier-workbench" data-dossier-sha="8dedf2caa5d0a8c3" aria-labelledby="dossier-modal-ns_tsync_apext_tsync_4a60ba-title">
+<dialog id="dossier-modal-ns_tsync_apext_tsync_4a60ba" class="dossier-modal dossier-workbench" data-dossier-sha="28df78e066ffc234" aria-labelledby="dossier-modal-ns_tsync_apext_tsync_4a60ba-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_tsync_apext_tsync_4a60ba-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_tsync_apext_tsync_4a60ba)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,225 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,747 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace apext::tsync' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [
@@ -223,91 +242,94 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="f1024fe357ee84f31f42478701eb13b7b33793243f008325d65a63cfb9487a79" data-trace-output="8dedf2caa5d0a8c3c8dabe0f89cae223a04f2cd26bc97e31f324472916f275c1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="81e51095e95c144748c17123d8ae0adfe6f7950a54364689500056506d96231f" data-trace-output="28df78e066ffc2343ab125cd777e04fc4f82c1f38820818c2f18b9963b6c8658" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Bietet Schnittstellen und Container für das Freshness Value Management zur Absicherung der Zeitsynchronisation." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The namespace &lt;code&gt;apext::tsync&lt;/code&gt; provides platform-specific extensions (Platform Extensions) of the AUTOSAR Adaptive module &lt;code&gt;tsync&lt;/code&gt; for Freshness Value Management (FVM). In distributed automotive ECU architectures, Freshness Value Management protects time-critical as well as security-relevant synchronization messages against replay and delay attacks by generating, managing, and verifying dynamic freshness values.&lt;/p&gt;
-&lt;p&gt;The primary task of the namespace lies in providing the central interface &lt;code&gt;FVM&lt;/code&gt; for the module &lt;code&gt;ara::tsync&lt;/code&gt; as well as the associated data structures. Freshness values are encapsulated by the container class &lt;code&gt;FVContainer&lt;/code&gt;, which holds both the bit length of the value and the actual payload in the form of a vector. For standardized error handling, the namespace defines an independent error domain &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; with associated error enumerator &lt;code&gt;TsyncFvmErrc&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;, the error factory function &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;, and the exception class &lt;code&gt;TsyncFvmException&lt;/code&gt;.&lt;/p&gt;
-&lt;div class="diagram" id="diag-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 401.33 118.80" style="max-width:535px"&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Bietet Schnittstellen und Container für das Freshness Value Management zur Absicherung der Zeitsynchronisation.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::tsync&lt;/code&gt; stellt Schnittstellen und Datencontainer für das Freshness Value Management der Adaptive-Zeitsynchronisation bereit. Über die Schnittstelle &lt;code&gt;FVM&lt;/code&gt; werden Aktualitätswerte in &lt;code&gt;FVContainer&lt;/code&gt;-Instanzen gekapselt, um Zeitnachrichten gegen Replay-Angriffe abzusichern. Tritt bei der Initialisierung ein nicht behebbarer Fehler auf oder ist ein Wert temporär nicht verfügbar, wird dies über die Fehlercodes der &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; abgebildet &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. Die Instanziierung standardisierter Fehlerobjekte erfolgt dabei ausnahmesicher und threadsicher über &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::tsync&lt;/code&gt; stellt eine plattformspezifische Erweiterung der AUTOSAR-Adaptive-Zeitsynchronisation (&lt;code&gt;ara::tsync&lt;/code&gt;) dar. Seine zentrale Aufgabe ist das Freshness Value Management (FVM), das Mechanismen zur Gewährleistung der Aktualität von Zeitinformationen bereitstellt, um Replay-Angriffe und veraltete Zustände in zeitsynchronisierten Netzwerken zu verhindern. Zu den Kernbestandteilen gehören die Schnittstelle &lt;code&gt;FVM&lt;/code&gt;, der Datencontainer &lt;code&gt;FVContainer&lt;/code&gt;, die Fehlerdomäne &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; sowie die Ausnahmeklasse &lt;code&gt;TsyncFvmException&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Die Klasse &lt;code&gt;FVContainer&lt;/code&gt; kapselt einen Aktualitätswert, indem sie dessen Länge in Bits sowie den Wert selbst in Form eines Byte-Vektors verwaltet. Die Schnittstelle &lt;code&gt;FVM&lt;/code&gt; fungiert als funktionale Brücke für &lt;code&gt;ara::tsync&lt;/code&gt;. &lt;code&gt;FVM&lt;/code&gt; dürfte als Abstraktionsschnittstelle fungieren, über die zeitsynchronisierende Instanzen von &lt;code&gt;ara::tsync&lt;/code&gt; aktuelle Frischewerte beziehen oder verifizieren. Die Fehlerdomäne &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; und zugehörige Hilfsfunktionen stellen die standardisierte Fehlerberichterstattung sicher &lt;a class="spec-record-ref" data-req="SWS_TS_14212" href="../spec/record.html?id=SWS_TS_14212"&gt;[SWS_TS_14212]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="diagram" id="diag-tsync-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 522.93 118.80" style="max-width:697px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 104.4)"&gt;
-&lt;title&gt;Context&lt;/title&gt;
-&lt;!-- ara::tsync --&gt;
+&lt;!-- ara_tsync --&gt;
 &lt;g id="node1" class="node"&gt;
-&lt;title&gt;ara::tsync&lt;/title&gt;
+&lt;title&gt;ara_tsync&lt;/title&gt;
 &lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M46.76,-63C46.76,-63 12,-63 12,-63 6,-63 0,-57 0,-51 0,-51 0,-39 0,-39 0,-33 6,-27 12,-27 12,-27 46.76,-27 46.76,-27 52.76,-27 58.76,-33 58.76,-39 58.76,-39 58.76,-51 58.76,-51 58.76,-57 52.76,-63 46.76,-63"&gt;&lt;/path&gt;
 &lt;text text-anchor="middle" x="29.38" y="-41.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/tsync.html" href="../modules/tsync.html"&gt;ara::tsync&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- FVM --&gt;
 &lt;g id="node2" class="node"&gt;
 &lt;title&gt;FVM&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M156.75,-63C156.75,-63 126.75,-63 126.75,-63 120.75,-63 114.75,-57 114.75,-51 114.75,-51 114.75,-39 114.75,-39 114.75,-33 120.75,-27 126.75,-27 126.75,-27 156.75,-27 156.75,-27 162.75,-27 168.75,-33 168.75,-39 168.75,-39 168.75,-51 168.75,-51 168.75,-57 162.75,-63 156.75,-63"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="141.75" y="-41.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;FVM&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M201.86,-63C201.86,-63 126.75,-63 126.75,-63 120.75,-63 114.75,-57 114.75,-51 114.75,-51 114.75,-39 114.75,-39 114.75,-33 120.75,-27 126.75,-27 126.75,-27 201.86,-27 201.86,-27 207.86,-27 213.86,-33 213.86,-39 213.86,-39 213.86,-51 213.86,-51 213.86,-57 207.86,-63 201.86,-63"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="164.31" y="-41.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_apext_tsync_FVM_0c1a89.html" href="../classes/cl_apext_tsync_FVM_0c1a89.html"&gt;apext::tsync::FVM&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- ara::tsync&amp;#45;&amp;gt;FVM --&gt;
+&lt;!-- ara_tsync&amp;#45;&amp;gt;FVM --&gt;
 &lt;g id="edge1" class="edge"&gt;
-&lt;title&gt;ara::tsync-&amp;gt;FVM&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M59.09,-45C72.46,-45 88.56,-45 102.91,-45"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="102.79,-48.5 112.79,-45 102.79,-41.5 102.79,-48.5"&gt;&lt;/polygon&gt;
+&lt;title&gt;ara_tsync-&amp;gt;FVM&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M59.22,-45C72.06,-45 87.69,-45 102.9,-45"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="102.72,-48.5 112.72,-45 102.72,-41.5 102.72,-48.5"&gt;&lt;/polygon&gt;
 &lt;text text-anchor="middle" x="86.76" y="-48" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;nutzt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- FVContainer --&gt;
 &lt;g id="node3" class="node"&gt;
 &lt;title&gt;FVContainer&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M336.39,-90C336.39,-90 286.96,-90 286.96,-90 280.96,-90 274.96,-84 274.96,-78 274.96,-78 274.96,-66 274.96,-66 274.96,-60 280.96,-54 286.96,-54 286.96,-54 336.39,-54 336.39,-54 342.39,-54 348.39,-60 348.39,-66 348.39,-66 348.39,-78 348.39,-78 348.39,-84 342.39,-90 336.39,-90"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="311.68" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;FVContainer&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M458,-90C458,-90 349.3,-90 349.3,-90 343.3,-90 337.3,-84 337.3,-78 337.3,-78 337.3,-66 337.3,-66 337.3,-60 343.3,-54 349.3,-54 349.3,-54 458,-54 458,-54 464,-54 470,-60 470,-66 470,-66 470,-78 470,-78 470,-84 464,-90 458,-90"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="403.65" y="-68.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_apext_tsync_FVContainer_9ac97b.html" href="../classes/cl_apext_tsync_FVContainer_9ac97b.html"&gt;apext::tsync::FVContainer&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- FVM&amp;#45;&amp;gt;FVContainer --&gt;
 &lt;g id="edge2" class="edge"&gt;
 &lt;title&gt;FVM-&amp;gt;FVContainer&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M168.99,-49.22C194.18,-53.27 232.81,-59.48 263.38,-64.4"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="262.58,-67.81 273.01,-65.94 263.69,-60.9 262.58,-67.81"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="209.79" y="-62.31" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;liefert&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M214.2,-50.56C246.42,-54.23 289.28,-59.1 325.99,-63.28"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="325.18,-66.71 335.51,-64.36 325.97,-59.75 325.18,-66.71"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="263.51" y="-62.31" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;erzeugt / befüllt&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- TsyncFvmErrorDomain --&gt;
 &lt;g id="node4" class="node"&gt;
 &lt;title&gt;TsyncFvmErrorDomain&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M360.53,-36C360.53,-36 262.82,-36 262.82,-36 256.82,-36 250.82,-30 250.82,-24 250.82,-24 250.82,-12 250.82,-12 250.82,-6 256.82,0 262.82,0 262.82,0 360.53,0 360.53,0 366.53,0 372.53,-6 372.53,-12 372.53,-12 372.53,-24 372.53,-24 372.53,-30 366.53,-36 360.53,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="311.68" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_apext_tsync_TsyncFvmErrorDomain_db2ac9.html" href="../classes/cl_apext_tsync_TsyncFvmErrorDomain_db2ac9.html"&gt;TsyncFvmErrorDomain&lt;/a&gt;&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M482.13,-36C482.13,-36 325.17,-36 325.17,-36 319.17,-36 313.17,-30 313.17,-24 313.17,-24 313.17,-12 313.17,-12 313.17,-6 319.17,0 325.17,0 325.17,0 482.13,0 482.13,0 488.13,0 494.13,-6 494.13,-12 494.13,-12 494.13,-24 494.13,-24 494.13,-30 488.13,-36 482.13,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="403.65" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_apext_tsync_TsyncFvmErrorDomain_db2ac9.html" href="../classes/cl_apext_tsync_TsyncFvmErrorDomain_db2ac9.html"&gt;apext::tsync::TsyncFvmErrorDomain&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- FVM&amp;#45;&amp;gt;TsyncFvmErrorDomain --&gt;
 &lt;g id="edge3" class="edge"&gt;
 &lt;title&gt;FVM-&amp;gt;TsyncFvmErrorDomain&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M169.23,-39.33C175,-38.16 181.07,-36.99 186.75,-36 203.71,-33.04 222.02,-30.19 239.24,-27.66"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="239.33,-31.18 248.72,-26.29 238.33,-24.26 239.33,-31.18"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="209.79" y="-39" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;referenziert&lt;/text&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M214.01,-39.1C220.02,-38.38 226.08,-37.67 231.86,-37 254.3,-34.4 278.4,-31.68 301.22,-29.13"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="301.46,-32.63 311.01,-28.04 300.69,-25.67 301.46,-32.63"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="263.51" y="-40" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;referenziert&lt;/text&gt;
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Context diagram: Interaction between ara::tsync, the FVM interface, the FVContainer, and the error domain. Sources: &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_14212" href="../spec/record.html?id=SWS_TS_14212"&gt;[SWS_TS_14212]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;.&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Komponenten des Namespace apext::tsync und deren Interaktion mit ara::tsync. Quellen: &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_14212" href="../spec/record.html?id=SWS_TS_14212"&gt;[SWS_TS_14212]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;The components in the namespace &lt;code&gt;apext::tsync&lt;/code&gt; are subject to clearly delineated lifecycle and concurrency conditions:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Error domain:&lt;/strong&gt; The class &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; acts as a global, process-wide error domain. Via the function &lt;code&gt;GetTsyncFvmErrorDomain()&lt;/code&gt;, a reference to the global instance object can be retrieved at any time. The function is specified as &lt;code&gt;constexpr&lt;/code&gt;, thread-safe, and exception-safe &lt;a class="spec-record-ref" data-req="SWS_TS_14212" href="../spec/record.html?id=SWS_TS_14212"&gt;[SWS_TS_14212]&lt;/a&gt;, meaning that the error domain remains available across the entire runtime of the application.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Manager instance:&lt;/strong&gt; An initialization phase is designated for the Freshness Value Manager. Interpretation: The initialization of the Freshness Value Manager is likely to represent a distinct startup phase whose failure permanently prevents usability of the manager. This is substantiated by the error code &lt;code&gt;TsyncFvmErrc::kFVInitializeFailed&lt;/code&gt;, which is explicitly defined as an "Unrecoverable Error" after which the FVM can no longer be used &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Data container:&lt;/strong&gt; Instances of &lt;code&gt;FVContainer&lt;/code&gt; possess a call-specific lifecycle. They are created to hold freshness values, passed during verification or message creation, and can be destroyed again after completion of the operation.&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Lebenszyklus der Komponenten im Namespace &lt;code&gt;apext::tsync&lt;/code&gt; gliedert sich in Initialisierungs-, Betriebs- und Beendigungsphasen. Für die Initialisierungsphase definiert die Enumeration &lt;code&gt;TsyncFvmErrc&lt;/code&gt; den Fehlerwert &lt;code&gt;kFVInitializeFailed&lt;/code&gt; (= 2), der als nicht behebbarer Fehler (unrecoverable error) spezifiziert ist und anzeigt, dass der Freshness Value Manager nicht verwendet werden konnte &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. Der Fehler &lt;code&gt;kFVInitializeFailed&lt;/code&gt; deutet vermutlich darauf hin, dass vor dem Abruf von Freshness Values eine Initialisierungsphase des FVM durchlaufen werden muss, deren Fehlschlag eine weitere Verwendung ausschließt.&lt;/p&gt;
+&lt;p&gt;Im laufenden Betrieb besitzen &lt;code&gt;FVContainer&lt;/code&gt;-Instanzen eine temporäre Lebensdauer: Sie werden bei Bedarf instanziiert, mit dem Vektor und der Bitlänge befüllt und an die synchronisierenden Protokollinstanzen übergeben. Demgegenüber besitzt das Fehlerdomänen-Objekt &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; eine statische Lebensdauer über den gesamten Prozesszeitraum. Die Funktion &lt;code&gt;GetTsyncFvmErrorDomain()&lt;/code&gt; gibt eine Referenz auf das globale Instanzobjekt zurück &lt;a class="spec-record-ref" data-req="SWS_TS_14212" href="../spec/record.html?id=SWS_TS_14212"&gt;[SWS_TS_14212]&lt;/a&gt;. Sowohl &lt;code&gt;GetTsyncFvmErrorDomain()&lt;/code&gt; als auch die Fabrikfunktion &lt;code&gt;MakeErrorCode()&lt;/code&gt; sind als &lt;code&gt;constexpr&lt;/code&gt; und &lt;code&gt;noexcept&lt;/code&gt; deklariert sowie als ausnahmesicher und threadsicher spezifiziert &lt;a class="spec-record-ref" data-req="SWS_TS_14212" href="../spec/record.html?id=SWS_TS_14212"&gt;[SWS_TS_14212]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;. Dies erlaubt eine nebenläufige Fehlererzeugung und -abfrage ohne Synchronisationssperren.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;A typical usage path for securing synchronization messages is structured into the following interaction steps:&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad im Zusammenspiel mit der Zeitsynchronisation umfasst die Bereitstellung und Auswertung von Aktualitätswerten:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Request:&lt;/strong&gt; Interpretation: The interface &lt;code&gt;FVM&lt;/code&gt; is likely called by components within &lt;code&gt;ara::tsync&lt;/code&gt; to request and verify freshness values. The higher-level time module integrates the interface &lt;code&gt;FVM&lt;/code&gt; to provide freshness values for outgoing or incoming messages.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Data handover:&lt;/strong&gt; Upon successful determination, the Freshness Value Manager populates an instance of &lt;code&gt;FVContainer&lt;/code&gt; with the bit length and the byte vector of the freshness value and hands it over to the calling time synchronization.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Error signaling:&lt;/strong&gt; If no valid value is available at runtime, the subsystem creates a standardized error code of type &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; via &lt;code&gt;MakeErrorCode&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt; using &lt;code&gt;TsyncFvmErrc::kFVNotAvailable&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Error evaluation:&lt;/strong&gt; The caller evaluates the result. Interpretation: Callers are likely able to make a retry attempt in the event of &lt;code&gt;kFVNotAvailable&lt;/code&gt;, as this is a recoverable error condition.&lt;/li&gt;
+&lt;li&gt;Eine Komponente aus &lt;code&gt;ara::tsync&lt;/code&gt; fordert zur Absicherung einer Zeitbotschaft einen aktuellen Frischewert über die Schnittstelle &lt;code&gt;FVM&lt;/code&gt; an.&lt;/li&gt;
+&lt;li&gt;Bei erfolgreicher Wertermittlung erzeugt bzw. befüllt &lt;code&gt;FVM&lt;/code&gt; eine Instanz von &lt;code&gt;FVContainer&lt;/code&gt; mit der Bitlänge und dem Byte-Vektor des Werts und liefert diese an den Aufrufer zurück.&lt;/li&gt;
+&lt;li&gt;Kann der Frischewert zur Laufzeit temporär nicht bereitgestellt werden, meldet &lt;code&gt;FVM&lt;/code&gt; den behebbaren Fehler &lt;code&gt;kFVNotAvailable&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. Hierzu wird über &lt;code&gt;MakeErrorCode()&lt;/code&gt; ein passendes &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;-Objekt mit herstellerspezifischen Zusatzdaten erzeugt &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Die aufrufende Komponente wertet das Ergebnis aus und entscheidet über Wiederholungsversuche oder Ersatzmaßnahmen.&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="diagram" id="diag-tsync-ablauf"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 394" font-family="Helvetica,sans-Serif" style="max-width:690px"&gt;&lt;text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d"&gt;Abruf eines Aktualitätswerts über FVM&lt;/text&gt;&lt;line x1="135" y1="102" x2="135" y2="380" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="345" y1="102" x2="345" y2="380" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;line x1="555" y1="102" x2="555" y2="380" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"&gt;&lt;/line&gt;&lt;rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="modules/tsync.html" href="../modules/tsync.html"&gt;ara::tsync&lt;/a&gt;&lt;/text&gt;&lt;rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_apext_tsync_FVM_0c1a89.html" href="../classes/cl_apext_tsync_FVM_0c1a89.html"&gt;apext::tsync::FVM&lt;/a&gt;&lt;/text&gt;&lt;rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"&gt;&lt;/rect&gt;&lt;text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="classes/cl_apext_tsync_FVContainer_9ac97b.html" href="../classes/cl_apext_tsync_FVContainer_9ac97b.html"&gt;apext::tsync::FVContainer&lt;/a&gt;&lt;/text&gt;&lt;defs&gt;&lt;marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"&gt;&lt;polygon points="0 0, 11 4.5, 0 9" fill="#28251d"&gt;&lt;/polygon&gt;&lt;/marker&gt;&lt;marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"&gt;&lt;polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"&gt;&lt;/polyline&gt;&lt;/marker&gt;&lt;/defs&gt;&lt;rect x="40" y="150" width="610" height="210" fill="none" stroke="#8a867c" stroke-width="1.1"&gt;&lt;/rect&gt;&lt;text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d"&gt;Aktualitätswert anfordern&lt;/text&gt;&lt;line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;path d="M 40 150 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"&gt;&lt;/path&gt;&lt;text x="48" y="165" font-size="11" font-weight="bold" fill="#28251d"&gt;alt&lt;/text&gt;&lt;text x="96" y="165" font-size="11" font-style="italic" fill="#28251d"&gt;Wert verfügbar&lt;/text&gt;&lt;text x="450.0" y="190" text-anchor="middle" font-size="11" fill="#28251d"&gt;Instanz mit Bitlänge und Vektor befüllen&lt;/text&gt;&lt;line x1="345" y1="196" x2="555" y2="196" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/line&gt;&lt;text x="240.0" y="224" text-anchor="middle" font-size="11" fill="#28251d"&gt;FVContainer übergeben&lt;/text&gt;&lt;line x1="345" y1="230" x2="135" y2="230" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;line x1="40" y1="252" x2="650" y2="252" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"&gt;&lt;/line&gt;&lt;text x="52" y="267" font-size="11" font-style="italic" fill="#28251d"&gt;kFVNotAvailable&lt;/text&gt;&lt;path d="M 345 281 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"&gt;&lt;/path&gt;&lt;text x="399" y="296" text-anchor="start" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_tsync_apext_tsync_4a60ba.html#SWS_TS_14213" href="../namespaces/ns_tsync_apext_tsync_4a60ba.html#SWS_TS_14213"&gt;MakeErrorCode&lt;/a&gt;(kFVNotAvailable)&lt;/text&gt;&lt;text x="240.0" y="332" text-anchor="middle" font-size="11" fill="#28251d"&gt;&lt;a class="diag-ref" data-ref="classes/cl_ara_core_ErrorCode_538b08.html" href="../classes/cl_ara_core_ErrorCode_538b08.html"&gt;ara::core::ErrorCode&lt;/a&gt; zurückmelden&lt;/text&gt;&lt;line x1="345" y1="338" x2="135" y2="338" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"&gt;&lt;/line&gt;&lt;/svg&gt;&lt;/div&gt;
+&lt;p class="diagram-note"&gt;Sequenzdiagramm: Abruf eines Aktualitätswerts und Behandlung möglicher Fehlerzustände. Quellen: &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;Error handling in &lt;code&gt;apext::tsync&lt;/code&gt; follows the AUTOSAR Adaptive standard pattern via &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;:&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Fehlerbehandlung in &lt;code&gt;apext::tsync&lt;/code&gt; basiert auf der Architektur von &lt;code&gt;ara::core::ErrorDomain&lt;/code&gt; und &lt;code&gt;ara::core::ErrorCode&lt;/code&gt;. Die Fehlercodes der &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; sind in der Enumeration &lt;code&gt;TsyncFvmErrc&lt;/code&gt; aufgeführt, deren Basistyp &lt;code&gt;ara::core::ErrorDomain::CodeType&lt;/code&gt; ist &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;TsyncFvmErrc::kFVNotAvailable&lt;/code&gt; (value 1):&lt;/strong&gt; Designates a recoverable error ("Recoverable Error"). This state indicates that the required freshness value is temporarily unavailable &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. The calling logic can handle this by repeating the retrieval at a later point in time.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;TsyncFvmErrc::kFVInitializeFailed&lt;/code&gt; (value 2):&lt;/strong&gt; Designates an unrecoverable error ("Unrecoverable Error"). This code indicates that initialization of the Freshness Value Manager failed and the module is not operational &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kFVNotAvailable&lt;/code&gt; (= 1): Behebbarer Fehler (recoverable error), der signalisiert, dass der Freshness Value gegenwärtig nicht verfügbar ist &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. Aufrufer können die Anfrage erneut stellen oder den aktuellen Verarbeitungszyklus überspringen.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kFVInitializeFailed&lt;/code&gt; (= 2): Nicht behebbarer Fehler (unrecoverable error), der besagt, dass der Freshness Value Manager nicht initialisiert oder verwendet werden konnte &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. Dies führt zum Abbruch der abhängigen Zeitsynchronisationsdienste.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Error codes are constructed via &lt;code&gt;MakeErrorCode(TsyncFvmErrc, ara::core::ErrorDomain::SupportDataType)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;, which incorporates vendor-specific diagnostic data and is guaranteed to execute thread-safely as well as exception-safely. For software paths that operate with C++ exceptions, the derived exception class &lt;code&gt;TsyncFvmException&lt;/code&gt; is available.&lt;/p&gt;
-&lt;!-- annahmen: 1) Interpretation: Die Schnittstelle FVM dürfte von Komponenten innerhalb von ara::tsync zur Anforderung und Prüfung von Frischewerten aufgerufen werden. – Begründung: Der Payload beschreibt FVM als Freshness-Value-Management-Schnittstelle für ara::tsync, enthält jedoch keine einzelnen Funktionssignaturen.
-2) Interpretation: Die Initialisierung des Freshness Value Managers dürfte eine distinkte Anlaufphase darstellen, deren Scheitern die Nutzbarkeit des Managers dauerhaft verhindert. – Begründung: SWS_TS_14202 klassifiziert kFVInitializeFailed als unrecoverable Error, nach welchem der FVM nicht verwendet werden konnte.
-3) Interpretation: Aufrufer dürften bei kFVNotAvailable einen erneuten Leseversuch unternehmen können. – Begründung: SWS_TS_14202 definiert kFVNotAvailable explizit als Recoverable Error. --&gt;
-&lt;p class="ai-note"&gt;This guide was created by an AI assistant based on the AUTOSAR specification for Release R25-11.&lt;/p&gt;
+&lt;p&gt;Die Erzeugung konkreter Fehlerobjekte erfolgt über die Hilfsfunktion &lt;code&gt;MakeErrorCode(TsyncFvmErrc code, ara::core::ErrorDomain::SupportDataType data)&lt;/code&gt;, die den Enumerator und herstellerspezifische Zusatzdaten entgegennimmt &lt;a class="spec-record-ref" data-req="SWS_TS_14213" href="../spec/record.html?id=SWS_TS_14213"&gt;[SWS_TS_14213]&lt;/a&gt;. Die Deklarationen befinden sich im Header &lt;code&gt;apext/tsync/fvm_error_domain.h&lt;/code&gt;, während Vorwärtsdeklarationen über &lt;code&gt;apext/tsync/tsync_fwd.h&lt;/code&gt; bezogen werden können &lt;a class="spec-record-ref" data-req="SWS_TS_14202" href="../spec/record.html?id=SWS_TS_14202"&gt;[SWS_TS_14202]&lt;/a&gt;. Für ausnahmebasierte Fehlerpfade stellt der Namespace die Klasse &lt;code&gt;TsyncFvmException&lt;/code&gt; bereit. &lt;code&gt;TsyncFvmException&lt;/code&gt; dürfte vermutlich geworfen werden, wenn Fehler der &lt;code&gt;TsyncFvmErrorDomain&lt;/code&gt; in Ausnahmekontexten statt über &lt;code&gt;ara::core::ErrorCode&lt;/code&gt; gemeldet werden.&lt;/p&gt;
+&lt;!-- annahmen: 1) FVM dürfte als Abstraktionsschnittstelle fungieren, über die zeitsynchronisierende Instanzen von ara::tsync aktuelle Frischewerte beziehen oder verifizieren. – Begründung: Der Payload beschreibt FVM knapp als 'freshness value management interface for ara::tsync', nennt aber keine konkreten Methodensignaturen. 2) Der Fehler kFVInitializeFailed deutet vermutlich darauf hin, dass vor dem Abruf von Freshness Values eine Initialisierungsphase des FVM durchlaufen werden muss, deren Fehlschlag eine weitere Verwendung ausschließt. – Begründung: SWS_TS_14202 klassifiziert kFVInitializeFailed als unrecoverable error ('could not be used'), ohne eine konkrete Initialisierungsfunktion im Payload zu definieren. 3) TsyncFvmException dürfte vermutlich geworfen werden, wenn Fehler der TsyncFvmErrorDomain in Ausnahmekontexten statt über ara::core::ErrorCode gemeldet werden. – Begründung: Die Klasse ist im Payload als Exception-Klasse des FVM deklariert, während die funktionale Fehlerbehandlung auf ErrorCode basiert. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden basiert auf der Spezifikation von AUTOSAR R25-11 für den Namespace apext::tsync und wurde automatisiert erstellt.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -349,7 +371,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>f1024fe357ee…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>81e51095e95c…</code></div>
               <div><strong>Konstituierende Records:</strong> 3</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

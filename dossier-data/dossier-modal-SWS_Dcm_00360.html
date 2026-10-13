@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00360" class="dossier-modal dossier-workbench" data-dossier-sha="ef6b07ceaa61d27b" aria-labelledby="dossier-modal-SWS_Dcm_00360-title">
+<dialog id="dossier-modal-SWS_Dcm_00360" class="dossier-modal dossier-workbench" data-dossier-sha="5be981df571f1b90" aria-labelledby="dossier-modal-SWS_Dcm_00360-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00360-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00360)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,600 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,054 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_ComM_FullComModeEntered'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -204,31 +222,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="2bc29ea4256b51ade2c9983f14ea6de8c10123b7155e9e76edad48f969cdc912" data-trace-output="ef6b07ceaa61d27b8c2ea2f92b2eb67c5ef405b7795e8dca7cce6699f7735d07" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="f50471437e1eefc8bfa1d3ac2f3d14516b72170dfa54cfbe17a69cc93433b369" data-trace-output="5be981df571f1b902375e374904e3d1d7b830a04bd0feb9d9d4c9f7d72719083" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Schaltet nach Eintritt in die Vollkommunikation alle Sende- und Empfangsvorgänge des DCM für das Netzwerk frei." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    Die synchrone und reentrante Funktion &lt;a class="spec-record-ref" data-req="SWS_Dcm_00360" href="../../spec/record.html?id=SWS_Dcm_00360"&gt;[SWS_Dcm_00360]&lt;/a&gt; wird über &lt;code&gt;Dcm_ComM.h&lt;/code&gt; bereitgestellt und informiert das DCM-Modul über den Wechsel eines Netzwerks in den Kommunikationsmodus &lt;code&gt;COMM_FULL_COMMUNICATION&lt;/code&gt;. Über den Eingangsparameter &lt;code&gt;NetworkId&lt;/code&gt; wird das betroffene Netzwerk übergeben; die Funktion besitzt weder Ein-/Ausgangs- noch Rückgabeparameter &lt;a class="spec-record-ref" data-req="SWS_Dcm_00360" href="../../spec/record.html?id=SWS_Dcm_00360"&gt;[SWS_Dcm_00360]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;h4&gt;Zusammenspiel und Kommunikationsfreigabe&lt;/h4&gt;
-  &lt;p&gt;
-    Durch den Aufruf wird die gesamte Kommunikation für den betroffenen Kanal freigegeben, sodass sowohl der Empfang als auch das Senden von Nachrichten aktiv sind &lt;a class="spec-record-ref" data-req="SWS_Dcm_00157" href="../../spec/record.html?id=SWS_Dcm_00157"&gt;[SWS_Dcm_00157]&lt;/a&gt;. Dies schließt folgende Übertragungsarten ein:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;normale Übertragungen von Diagnoseantworten &lt;a class="spec-record-ref" data-req="SWS_Dcm_00161" href="../../spec/record.html?id=SWS_Dcm_00161"&gt;[SWS_Dcm_00161]&lt;/a&gt;,&lt;/li&gt;
-    &lt;li&gt;ResponseOnEvent-Übertragungen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00159" href="../../spec/record.html?id=SWS_Dcm_00159"&gt;[SWS_Dcm_00159]&lt;/a&gt; sowie&lt;/li&gt;
-    &lt;li&gt;periodische Übertragungen via ReadDataByPeriodicIdentifier &lt;a class="spec-record-ref" data-req="SWS_Dcm_00160" href="../../spec/record.html?id=SWS_Dcm_00160"&gt;[SWS_Dcm_00160]&lt;/a&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;
-    Nach Ausführung dieser Funktion führt das DCM interne Behandlungsroutinen wie &lt;code&gt;DslInternal_ResponseOnOneDataByPeriodicId()&lt;/code&gt; und &lt;code&gt;DslInternal_ResponseOnOneEvent()&lt;/code&gt; ohne Einschränkungen aus &lt;a class="spec-record-ref" data-req="SWS_Dcm_00162" href="../../spec/record.html?id=SWS_Dcm_00162"&gt;[SWS_Dcm_00162]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;h4&gt;Reihenfolgebedingungen und Fehlerverhalten&lt;/h4&gt;
-  &lt;p&gt;
-    Das DCM muss die Modusanzeige &lt;code&gt;Dcm_ComM_FullComModeEntered&lt;/code&gt; vom ComM abwarten, bevor es das Senden einer Diagnoseantwort initiiert. Die maximale Wartezeit ab dem Zeitpunkt des Anforderungsempfangs darf dabei &lt;code&gt;P2ServerMax&lt;/code&gt; nicht überschreiten &lt;a class="spec-record-ref" data-req="SWS_Dcm_01142" href="../../spec/record.html?id=SWS_Dcm_01142"&gt;[SWS_Dcm_01142]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Wird die Funktion mit einer &lt;code&gt;NetworkId&lt;/code&gt; aufgerufen, die keinem im DCM über den Konfigurationsparameter &lt;code&gt;DcmDslProtocolComMChannelRef&lt;/code&gt; referenzierten ComM-Kanal zugeordnet ist, kehrt das DCM unverzüglich zurück, ohne weitere Aktionen auszuführen &lt;a class="spec-record-ref" data-req="SWS_Dcm_01326" href="../../spec/record.html?id=SWS_Dcm_01326"&gt;[SWS_Dcm_01326]&lt;/a&gt;.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;Dieser Text wurde automatisch anhand der Spezifikationsdaten generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone und reentrante Funktion &lt;code&gt;Dcm_ComM_FullComModeEntered&lt;/code&gt; wird über die Header-Datei &lt;code&gt;Dcm_ComM.h&lt;/code&gt; bereitgestellt und informiert das DCM-Modul über den Wechsel eines Kommunikationsnetzwerks in den Zustand &lt;code&gt;COMM_FULL_COMMUNICATION&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00360" href="../../spec/record.html?id=SWS_Dcm_00360"&gt;[SWS_Dcm_00360]&lt;/a&gt;. Als Eingabeparameter dient &lt;code&gt;NetworkId&lt;/code&gt;, welche das vom Moduswechsel betroffene Netzwerk identifiziert &lt;a class="spec-record-ref" data-req="SWS_Dcm_00360" href="../../spec/record.html?id=SWS_Dcm_00360"&gt;[SWS_Dcm_00360]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Durch den Aufruf wird jegliche Kommunikation für dieses Netzwerk aktiviert, sodass sowohl der Nachrichtenempfang als auch das Senden freigegeben sind &lt;a class="spec-record-ref" data-req="SWS_Dcm_00157" href="../../spec/record.html?id=SWS_Dcm_00157"&gt;[SWS_Dcm_00157]&lt;/a&gt;. Dies schließt folgende Übertragungsarten ein:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;normale Übertragungen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00161" href="../../spec/record.html?id=SWS_Dcm_00161"&gt;[SWS_Dcm_00161]&lt;/a&gt;,&lt;/li&gt;
+&lt;li&gt;Response-on-Event-Übertragungen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00159" href="../../spec/record.html?id=SWS_Dcm_00159"&gt;[SWS_Dcm_00159]&lt;/a&gt; sowie&lt;/li&gt;
+&lt;li&gt;periodische Übertragungen mittels &lt;code&gt;ReadDataByPeriodicIdentifier&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_00160" href="../../spec/record.html?id=SWS_Dcm_00160"&gt;[SWS_Dcm_00160]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Sobald &lt;code&gt;Dcm_ComM_FullComModeEntered&lt;/code&gt; aufgerufen wurde, verarbeitet das DCM die internen Funktionen &lt;code&gt;DslInternal_ResponseOnOneDataByPeriodicId()&lt;/code&gt; und &lt;code&gt;DslInternal_ResponseOnOneEvent()&lt;/code&gt; ohne Einschränkungen &lt;a class="spec-record-ref" data-req="SWS_Dcm_00162" href="../../spec/record.html?id=SWS_Dcm_00162"&gt;[SWS_Dcm_00162]&lt;/a&gt;. Im zeitlichen Ablauf muss das DCM diesen Aufruf abwarten, bevor die Übertragung einer Diagnoseantwort eingeleitet wird; die Wartezeit darf ab dem Zeitpunkt des Anfrageeingangs nicht länger als &lt;code&gt;P2ServerMax&lt;/code&gt; sein &lt;a class="spec-record-ref" data-req="SWS_Dcm_01142" href="../../spec/record.html?id=SWS_Dcm_01142"&gt;[SWS_Dcm_01142]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Im Fehlerfall, wenn die übergebene &lt;code&gt;NetworkId&lt;/code&gt; einen ComM-Kanal betrifft, der im DCM nicht konfiguriert ist (Parameter &lt;code&gt;DcmDslProtocolComMChannelRef&lt;/code&gt;), kehrt die Funktion unmittelbar und ohne weitere Aktionen zurück &lt;a class="spec-record-ref" data-req="SWS_Dcm_01326" href="../../spec/record.html?id=SWS_Dcm_01326"&gt;[SWS_Dcm_01326]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -268,9 +275,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2bc29ea4256b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f50471437e1e…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 14 <span class="dossier-meta-sub">(14 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 14 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 3 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (3 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -305,8 +312,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">16</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">15</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">12</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">11</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -343,7 +350,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 14 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 10 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -406,4 +413,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00360","k":"function","d":"AUTOSAR","t":"","n":"Dcm_ComM_FullComModeEntered"}],"inbound":[{"i":"SWS_Dcm_00157","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00157].","n":"SWS_Dcm_00157"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b8ff18d6dcb91cee.json?v=63cee4cc" data-total="14" data-new="14" data-figures="3" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00360","k":"function","d":"AUTOSAR","t":"","n":"Dcm_ComM_FullComModeEntered"}],"inbound":[{"i":"SWS_Dcm_00157","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00157].","n":"SWS_Dcm_00157"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b8ff18d6dcb91cee.json?v=5129d30d" data-total="10" data-new="10" data-figures="3" data-used="0"></script></dialog>

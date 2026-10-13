@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91006" class="dossier-modal dossier-workbench" data-dossier-sha="b8288b0dd4928a44" aria-labelledby="dossier-modal-SWS_EthIf_91006-title">
+<dialog id="dossier-modal-SWS_EthIf_91006" class="dossier-modal dossier-workbench" data-dossier-sha="c8507eb3742f210e" aria-labelledby="dossier-modal-SWS_EthIf_91006-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91006-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91006)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,334 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,789 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_SleepIndication'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,20 +193,18 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="348d436d762450ec9a2f51de3ec23f09129a760bb02d2459aa2e00971824d5b5" data-trace-output="b8288b0dd4928a4495c7646a9a7fe1a7fa0d6e72c9bcd3e4f8d03047577a8491" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="d3c958a96e744f5a4b773e78b6e7ad99bc0454ebdbe9db64036868ef05a5fb56" data-trace-output="c8507eb3742f210eff763c3b76add2726e8b1c7f84093568e114cdb452e2475e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Informiert das Ethernet-Interface über eine auf dem Netzwerk durch den Transceiver erkannte Schlafindikation." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;Function &lt;code&gt;EthIf_SleepIndication&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;) serves as a notification interface of the Ethernet Interface. It is called by the associated Ethernet transceiver driver as soon as it has detected a sleep indication on the network. An intended use case is Ethernet hardware compliant with OPEN Alliance TC10: in this case, the PHY hardware detects a &lt;code&gt;Sleep.Indication&lt;/code&gt; triggered by a &lt;code&gt;Sleep.Request&lt;/code&gt; from the connected link partner.&lt;/p&gt;
-
-&lt;p&gt;The call is processed synchronously (&lt;code&gt;Synchronous&lt;/code&gt;) and has no return value. The function is provided via header file &lt;code&gt;EthIf.h&lt;/code&gt; and has service ID &lt;code&gt;0x68&lt;/code&gt;. The following is passed as an input parameter:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;TrcvIdx&lt;/code&gt; (&lt;code&gt;uint8&lt;/code&gt;): Index of the Ethernet transceiver within the context of the Ethernet Interface (&lt;code&gt;EthIf&lt;/code&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;According to specification &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;, the function is specified as reentrant (&lt;code&gt;Reentrant&lt;/code&gt;). The specification status should also be noted: the function is explicitly marked as draft (&lt;code&gt;atp.Status=draft&lt;/code&gt;), which is why the behavior and interface definition may be adjusted in future specification revisions.&lt;/p&gt;
-
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Classic Release R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;EthIf_SleepIndication&lt;/code&gt; dient als Benachrichtigungsschnittstelle des Ethernet-Interface. Sie wird vom jeweiligen Ethernet-Transceiver-Treiber (&lt;code&gt;EthTrcv&lt;/code&gt;) aufgerufen, sobald dieser eine Schlafindikation auf dem Netzwerk registriert hat &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;. Als einziger Eingabeparameter wird &lt;code&gt;TrcvIdx&lt;/code&gt; übergeben, welcher den Index des signalisierenden Ethernet-Transceivers im Kontext des Moduls &lt;code&gt;EthIf&lt;/code&gt; eindeutig identifiziert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;. Die Funktion besitzt weder Ein-/Ausgabe- noch Rückgabewerte und führt die Benachrichtigung synchron aus &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Hardware-Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Ein wesentlicher Anwendungsfall ist der Einsatz mit Ethernet-Hardware, die konform zur Spezifikation OPEN Alliance TC10 ausgelegt ist &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;. In diesem Szenario erkennt der Transceiver (PHY) auf Hardwareebene eine &lt;code&gt;Sleep.Indication&lt;/code&gt;, welche durch einen Schlafwunsch (&lt;code&gt;Sleep.Request&lt;/code&gt;) des direkt verbundenen Link-Partners ausgelöst wurde &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle ist als synchron sowie reentrant definiert und wird über die Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; bereitgestellt (Service-ID &lt;code&gt;0x68&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;. Bei der Systemintegration ist zu berücksichtigen, dass das Element als Entwurf mit dem Tag &lt;code&gt;atp.Status=draft&lt;/code&gt; gekennzeichnet ist &lt;a class="spec-record-ref" data-req="SWS_EthIf_91006" href="../../spec/record.html?id=SWS_EthIf_91006"&gt;[SWS_EthIf_91006]&lt;/a&gt;. Konkrete Fehlerbehandlungsroutinen oder DET-Fehlercodes sind im Spezifikationsumfang nicht definiert; vermutlich erfolgt eine formale Fehlerprüfung erst in künftigen Spezifikationsständen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Fehlende DET- und Fehlerspezifikation – Begründung: SWS_EthIf_91006 enthält keine Angaben zu Fehlercodes oder Fehlerbehandlungen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -228,9 +244,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>348d436d7624…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>d3c958a96e74…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 7 <span class="dossier-meta-sub">(7 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 7 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -265,8 +281,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">8</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">7</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">6</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">5</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -303,7 +319,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 7 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 5 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -366,4 +382,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91006","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SleepIndication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ece8c43ac10763c8.json?v=189b9ebe" data-total="7" data-new="7" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91006","k":"function","d":"AUTOSAR","t":"","n":"EthIf_SleepIndication"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ece8c43ac10763c8.json?v=4774bf55" data-total="5" data-new="5" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Crypto_91004" class="dossier-modal dossier-workbench" data-dossier-sha="4a4d0f556d67887f" aria-labelledby="dossier-modal-SWS_Crypto_91004-title">
+<dialog id="dossier-modal-SWS_Crypto_91004" class="dossier-modal dossier-workbench" data-dossier-sha="c9cf4663954138fc" aria-labelledby="dossier-modal-SWS_Crypto_91004-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Crypto_91004-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Crypto_91004)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,416 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,870 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Crypto_KeyElementSet'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,32 +193,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="0e26169c2384a15560fbbfa1fa6da888acf345b58cbb064f3cc846901a50105d" data-trace-output="4a4d0f556d67887f41eada704da5bbe36e7205728281173c3ce0ee0a9482532b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="c644721999afa5aa0b016eca1cdcba8bf78711ca54a30f9bdf0862054379b457" data-trace-output="c9cf4663954138fc769c4c694915601f67b2838ecaac9464ec8362494caf5083" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Setzt die Daten eines Schlüsselelements für einen angegebenen Schlüssel synchron im Krypto-Treiber." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;Crypto_KeyElementSet&lt;/code&gt; serves to set the raw data of a key element for a key identified via &lt;code&gt;cryptoKeyId&lt;/code&gt; in the Crypto Driver (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;). It is declared in the header file &lt;code&gt;Crypto.h&lt;/code&gt; and has the service ID &lt;code&gt;0x04&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;h4&gt;Usage and Parameters&lt;/h4&gt;
-  &lt;p&gt;
-    When called, the key (&lt;code&gt;cryptoKeyId&lt;/code&gt;), the respective key element (&lt;code&gt;keyElementId&lt;/code&gt;), a pointer to the source buffer (&lt;code&gt;keyPtr&lt;/code&gt;), and the length of the bytes to be written (&lt;code&gt;keyLength&lt;/code&gt;) must be passed (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-  &lt;p&gt;
-    The function returns the execution status via &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;):
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Crypto_KeyElementSet&lt;/code&gt; dient dazu, die Rohdaten eines bestimmten Schlüsselelements für einen über &lt;code&gt;cryptoKeyId&lt;/code&gt; identifizierten Schlüssel im Krypto-Treiber zu setzen &lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+  &lt;p&gt;Über &lt;code&gt;keyElementId&lt;/code&gt; wird das Ziel-Schlüsselelement adressiert, während &lt;code&gt;keyPtr&lt;/code&gt; auf den Datenpuffer und &lt;code&gt;keyLength&lt;/code&gt; auf dessen Bytegröße verweist &lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;. Bei erfolgreicher Zuweisung gibt die Schnittstelle &lt;code&gt;E_OK&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;.&lt;/p&gt;
+  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Tritt bei der Verarbeitung ein Fehler auf, liefert die Funktion spezifische Rückgabewerte &lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The request was successful (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The request failed generally (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: The Crypto Driver Object is currently busy (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Write access was denied (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;: The requested key element of the key is not available (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: The size of the key element does not match the buffer length of the passed data (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Das zugehörige Crypto-Driver-Objekt ist belegt.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_WRITE_FAIL&lt;/code&gt;: Der Schreibzugriff auf das Schlüsselelement wurde verweigert.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_AVAILABLE&lt;/code&gt;: Das angeforderte Schlüsselelement oder der Schlüssel ist nicht verfügbar.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Die übergebene Datenlänge stimmt nicht mit der Größe des Schlüsselelements überein.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage ist aus sonstigen Gründen fehlgeschlagen.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;h4&gt;Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    The interface is specified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;). Concurrent calls must therefore be synchronized on the caller side.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;This text was generated by an AI based on AUTOSAR CP R20-11.&lt;/p&gt;
+  &lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Crypto_91004" href="../../spec/record.html?id=SWS_Crypto_91004"&gt;[SWS_Crypto_91004]&lt;/a&gt;. Interpretation: Aufrufer dürften dafür zuständig sein, parallele Aufrufe gegeneinander zu synchronisieren, um Dateninkonsistenzen im Treiber zu verhindern.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Aufrufer dürften für die Serialisierung zuständig sein – Begründung: SWS_Crypto_91004 spezifiziert Non Reentrant, definiert jedoch keinen internen Schutzmechanismus gegen parallele Ausführung. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation SWS_Crypto_91004 (R20-11) erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -240,7 +252,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>0e26169c2384…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>c644721999af…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -378,4 +390,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_91004","k":"function","d":"AUTOSAR","t":"","n":"Crypto_KeyElementSet"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b2d94a623ec4b792.json?v=99e0541b" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Crypto_91004","k":"function","d":"AUTOSAR","t":"","n":"Crypto_KeyElementSet"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b2d94a623ec4b792.json?v=754f5723" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

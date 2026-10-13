@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_01204" class="dossier-modal dossier-workbench" data-dossier-sha="e83325b2664456c9" aria-labelledby="dossier-modal-SWS_Dcm_01204-title">
+<dialog id="dossier-modal-SWS_Dcm_01204" class="dossier-modal dossier-workbench" data-dossier-sha="8c08bbc1fe652a8f" aria-labelledby="dossier-modal-SWS_Dcm_01204-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_01204-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_01204)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,840 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,295 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_Stop'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -184,22 +202,23 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="ec9094392c3079e06db9b74ded8d44195e2393dbb629b542b3e505fb8858c18b" data-trace-output="e83325b2664456c92a55dfb31cdd0faa4fdc5da85fde97968d011eee42009385" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="250ef3c4dcf3523c9ea32c12c4eec2ddc5b2e20b95bed8a9535781fc0c33472a" data-trace-output="8c08bbc1fe652a8ffdaec94c99efc7822edef3380c7b5704326c0e9a4eac2150" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Beendet auf Anforderung des Diagnose-Managers die Ausführung einer laufenden Routine in der Applikation." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
+&lt;div class="ai-level" data-ai-level="4"&gt;
 &lt;h4&gt;Verwendung&lt;/h4&gt;
-&lt;p&gt;Die Callback-Funktion &lt;code&gt;Xxx_Stop&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;), deklariert über den Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt;, fordert die Anwendungssoftware auf, die Ausführung einer Routine zu beenden. Der Aufruf erfolgt durch das DCM-Modul nach erfolgreicher Überprüfung einer UDS-Diagnoseanfrage für den Dienst &lt;em&gt;RoutineControl&lt;/em&gt; (0x31) mit der Subfunktion &lt;em&gt;stopRoutine&lt;/em&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00402" href="../../spec/record.html?id=SWS_Dcm_00402"&gt;[SWS_Dcm_00402]&lt;/a&gt;).&lt;/p&gt;
-&lt;p&gt;Abhängig von der Konfiguration der Routine übergibt das DCM-Modul feste Eingangssignale (&lt;code&gt;dataIn_1&lt;/code&gt; bis &lt;code&gt;dataIn_n&lt;/code&gt;) oder variable Eingangsdaten (&lt;code&gt;dataInVar&lt;/code&gt;). Bei variabler Datenlänge gibt der Inout-Parameter &lt;code&gt;currentDataLength&lt;/code&gt; die Byteanzahl des Puffers &lt;code&gt;dataInVar&lt;/code&gt; an und enthält nach Abschluss der Funktion die Länge der in &lt;code&gt;dataOutVar&lt;/code&gt; bereitgestellten Ausgabedaten (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;).&lt;/p&gt;
-&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
-&lt;p&gt;Die Funktion besitzt ein asynchrones Ausführungsverhalten (&lt;code&gt;Asynchronous&lt;/code&gt;) und unterstützt folgende Rückgabewerte:&lt;/p&gt;
+&lt;p&gt;Die Funktion &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt; wird vom DCM aufgerufen, um die Ausführung einer laufenden Diagnose-Routine in der Applikation zu beenden. Der Aufruf erfolgt im Rahmen des UDS-Dienstes RoutineControl (0x31) mit der Subfunktion stopRoutine, sobald die erforderlichen Vorprüfungen erfolgreich abgeschlossen sind &lt;a class="spec-record-ref" data-req="SWS_Dcm_00402" href="../../spec/record.html?id=SWS_Dcm_00402"&gt;[SWS_Dcm_00402]&lt;/a&gt;. Die Schnittstelle besitzt die Service-ID &lt;code&gt;0x5c&lt;/code&gt; und ist über die Header-Datei &lt;code&gt;Dcm_Externals.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Parameter und Rückgabewerte&lt;/h4&gt;
+&lt;p&gt;Abhängig von der Konfiguration der Routine übergibt das DCM feste oder variable Eingabedaten (&lt;code&gt;dataIn_1&lt;/code&gt; bis &lt;code&gt;dataIn_n&lt;/code&gt; bzw. &lt;code&gt;dataInVar&lt;/code&gt;) und Pufferreferenzen für Ausgabedaten (&lt;code&gt;dataOut_1&lt;/code&gt; bis &lt;code&gt;dataOut_n&lt;/code&gt; bzw. &lt;code&gt;dataOutVar&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00402" href="../../spec/record.html?id=SWS_Dcm_00402"&gt;[SWS_Dcm_00402]&lt;/a&gt;. Bei variabler Datenlänge enthält &lt;code&gt;currentDataLength&lt;/code&gt; die Byteanzahl der Ein- bzw. Ausgabedaten &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;. Als Rückgabewerte von &lt;code&gt;Std_ReturnType&lt;/code&gt; sind festgelegt:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Das Anhalten der Routine war erfolgreich. Das DCM-Modul antwortet mit einer positiven Diagnoseantwort und fügt die in &lt;code&gt;dataOut_1&lt;/code&gt; bis &lt;code&gt;dataOut_n&lt;/code&gt; bzw. &lt;code&gt;dataOutVar&lt;/code&gt; zurückgegebenen Daten als &lt;em&gt;routineStatusRecord&lt;/em&gt; ein (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00403" href="../../spec/record.html?id=SWS_Dcm_00403"&gt;[SWS_Dcm_00403]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Routine konnte nicht gestoppt werden. Das DCM-Modul sendet eine negative Antwort (NRC) mit dem im Zeigerparameter &lt;code&gt;ErrorCode&lt;/code&gt; hinterlegten Fehlercode (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Die Bearbeitung ist noch nicht abgeschlossen. Weitere Aufrufe sind erforderlich, um die Operation zu beenden (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt;: Die Applikation fordert das DCM-Modul zur Übertragung einer &lt;em&gt;Response Pending&lt;/em&gt;-Nachricht (NRC 0x78) an das Testwerkzeug auf (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Routine erfolgreich beendet; das DCM übermittelt eine positive UDS-Antwort mit den erzeugten Ausgabedaten als routineStatusRecord &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_Dcm_00403" href="../../spec/record.html?id=SWS_Dcm_00403"&gt;[SWS_Dcm_00403]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Abbruch der Routine fehlgeschlagen; das DCM sendet eine negative UDS-Antwort mit dem in &lt;code&gt;ErrorCode&lt;/code&gt; hinterlegten NRC &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Operation ist noch in Bearbeitung; das DCM ruft die Funktion zur Fertigstellung erneut auf &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt;: Die Applikation fordert das DCM zur Übertragung einer Pending-Antwort (NRC 0x78) auf &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h4&gt;Nebenläufigkeit&lt;/h4&gt;
-&lt;p&gt;Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;).&lt;/p&gt;
-&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Operation ist als asynchron und nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;. Tritt bei der Ausführung ein Fehler auf, muss die Applikation den Parameter &lt;code&gt;ErrorCode&lt;/code&gt; mit dem passenden &lt;code&gt;Dcm_NegativeResponseCodeType&lt;/code&gt; beschreiben und &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgeben &lt;a class="spec-record-ref" data-req="SWS_Dcm_01204" href="../../spec/record.html?id=SWS_Dcm_01204"&gt;[SWS_Dcm_01204]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch auf Basis der Spezifikation AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -239,7 +258,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>ec9094392c30…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>250ef3c4dcf3…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 17 <span class="dossier-meta-sub">(17 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 17 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -377,4 +396,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_01204","k":"function","d":"AUTOSAR","t":"","n":"Xxx_Stop"}],"inbound":[{"i":"SWS_Dcm_00402","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00402].","n":"SWS_Dcm_00402"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3930653531742a8b.json?v=95e7a359" data-total="17" data-new="17" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_01204","k":"function","d":"AUTOSAR","t":"","n":"Xxx_Stop"}],"inbound":[{"i":"SWS_Dcm_00402","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_00402].","n":"SWS_Dcm_00402"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/3930653531742a8b.json?v=eaf10276" data-total="17" data-new="17" data-figures="0" data-used="0"></script></dialog>

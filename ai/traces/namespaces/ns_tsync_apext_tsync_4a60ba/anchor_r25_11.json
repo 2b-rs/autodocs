@@ -1,20 +1,39 @@
 {
  "annahmen": [
-  "1) Interpretation: Die Schnittstelle FVM dürfte von Komponenten innerhalb von ara::tsync zur Anforderung und Prüfung von Frischewerten aufgerufen werden. – Begründung: Der Payload beschreibt FVM als Freshness-Value-Management-Schnittstelle für ara::tsync, enthält jedoch keine einzelnen Funktionssignaturen.",
-  "2) Interpretation: Die Initialisierung des Freshness Value Managers dürfte eine distinkte Anlaufphase darstellen, deren Scheitern die Nutzbarkeit des Managers dauerhaft verhindert. – Begründung: SWS_TS_14202 klassifiziert kFVInitializeFailed als unrecoverable Error, nach welchem der FVM nicht verwendet werden konnte.",
-  "3) Interpretation: Aufrufer dürften bei kFVNotAvailable einen erneuten Leseversuch unternehmen können. – Begründung: SWS_TS_14202 definiert kFVNotAvailable explizit als Recoverable Error."
+  "1) FVM dürfte als Abstraktionsschnittstelle fungieren, über die zeitsynchronisierende Instanzen von ara::tsync aktuelle Frischewerte beziehen oder verifizieren. – Begründung: Der Payload beschreibt FVM knapp als 'freshness value management interface for ara::tsync', nennt aber keine konkreten Methodensignaturen.",
+  "2) Der Fehler kFVInitializeFailed deutet vermutlich darauf hin, dass vor dem Abruf von Freshness Values eine Initialisierungsphase des FVM durchlaufen werden muss, deren Fehlschlag eine weitere Verwendung ausschließt. – Begründung: SWS_TS_14202 klassifiziert kFVInitializeFailed als unrecoverable error ('could not be used'), ohne eine konkrete Initialisierungsfunktion im Payload zu definieren.",
+  "3) TsyncFvmException dürfte vermutlich geworfen werden, wenn Fehler der TsyncFvmErrorDomain in Ausnahmekontexten statt über ara::core::ErrorCode gemeldet werden. – Begründung: Die Klasse ist im Payload als Exception-Klasse des FVM deklariert, während die funktionale Fehlerbehandlung auf ErrorCode basiert."
  ],
  "diagrams": [
   {
    "art": "dot",
-   "id": "diag-kontext",
-   "quelle": "anchor_r25_11.diag-kontext.dot"
+   "id": "diag-tsync-kontext",
+   "quelle": "anchor_r25_11.diag-tsync-kontext.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-tsync-ablauf",
+   "quelle": "anchor_r25_11.diag-tsync-ablauf.seq.json"
   }
  ],
  "fragment": "content/ai/namespaces/ns_tsync_apext_tsync_4a60ba/anchor_r25_11.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-tsync-kontext",
+   "diag-tsync-ablauf"
+  ],
+  "oneliner_chars": 111,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 69,
+   "3": 247,
+   "4": 585
+  }
+ },
  "lint": [],
- "output_sha256": "8dedf2caa5d0a8c3c8dabe0f89cae223a04f2cd26bc97e31f324472916f275c1",
- "output_store": "ai/store/outputs/8d/8dedf2caa5d0a8c3c8dabe0f89cae223a04f2cd26bc97e31f324472916f275c1.html",
+ "output_sha256": "28df78e066ffc2343ab125cd777e04fc4f82c1f38820818c2f18b9963b6c8658",
+ "output_store": "ai/store/outputs/28/28df78e066ffc2343ab125cd777e04fc4f82c1f38820818c2f18b9963b6c8658.html",
  "params": {
   "namespace_id": "ns_tsync_apext_tsync_4a60ba",
   "platform": "adaptive",
@@ -40,9 +59,9 @@
   "top_p": null
  },
  "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "f1024fe357ee84f31f42478701eb13b7b33793243f008325d65a63cfb9487a79",
- "prompt_store": "ai/store/prompts/f1/f1024fe357ee84f31f42478701eb13b7b33793243f008325d65a63cfb9487a79.txt",
- "recipe": "namespace-guide@2",
+ "prompt_hash": "81e51095e95c144748c17123d8ae0adfe6f7950a54364689500056506d96231f",
+ "prompt_store": "ai/store/prompts/81/81e51095e95c144748c17123d8ae0adfe6f7950a54364689500056506d96231f.txt",
+ "recipe": "namespace-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -54,17 +73,18 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T07:59:57Z",
-   "duration_seconds": 27.092098,
+   "created_at": "2026-10-13T04:03:54Z",
+   "duration_seconds": 55.514155141,
+   "prompt_transport": "argv -p",
    "route": "agy-cli-print",
-   "run_id": "a6168f54-8cee-4992-b347-fc3b9be9bc91",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/a6168f54-8cee-4992-b347-fc3b9be9bc91.jsonl",
+   "run_id": "ebd6932c-c212-4b9f-a0aa-fbbd6198395d",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/ebd6932c-c212-4b9f-a0aa-fbbd6198395d.jsonl",
    "usage": {
-    "cache_read_tokens": 8144,
-    "input_tokens": 6830,
-    "output_tokens": 11411,
-    "thinking_tokens": 9338,
-    "total_tokens": 18241
+    "cache_read_tokens": 0,
+    "input_tokens": 15083,
+    "output_tokens": 21913,
+    "thinking_tokens": 17785,
+    "total_tokens": 36996
    }
   }
  ],

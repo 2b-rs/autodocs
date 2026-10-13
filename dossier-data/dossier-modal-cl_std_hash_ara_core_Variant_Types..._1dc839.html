@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_std_hash_ara_core_Variant_Types..._1dc839" class="dossier-modal dossier-workbench" data-dossier-sha="1f3bb51dfc68cda0" aria-labelledby="dossier-modal-cl_std_hash_ara_core_Variant_Types..._1dc839-title">
+<dialog id="dossier-modal-cl_std_hash_ara_core_Variant_Types..._1dc839" class="dossier-modal dossier-workbench" data-dossier-sha="2deed53b14199af7" aria-labelledby="dossier-modal-cl_std_hash_ara_core_Variant_Types..._1dc839-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_std_hash_ara_core_Variant_Types..._1dc839-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_std_hash_ara_core_Variant_Types..._1dc839)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,678 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,201 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für 'std::hash&lt; ara::core::Variant&lt; Types...                 &gt; &gt;' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_std_hash_ara_core_Variant_Types..._1dc839",
@@ -208,39 +227,37 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="2655effc193d05177bc2a1e9a998929e038332607a1ee2994494379e21af2cc4" data-trace-output="1f3bb51dfc68cda0145623b9e5e3fbdc1dd5911d2e8111b4539a52bbc2539126" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="11686a39612635ce03e29564778a08da8259d1a38115d61a4043975cc21bb652" data-trace-output="2deed53b14199af71209fda9a348b881afa5ff0d42677f779de1306f79fd4579" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Berechnet ausnahmesicher einen ganzzahligen Hash-Wert für Instanzen von ara::core::Variant." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;Specialization &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; provides the standardized hashing functionality for sum type &lt;code&gt;ara::core::Variant&lt;/code&gt; of the AUTOSAR Adaptive Platform in module &lt;code&gt;core&lt;/code&gt;. It is declared in header &lt;code&gt;ara/core/variant.h&lt;/code&gt; and follows the functional interface pattern for C++ standard hash functors.&lt;/p&gt;
-&lt;p&gt;As an auxiliary structure, the specialization serves the seamless integration of &lt;code&gt;ara::core::Variant&lt;/code&gt; objects into generic, hash-based data structures. Primary interaction partners are standards-compliant associative containers, such as unordered tables (&lt;code&gt;std::unordered_map&lt;/code&gt;) or sets (&lt;code&gt;std::unordered_set&lt;/code&gt;), which require a deterministic hash value for bucket distribution and key management. The central interaction point is function call operator &lt;code&gt;operator()&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;, via which containers or calling algorithms retrieve the hash value of a passed Variant instance.&lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Berechnet ausnahmesicher einen ganzzahligen Hash-Wert für Instanzen von ara::core::Variant.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Spezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; dient der Berechnung eines Hash-Wertes vom Typ &lt;code&gt;size_t&lt;/code&gt; für Instanzen von &lt;code&gt;ara::core::Variant&lt;/code&gt; und wird über &lt;code&gt;ara/core/variant.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Der Aufruf erfolgt über den Operator &lt;code&gt;operator()&lt;/code&gt;, welcher die Variante als konstante Referenz übernimmt und das ganzzahlige Ergebnis synchron zurückliefert. Als wesentliche Randbedingung ist die Operation als &lt;code&gt;noexcept&lt;/code&gt; spezifiziert und vollständig ausnahmesicher (&lt;code&gt;exception safe&lt;/code&gt;) deklariert &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Als Interpretation dürften parallele Lesezugriffe nebenläufig sicher sein, solange das übergebene Objekt unverändert bleibt.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Klassenvorlagenspezialisierung &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; erweitert den Standard-Namensraum &lt;code&gt;std&lt;/code&gt; um eine Hash-Funktionalität für den Summentyp &lt;code&gt;ara::core::Variant&lt;/code&gt; der AUTOSAR Adaptive Platform &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Bereitgestellt und deklariert wird die Spezialisierung über die Header-Datei &lt;code&gt;ara/core/variant.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Die funktionale Verantwortung der Struktur liegt in der Berechnung eines skalaren Streuwertes vom Typ &lt;code&gt;size_t&lt;/code&gt; für eine übergebene Instanz von &lt;code&gt;ara::core::Variant&amp;lt;Types...&amp;gt;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Als zentraler Interaktionspartner dient die Variantenklasse selbst, deren Inhalt über den Aufrufoperator ausgelesen wird &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Als Interpretation dürfte diese Spezialisierung vor allem dem Zweck dienen, &lt;code&gt;ara::core::Variant&lt;/code&gt; nahtlos als Schlüsseltyp in generischen, hash-basierten Assoziativstrukturen der C++-Standardbibliothek wie &lt;code&gt;std::unordered_map&lt;/code&gt; oder &lt;code&gt;std::unordered_set&lt;/code&gt; nutzen zu können.&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;As a functor structure, &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; is characterized by minimal and unburdensome lifecycle management:&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; fungiert als leichtgewichtiges Funktionsobjekt ohne eigene persistente Zustandsdaten &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Instanzen des Hashers können bei Bedarf explizit instanziiert oder direkt als temporäre Rvalue-Objekte bei der Ermittlung eines Hash-Wertes erzeugt werden. Hinsichtlich der Besitzverhältnisse übernimmt das Funktionsobjekt keinerlei Eigentum an den übergebenen Daten, da das Zielobjekt als unveränderliche Referenz über &lt;code&gt;ara::core::Variant&amp;lt;Types...&amp;gt; const &amp;amp;v&lt;/code&gt; entgegengenommen wird &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Die Zerstörung des Funktionsobjekts hat folglich keinerlei Auswirkung auf die Lebensdauer oder den Zustand der referenzierten Variante. Der Aufrufoperator ist mit &lt;code&gt;const&lt;/code&gt; sowie &lt;code&gt;noexcept&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Da keine internen Zustände modifiziert werden, dürften parallele Aufrufe mehrerer Threads auf denselben Hasher threadsicher sein, solange das referenzierte Variantenobjekt während des Lesezugriffs nicht nebenläufig verändert wird.&lt;/p&gt;
+
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der reguläre Nutzungspfad gliedert sich in die Bereitstellung der Schnittstelle und die Ausführung der Hash-Berechnung:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Creation and destruction:&lt;/strong&gt; The structure has no mutable internal state and acts as a stateless function object. Instances can be created directly on the call stack when needed without significant runtime overhead or instantiated implicitly as a template type argument within container classes. Destruction occurs automatically upon leaving the respective scope.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;State model:&lt;/strong&gt; Because the specialization manages no internal data fields or configurations, no distinct states or complex phase transitions exist during its lifetime.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Concurrency:&lt;/strong&gt; According to &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;, the call operator is declared as &lt;code&gt;const&lt;/code&gt;. This ensures that parallel invocations of &lt;code&gt;operator()&lt;/code&gt; across multiple threads on the same functor instance or on separate instances are thread-safe, provided that the referenced &lt;code&gt;ara::core::Variant&lt;/code&gt; instance is not modified concurrently in the meantime.&lt;/li&gt;
+&lt;li&gt;Zunächst bindet der Aufrufer die Header-Datei &lt;code&gt;ara/core/variant.h&lt;/code&gt; ein, wodurch die Spezialisierung im Namensraum &lt;code&gt;std&lt;/code&gt; verfügbar wird &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Anschließend wird eine Instanz des Funktionsobjekts erzeugt oder direkt der temporäre Aufrufoperator &lt;code&gt;operator()&lt;/code&gt; angesprochen &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Dem Aufrufoperator wird die zu verarbeitende Variante &lt;code&gt;ara::core::Variant&amp;lt;Types...&amp;gt;&lt;/code&gt; als konstante Referenz übergeben &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Das Funktionsobjekt liefert synchron den berechneten Hash-Wert vom Typ &lt;code&gt;size_t&lt;/code&gt; an den Aufrufer zurück &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;In der Praxis erfolgt dieser Ablauf typischerweise transparent innerhalb von Einfüge- oder Suchoperationen hash-basierter Standardbehälter.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;Typical use of &lt;code&gt;std::hash&amp;lt;ara::core::Variant&amp;lt;Types...&amp;gt;&amp;gt;&lt;/code&gt; occurs when using variants as keys in unordered associative storages or during explicit key calculation:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Interface inclusion:&lt;/strong&gt; The caller includes header &lt;code&gt;ara/core/variant.h&lt;/code&gt; to obtain access to class template &lt;code&gt;ara::core::Variant&lt;/code&gt; and the associated &lt;code&gt;std::hash&lt;/code&gt; specialization.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Object provision:&lt;/strong&gt; An instance of &lt;code&gt;ara::core::Variant&amp;lt;Types...&amp;gt;&lt;/code&gt; is declared and populated with a concrete value from the set of declared alternative types &lt;code&gt;Types...&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hash calculation:&lt;/strong&gt; The hash function is invoked either implicitly by container operations or manually by the application. In doing so, the variant object is passed as a const reference to the call operator: &lt;code&gt;size_t operator() (ara::core::Variant&amp;lt;Types...&amp;gt; const &amp;amp;v) const noexcept;&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Return and use:&lt;/strong&gt; The invocation returns a numeric value of type &lt;code&gt;size_t&lt;/code&gt;, which can be utilized directly for addressing in hash tables or for equality checks.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Interpretation: The call operator presumably delegates the calculation to the corresponding &lt;code&gt;std::hash&lt;/code&gt; specialization of the value currently active in the variant and combines it with the type index of the alternative.&lt;/p&gt;
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle ist auf Ausfallsicherheit und Ausnahme-Neutralität ausgelegt: Der Aufrufoperator &lt;code&gt;operator()&lt;/code&gt; ist explizit als &lt;code&gt;noexcept&lt;/code&gt; spezifiziert und besitzt die Einstufung &lt;code&gt;exception safe&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Dies stellt sicher, dass während der Streuwertberechnung keine C++-Ausnahmen ausgelöst oder weitergeleitet werden &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Spezifische Fehlercodes oder Fehlerzustände sind für diese Funktion nicht vorgesehen; der Aufruf ist unter regulären Bedingungen stets erfolgreich und liefert immer einen Wert vom Typ &lt;code&gt;size_t&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;. Als fachliche Vorbedingung wird vermutlich vorausgesetzt, dass die in der Typliste &lt;code&gt;Types...&lt;/code&gt; definierten Alternativtypen ihrerseits gültige Hash-Funktionen unterstützen, um einen konsistenten Gesamthashwert ableiten zu können.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Spezialisierung dient primär der Unterstützung von Schlüsseltypen in Standard-Assoziativcontainern – Begründung: Der AUTOSAR-Adaptive-Standard spezifiziert die Hash-Spezialisierung, nennt jedoch im Payload keine konkreten Anwendungscontainer. 2) Gleichzeitige Aufrufe auf derselben Instanz sind threadsicher – Begründung: Der Aufrufoperator ist const sowie noexcept und hält keinen Zustand. 3) Die in Types... enthaltenen Typen unterstützen ihrerseits std::hash – Begründung: Für die Ableitung eines Hash-Werts aus einer Variante müssen die aktiven Alternativtypen hashbar sein. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI auf Basis der Spezifikation AUTOSAR Adaptive R25-11 generiert.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;When using the hash specialization, defined boundary conditions and stability guarantees must be observed:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Exception safety:&lt;/strong&gt; According to &lt;a class="spec-record-ref" data-req="SWS_CORE_01669" href="../spec/record.html?id=SWS_CORE_01669"&gt;[SWS_CORE_01669]&lt;/a&gt;, &lt;code&gt;operator()&lt;/code&gt; is qualified as &lt;code&gt;noexcept&lt;/code&gt; and classified as exception safe (&lt;em&gt;exception safe&lt;/em&gt;). The invocation guarantees that under no circumstances are C++ exceptions thrown.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Error signaling:&lt;/strong&gt; The function directly returns a primitive scalar value of type &lt;code&gt;size_t&lt;/code&gt;. No AUTOSAR-specific error structures (such as &lt;code&gt;ara::core::Result&lt;/code&gt;) or error codes are used.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Type requirements:&lt;/strong&gt; Interpretation: Presumably, all data types listed in &lt;code&gt;Types...&lt;/code&gt; must themselves be hashable (i.e. possess a valid &lt;code&gt;std::hash&lt;/code&gt; specialization) so that the template can be instantiated and executed without error for all potential alternatives.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- annahmen: 1) Vermutlich delegiert operator() die Hash-Berechnung an die std::hash-Spezialisierung des aktiven Typs und kombiniert das Ergebnis mit dem Diskriminator – Begründung: SWS_CORE_01669 spezifiziert 'Invoke the hashing function', ohne den internen Mischalgorithmus zu definieren. 2) Vermutlich müssen alle in Types... enthaltenen Typen selbst hashbar sein – Begründung: Zur Gewährleistung eines noexcept-Aufrufs über alle Typalternativen muss für jeden Parametertyp eine Hash-Funktion existieren. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on specification AUTOSAR Adaptive Platform R25-11 (module core) and was created automatically.&lt;/p&gt;
 
 &lt;/div&gt;</pre>
         </div>
@@ -281,7 +298,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>2655effc193d…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>11686a396126…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

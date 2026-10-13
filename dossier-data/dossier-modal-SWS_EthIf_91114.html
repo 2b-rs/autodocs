@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_91114" class="dossier-modal dossier-workbench" data-dossier-sha="fb81d6ac6a47b049" aria-labelledby="dossier-modal-SWS_EthIf_91114-title">
+<dialog id="dossier-modal-SWS_EthIf_91114" class="dossier-modal dossier-workbench" data-dossier-sha="d0d6c4de0d653dee" aria-labelledby="dossier-modal-SWS_EthIf_91114-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_91114-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_91114)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,275 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,730 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_TransceiverGetDuplexMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,37 +193,29 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="a81b03f15f2d11da264cb2d007655498b2980d10a5cdd3d422fb2e2a4f18d1a9" data-trace-output="fb81d6ac6a47b049cd536491530472e2b6ec731cf033090c6c4f5d84eef3f9ab" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="003ecb88f2c1cca14e6fc52b6ffd7f15a155bcd1409ea7f9522b876ce449c2b4" data-trace-output="d0d6c4de0d653dee0bf4337426518f44c85726476531e08f555bf1043891b802" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Ermittelt synchron den Duplex-Modus (Halb- oder Vollduplex) eines bestimmten Ethernet-Transceivers." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous function &lt;code&gt;EthIf_TransceiverGetDuplexMode&lt;/code&gt; serves to query the duplex mode of an indexed Ethernet transceiver &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;. The interface is available in header &lt;code&gt;EthIf.h&lt;/code&gt; and has service ID &lt;code&gt;0x50&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;EthIf_TransceiverGetDuplexMode&lt;/code&gt; ermittelt den aktuellen Duplex-Modus eines indizierten Ethernet-Transceivers gemäß &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.&lt;/p&gt;
+  
+  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Der Aufruf erfolgt synchron und ist als nicht reentrant (Non Reentrant) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Input parameter:&lt;/strong&gt; &lt;code&gt;TrcvIdx&lt;/code&gt; specifies the index of the transceiver within the context of the Ethernet transceiver driver &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Output parameter:&lt;/strong&gt; Via &lt;code&gt;DuplexModePtr&lt;/code&gt; (pointer to &lt;code&gt;EthTrcv_DuplexModeType&lt;/code&gt;), the determined mode is returned. Valid values are &lt;code&gt;ETHTRCV_DUPLEX_MODE_HALF&lt;/code&gt; (half-duplex connection) and &lt;code&gt;ETHTRCV_DUPLEX_MODE_FULL&lt;/code&gt; (full-duplex connection) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Return value:&lt;/strong&gt; A return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals the status: &lt;code&gt;E_OK&lt;/code&gt; upon successful execution or &lt;code&gt;E_NOT_OK&lt;/code&gt; if the transceiver could not be initialized &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.
-    &lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;TrcvIdx&lt;/code&gt;: Übergibt als Eingabeparameter den Index des Transceivers im Kontext des Ethernet-Transceiver-Treibers &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;DuplexModePtr&lt;/code&gt;: Dient als Ausgabepointer auf den Typ &lt;code&gt;EthTrcv_DuplexModeType&lt;/code&gt; zur Aufnahme des Ergebnisses. Mögliche Werte sind &lt;code&gt;ETHTRCV_DUPLEX_MODE_HALF&lt;/code&gt; (Halbduplex) oder &lt;code&gt;ETHTRCV_DUPLEX_MODE_FULL&lt;/code&gt; (Vollduplex) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    The function is specified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;. Callers must therefore ensure that calls to &lt;code&gt;EthIf_TransceiverGetDuplexMode&lt;/code&gt; do not occur concurrently or unprotected from interrupting contexts.
-  &lt;/p&gt;
+  &lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Als Rückgabewert liefert die Funktion einen &lt;code&gt;Std_ReturnType&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der Duplex-Modus wurde erfolgreich abgefragt und über &lt;code&gt;DuplexModePtr&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Ermittlung schlug fehl, laut Spezifikation beispielsweise wenn der Transceiver nicht initialisiert werden konnte &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;
-    If an error occurs—in particular if the addressed transceiver could not be initialized—the function returns &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;. Specific DET or DEM error notifications are not defined for this call in the specification excerpt.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    Note: This usage note was generated automatically based on the specification data for AUTOSAR Classic Release R20-11.
-  &lt;/p&gt;
+  &lt;h4&gt;Einschränkungen und Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Da die Schnittstelle nicht reentrant ist, dürfen parallele Aufrufe für denselben oder verschiedene Transceiver-Instanzen ohne externe Synchronisation nicht erfolgen. Die Deklaration ist über den Header &lt;code&gt;EthIf.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_EthIf_91114" href="../../spec/record.html?id=SWS_EthIf_91114"&gt;[SWS_EthIf_91114]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis von AUTOSAR R20-11 Spezifikationsdaten erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -245,9 +255,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>a81b03f15f2d…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>003ecb88f2c1…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -282,8 +292,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -320,7 +330,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -383,4 +393,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91114","k":"function","d":"AUTOSAR","t":"","n":"EthIf_TransceiverGetDuplexMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/fb794388e76d6b0e.json?v=514ca7ac" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_91114","k":"function","d":"AUTOSAR","t":"","n":"EthIf_TransceiverGetDuplexMode"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/fb794388e76d6b0e.json?v=e3ba5a0f" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_CanTp_00214" class="dossier-modal dossier-workbench" data-dossier-sha="5e6c176e10575c96" aria-labelledby="dossier-modal-SWS_CanTp_00214-title">
+<dialog id="dossier-modal-SWS_CanTp_00214" class="dossier-modal dossier-workbench" data-dossier-sha="7f67f1664a040179" aria-labelledby="dossier-modal-SWS_CanTp_00214-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_CanTp_00214-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_CanTp_00214)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,084 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,538 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'CanTp_RxIndication'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -208,32 +226,24 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="11c2bd5e3e418a16df1ebe782a11f3e36b34cc3ca38a0ec1202837ec7b0cedb1" data-trace-output="5e6c176e10575c9663784cdc4b2b9fe9cc285927d7ccbccac1ea8c31653f9a24" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="38e732456055c5651bc2589c8abf5c7dfc454c989120387149ecdb6e580293d0" data-trace-output="7f67f1664a0401792cc777575e3bd2837554b3ab79554a47a8a0b0cc05f081ee" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Nimmt empfangene N-PDUs der unteren Schicht synchron entgegen und steuert deren Verarbeitung." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Call Context&lt;/h4&gt;
-  &lt;p&gt;
-    The synchronous callback function &lt;code&gt;CanTp_RxIndication&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00214" href="../../spec/record.html?id=SWS_CanTp_00214"&gt;[SWS_CanTp_00214]&lt;/a&gt;) signals the reception of an N-PDU by an underlying communication interface module to the CAN transport module. The identifier &lt;code&gt;RxPduId&lt;/code&gt; as well as &lt;code&gt;PduInfoPtr&lt;/code&gt; with pointers to buffer data (&lt;code&gt;SduDataPtr&lt;/code&gt;), SDU length (&lt;code&gt;SduLength&lt;/code&gt;), and metadata are passed. The function is reentrant for different PDU IDs, but non-reentrant for the same PDU ID (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00214" href="../../spec/record.html?id=SWS_CanTp_00214"&gt;[SWS_CanTp_00214]&lt;/a&gt;). It may be called directly in the interrupt context, for example from the CAN receive ISR (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00235" href="../../spec/record.html?id=SWS_CanTp_00235"&gt;[SWS_CanTp_00235]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Error Handling and Validation&lt;/h4&gt;
-  &lt;p&gt;
-    If development error detection is enabled and a NULL pointer is passed as &lt;code&gt;PduInfoPtr&lt;/code&gt;, &lt;code&gt;CanTp_RxIndication&lt;/code&gt; reports the error &lt;code&gt;CANTP_E_PARAM_POINTER&lt;/code&gt; to the DET and terminates execution without doing anything (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00322" href="../../spec/record.html?id=SWS_CanTp_00322"&gt;[SWS_CanTp_00322]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    When padding check is enabled for frames with up to 8 bytes of payload, specific consistency rules apply:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;If an SF N-PDU with &lt;code&gt;SduLength &amp;lt; 8&lt;/code&gt; is received at &lt;code&gt;CanTpRxPaddingActivation == CANTP_ON&lt;/code&gt;, the reception is discarded and the runtime error &lt;code&gt;CANTP_E_PADDING&lt;/code&gt; is reported to the DET (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00345" href="../../spec/record.html?id=SWS_CanTp_00345"&gt;[SWS_CanTp_00345]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;If the last CF N-PDU of an ongoing transmission does not have exactly 8 bytes when padding is active (&lt;code&gt;SduLength != 8&lt;/code&gt;), CanTp aborts the reception via &lt;code&gt;PduR_CanTpRxIndication()&lt;/code&gt; with the return value &lt;code&gt;E_NOT_OK&lt;/code&gt; and reports &lt;code&gt;CANTP_E_PADDING&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00346" href="../../spec/record.html?id=SWS_CanTp_00346"&gt;[SWS_CanTp_00346]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;If an FC N-PDU with &lt;code&gt;SduLength &amp;lt; 8&lt;/code&gt; arrives during a transmission session with &lt;code&gt;CanTpTxPaddingActivation == CANTP_ON&lt;/code&gt;, CanTp aborts the transmission session via &lt;code&gt;PduR_CanTpTxConfirmation()&lt;/code&gt; with &lt;code&gt;E_NOT_OK&lt;/code&gt; and reports &lt;code&gt;CANTP_E_PADDING&lt;/code&gt; to the DET (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00349" href="../../spec/record.html?id=SWS_CanTp_00349"&gt;[SWS_CanTp_00349]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Generic Connections&lt;/h4&gt;
-  &lt;p&gt;
-    If it is a generic connection (N-PDU with metadata), the CanTp module saves the addressing data from the metadata upon invocation for SF or FF frames (for Normal Fixed and Mixed 29-bit: &lt;code&gt;N_SA&lt;/code&gt; and &lt;code&gt;N_TA&lt;/code&gt;) for upward connection initiation as well as for subsequent FC and CF identification (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00330" href="../../spec/record.html?id=SWS_CanTp_00330"&gt;[SWS_CanTp_00330]&lt;/a&gt;). For subsequent CF (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00333" href="../../spec/record.html?id=SWS_CanTp_00333"&gt;[SWS_CanTp_00333]&lt;/a&gt;) and FC frames (&lt;a class="spec-record-ref" data-req="SWS_CanTp_00336" href="../../spec/record.html?id=SWS_CanTp_00336"&gt;[SWS_CanTp_00336]&lt;/a&gt;), CanTp matches the received metadata against these stored reference values.
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR R20-11 specification.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+&lt;p&gt;Die synchrone Funktion &lt;a class="spec-record-ref" data-req="SWS_CanTp_00214" href="../../spec/record.html?id=SWS_CanTp_00214"&gt;[SWS_CanTp_00214]&lt;/a&gt; meldet dem CAN-Transportmodul den Empfang einer N-PDU durch ein unterlagertes Kommunikationsschnittstellenmodul. Der Aufruf übergibt die Identifikation der empfangenen PDU (&lt;code&gt;RxPduId&lt;/code&gt;) sowie über den Zeiger &lt;code&gt;PduInfoPtr&lt;/code&gt; die Länge (&lt;code&gt;SduLength&lt;/code&gt;), Nutzdaten (&lt;code&gt;SduDataPtr&lt;/code&gt;) und zugehörige Metadaten. Die Funktion besitzt keinen Rückgabewert.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Aufrufkontext&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist reentrant für unterschiedliche PDU-IDs, jedoch nicht reentrant für dieselbe PDU-ID &lt;a class="spec-record-ref" data-req="SWS_CanTp_00214" href="../../spec/record.html?id=SWS_CanTp_00214"&gt;[SWS_CanTp_00214]&lt;/a&gt;. &lt;code&gt;CanTp_RxIndication&lt;/code&gt; darf im Interrupt-Kontext aufgerufen werden, beispielsweise direkt aus dem CAN-Empfangsinterrupt &lt;a class="spec-record-ref" data-req="SWS_CanTp_00235" href="../../spec/record.html?id=SWS_CanTp_00235"&gt;[SWS_CanTp_00235]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel bei generischen Verbindungen&lt;/h4&gt;
+&lt;p&gt;Bei Aufruf für Single Frames (SF) oder First Frames (FF) mit Metadaten speichert CanTp die enthaltenen Adressinformationen (wie &lt;code&gt;N_SA&lt;/code&gt; und &lt;code&gt;N_TA&lt;/code&gt; bei Normal-fixed- oder Mixed-29-Bit-Adressierung). Diese Informationen dienen dem Verbindungsaufbau zur oberen Schicht, dem Senden von Flow-Control-Frames (FC) und der Erkennung von Consecutive Frames (CF) &lt;a class="spec-record-ref" data-req="SWS_CanTp_00330" href="../../spec/record.html?id=SWS_CanTp_00330"&gt;[SWS_CanTp_00330]&lt;/a&gt;. Bei nachfolgenden CF- und empfangenen FC-Frames prüft CanTp die Adressdaten der Metadaten gegen die gespeicherten Werte &lt;a class="spec-record-ref" data-req="SWS_CanTp_00333" href="../../spec/record.html?id=SWS_CanTp_00333"&gt;[SWS_CanTp_00333]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CanTp_00336" href="../../spec/record.html?id=SWS_CanTp_00336"&gt;[SWS_CanTp_00336]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung und Padding&lt;/h4&gt;
+&lt;p&gt;Falls DET aktiviert ist und &lt;code&gt;PduInfoPtr&lt;/code&gt; ein NULL-Zeiger ist, meldet die Funktion den Fehler &lt;code&gt;CANTP_E_PARAM_POINTER&lt;/code&gt; und kehrt ohne Aktion zurück &lt;a class="spec-record-ref" data-req="SWS_CanTp_00322" href="../../spec/record.html?id=SWS_CanTp_00322"&gt;[SWS_CanTp_00322]&lt;/a&gt;. Ist die Padding-Prüfung für Frames mit einer Nutzlast bis 8 Byte aktiviert (&lt;code&gt;CanTpRxPaddingActivation&lt;/code&gt; bzw. &lt;code&gt;CanTpTxPaddingActivation&lt;/code&gt; gleich &lt;code&gt;CANTP_ON&lt;/code&gt;), wird bei Längenfehlern der Laufzeitfehler &lt;code&gt;CANTP_E_PADDING&lt;/code&gt; an den DET gemeldet:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Ein SF mit &lt;code&gt;SduLength &amp;lt; 8&lt;/code&gt; wird abgewiesen &lt;a class="spec-record-ref" data-req="SWS_CanTp_00345" href="../../spec/record.html?id=SWS_CanTp_00345"&gt;[SWS_CanTp_00345]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ein letzter CF mit &lt;code&gt;SduLength != 8&lt;/code&gt; bricht den laufenden Empfang via &lt;code&gt;PduR_CanTpRxIndication()&lt;/code&gt; mit &lt;code&gt;E_NOT_OK&lt;/code&gt; ab &lt;a class="spec-record-ref" data-req="SWS_CanTp_00346" href="../../spec/record.html?id=SWS_CanTp_00346"&gt;[SWS_CanTp_00346]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ein empfangener FC mit &lt;code&gt;SduLength &amp;lt; 8&lt;/code&gt; bricht die laufende Übertragung via &lt;code&gt;PduR_CanTpTxConfirmation()&lt;/code&gt; mit &lt;code&gt;E_NOT_OK&lt;/code&gt; ab &lt;a class="spec-record-ref" data-req="SWS_CanTp_00349" href="../../spec/record.html?id=SWS_CanTp_00349"&gt;[SWS_CanTp_00349]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und dient als Orientierungshilfe. Maßgeblich ist die AUTOSAR-Spezifikation.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -273,9 +283,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>11c2bd5e3e41…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>38e732456055…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 20 <span class="dossier-meta-sub">(20 neu · 6 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 20 Belege dazugekommen (6 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 20 <span class="dossier-meta-sub">(20 neu · 7 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 20 Belege dazugekommen (7 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -411,4 +421,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CanTp_00214","k":"function","d":"AUTOSAR","t":"","n":"CanTp_RxIndication"}],"inbound":[{"i":"SWS_CanTp_00235","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CanTp_00235].","n":"SWS_CanTp_00235"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/958c20d4d4496ae4.json?v=56e6a7d7" data-total="20" data-new="20" data-figures="6" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CanTp_00214","k":"function","d":"AUTOSAR","t":"","n":"CanTp_RxIndication"}],"inbound":[{"i":"SWS_CanTp_00235","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CanTp_00235].","n":"SWS_CanTp_00235"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/958c20d4d4496ae4.json?v=acedf430" data-total="20" data-new="20" data-figures="7" data-used="0"></script></dialog>

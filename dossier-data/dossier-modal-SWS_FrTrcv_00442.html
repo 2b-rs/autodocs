@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_FrTrcv_00442" class="dossier-modal dossier-workbench" data-dossier-sha="6160f1cda740f4a7" aria-labelledby="dossier-modal-SWS_FrTrcv_00442-title">
+<dialog id="dossier-modal-SWS_FrTrcv_00442" class="dossier-modal dossier-workbench" data-dossier-sha="3f1335e65dab8fe1" aria-labelledby="dossier-modal-SWS_FrTrcv_00442-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_FrTrcv_00442-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_FrTrcv_00442)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,348 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,803 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'FrTrcv_DisableTransceiverBranch'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,27 +193,30 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="959ab8d282c8d97aafff310a477e5d07eb2f86d81c276cee80b0200a99af0cc2" data-trace-output="6160f1cda740f4a762338bcfcfa42fd3477bef9e87286b72d1571a4f9ce662f4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="f12db972f54308142978f5e803f20b6f9372d33fea1b7250941d39ebca0af79a" data-trace-output="3f1335e65dab8fe1ccfbc95638f469d6c53ebc2776ffc48c8f034302b07382cc" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Deaktiviert synchron den angegebenen Zweig an einem adressierten aktiven Stern-Transceiver." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous interface &lt;code&gt;FrTrcv_DisableTransceiverBranch&lt;/code&gt; serves to disable a specific branch on an addressed transceiver (active star) (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;). The function is declared via the header file &lt;code&gt;FrTrcv.h&lt;/code&gt; and has the service ID &lt;code&gt;0x0f&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/p&gt;
-&lt;p&gt;Addressing occurs via two zero-based input parameters (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;FrTrcv_TrcvIdx&lt;/code&gt;: Zero-based index for identifying the transceiver within the context of the transceiver driver (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;FrTrcv_BranchIdx&lt;/code&gt;: Zero-based index for identifying the respective branch of the transceiver (active star) to which the call shall be applied (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;FrTrcv_DisableTransceiverBranch&lt;/code&gt; dient der Deaktivierung eines einzelnen, spezifizierten Zweigs an einem adressierten aktiven Stern-Transceiver (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;). Sie wird über die Header-Datei &lt;code&gt;FrTrcv.h&lt;/code&gt; bereitgestellt und besitzt die Service-ID &lt;code&gt;0x0f&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/p&gt;
 
-&lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-&lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals the result of the execution (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The specified transceiver branch was successfully disabled (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Returned if at least one of the parameters &lt;code&gt;FrTrcv_TrcvIdx&lt;/code&gt; or &lt;code&gt;FrTrcv_BranchIdx&lt;/code&gt; is outside the valid value range. In this error case, the previous state of the branch remains unchanged (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
+  &lt;h4&gt;Parameter und Aufrufkontext&lt;/h4&gt;
+  &lt;p&gt;Der Aufruf erfolgt synchron und ist als nicht reentrant (Non Reentrant) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;). Die Funktion erwartet zwei nullbasierte Eingangsparameter:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;FrTrcv_TrcvIdx&lt;/code&gt;: Nullbasierter Index, der den Transceiver im Kontext des Transceiver-Treibers identifiziert, auf den die Operation angewendet werden soll (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;FrTrcv_BranchIdx&lt;/code&gt;: Nullbasierter Index, der den zu deaktivierenden Zweig des adressierten aktiven Stern-Transceivers bestimmt (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-&lt;p&gt;The function is specified as synchronous and non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;). It must therefore not be called concurrently across multiple execution contexts without appropriate call restrictions or synchronization measures being observed by the caller.&lt;/p&gt;
+  &lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+  &lt;p&gt;Das Ergebnis der Operation wird über den Rückgabetyp &lt;code&gt;Std_ReturnType&lt;/code&gt; signalisiert (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;):&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Der angegebene Transceiver-Zweig wurde erfolgreich deaktiviert (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Der Parameter &lt;code&gt;FrTrcv_TrcvIdx&lt;/code&gt; oder &lt;code&gt;FrTrcv_BranchIdx&lt;/code&gt; liegt außerhalb des gültigen Bereichs (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;). In diesem Fehlerfall bleibt der Zustand des Transceiver-Zweigs unverändert (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of AUTOSAR Release R20-11.&lt;/p&gt;
+  &lt;h4&gt;Einschränkungen und Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Da &lt;code&gt;FrTrcv_DisableTransceiverBranch&lt;/code&gt; nicht reentrant ist, dürfen Aufrufe nicht ungeschützt nebenläufig ausgeführt werden (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;). Aufrufer müssen zudem sicherstellen, dass beide Indizes innerhalb der konfigurierten Grenzen liegen, um eine Ablehnung mit unverändertem Zweigzustand zu vermeiden (&lt;a class="spec-record-ref" data-req="SWS_FrTrcv_00442" href="../../spec/record.html?id=SWS_FrTrcv_00442"&gt;[SWS_FrTrcv_00442]&lt;/a&gt;).&lt;/p&gt;
+  &lt;!-- annahmen: keine – Alle Angaben stützen sich direkt auf SWS_FrTrcv_00442. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis basiert auf der Spezifikation SWS_FrTrcv_00442 aus Release R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -235,7 +256,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>959ab8d282c8…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>f12db972f543…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -373,4 +394,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrTrcv_00442","k":"function","d":"AUTOSAR","t":"","n":"FrTrcv_DisableTransceiverBranch"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/47da7698c212fb79.json?v=98fd2a26" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_FrTrcv_00442","k":"function","d":"AUTOSAR","t":"","n":"FrTrcv_DisableTransceiverBranch"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/47da7698c212fb79.json?v=befa49a9" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

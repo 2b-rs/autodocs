@@ -1,6 +1,10 @@
 {
  "annahmen": [
-  "1) Adc_Main_PowerTransitionManager wird vom BSW-Scheduler aufgerufen (Text Abschnitt Leistungszustände; auch in diag-kontext und diag-power) – Begründung: [SWS_Adc_00479] nennt einen zyklischen Aufruf und die Bereitstellung über SchM_Adc.h, aber keinen Aufrufer."
+  "1) SWS_Adc_00483–00485 betreffen Adc_SetPowerState – Begründung: Die Texte nennen nur „die API“; der Inhalt passt zur Dokumentstelle 8.3.14 (Eintritt in den vorbereiteten Zustand).",
+  "2) AdcKernelEcucPartitionRef spiegelt eine Aufteilung in Kernel- und Interface-Teil – Begründung: Das Requirement nennt nur die Teilmengenbeziehung; das MemoryMapping-Beispiel zeigt einen so geteilten Adc.",
+  "3) Diagramm diag-gruppenstatus: Die Zielzustände nach dem Lesen aus ADC_COMPLETED und aus ADC_STREAM_COMPLETED (zirkulär) sind aus den Schaubildbeschriftungen rekonstruiert – Begründung: Der Schaubildtext enthält Beschriftungen ohne Kantenzuordnung.",
+  "4) Diagramm diag-prioritaet: Die Prüfreihenfolge führt die Beispielabläufe 9.7–9.11 zusammen – Begründung: Die Spezifikation zeigt nur Einzelbeispiele.",
+  "5) Diagramm diag-power: Die Reihenfolge von Adc_SetPowerState und Adc_GetCurrentPowerState folgt dem Schaubild IoHwAb 9.2 – Begründung: Die Bildtexte sind ungeordnet."
  ],
  "diagrams": [
   {
@@ -15,28 +19,28 @@
   },
   {
    "art": "dot",
-   "id": "diag-konfiguration",
-   "quelle": "anchor_r20_11.diag-konfiguration.dot"
+   "id": "diag-gruppenstatus",
+   "quelle": "anchor_r20_11.diag-gruppenstatus.dot"
   },
   {
    "art": "seq",
-   "id": "diag-polling",
-   "quelle": "anchor_r20_11.diag-polling.seq.json"
+   "id": "diag-oneshot-polling",
+   "quelle": "anchor_r20_11.diag-oneshot-polling.seq.json"
   },
   {
    "art": "seq",
-   "id": "diag-hw-notification",
-   "quelle": "anchor_r20_11.diag-hw-notification.seq.json"
+   "id": "diag-continuous-notif",
+   "quelle": "anchor_r20_11.diag-continuous-notif.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-hwtrigger",
+   "quelle": "anchor_r20_11.diag-hwtrigger.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-streaming",
-   "quelle": "anchor_r20_11.diag-streaming.dot"
-  },
-  {
-   "art": "seq",
    "id": "diag-prioritaet",
-   "quelle": "anchor_r20_11.diag-prioritaet.seq.json"
+   "quelle": "anchor_r20_11.diag-prioritaet.dot"
   },
   {
    "art": "seq",
@@ -71,14 +75,74 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 137,
-  "im_prompt_schaubilder": 60,
-  "kandidaten": 153,
+  "im_prompt": 140,
+  "im_prompt_schaubilder": 61,
+  "kandidaten": 156,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "a1ab7fdfc88c8ba2033468ca983fb90d8e814ca75ef37d8c0f410fc36b917f52",
- "output_store": "ai/store/outputs/a1/a1ab7fdfc88c8ba2033468ca983fb90d8e814ca75ef37d8c0f410fc36b917f52.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-gruppenstatus"
+  ],
+  "oneliner_chars": 101,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 70,
+   "3": 255,
+   "4": 1467
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip FIG-a418e2fa072ee8a7: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 55 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_OS_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 142 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_4_Callback_notifications: SWS_ADCDriver S. 79 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_1_3_3_Example_Adc_GetStreamLastPointer_Usage: SWS_ADCDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-a418e2fa072ee8a7: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 55 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_4_5_Allocatable_Memory_Parts: SWS_MemoryMapping S. 57 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_1_ADC_State_Diagram_for_One_Shot_Continuous_Group_Conversion_Mode: SWS_ADCDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_10_4_Configuration_of_symbolic_names: SWS_ADCDriver S. 123 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_1_ADC_State_Diagram_for_One_Shot_Continuous_Group_Conversion_Mode: SWS_ADCDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_2_Adc_SetupResultBuffer: SWS_ADCDriver S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_3_Adc_DeInit: SWS_ADCDriver S. 59 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_8_ADC_State_Diagram_for_Continuous_Conversion_Mode_Software_Trigger: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_8_ADC_State_Diagram_for_Continuous_Conversion_Mode_Software_Trigger: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_11_Adc_GetGroupStatus: SWS_ADCDriver S. 70 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_3_Software_triggered_One_Shot_conversion_without_notification: SWS_ADCDriver S. 91 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_4_Adc_StartGroupConversion: SWS_ADCDriver S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_3_Software_triggered_One_Shot_conversion_without_notification: SWS_ADCDriver S. 91 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_9_Adc_EnableGroupNotification: SWS_ADCDriver S. 67 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_4_Software_triggered_continuous_conversion_with_notification: SWS_ADCDriver S. 92 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_4_Software_triggered_continuous_conversion_with_notification: SWS_ADCDriver S. 92 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_7_Adc_EnableHardwareTrigger: SWS_ADCDriver S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_8_Adc_DisableHardwareTrigger: SWS_ADCDriver S. 65 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_5_Hardware_triggered_One_Shot_conversion_with_notification: SWS_ADCDriver S. 93 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_6_Adc_ReadGroup: SWS_ADCDriver S. 61 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_1_3_3_Example_Adc_GetStreamLastPointer_Usage: SWS_ADCDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DET_SECTION_9_7_No_Priority_Mechanism_No_Queuing: SWS_ADCDriver S. 95 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_8_No_Priority_Mechanism_SW_Queuing: SWS_ADCDriver S. 96 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_9_HW_SW_Priority_Mechanism_SW_Queuing: SWS_ADCDriver S. 97 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_10_HW_Priority_Mechanism_HW_Queuing: SWS_ADCDriver S. 98 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_5_Adc_StopGroupConversion: SWS_ADCDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_11_HW_SW_Priority_Mechanism_HW_SW_Queuing: SWS_ADCDriver S. 99 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_4_1_Background: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_14_Adc_SetPowerState: SWS_ADCDriver S. 81 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-643d08fa50a42c1e: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 57 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_9_2_Setting_ADC_and_PWM_in_a_low_consumption_power_state_as_a: SWS_IOHardwareAbstraction S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_16_Adc_GetTargetPowerState: SWS_ADCDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_10_Adc_DisableGroupNotification: SWS_ADCDriver S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_13_Adc_GetVersionInfo: SWS_ADCDriver S. 80 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_12_Adc_GetStreamLastPointer: SWS_ADCDriver S. 72 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_6_ADC_State_Diagram_for_One_Shot_Conversion_Mode_Hardware_Trigger: SWS_ADCDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_6_3_2_IoHwAb_Adc_NotifyReadyForPowerState_Mode: SWS_ADCDriver S. 82 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_5_Error_Classification: SWS_ADCDriver S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip FIG-a418e2fa072ee8a7: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 55 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_8_ADC_State_Diagram_for_Continuous_Conversion_Mode_Software_Trigger: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_4_Adc_StartGroupConversion: SWS_ADCDriver S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "4736873cd83914336390c12b300f05483e7ef8dde8c11ad4dadb3a1843936e92",
+ "output_store": "ai/store/outputs/47/4736873cd83914336390c12b300f05483e7ef8dde8c11ad4dadb3a1843936e92.html",
  "params": {
   "module": "adc",
   "platform": "classic",
@@ -107,9 +171,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "68264a53db4a24fadef0a46ff8844f836e5b37edb5592a51bf77d7a24b822377",
- "prompt_store": "ai/store/prompts/68/68264a53db4a24fadef0a46ff8844f836e5b37edb5592a51bf77d7a24b822377.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "b520b4ed0d837a25e6c82e620c6203647acb4476ce7bfbc687b5f2e65c423ea9",
+ "prompt_store": "ai/store/prompts/b5/b520b4ed0d837a25e6c82e620c6203647acb4476ce7bfbc687b5f2e65c423ea9.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -122,14 +186,60 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.374056,
-   "cost_usd_reported": 1.374056,
-   "created_at": "2026-10-09T06:35:31Z",
-   "duration_api_seconds": 312.236,
-   "duration_seconds": 312.444,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.647192,
+   "cost_usd_reported": 1.647192,
+   "created_at": "2026-10-13T02:14:19Z",
+   "duration_api_seconds": 401.8,
+   "duration_seconds": 404.307,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip FIG-a418e2fa072ee8a7: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 55 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_OS_SECTION_8_7_1_Optional_Interfaces: SWS_ECUStateManager S. 142 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_4_Callback_notifications: SWS_ADCDriver S. 79 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_1_3_3_Example_Adc_GetStreamLastPointer_Usage: SWS_ADCDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-a418e2fa072ee8a7: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 55 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_4_5_Allocatable_Memory_Parts: SWS_MemoryMapping S. 57 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_1_ADC_State_Diagram_for_One_Shot_Continuous_Group_Conversion_Mode: SWS_ADCDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_10_4_Configuration_of_symbolic_names: SWS_ADCDriver S. 123 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_1_ADC_State_Diagram_for_One_Shot_Continuous_Group_Conversion_Mode: SWS_ADCDriver S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_2_Adc_SetupResultBuffer: SWS_ADCDriver S. 54 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_3_Adc_DeInit: SWS_ADCDriver S. 59 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_8_ADC_State_Diagram_for_Continuous_Conversion_Mode_Software_Trigger: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_8_ADC_State_Diagram_for_Continuous_Conversion_Mode_Software_Trigger: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_11_Adc_GetGroupStatus: SWS_ADCDriver S. 70 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_3_Software_triggered_One_Shot_conversion_without_notification: SWS_ADCDriver S. 91 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_4_Adc_StartGroupConversion: SWS_ADCDriver S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_3_Software_triggered_One_Shot_conversion_without_notification: SWS_ADCDriver S. 91 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_9_Adc_EnableGroupNotification: SWS_ADCDriver S. 67 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_4_Software_triggered_continuous_conversion_with_notification: SWS_ADCDriver S. 92 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_4_Software_triggered_continuous_conversion_with_notification: SWS_ADCDriver S. 92 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_7_Adc_EnableHardwareTrigger: SWS_ADCDriver S. 62 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_8_Adc_DisableHardwareTrigger: SWS_ADCDriver S. 65 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_STD_SECTION_9_5_Hardware_triggered_One_Shot_conversion_with_notification: SWS_ADCDriver S. 93 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_6_Adc_ReadGroup: SWS_ADCDriver S. 61 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_1_3_3_Example_Adc_GetStreamLastPointer_Usage: SWS_ADCDriver S. 27 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DET_SECTION_9_7_No_Priority_Mechanism_No_Queuing: SWS_ADCDriver S. 95 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_8_No_Priority_Mechanism_SW_Queuing: SWS_ADCDriver S. 96 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_9_HW_SW_Priority_Mechanism_SW_Queuing: SWS_ADCDriver S. 97 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_10_HW_Priority_Mechanism_HW_Queuing: SWS_ADCDriver S. 98 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_5_Adc_StopGroupConversion: SWS_ADCDriver S. 58 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_9_11_HW_SW_Priority_Mechanism_HW_SW_Queuing: SWS_ADCDriver S. 99 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_4_1_Background: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_14_Adc_SetPowerState: SWS_ADCDriver S. 81 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-643d08fa50a42c1e: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 57 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PWM_SECTION_9_2_Setting_ADC_and_PWM_in_a_low_consumption_power_state_as_a: SWS_IOHardwareAbstraction S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_16_Adc_GetTargetPowerState: SWS_ADCDriver S. 77 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_10_Adc_DisableGroupNotification: SWS_ADCDriver S. 68 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_13_Adc_GetVersionInfo: SWS_ADCDriver S. 80 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_12_Adc_GetStreamLastPointer: SWS_ADCDriver S. 72 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_6_ADC_State_Diagram_for_One_Shot_Conversion_Mode_Hardware_Trigger: SWS_ADCDriver S. 37 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_8_6_3_2_IoHwAb_Adc_NotifyReadyForPowerState_Mode: SWS_ADCDriver S. 82 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_ADC_SECTION_7_5_Error_Classification: SWS_ADCDriver S. 40 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip FIG-a418e2fa072ee8a7: AUTOSAR_CP_SWS_IOHardwareAbstraction S. 55 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_ADC_SECTION_7_3_8_ADC_State_Diagram_for_Continuous_Conversion_Mode_Software_Trigger: SWS_ADCDriver S. 39 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_ADC_SECTION_8_3_4_Adc_StartGroupConversion: SWS_ADCDriver S. 57 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -138,19 +248,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.374056,
-     "inputTokens": 139089,
+     "costUSD": 1.647192,
+     "inputTokens": 142973,
      "maxOutputTokens": 128000,
-     "outputTokens": 40885,
+     "outputTokens": 53765,
      "provider": "firstParty",
-     "thinkingTokens": 17790,
+     "thinkingTokens": 30471,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "cdff93a4-6ee1-4b7a-977c-96e1bd1eddd8",
+   "run_id": "a290aedd-899a-4fc0-83b6-bbfde752ab95",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/cdff93a4-6ee1-4b7a-977c-96e1bd1eddd8.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/a290aedd-899a-4fc0-83b6-bbfde752ab95.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -159,11 +269,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 139089,
-    "output_tokens": 40885,
+    "inference_geo": "global",
+    "input_tokens": 142973,
+    "output_tokens": 53765,
     "output_tokens_details": {
-     "thinking_tokens": 17790
+     "thinking_tokens": 30471
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -175,11 +285,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 139089,
-    "output": 40885,
-    "thinking": 17790
+    "input_uncached": 142973,
+    "output": 53765,
+    "thinking": 30471
    },
-   "wall_seconds": 316.016
+   "wall_seconds": 405.968
   }
  ],
  "schema": "ai-trace@2",

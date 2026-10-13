@@ -1,11 +1,9 @@
 {
  "annahmen": [
-  "1) Text: Ein von WdgM_Init verweigerter Start ist nur über den Laufzeitfehler WDGM_E_DISABLE_NOT_ALLOWED erkennbar – Begründung: SWS_WdgM_00151 definiert keinen Rückgabewert, SWS_WdgM_00030 nennt dennoch E_NOT_OK.",
-  "2) Text: SWS_WdgM_00389 meint vermutlich „nicht in DEACTIVATED“ (Schutz vor doppelter Initialisierung) – Begründung: Das Gegenstück SWS_WdgM_00390 formuliert die Bedingung so; ein Init-Aufruf in DEACTIVATED ist der Regelfall.",
-  "3) diag-lokal: Übergang DEACTIVATED → OK, wenn ein Moduswechsel die SE aktiviert – Begründung: Das Schaubild zeigt weitere Übergänge, der Payload beschreibt die Aktivierung durch WdgM_SetMode aber nicht explizit.",
-  "4) diag-global: Übergang FAILED → OK, wenn alle aktiven SEs wieder OK sind – Begründung: Abgeleitet aus der Heilbarkeit von FAILED in SWS_WdgM_00359; die globale Übergangsbedingung ist im Payload nicht ausformuliert.",
-  "5) diag-setmode: Reihenfolge „SE-Behandlung vor WdgIf_SetMode“ – Begründung: Die Requirements beschreiben beide Wirkungen, legen die Reihenfolge aber nicht fest.",
-  "6) diag-laufzeit: Die Triggerbedingung wird im Rahmen der WdgM_MainFunction gesetzt – Begründung: Gestützt auf das ältere Schaubild zur Trigger-Hauptfunktion (S. 78) und auf SWS_WdgM_00406; ein konkreter Aufrufzeitpunkt steht in keinem R20-11-Requirement."
+  "1) Global Supervision Status nach erfolgreichem WdgM_Init ist WDGM_GLOBAL_STATUS_OK (Text, diag-global-status) – Begründung: DEACTIVATED kennzeichnet den nicht initialisierten Zustand, und im Initial-Modus aktive Entities starten lokal mit OK; der Init-Hinweis zum globalen Status ist im Auszug abgeschnitten.",
+  "2) Die zuerst abgelaufene SEID wird beim ersten Übergang einer Entity nach EXPIRED abgelegt (Text, diag-eskalation) – Begründung: SWS_WdgM_00349 regelt nur das Lesen; der Schreibzeitpunkt folgt aus der Bedeutung „first reached“.",
+  "3) Der globale Status kann von FAILED nach OK zurückkehren (diag-global-status) – Begründung: Der lokale Status ist nach SWS_WdgM_00359 heilbar, und FAILED liegt laut SWS_WdgM_00360 noch innerhalb des Fehlerlimits.",
+  "4) Reihenfolge der Prüfungen in WdgM_SetMode (diag-setmode) – Begründung: Der Payload regelt nur die einzelnen Prüfungen, nicht ihre Abfolge."
  ],
  "diagrams": [
   {
@@ -14,39 +12,39 @@
    "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
-   "art": "seq",
-   "id": "diag-init",
-   "quelle": "anchor_r20_11.diag-init.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-shutdown",
-   "quelle": "anchor_r20_11.diag-shutdown.seq.json"
-  },
-  {
-   "art": "seq",
-   "id": "diag-laufzeit",
-   "quelle": "anchor_r20_11.diag-laufzeit.seq.json"
-  },
-  {
-   "art": "dot",
-   "id": "diag-lokal",
-   "quelle": "anchor_r20_11.diag-lokal.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-global",
-   "quelle": "anchor_r20_11.diag-global.dot"
-  },
-  {
    "art": "dot",
    "id": "diag-setmode",
    "quelle": "anchor_r20_11.diag-setmode.dot"
   },
   {
+   "art": "seq",
+   "id": "diag-lebenszyklus",
+   "quelle": "anchor_r20_11.diag-lebenszyklus.seq.json"
+  },
+  {
+   "art": "seq",
+   "id": "diag-ueberwachung",
+   "quelle": "anchor_r20_11.diag-ueberwachung.seq.json"
+  },
+  {
+   "art": "dot",
+   "id": "diag-local-status",
+   "quelle": "anchor_r20_11.diag-local-status.dot"
+  },
+  {
+   "art": "dot",
+   "id": "diag-global-status",
+   "quelle": "anchor_r20_11.diag-global-status.dot"
+  },
+  {
    "art": "dot",
    "id": "diag-ports",
    "quelle": "anchor_r20_11.diag-ports.dot"
+  },
+  {
+   "art": "seq",
+   "id": "diag-eskalation",
+   "quelle": "anchor_r20_11.diag-eskalation.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/wdgm/anchor_r20_11.html",
@@ -54,13 +52,13 @@
   "ausgelassen": {
    "budget": [],
    "dublette": {
-    "SNIP_CLASSIC_DEM_SECTION_10_2_10_WdgMMode": "SNIP_CLASSIC_WDGM_SECTION_10_2_10_WdgMMode",
     "SNIP_CLASSIC_ECUM_SECTION_8_6_2_Optional_interfaces_WATCHDOGMANAGER": "SNIP_CLASSIC_DEM_SECTION_8_6_2_Optional_interfaces_WATCHDOGMANAGER"
    },
    "inhaltsverzeichnis": [
     "SNIP_CLASSIC_WDGM_SECTION_7_4_2_Setting_the_Trigger_Conditions"
    ],
    "ohne_inhalt": [
+    "SNIP_CLASSIC_ECUM_SECTION_8_7_1_Ports_and_Port_Interface_for_Supervision",
     "SNIP_CLASSIC_WDGM_FIGURE_Figure_10_1",
     "SNIP_CLASSIC_WDGM_FIGURE_Figure_7_10",
     "SNIP_CLASSIC_WDGM_FIGURE_Figure_7_12",
@@ -74,29 +72,64 @@
     "SNIP_CLASSIC_WDGM_SECTION_8_7_1_Ports_and_Port_Interface_for_Supervision",
     "SNIP_CLASSIC_WDGM_SECTION_8_7_2_Configurable_interfaces",
     "SNIP_CLASSIC_WDGM_SECTION_8_7_2_Ports_and_Port_Interface_for_Status_Reporting",
-    "SNIP_CLASSIC_WDGM_SECTION_8_API_specification",
-    "SNIP_det_AUTOSAR_SWS_Watc_P113_1020",
-    "SNIP_det_AUTOSAR_SWS_Watc_P11_1000",
-    "SNIP_det_AUTOSAR_SWS_Watc_P135_1024",
-    "SNIP_det_AUTOSAR_SWS_Watc_P18_1002",
-    "SNIP_det_AUTOSAR_SWS_Watc_P20_1003",
-    "SNIP_det_AUTOSAR_SWS_Watc_P31_1028",
-    "SNIP_det_AUTOSAR_SWS_Watc_P50_1008",
-    "SNIP_det_AUTOSAR_SWS_Watc_P50_1010",
-    "SNIP_det_AUTOSAR_SWS_Watc_P50_1011",
-    "SNIP_det_AUTOSAR_SWS_Watc_P51_1012",
-    "SNIP_det_AUTOSAR_SWS_Watc_P52_1013"
+    "SNIP_CLASSIC_WDGM_SECTION_8_API_specification"
    ],
    "ohne_text": []
   },
-  "im_prompt": 158,
-  "im_prompt_schaubilder": 79,
-  "kandidaten": 186,
+  "im_prompt": 120,
+  "im_prompt_schaubilder": 43,
+  "kandidaten": 137,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "d6fbce851c1e2b0cf9d8f3e691e28ebe4711cb0895c9e008985881cf1273457e",
- "output_store": "ai/store/outputs/d6/d6fbce851c1e2b0cf9d8f3e691e28ebe4711cb0895c9e008985881cf1273457e.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-ueberwachung",
+   "diag-global-status"
+  ],
+  "oneliner_chars": 112,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 77,
+   "3": 259,
+   "4": 1660
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_4_Watchdog_Handling: SWS_WatchdogManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_SAFETYCONCEPTSTATUSREPORT_SECTION_01_AUTOSAR_SWS_Wat: SafetyConceptStatusReport S. 15 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_1_WdgM_Init: SWS_WatchdogManager S. 74 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_FIGURE_Figure_7_2: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_1_WdgM_Init: SWS_WatchdogManager S. 74 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_5_WdgM_GetMode: SWS_WatchdogManager S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_3_Watchdog_Handling_during_Sleep: SWS_WatchdogManager S. 59 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_6_WdgM_CheckpointReached: SWS_WatchdogManager S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_2_1_2_Alive_Supervision_Algorithm: SWS_WatchdogManager S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_2_3_2_Logical_Supervision_Algorithm: SWS_WatchdogManager S. 51 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_CAN_FIGURE_Figure_7_9_WATCHDOGMANAGER: SWS_WatchdogManager S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_2_Local_Supervision_Status: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_2_Local_Supervision_Status: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_FIGURE_Figure_7_2: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status: SWS_WatchdogManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status: SWS_WatchdogManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status: SWS_WatchdogManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_7_2_3_Port_Interfaces: SWS_WatchdogManager S. 101 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-6ab50216c9766b24: AUTOSAR_CP_SWS_WatchdogManager S. 99 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_10_2_2_WdgM: SWS_WatchdogManager S. 97 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_10_2_10_WdgMMode: SWS_WatchdogManager S. 119 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_2_2_2_Deadline_Supervision_Algorithm: SWS_WatchdogManager S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_9_WdgM_PerformReset: SWS_WatchdogManager S. 82 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_7_2_Reset: SWS_ECUStateManager S. 72 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_6_WdgM_CheckpointReached: SWS_WatchdogManager S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_WDGM_SECTION_7_4_Watchdog_Handling: SWS_WatchdogManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_6_WdgM_CheckpointReached: SWS_WatchdogManager S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+ ],
+ "output_sha256": "0d6e39355e1dc073daf103b058c3dbd212dad8e96c37ee16ff3f4ae12b22033a",
+ "output_store": "ai/store/outputs/0d/0d6e39355e1dc073daf103b058c3dbd212dad8e96c37ee16ff3f4ae12b22033a.html",
  "params": {
   "module": "wdgm",
   "platform": "classic",
@@ -125,9 +158,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "4dfe5017f9449a7e694a2958f5a679e7384eb7c89a76c3b9b2e33beba8f208dd",
- "prompt_store": "ai/store/prompts/4d/4dfe5017f9449a7e694a2958f5a679e7384eb7c89a76c3b9b2e33beba8f208dd.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "112cef190a48f6a5194e5bd67889ef67396cef044192ab3b3f9077e2f9971a98",
+ "prompt_store": "ai/store/prompts/11/112cef190a48f6a5194e5bd67889ef67396cef044192ab3b3f9077e2f9971a98.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -140,14 +173,46 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.517236,
-   "cost_usd_reported": 1.517236,
-   "created_at": "2026-10-09T07:34:21Z",
-   "duration_api_seconds": 374.616,
-   "duration_seconds": 374.713,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.452512,
+   "cost_usd_reported": 1.452512,
+   "created_at": "2026-10-13T03:25:39Z",
+   "duration_api_seconds": 393.254,
+   "duration_seconds": 394.698,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_4_Watchdog_Handling: SWS_WatchdogManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_SAFETYCONCEPTSTATUSREPORT_SECTION_01_AUTOSAR_SWS_Wat: SafetyConceptStatusReport S. 15 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_1_WdgM_Init: SWS_WatchdogManager S. 74 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_FIGURE_Figure_7_2: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_1_WdgM_Init: SWS_WatchdogManager S. 74 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_5_WdgM_GetMode: SWS_WatchdogManager S. 77 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_3_Watchdog_Handling_during_Sleep: SWS_WatchdogManager S. 59 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_6_WdgM_CheckpointReached: SWS_WatchdogManager S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_2_1_2_Alive_Supervision_Algorithm: SWS_WatchdogManager S. 42 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_2_3_2_Logical_Supervision_Algorithm: SWS_WatchdogManager S. 51 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_CAN_FIGURE_Figure_7_9_WATCHDOGMANAGER: SWS_WatchdogManager S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_2_Local_Supervision_Status: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_2_Local_Supervision_Status: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_FIGURE_Figure_7_2: SWS_WatchdogManager S. 30 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status: SWS_WatchdogManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status: SWS_WatchdogManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_1_3_Global_Supervision_Status: SWS_WatchdogManager S. 36 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_7_2_3_Port_Interfaces: SWS_WatchdogManager S. 101 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-6ab50216c9766b24: AUTOSAR_CP_SWS_WatchdogManager S. 99 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_10_2_2_WdgM: SWS_WatchdogManager S. 97 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_10_2_10_WdgMMode: SWS_WatchdogManager S. 119 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_2_2_2_Deadline_Supervision_Algorithm: SWS_WatchdogManager S. 46 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_9_WdgM_PerformReset: SWS_WatchdogManager S. 82 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_7_2_Reset: SWS_ECUStateManager S. 72 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_6_WdgM_CheckpointReached: SWS_WatchdogManager S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_WDGM_SECTION_7_4_Watchdog_Handling: SWS_WatchdogManager S. 56 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_WDGM_SECTION_8_3_6_WdgM_CheckpointReached: SWS_WatchdogManager S. 79 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_WDGM_SECTION_7_5_2_Effect_on_Watchdogs: SWS_WatchdogManager S. 57 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -156,19 +221,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.517236,
-     "inputTokens": 138934,
+     "costUSD": 1.452512,
+     "inputTokens": 104883,
      "maxOutputTokens": 128000,
-     "outputTokens": 48075,
+     "outputTokens": 51649,
      "provider": "firstParty",
-     "thinkingTokens": 25153,
+     "thinkingTokens": 28022,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "0804c6fe-84c9-4830-90b7-2cbe1168bba5",
+   "run_id": "2177b8a4-7459-411e-bb01-05b767f5b31d",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/0804c6fe-84c9-4830-90b7-2cbe1168bba5.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/2177b8a4-7459-411e-bb01-05b767f5b31d.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -177,11 +242,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 138934,
-    "output_tokens": 48075,
+    "inference_geo": "global",
+    "input_tokens": 104883,
+    "output_tokens": 51649,
     "output_tokens_details": {
-     "thinking_tokens": 25153
+     "thinking_tokens": 28022
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -193,11 +258,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 138934,
-    "output": 48075,
-    "thinking": 25153
+    "input_uncached": 104883,
+    "output": 51649,
+    "thinking": 28022
    },
-   "wall_seconds": 376.272
+   "wall_seconds": 396.03
   }
  ],
  "schema": "ai-trace@2",

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Csm_00989" class="dossier-modal dossier-workbench" data-dossier-sha="1a77188442f51c02" aria-labelledby="dossier-modal-SWS_Csm_00989-title">
+<dialog id="dossier-modal-SWS_Csm_00989" class="dossier-modal dossier-workbench" data-dossier-sha="0a0e899d4ea963b6" aria-labelledby="dossier-modal-SWS_Csm_00989-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Csm_00989-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Csm_00989)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,506 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,960 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Csm_Decrypt'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,37 +193,27 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="5e9a202dd83abb0499a5c60945521754a8c5c6d5b23f47c55a3fda92e50bbd83" data-trace-output="1a77188442f51c02118e1c8b5ac1fd49feefe58aa5be8e14ceac62aea45d5749" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="8243d4d6ed684b9149b49cf1a4c10b3238324dc18762959365a03eaebd82f172" data-trace-output="0a0e899d4ea963b6c6a056245df68d297a6cf75f49389da0131b81595fb79b40" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Entschlüsselt Chiffredaten anhand einer Jobkonfiguration und speichert den Klartext im bereitgestellten Zielpuffer." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;Csm_Decrypt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;, service ID &lt;code&gt;0x5f&lt;/code&gt;, header &lt;code&gt;Csm.h&lt;/code&gt;) decrypts the passed data and stores the plaintext in the destination memory. Via &lt;code&gt;jobId&lt;/code&gt;, the identifier of the using CSM job is referenced, while &lt;code&gt;mode&lt;/code&gt; (type &lt;code&gt;Crypto_OperationModeType&lt;/code&gt;) specifies the operation type to be executed. The pointer &lt;code&gt;dataPtr&lt;/code&gt; points to the ciphertext data whose size is defined in bytes via &lt;code&gt;dataLength&lt;/code&gt;.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Parameter &lt;code&gt;resultLengthPtr&lt;/code&gt; is used as an input and output value (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;): Upon invocation, it must contain the buffer size of the output area &lt;code&gt;resultPtr&lt;/code&gt;; after completion of processing, the actual byte count of the resulting plaintext is returned via this parameter. Execution is either synchronous or asynchronous depending on the job configuration (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Csm_Decrypt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;) entschlüsselt übergebene Chiffredaten und speichert den resultierenden Klartext im Zielspeicherbereich ab. Sie wird über den Header &lt;code&gt;Csm.h&lt;/code&gt; bereitgestellt und führt kryptografische Operationen basierend auf der Konfiguration des übergebenen Jobs aus.&lt;/p&gt;
+  
+  &lt;h4&gt;Verwendung und Parameter&lt;/h4&gt;
+  &lt;p&gt;Über den Parameter &lt;code&gt;jobId&lt;/code&gt; wird der zu nutzende CSM-Job adressiert, während &lt;code&gt;mode&lt;/code&gt; (Typ &lt;code&gt;Crypto_OperationModeType&lt;/code&gt;) die auszuführende(n) Operationsphase(n) vorgibt (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;). Die zu entschlüsselnden Daten werden als Zeiger &lt;code&gt;dataPtr&lt;/code&gt; mit der Bytezahl &lt;code&gt;dataLength&lt;/code&gt; übergeben. Der Klartext wird in den durch &lt;code&gt;resultPtr&lt;/code&gt; referenzierten Puffer geschrieben.&lt;/p&gt;
+  &lt;p&gt;Der In-Out-Parameter &lt;code&gt;resultLengthPtr&lt;/code&gt; steuert das Puffermanagement: Beim Aufruf muss er die bereitgestellte Puffergröße von &lt;code&gt;resultPtr&lt;/code&gt; in Bytes enthalten; nach Abschluss der Operation wird dort die tatsächlich geschriebene Ausgabelänge hinterlegt (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/p&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;
-    The status of the function request is reported via the return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;):
-  &lt;/p&gt;
+  &lt;h4&gt;Ausführung und Rückgabewerte&lt;/h4&gt;
+  &lt;p&gt;Das Ausführungsverhalten (synchron oder asynchron) hängt direkt von der zugrunde liegenden Jobkonfiguration ab (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;). Die Funktion ist reentrant ausgelegt und liefert spezifische Rückgabewerte vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Request performed successfully.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Request failed.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Request failed, service is still busy.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Request failed, key state is &lt;em&gt;invalid&lt;/em&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Request failed, a key element has the wrong size.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Request failed due to an uninitialized source key element.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Anfrage war erfolgreich (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage ist fehlgeschlagen (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_BUSY&lt;/code&gt;: Der angeforderte Dienst ist derzeit noch belegt (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_NOT_VALID&lt;/code&gt;: Der Status des verwendeten Schlüssels ist ungültig (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_SIZE_MISMATCH&lt;/code&gt;: Ein Schlüsselelement besitzt eine unpassende Größe (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CRYPTO_E_KEY_EMPTY&lt;/code&gt;: Das Quell-Schlüsselelement ist uninitialisiert (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).&lt;/li&gt;
   &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;Csm_Decrypt&lt;/code&gt; is specified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;
-    This usage note is based on the specification of &lt;code&gt;Csm_Decrypt&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Csm_00989" href="../../spec/record.html?id=SWS_Csm_00989"&gt;[SWS_Csm_00989]&lt;/a&gt;) from AUTOSAR CP R20-11.
-  &lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI basierend auf AUTOSAR R20-11 Spezifikationsdaten erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -245,7 +253,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>5e9a202dd83a…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>8243d4d6ed68…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -383,4 +391,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_00989","k":"function","d":"AUTOSAR","t":"","n":"Csm_Decrypt"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/4d463fd530e22762.json?v=9dc59dce" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Csm_00989","k":"function","d":"AUTOSAR","t":"","n":"Csm_Decrypt"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/4d463fd530e22762.json?v=81994b22" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

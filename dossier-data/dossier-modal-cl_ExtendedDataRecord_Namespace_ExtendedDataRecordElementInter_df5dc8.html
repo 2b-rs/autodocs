@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8" class="dossier-modal dossier-workbench" data-dossier-sha="83c37b642914a3d4" aria-labelledby="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8-title">
+<dialog id="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8" class="dossier-modal dossier-workbench" data-dossier-sha="215368cc663d62dc" aria-labelledby="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Class Guide: cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,646 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,168 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -115,6 +115,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai class-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -138,8 +145,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Klassen-Leitfaden für '&lt;ExtendedDataRecord-Namespace&gt;::&lt;ExtendedDataRecordElementInterface&gt;::&lt;ExtendedDataRecordElement&gt;ReadOutput' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "class_id": "cl_ExtendedDataRecord_Namespace_ExtendedDataRecordElementInter_df5dc8",
@@ -203,87 +222,31 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-trace-prompt="3d8265ab4cffb03f4c23657fcbb606154c2c223cc3333f15f72a7023091b4ff0" data-trace-output="83c37b642914a3d403cb67ec7902957f94456c98401f9f8e0c9e156ba8be9977" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai class-guide" data-ai-levels="4" data-trace-prompt="ccc4e5db630836efb1b3deb66e7641d86f0b2a363ed8809f46bcdbae3343c20b" data-trace-output="215368cc663d62dc7209a34fbb49b03ec6b43fe37ae412b336021e38d0fa4e6d" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Kapselt die Ausgabeargumente beim Auslesen eines Extended-Data-Record-Elements in der AUTOSAR-Adaptive-Diagnose." data-ai-level-cur="2" data-ai-level-kind="class" data-ai-levels-shown="2 4"&gt;
 
-  &lt;h4&gt;Context&lt;/h4&gt;
-  &lt;p&gt;
-    In the diagnostics module of the AUTOSAR Adaptive Platform (release R25-11), the data structure
-    &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;::&amp;lt;ExtendedDataRecordElementInterface&amp;gt;::&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;
-    assumes the role of a standardized data container. The purpose of this structure is to aggregate
-    all output arguments resulting from a read operation of an Extended Data Record element.
-    In the automotive diagnostic environment, Extended Data Records (EDR) serve to provide extended fault
-    and status information associated with a particular diagnostic event or
-    Diagnostic Trouble Code (DTC).
-  &lt;/p&gt;
-  &lt;p&gt;
-    The interaction in the diagnostic flow primarily involves the diagnosable application software,
-    the interface &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;, and the higher-level
-    diagnostic management. Since C++ function signatures support only a single return type for
-    asynchronous or synchronous queries, this structure encapsulates all output values in a
-    semantic unit. This structure presumably serves as a pure data transfer container
-    (Value Object or Plain Old Data) that simplifies the type-safe return of data elements to the
-    diagnostic subsystem.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Lifecycle&lt;/h4&gt;
-  &lt;p&gt;
-    The lifecycle of the structure &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; is
-    coupled to the execution of the associated read call and follows typical C++ value semantics.
-    Instantiation and population would typically occur on the server side in the implementing
-    diagnostic application as soon as the requested record data has been assembled from memory or from
-    internal registers.
-  &lt;/p&gt;
-  &lt;p&gt;
-    After the contained member variables have been populated, the structure transfers into the ownership of the
-    calling layer, for example as the result value of an asynchronous call pattern
-    or as a direct method return value. Interpretation: Due to its nature as a pure
-    transfer object, the structure presumably has no internal state or active
-    state transitions and is discarded again by the caller after the contained diagnostic data has been evaluated.
-  &lt;/p&gt;
-  &lt;p&gt;
-    Regarding concurrency, it should be noted that instances of the structure are usually
-    not modified shared across thread boundaries. An instance is created in the executing
-    context of the read operation and can subsequently be passed in a thread-safe manner, provided that
-    no further concurrent write accesses occur after creation. Memory management
-    and destruction occur automatically according to the standard rules for automatic or dynamic
-    object lifetimes in C++.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Usage Path&lt;/h4&gt;
-  &lt;p&gt;
-    The typical usage path is divided into the provision, transmission, and
-    evaluation of the diagnostic output data:
-  &lt;/p&gt;
-  &lt;ol&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Receive request:&lt;/strong&gt; The diagnostic system initiates a read request
-      for the specific element via the interface &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Determine data and instantiate structure:&lt;/strong&gt; The application logic reads
-      the current status data of the vehicle system and instantiates an object of type
-      &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt;.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Populate output fields:&lt;/strong&gt; The determined measured values, counter values, or
-      status flags are assigned to the corresponding data fields of the structure.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Return result:&lt;/strong&gt; The populated structure is passed as a return value
-      to the diagnostic management, which serializes the values and transmits them to the diagnostic tester
-      as a response to the diagnostic service.
-    &lt;/li&gt;
-    &lt;li&gt;
-      &lt;strong&gt;Deallocation:&lt;/strong&gt; After successful transfer and serialization of the payload data,
-      the instance is deallocated at the end of the scope.
-    &lt;/li&gt;
-  &lt;/ol&gt;
-  &lt;!-- annahmen: 1) Vermutlich dient die Struktur als reiner Datentransfer-Container (Value Object), der Ausgabeparameter bündelt. – Begründung: Die Spezifikationsbeschreibung lautet 'Structure wrapping the out arguments for a ReadOutput'. 2) Die Instanziierung und Befüllung dürfte serverseitig in der implementierenden Diagnoseanwendung erfolgen. – Begründung: Typisches Aufrufmuster für Leseoperationen in AUTOSAR Adaptive diag. 3) Interpretation: Die Struktur besitzt keinen internen Zustand und wird nach Auswertung der Diagnosedaten verworfen. – Begründung: Kapselungsstrukturen für Out-Argumente folgen in C++ standardmäßig einfacher Wertsemantik ohne eigenständigen Lebenszyklus. --&gt;
-  &lt;p class="ai-note"&gt;
-    Note: This class guide is based on the structural definitions of the diag module in
-    AUTOSAR Adaptive Platform release R25-11. Statements without explicit reference to sources represent
-    technical conclusions based on the stated assumptions.
-  &lt;/p&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Kapselt die Ausgabeargumente beim Auslesen eines Extended-Data-Record-Elements in der AUTOSAR-Adaptive-Diagnose.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Die Struktur dient im Diagnosemodul der AUTOSAR Adaptive Platform als Kapselung für die Ausgabeargumente beim Auslesen eines Extended-Data-Record-Elements. Sie bündelt die resultierenden Diagnosedaten einer Leseoperation in einem typisierten Objekt, das von der bereitstellenden Schnittstelle an die aufrufende Diagnoseinstanz übergeben wird. Vermutlich wird die Datenstruktur während des Aufrufs mit den ermittelten Werten befüllt und anschließend zur Weiterverarbeitung oder Übertragung per Wert oder Move-Semantik bereitgestellt. Als reines Datenobjekt ohne eigene Synchronisationsmechanismen erfordert sie bei nebenläufigem Zugriff eine externe Koordination durch die beteiligten Komponenten.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Die Datenstruktur &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; ist Bestandteil des Moduls &lt;code&gt;diag&lt;/code&gt; innerhalb der AUTOSAR Adaptive Platform (Release R25-11). Sie ist dem Namensraum &lt;code&gt;&amp;lt;ExtendedDataRecord-Namespace&amp;gt;::&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; zugeordnet und syntaktisch als C++-Struktur (&lt;code&gt;struct &amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput {...};&lt;/code&gt;) deklariert. Laut Spezifikationsbeschreibung dient diese Struktur als Kapselung für die Ausgabeargumente einer Leseoperation (&lt;em&gt;Structure wrapping the out arguments for a ReadOutput&lt;/em&gt;).&lt;/p&gt;
+&lt;p&gt;Im Rahmen des adaptiven Diagnosemanagements übernehmen Extended Data Records (EDR) die Aufgabe, zusätzliche herstellerspezifische oder standardisierte Diagnoseinformationen bereitzustellen, wie beispielsweise Betriebsbedingungen, Messwerte oder Statuszähler zum Zeitpunkt eines Fehlereintrags. Die Struktur &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; fungiert dabei als dediziertes Datentransferobjekt für die Ergebnisse einer Abfrage eines solchen Datensatz-Elements. Anstatt Rückgabewerte über mehrere separate Ausgangsparameter oder Zeiger zu übergeben, fasst die Struktur die anfallenden Ausgabedaten zusammen.&lt;/p&gt;
+&lt;p&gt;Als primäre Interaktionspartner treten die abfragende Diagnoseinstanz (beispielsweise ein Diagnosedienst oder die Laufzeitumgebung von &lt;code&gt;ara::diag&lt;/code&gt;) sowie die anwendungsseitige Implementierung der Schnittstelle &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt; auf. Interpretation: Vermutlich dient die Struktur vor allem dazu, die Rückgabewerte eines Leseaufrufs an einer Schnittstelle für Extended Data Records in &lt;code&gt;ara::diag&lt;/code&gt; typsicher zu bündeln und für den weiteren Datenfluss bereitzustellen. Auf diese Weise wird eine saubere Schnittstellentrennung zwischen Datenbereitstellung und Datenverarbeitung gewährleistet.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Die Struktur &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; ist als reines C++-Datenaggregat ohne eigene Geschäftslogik oder Zustandshaltung konzipiert. Daraus ergeben sich eindeutige Charakteristika für Erzeugung, Besitzverhältnisse und Zerstörung im System.&lt;/p&gt;
+&lt;p&gt;Die Instanziierung des Objekts erfolgt unmittelbar im Kontext des auszuführenden Leseaufrufs. Die bereitstellende Komponente erzeugt die Instanz auf dem Stack oder innerhalb eines asynchronen Verarbeitungskontextes und weist ihr die ermittelten Ausgabedaten zu. Interpretation: Die Lebensdauer der Instanz dürfte an den jeweiligen Ausführungs- und Rückgabezyklus der Leseoperation gebunden sein und nach der Auswertung der enthaltenen Daten durch den Aufrufer enden. Es existieren keine internen Zustände und folglich keine definierten Zustandsübergänge; die Struktur befindet sich nach ihrer Initialisierung in einem unveränderlichen oder rein passiven Lesezustand.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich der Besitzverhältnisse wird die Struktur üblicherweise als Wert (by value) oder mittels Move-Semantik an den Aufrufer übergeben. Der Besitz geht damit vollständig auf die aufrufende Stelle über. Beim Verlassen des Gültigkeitsbereichs (Scope) wird der Speicher deterministisch gemäß den normalen C++-Destruktionsregeln freigegeben.&lt;/p&gt;
+&lt;p&gt;In Bezug auf die Nebenläufigkeit enthält &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; keine internen Synchronisationsmechanismen, Mutexes oder atomaren Operationen. Sollte eine Instanz thread-übergreifend geteilt oder in asynchronen Datenpipelines weitergeleitet werden, liegt die Verantwortung für den threadsicheren Zugriff vollständig bei den umgebenden Softwarekomponenten des Diagnosesystems.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Der typische Nutzungspfad beschreibt die Abfolge von Schritten bei der Abfrage von Diagnosedaten über die Schnittstelle &lt;code&gt;&amp;lt;ExtendedDataRecordElementInterface&amp;gt;&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;Zunächst initiiert ein Diagnoseservice oder eine interne Diagnosefunktion eine Leseabfrage für ein bestimmtes Extended-Data-Record-Element. Diese Abfrage adressiert die Leseoperation der Schnittstelle. Interpretation: Im Nutzungspfad wird die Struktur vermutlich durch die Anwendungs- bzw. Handler-Implementierung mit den Auslesewerten befüllt und anschließend zur weiteren Verarbeitung übergeben. Die Implementierung liest die aktuellen Diagnoseinformationen aus den internen Datenquellen aus und initialisiert eine Instanz von &lt;code&gt;&amp;lt;ExtendedDataRecordElement&amp;gt;ReadOutput&lt;/code&gt; mit diesen Werten.&lt;/p&gt;
+&lt;p&gt;Nach der Initialisierung wird die Instanz an die aufrufende Diagnosekomponente zurückgeliefert. Der Aufrufer greift auf die in der Struktur enthaltenen Datenfelder zu, um die Werte zu validieren, zu serialisieren oder für die Diagnoseantwort gemäß Diagnoseprotokoll aufzubereiten. Sobald die Ausgabedaten erfolgreich verarbeitet oder in nachgelagerte Speicherbereiche übertragen wurden, endet die Nutzung der Struktur, und das Objekt wird verworfen.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Struktur dient vermutlich der Bündelung von Rückgabeparametern eines Leseaufrufs an einer Schnittstelle für Extended Data Records in ara::diag. – Begründung: Der Payload beschreibt die Klasse als 'Structure wrapping the out arguments for a ReadOutput' im Modul diag. 2) Die Lebensdauer der Instanz dürfte an den jeweiligen Ausführungs- und Rückgabezyklus der Leseoperation gebunden sein und nach der Auswertung der enthaltenen Daten durch den Aufrufer enden. – Begründung: Es handelt sich laut Syntax um ein C++-struct ohne eigene Zustandsverwaltung. 3) Im Nutzungspfad wird die Struktur vermutlich durch die Handler-Implementierung mit den Auslesewerten befüllt und an den Aufrufer übergeben. – Begründung: Der Zweck als Out-Argument-Wrapper impliziert diesen Datenfluss von der Datenquelle zum Aufrufer. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine künstliche Intelligenz auf Basis der AUTOSAR-Spezifikation R25-11 generiert.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -325,7 +288,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>3d8265ab4cff…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>ccc4e5db6308…</code></div>
               <div><strong>Konstituierende Records:</strong> 0</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 0 <span class="dossier-meta-sub">(0 neu · 0 Schaubilder)</span></div>
             </div>

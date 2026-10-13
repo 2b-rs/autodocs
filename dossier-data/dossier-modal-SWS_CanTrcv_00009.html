@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_CanTrcv_00009" class="dossier-modal dossier-workbench" data-dossier-sha="4aa289288acaa141" aria-labelledby="dossier-modal-SWS_CanTrcv_00009-title">
+<dialog id="dossier-modal-SWS_CanTrcv_00009" class="dossier-modal dossier-workbench" data-dossier-sha="d776a8a0bafd3ca9" aria-labelledby="dossier-modal-SWS_CanTrcv_00009-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_CanTrcv_00009-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_CanTrcv_00009)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,779 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,233 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'CanTrcv_SetWakeupMode'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -200,29 +218,20 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="e6669ec10c00f3ab98910e0c727e2f40ea5e92d23e27ca1be48167c828cd6b8f" data-trace-output="4aa289288acaa1418d349480d5902c01a62fad0b9ff3c8576e8b48e974bd0928" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="7ddf69d5a7ae0f300086f63ba19435a2b74fd5e2edc876afb00fe993f01ecb16" data-trace-output="d776a8a0bafd3ca973e7fb6f9ad6d4f3b5bd6556bebba717cba0ba36ab9d62a5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktiviert, deaktiviert oder löscht Wake-up-Ereignisse eines angegebenen CAN-Transceivers." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;CanTrcv_SetWakeupMode&lt;/code&gt; enables, disables, or clears wake-up events of the addressed CAN transceiver (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;). The affected transceiver is selected via the parameter &lt;code&gt;Transceiver&lt;/code&gt;, while &lt;code&gt;TrcvWakeupMode&lt;/code&gt; passes the desired wake-up mode (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;If &lt;code&gt;CANTRCV_WUMODE_CLEAR&lt;/code&gt; is passed, a stored wake-up event on the addressed transceiver is cleared (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00094" href="../../spec/record.html?id=SWS_CanTrcv_00094"&gt;[SWS_CanTrcv_00094]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;If &lt;code&gt;CANTRCV_WUMODE_ENABLE&lt;/code&gt; is passed and a stored wake-up event for the bus exists, the CanTrcv module updates this event as present ("present") (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00111" href="../../spec/record.html?id=SWS_CanTrcv_00111"&gt;[SWS_CanTrcv_00111]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;The function returns &lt;code&gt;E_OK&lt;/code&gt; if the wake-up state was successfully changed to the requested mode. If the state change fails or a parameter is outside the valid range, the function returns &lt;code&gt;E_NOT_OK&lt;/code&gt; and the previous state remains unchanged (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung und Semantik&lt;/h4&gt;
+  &lt;p&gt;Die synchrone Funktion &lt;code&gt;CanTrcv_SetWakeupMode&lt;/code&gt; dient dem Aktivieren, Deaktivieren oder Löschen von Wake-up-Ereignissen für einen bestimmten Transceiver &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;. Ihr werden der Zieltransceiver über den Parameter &lt;code&gt;Transceiver&lt;/code&gt; sowie der gewünschte Modus über &lt;code&gt;TrcvWakeupMode&lt;/code&gt; übergeben. Bei erfolgreicher Zustandsänderung liefert die Funktion &lt;code&gt;E_OK&lt;/code&gt; zurück. Kann der Zustand nicht geändert werden oder ist ein Parameter ungültig, wird &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben und der bisherige Zustand bleibt unverändert erhalten &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;.&lt;/p&gt;
 
-  &lt;h4&gt;Error handling&lt;/h4&gt;
-  &lt;p&gt;If development error detection (DET) is active, &lt;code&gt;CanTrcv_SetWakeupMode&lt;/code&gt; performs the following parameter and state checks:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;If the call occurs prior to module initialization, development error &lt;code&gt;CANTRCV_E_UNINIT&lt;/code&gt; is reported (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00127" href="../../spec/record.html?id=SWS_CanTrcv_00127"&gt;[SWS_CanTrcv_00127]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;In case of an invalid transceiver number, &lt;code&gt;CANTRCV_E_INVALID_TRANSCEIVER&lt;/code&gt; is reported (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00131" href="../../spec/record.html?id=SWS_CanTrcv_00131"&gt;[SWS_CanTrcv_00131]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;If an invalid mode is passed for &lt;code&gt;TrcvWakeupMode&lt;/code&gt;, &lt;code&gt;CANTRCV_E_PARAM_TRCV_WAKEUP_MODE&lt;/code&gt; is triggered (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00089" href="../../spec/record.html?id=SWS_CanTrcv_00089"&gt;[SWS_CanTrcv_00089]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;If DET is disabled, &lt;code&gt;E_NOT_OK&lt;/code&gt; is returned in these cases (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00089" href="../../spec/record.html?id=SWS_CanTrcv_00089"&gt;[SWS_CanTrcv_00089]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00127" href="../../spec/record.html?id=SWS_CanTrcv_00127"&gt;[SWS_CanTrcv_00127]&lt;/a&gt;, &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00131" href="../../spec/record.html?id=SWS_CanTrcv_00131"&gt;[SWS_CanTrcv_00131]&lt;/a&gt;). In case of missing or faulty communication with the transceiver, the function reports runtime error &lt;code&gt;CANTRCV_E_NO_TRCV_CONTROL&lt;/code&gt; to the Default Error Tracer and returns &lt;code&gt;E_NOT_OK&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00117" href="../../spec/record.html?id=SWS_CanTrcv_00117"&gt;[SWS_CanTrcv_00117]&lt;/a&gt;).&lt;/p&gt;
+  &lt;h4&gt;Betriebsmodi und Zusammenspiel&lt;/h4&gt;
+  &lt;p&gt;Wird &lt;code&gt;TrcvWakeupMode&lt;/code&gt; mit dem Wert &lt;code&gt;CANTRCV_WUMODE_CLEAR&lt;/code&gt; aufgerufen, löscht die Funktion ein gespeichertes Wake-up-Ereignis des adressierten Transceivers &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00094" href="../../spec/record.html?id=SWS_CanTrcv_00094"&gt;[SWS_CanTrcv_00094]&lt;/a&gt;. Beim Aufruf mit &lt;code&gt;CANTRCV_WUMODE_ENABLE&lt;/code&gt; aktualisiert das Modul das Wake-up-Ereignis auf den Zustand „present“, sofern für den betreffenden Bus bereits ein gespeichertes Wake-up-Ereignis ansteht &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00111" href="../../spec/record.html?id=SWS_CanTrcv_00111"&gt;[SWS_CanTrcv_00111]&lt;/a&gt;. Interpretation: Für das Deaktivieren von Wake-up-Ereignissen dürfte analog ein entsprechender Moduswert existieren, auch wenn dieser im vorliegenden Anforderungsauszug nicht gesondert detailliert ist.&lt;/p&gt;
 
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The function is reentrant for different transceivers (&lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;).&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the specification of CanTrcv in AUTOSAR Classic R20-11.&lt;/p&gt;
+  &lt;h4&gt;Fehlerbehandlung und Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Die Funktion ist reentrant für unterschiedliche Transceiver-Instanzen &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00009" href="../../spec/record.html?id=SWS_CanTrcv_00009"&gt;[SWS_CanTrcv_00009]&lt;/a&gt;. Vor dem Aufruf muss der Transceiver-Treiber vollständig initialisiert sein: Ein Aufruf im uninitialisierten Zustand löst bei aktiver Entwicklungserkennung (DET) den Fehler &lt;code&gt;CANTRCV_E_UNINIT&lt;/code&gt; aus, andernfalls wird &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00127" href="../../spec/record.html?id=SWS_CanTrcv_00127"&gt;[SWS_CanTrcv_00127]&lt;/a&gt;. Ein ungültiger Index bei &lt;code&gt;Transceiver&lt;/code&gt; führt zu &lt;code&gt;CANTRCV_E_INVALID_TRANSCEIVER&lt;/code&gt; (bzw. &lt;code&gt;E_NOT_OK&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00131" href="../../spec/record.html?id=SWS_CanTrcv_00131"&gt;[SWS_CanTrcv_00131]&lt;/a&gt;, und ein unzulässiger Moduswert in &lt;code&gt;TrcvWakeupMode&lt;/code&gt; meldet &lt;code&gt;CANTRCV_E_PARAM_TRCV_WAKEUP_MODE&lt;/code&gt; oder liefert &lt;code&gt;E_NOT_OK&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00089" href="../../spec/record.html?id=SWS_CanTrcv_00089"&gt;[SWS_CanTrcv_00089]&lt;/a&gt;. Liegt keine oder eine fehlerhafte Kommunikation mit dem Transceiver vor, wird der Laufzeitfehler &lt;code&gt;CANTRCV_E_NO_TRCV_CONTROL&lt;/code&gt; an den Default Error Tracer gemeldet und &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben &lt;a class="spec-record-ref" data-req="SWS_CanTrcv_00117" href="../../spec/record.html?id=SWS_CanTrcv_00117"&gt;[SWS_CanTrcv_00117]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Ein Moduswert zur Deaktivierung existiert analog zu ENABLE und CLEAR – Begründung: SWS_CanTrcv_00009 nennt das Deaktivieren explizit in der Funktionsbeschreibung, die bereitgestellten Requirements spezifizieren jedoch nur CLEAR und ENABLE. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR Classic R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -262,9 +271,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>e6669ec10c00…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>7ddf69d5a7ae…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 5 <span class="dossier-meta-sub">(5 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 5 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -299,8 +308,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">7</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">6</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">5</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">4</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -337,7 +346,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 5 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 3 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -400,4 +409,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CanTrcv_00009","k":"function","d":"AUTOSAR","t":"","n":"CanTrcv_SetWakeupMode"}],"inbound":[{"i":"SWS_CanTrcv_00094","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CanTrcv_00094].","n":"SWS_CanTrcv_00094"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f9ea130f025bbddf.json?v=0336ca03" data-total="5" data-new="5" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_CanTrcv_00009","k":"function","d":"AUTOSAR","t":"","n":"CanTrcv_SetWakeupMode"}],"inbound":[{"i":"SWS_CanTrcv_00094","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_CanTrcv_00094].","n":"SWS_CanTrcv_00094"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/f9ea130f025bbddf.json?v=179de0ff" data-total="3" data-new="3" data-figures="0" data-used="0"></script></dialog>

@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EthIf_00160" class="dossier-modal dossier-workbench" data-dossier-sha="45b5a9ac5ffe96e1" aria-labelledby="dossier-modal-SWS_EthIf_00160-title">
+<dialog id="dossier-modal-SWS_EthIf_00160" class="dossier-modal dossier-workbench" data-dossier-sha="56c55e4b8529bf5d" aria-labelledby="dossier-modal-SWS_EthIf_00160-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EthIf_00160-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EthIf_00160)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,373 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,828 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EthIf_EnableEgressTimeStamp'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,20 +193,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="6438d41a07ab654b057a1c06aa4ed50e7fc5eef9ba7e34951251bb7ca38c6452" data-trace-output="45b5a9ac5ffe96e1572056e14c4ce88c33ac6640d1278407565854f086c93d2f" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="3c09f202ad0fa3a4c64ee046325c29841588787164927475a963dedd98d50555" data-trace-output="56c55e4b8529bf5de55ed084b43aaa3b5fb21b046e03cf29cb56f25ba146fecb" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Aktiviert die Erfassung von Sendezeitstempeln für einen bestimmten Ethernet-Nachrichtenpuffer." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;use&lt;/h4&gt;
-  &lt;p&gt;The synchronous function &lt;code&gt;EthIf_EnableEgressTimeStamp&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;) activates egress time stamping on a specific message object. It is provided via the header &lt;code&gt;EthIf.h&lt;/code&gt; and has the service ID &lt;code&gt;0x23&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;).&lt;/p&gt;
-  &lt;p&gt;Two input parameters are passed upon the call:&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;EthIf_EnableEgressTimeStamp&lt;/code&gt; dient der Aktivierung der Erfassung von Sendezeitstempeln (Egress Time Stamping) für ein dediziertes Nachrichtenobjekt bzw. einen Sendepuffer &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;. Die Schnittstelle wird über die Header-Datei &lt;code&gt;EthIf.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Parameter und Aufruf&lt;/h4&gt;
+  &lt;p&gt;Beim Aufruf erwartet die Funktion die Übergabe von zwei Eingangsparametern &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;:&lt;/p&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;CtrlIdx&lt;/code&gt;: Index of the addressed Ethernet controller (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;BufIdx&lt;/code&gt;: Index of the message buffer where the application expects time stamping (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;).&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;CtrlIdx&lt;/code&gt;: Index des adressierten Ethernet-Controllers &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;BufIdx&lt;/code&gt;: Index des Nachrichtenpuffers, an dem die Applikation die Erfassung des Sendezeitstempels erwartet &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;.&lt;/li&gt;
   &lt;/ul&gt;
-  &lt;p&gt;The function returns no return value (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;). According to the specification, a deactivation function does not exist because the message type in question is timestamped by default due to network design (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;).&lt;/p&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;The interface is defined as non-reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;), which is why concurrent or preemptive calls must be avoided. With regard to hardware behavior, the specification points out that certain hardware stores the time stamping flag permanently, while other hardware variants require setting the flag before each individual transmission (&lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;). The application is therefore likely to have to schedule the call before each transmit request for the corresponding buffer.&lt;/p&gt;
-  &lt;!-- annahmen: 1) Die Anwendung dürfte den Aufruf vor jeder Sendeanforderung einplanen müssen – Begründung: Manche Hardware erfordert die Aktivierung laut Spezifikation vor jeder Übertragung, ein genauerer Ablauf ist im Payload nicht spezifiziert. --&gt;
-  &lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR specification.&lt;/p&gt;
+  &lt;p&gt;Die Funktion besitzt keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) sowie keine Ein- oder Ausgangsparameter &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;.&lt;/p&gt;
+
+  &lt;h4&gt;Hardware-Verhalten und Nebenläufigkeit&lt;/h4&gt;
+  &lt;p&gt;Das Verhalten der Hardware unterscheidet sich je nach Controller: Einige Hardware-Typen speichern die Markierung für den Sendezeitstempel dauerhaft nach einmaliger Konfiguration, während andere Controller diese zwingend vor jeder einzelnen Übertragung benötigen &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;. Interpretation: Auf Controllern ohne dauerhafte Speicherung dürfte die Funktion folglich vor jedem Sendevorgang durch die Anwendung erneut aufgerufen werden müssen. Eine Deaktivierungsmöglichkeit existiert spezifikationsgemäß nicht, da der entsprechende Nachrichtentyp nach dem Netzwerkentwurf dauerhaft zeitgestempelt wird &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich der Nebenläufigkeit ist die Funktion als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) definiert &lt;a class="spec-record-ref" data-req="SWS_EthIf_00160" href="../../spec/record.html?id=SWS_EthIf_00160"&gt;[SWS_EthIf_00160]&lt;/a&gt;.&lt;/p&gt;
+  &lt;!-- annahmen: 1) Erforderlicher Aufrufzeitpunkt bei bestimmter Hardware – Begründung: SWS_EthIf_00160 erwähnt den Bedarf mancher Hardware vor jeder Übertragung, definiert jedoch keine automatisierte Wiederholung durch das Modul selbst. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -228,9 +251,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>6438d41a07ab…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>3c09f202ad0f…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 10 <span class="dossier-meta-sub">(10 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 10 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 9 <span class="dossier-meta-sub">(9 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 9 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -265,8 +288,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">11</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">10</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">10</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">9</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -303,7 +326,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 10 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 9 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -366,4 +389,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_00160","k":"function","d":"AUTOSAR","t":"","n":"EthIf_EnableEgressTimeStamp"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/81f58725d548939c.json?v=4dd6e408" data-total="10" data-new="10" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EthIf_00160","k":"function","d":"AUTOSAR","t":"","n":"EthIf_EnableEgressTimeStamp"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/81f58725d548939c.json?v=70022bb1" data-total="9" data-new="9" data-figures="2" data-used="0"></script></dialog>

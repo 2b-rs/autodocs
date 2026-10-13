@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dem_01187" class="dossier-modal dossier-workbench" data-dossier-sha="e69fbaa211197596" aria-labelledby="dossier-modal-SWS_Dem_01187-title">
+<dialog id="dossier-modal-SWS_Dem_01187" class="dossier-modal dossier-workbench" data-dossier-sha="4a7ec8c6dde6f20f" aria-labelledby="dossier-modal-SWS_Dem_01187-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dem_01187-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dem_01187)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,332 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,787 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dem_DcmReadDataOfPID91'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,23 +193,14 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="c6772aa281eb30cdd4425eb904724264e7d2eed543210e5fa2c517cd7d6969fd" data-trace-output="e69fbaa211197596bd6ef994714548feb72357f3036ce6538c57765e6471bbbe" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="b21962c6ebc57093aa367fcefe646979151c729d3a99b68f8f5fd24406bb9041" data-trace-output="4a7ec8c6dde6f20f87d045c10ebfcada1404f19e6bb0528856db4d5f99f4baa8" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Dient dem synchronen Auslesen der vom DEM berechneten Daten des OBD-Parameters PID $91 durch das DCM." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung&lt;/h4&gt;
-  &lt;p&gt;Die Funktion &lt;code&gt;Dem_DcmReadDataOfPID91&lt;/code&gt; dient als Service zur Rückgabe des vom DEM berechneten Werts von PID $91 &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Die Schnittstelle ist über die Header-Datei &lt;code&gt;Dem_Dcm.h&lt;/code&gt; verfügbar &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Dieser API-Aufruf wird ausschließlich in OBD-relevanten Steuergeräten benötigt und steht nur dann zur Verfügung, wenn der Konfigurationsparameter &lt;code&gt;DemGeneral.DemOBDSupport&lt;/code&gt; ungleich &lt;code&gt;DEM_OBD_NO_OBD_SUPPORT&lt;/code&gt; konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;p&gt;Die Ausführung erfolgt synchron &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Die Funktion besitzt keine Eingabeparameter und verwendet den Zeiger &lt;code&gt;PID91value&lt;/code&gt; als Ausgabeparameter &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Dieser Puffer nimmt den berechneten Inhalt von PID $91 auf &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Er wird vom DCM in geeigneter Größe bereitgestellt, wobei das DCM während der Konfiguration anhand der größten PID die erforderliche Größe identifiziert, um einen entsprechenden Puffer &lt;code&gt;PIDBuffer&lt;/code&gt; zu konfigurieren &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Fehlerbehandlung und Rückgabewert&lt;/h4&gt;
-  &lt;p&gt;Als Rückgabewert liefert die Funktion den Status &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Dabei wird stets &lt;code&gt;E_OK&lt;/code&gt; zurückgegeben, da laut Spezifikation &lt;code&gt;E_NOT_OK&lt;/code&gt; niemals auftritt &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Spezifische Fehlercodes sowie gesonderte DET- oder DEM-Meldungen sind für diese Funktion nicht spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/p&gt;
-
-  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;Reentranz:&lt;/strong&gt; Die Funktion ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) eingestuft &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;Service-ID:&lt;/strong&gt; Die Service-ID in hexadezimaler Notation lautet &lt;code&gt;0x6a&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis basiert auf der Spezifikation AUTOSAR Classic Release R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Funktion &lt;code&gt;Dem_DcmReadDataOfPID91&lt;/code&gt; (Service-ID &lt;code&gt;0x6a&lt;/code&gt;) dient dazu, die vom DEM berechneten Daten des OBD-Parameters PID $91 an das DCM zu übergeben &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Die Schnittstelle wird über den Header &lt;code&gt;Dem_Dcm.h&lt;/code&gt; deklariert und steht ausschließlich in OBD-relevanten Steuergeräten zur Verfügung, bei denen &lt;code&gt;DemOBDSupport&lt;/code&gt; nicht auf &lt;code&gt;DEM_OBD_NO_OBD_SUPPORT&lt;/code&gt; konfiguriert ist &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Als Ausgabeparameter erfordert die Funktion den Zeiger &lt;code&gt;PID91value&lt;/code&gt;, der auf einen vom DCM bereitgestellten Puffer verweist &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Das DCM ist dafür verantwortlich, diesen Puffer in passender Größe bereitzustellen; die nötige Größe wird bereits während der Konfiguration anhand des größten PIDs ermittelt, um den Puffer &lt;code&gt;PIDBuffer&lt;/code&gt; anzulegen &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/p&gt;
+  &lt;p&gt;Die Funktion ist als nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) spezifiziert und muss synchron abgearbeitet werden &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;. Ein paralleler Aufruf aus verschiedenen Kontexten ist daher unzulässig. Ein Fehlerrückgabewert existiert nicht: Die Funktion liefert als &lt;code&gt;Std_ReturnType&lt;/code&gt; stets &lt;code&gt;E_OK&lt;/code&gt; zurück, da der Fehlerwert &lt;code&gt;E_NOT_OK&lt;/code&gt; laut Spezifikation niemals auftritt &lt;a class="spec-record-ref" data-req="SWS_Dem_01187" href="../../spec/record.html?id=SWS_Dem_01187"&gt;[SWS_Dem_01187]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisch generiert und basiert ausschließlich auf den Spezifikationsdaten von AUTOSAR Classic R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -231,7 +240,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>c6772aa281eb…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>b21962c6ebc5…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -369,4 +378,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_01187","k":"function","d":"AUTOSAR","t":"","n":"Dem_DcmReadDataOfPID91"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ea9c312fe727b87f.json?v=ab6d8323" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dem_01187","k":"function","d":"AUTOSAR","t":"","n":"Dem_DcmReadDataOfPID91"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/ea9c312fe727b87f.json?v=e9d2a9d7" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>

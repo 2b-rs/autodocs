@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_91081" class="dossier-modal dossier-workbench" data-dossier-sha="e880ce3be5e0750e" aria-labelledby="dossier-modal-SWS_Dcm_91081-title">
+<dialog id="dossier-modal-SWS_Dcm_91081" class="dossier-modal dossier-workbench" data-dossier-sha="8088d087f9563a47" aria-labelledby="dossier-modal-SWS_Dcm_91081-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_91081-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_91081)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,016 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,471 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Dcm_ProcessRequestReadFile'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -180,31 +198,14 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="9ffbe920e99057cae45a2cdbd79ee905e847be18c11c845acca111fd1687a243" data-trace-output="e880ce3be5e0750e12356ac69a31473a687cf53f181da0970604a05b0eec76a1" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="da3fd9bbf78e97c20fdec93d897cabb67611d5232a7294fec24464b3de666bab" data-trace-output="8088d087f9563a4799314dec17c63cce8ab1c628c4ffcd79d8e62dc6c9eedc34" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Startet asynchron die Verarbeitung einer Diagnoseanfrage zur Dateiübertragung für das Auslesen einer Datei." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;p&gt;Die Callout-Funktion &lt;code&gt;Dcm_ProcessRequestReadFile&lt;/code&gt; gemäß &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt; wird vom DCM aufgerufen, um den Dienst &lt;code&gt;RequestFileTransfer&lt;/code&gt; mit dem Operationsmodus &lt;code&gt;0x04&lt;/code&gt; (&lt;em&gt;ReadFile&lt;/em&gt;) zu initiieren. Sie ist über den Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt; verfügbar.&lt;/p&gt;
-
-  &lt;h4&gt;Aufrufkontext und Parameter&lt;/h4&gt;
-  &lt;p&gt;Die Schnittstelle besitzt die Service-ID &lt;code&gt;0x75&lt;/code&gt;, arbeitet asynchron und ist nicht reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;). Das Verhalten wird maßgeblich über &lt;code&gt;OpStatus&lt;/code&gt; gesteuert:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;DCM_INITIAL&lt;/code&gt;: Alle Eingangsparameter sind gültig. Übergeben werden die Pfadlänge &lt;code&gt;filePathAndNameLength&lt;/code&gt;, der Dateipfad inklusive Dateiname &lt;code&gt;filePathAndName&lt;/code&gt;, die Dateigrößen &lt;code&gt;fileSizeUncompressed&lt;/code&gt; und &lt;code&gt;fileSizeCompressed&lt;/code&gt; sowie &lt;code&gt;dataFormatIdentifier&lt;/code&gt; (High-Nibble: Kompressionsmethode, Low-Nibble: Verschlüsselungsmethode; &lt;code&gt;0x00&lt;/code&gt; signalisiert weder Kompression noch Verschlüsselung).&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; und &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt;: Bei diesen Folgeaufrufen sind alle Eingangsparameter auf &lt;code&gt;0x00&lt;/code&gt; gesetzt.&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;p&gt;Über den Zeiger &lt;code&gt;maxNumberOfBlockLength&lt;/code&gt; teilt die aufgerufene Applikation dem DCM mit, wie viele Bytes maximal in jeder nachfolgenden &lt;code&gt;TransferData&lt;/code&gt;-Antwort (ohne SID und Blockfolge-Zähler) enthalten sein dürfen.&lt;/p&gt;
-
-  &lt;h4&gt;Fehlerbehandlung und Rückgabewerte&lt;/h4&gt;
-  &lt;p&gt;Der Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; steuert den weiteren Ablauf:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Anfrage wurde erfolgreich angenommen bzw. abgeschlossen.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Anfrage schlug fehl. Die Applikation muss in diesem Fall über &lt;code&gt;ErrorCode&lt;/code&gt; einen negativen Antwortcode (NRC) setzen, den das DCM in einer negativen Response an den Tester sendet.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_PENDING&lt;/code&gt;: Die Bearbeitung dauert noch an; das DCM wiederholt den Aufruf mit entsprechendem Status.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt;: Fordert das DCM auf, eine Zwischennachricht zur Bestätigung der laufenden Bearbeitung (&lt;em&gt;Response Pending&lt;/em&gt;, NRC &lt;code&gt;0x78&lt;/code&gt;) zu senden.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Zusammenspiel&lt;/h4&gt;
-  &lt;p&gt;Die Funktion ist Teil der Service-Abwicklung von &lt;code&gt;RequestFileTransfer&lt;/code&gt;, die je nach Konfiguration auch als AUTOSAR-Port bereitgestellt wird (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91086" href="../../spec/record.html?id=SWS_Dcm_91086"&gt;[SWS_Dcm_91086]&lt;/a&gt;), und teilt dieselbe Status- und Fehlersemantik mit verwandten Operationen wie dem Hinzufügen von Dateien.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die Callout-Funktion &lt;code&gt;Dcm_ProcessRequestReadFile&lt;/code&gt; wird vom DCM aufgerufen, um einen File-Transfer-Prozess (Service &lt;code&gt;RequestFileTransfer&lt;/code&gt;) mit der Betriebsart &lt;code&gt;ReadFile&lt;/code&gt; (&lt;code&gt;modeOfOperation&lt;/code&gt; &lt;code&gt;0x04&lt;/code&gt;) zu starten &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;. Die Funktion ist im Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt; deklariert, arbeitet asynchron und ist nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Der Aufruf erfolgt über den Statusparameter &lt;code&gt;OpStatus&lt;/code&gt;: Beim Initialaufruf &lt;code&gt;DCM_INITIAL&lt;/code&gt; sind alle Eingabeparameter gültig, während sie bei Folgeaufrufen mit &lt;code&gt;DCM_PENDING&lt;/code&gt;, &lt;code&gt;DCM_CANCEL&lt;/code&gt; oder &lt;code&gt;DCM_FORCE_RCRRP_OK&lt;/code&gt; auf &lt;code&gt;0x00&lt;/code&gt; gesetzt werden &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;. Die Anwendung erhält Pfad und Dateinamen über &lt;code&gt;filePathAndName&lt;/code&gt; (Länge in &lt;code&gt;filePathAndNameLength&lt;/code&gt;), das Format zur Kompression und Verschlüsselung über &lt;code&gt;dataFormatIdentifier&lt;/code&gt; sowie die Dateigrößen über &lt;code&gt;fileSizeUncompressed&lt;/code&gt; und &lt;code&gt;fileSizeCompressed&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;. Als Ausgabeparameter muss die Anwendung &lt;code&gt;maxNumberOfBlockLength&lt;/code&gt; mit der maximalen Byte-Anzahl für nachfolgende &lt;code&gt;TransferData&lt;/code&gt;-Antworten (ohne SID und Block-Sequenzzähler) belegen &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Als Rückgabewerte von &lt;code&gt;Std_ReturnType&lt;/code&gt; sind &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ausführung, &lt;code&gt;DCM_E_PENDING&lt;/code&gt; bei noch andauernder asynchroner Verarbeitung oder &lt;code&gt;DCM_E_FORCE_RCRRP&lt;/code&gt; zur Anforderung einer „Response Pending“-Antwort (NRC 0x78) definiert &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;. Schlägt die Operation fehl, liefert sie &lt;code&gt;E_NOT_OK&lt;/code&gt;; in diesem Fall übermittelt das DCM eine negative Antwort mit dem im Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; gesetzten NRC-Wert an den Tester &lt;a class="spec-record-ref" data-req="SWS_Dcm_91081" href="../../spec/record.html?id=SWS_Dcm_91081"&gt;[SWS_Dcm_91081]&lt;/a&gt;. Das Zusammenspiel entspricht der allgemeinen Abwicklung des Dienstes &lt;code&gt;RequestFileTransfer&lt;/code&gt;, wie er analog für andere Dateioperationen wie &lt;code&gt;ProcessRequestAddFile&lt;/code&gt; konfiguriert wird &lt;a class="spec-record-ref" data-req="SWS_Dcm_91086" href="../../spec/record.html?id=SWS_Dcm_91086"&gt;[SWS_Dcm_91086]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde durch ein KI-System generiert und stützt sich ausschließlich auf die Spezifikation AUTOSAR Classic R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -244,7 +245,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9ffbe920e990…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>da3fd9bbf78e…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -382,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91081","k":"function","d":"AUTOSAR","t":"","n":"Dcm_ProcessRequestReadFile"}],"inbound":[{"i":"SWS_Dcm_91086","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_91086].","n":"SWS_Dcm_91086"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b5e3b16ce13e3825.json?v=2b072b8b" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_91081","k":"function","d":"AUTOSAR","t":"","n":"Dcm_ProcessRequestReadFile"}],"inbound":[{"i":"SWS_Dcm_91086","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_91086].","n":"SWS_Dcm_91086"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/b5e3b16ce13e3825.json?v=da22a53c" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

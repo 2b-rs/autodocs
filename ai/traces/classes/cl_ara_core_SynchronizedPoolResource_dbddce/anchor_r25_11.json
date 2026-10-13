@@ -1,6 +1,8 @@
 {
  "annahmen": [
-  "1) Bei Konstruktoren ohne expliziten MemoryResource-Zeiger wird vermutlich auf eine Standard-Speicherressource der Plattform zurückgegriffen – Begründung: Standard-PMR-Verhalten gemäß [mem.res.pool], zu dem der Payload keine abweichende AUTOSAR-Sonderregel nennt."
+  "1) Der Zugriff auf geschützte Methoden wie do_allocate erfolgt auf Anwenderebene regulär über die öffentliche Schnittstelle allocate der Basisklasse MemoryResource. – Begründung: do_allocate ist protected deklariert, aber die Klasse erbt öffentlich von MemoryResource.",
+  "2) Ein polymorphes Löschen über einen Zeiger vom Typ MemoryResource* führt zu undefiniertem Verhalten. – Begründung: Der Destruktor von SynchronizedPoolResource ist explizit als nicht-virtuell spezifiziert ([SWS_CORE_00035]).",
+  "3) Bei Verwendung von Konstruktoren ohne explizite Upstream-Angabe greift die Implementierung auf eine plattformspezifische Standard-Speicherressource zurück. – Begründung: [SWS_CORE_00031] und [SWS_CORE_00033] fordern keinen Upstream-Parameter, referenzieren aber das Standardverhalten aus [mem.res.pool]."
  ],
  "diagrams": [
   {
@@ -15,9 +17,22 @@
   }
  ],
  "fragment": "content/ai/classes/cl_ara_core_SynchronizedPoolResource_dbddce/anchor_r25_11.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext"
+  ],
+  "oneliner_chars": 108,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 69,
+   "3": 201,
+   "4": 644
+  }
+ },
  "lint": [],
- "output_sha256": "d89e90de6b8ea887b0ffe439609c8def6f4ca25f97581ff14aeda3c6cddcd6a1",
- "output_store": "ai/store/outputs/d8/d89e90de6b8ea887b0ffe439609c8def6f4ca25f97581ff14aeda3c6cddcd6a1.html",
+ "output_sha256": "35bf1d8fc682d913650555610766a6dd6514789faad48e19cb5e4764e78fa687",
+ "output_store": "ai/store/outputs/35/35bf1d8fc682d913650555610766a6dd6514789faad48e19cb5e4764e78fa687.html",
  "params": {
   "class_id": "cl_ara_core_SynchronizedPoolResource_dbddce",
   "platform": "adaptive",
@@ -43,9 +58,9 @@
   "top_p": null
  },
  "profile_id": "gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732",
- "prompt_hash": "355bc0585b1b743cd7989de5ff7b5c848036a8a0d669c55f17843505ed5c46b2",
- "prompt_store": "ai/store/prompts/35/355bc0585b1b743cd7989de5ff7b5c848036a8a0d669c55f17843505ed5c46b2.txt",
- "recipe": "class-guide@2",
+ "prompt_hash": "8c6c1308f3f6d4e429d9312cc74420ff67308070bdeb33b25bddeb201dfcfe6e",
+ "prompt_store": "ai/store/prompts/8c/8c6c1308f3f6d4e429d9312cc74420ff67308070bdeb33b25bddeb201dfcfe6e.txt",
+ "recipe": "class-guide@3",
  "releases": [
   "R25-11"
  ],
@@ -57,17 +72,18 @@
  },
  "runs": [
   {
-   "created_at": "2026-10-07T08:12:15Z",
-   "duration_seconds": 31.089775,
+   "created_at": "2026-10-13T03:49:44Z",
+   "duration_seconds": 39.684951379,
+   "prompt_transport": "argv -p",
    "route": "agy-cli-print",
-   "run_id": "19832b88-4aef-4e42-97e8-97321284d835",
-   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/19832b88-4aef-4e42-97e8-97321284d835.jsonl",
+   "run_id": "b60bb7de-91f9-49d8-a09d-ada4daaffed0",
+   "transcript": "_src/ai/store/transcripts/gemini-3.8-flash-medium__effort-medium__temp-uncontrolled__agy-cli-print__d932cf927732/b60bb7de-91f9-49d8-a09d-ada4daaffed0.jsonl",
    "usage": {
-    "cache_read_tokens": 0,
-    "input_tokens": 16202,
-    "output_tokens": 13705,
-    "thinking_tokens": 10113,
-    "total_tokens": 29907
+    "cache_read_tokens": 8148,
+    "input_tokens": 8151,
+    "output_tokens": 15421,
+    "thinking_tokens": 10564,
+    "total_tokens": 23572
    }
   }
  ],

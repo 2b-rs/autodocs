@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Dcm_00794" class="dossier-modal dossier-workbench" data-dossier-sha="18edcec77a6651e6" aria-labelledby="dossier-modal-SWS_Dcm_00794-title">
+<dialog id="dossier-modal-SWS_Dcm_00794" class="dossier-modal dossier-workbench" data-dossier-sha="171e3fe461db07f9" aria-labelledby="dossier-modal-SWS_Dcm_00794-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Dcm_00794-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Dcm_00794)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,972 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,426 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Xxx_WriteData'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,37 +206,26 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="90bd44eb1f3b011654d78314c863bd2a3761cd71ae54e184621c51a041b33657" data-trace-output="18edcec77a6651e6b487e63820151cdd1390d8de32553525dde843d46fcf62f5" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a454be11e89162cd10b6d65ad8e502318a861c079e351532264f2890862ae6d8" data-trace-output="171e3fe461db07f9ee6c1301c23b4c3464c7542e4c2bf2419163ab49ee63712a" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert die Applikation synchron zum Schreiben eines DID-Datenwerts auf und liefert im Fehlerfall einen Antwortcode." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Verwendung&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion &lt;code&gt;Xxx_WriteData&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;) fordert die Applikation auf, den Datenwert eines Diagnose-Identifiers (DID) zu schreiben. Der Aufruf erfolgt über den Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt; mit der Service-ID &lt;code&gt;0x51&lt;/code&gt;. Über den Eingabeparameter &lt;code&gt;Data&lt;/code&gt; wird der Datenpuffer übergeben, der die zu schreibenden Daten enthält. Die Funktion arbeitet synchron und gibt den Status als &lt;code&gt;Std_ReturnType&lt;/code&gt; zurück: &lt;code&gt;E_OK&lt;/code&gt; bei erfolgreicher Ausführung und &lt;code&gt;E_NOT_OK&lt;/code&gt; im Fehlerfall.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
-  &lt;p&gt;
-    Schlägt die Schreiboperation fehl und &lt;code&gt;Xxx_WriteData&lt;/code&gt; gibt &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, wertet das DCM-Modul den Ausgabeparameter &lt;code&gt;ErrorCode&lt;/code&gt; (Typ &lt;code&gt;Dcm_NegativeResponseCodeType*&lt;/code&gt;) aus. Das DCM sendet daraufhin eine negative Diagnoseantwort (Negative Response) mit dem im Parameter &lt;code&gt;ErrorCode&lt;/code&gt; übergebenen NRC-Wert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;).
-  &lt;/p&gt;
-
-  &lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
-  &lt;p&gt;
-    Die Funktion ist als nicht reentrant (&lt;strong&gt;Non Reentrant&lt;/strong&gt;) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;). Da die Ausführung synchron erfolgt, muss die Applikation die Schreiboperation direkt im Aufrufkontext abschließen.
-  &lt;/p&gt;
-
-  &lt;h4&gt;Zusammenspiel und Varianten&lt;/h4&gt;
-  &lt;p&gt;
-    Die Spezifikation sieht für das Schreiben von DIDs neben der Grundvariante alternative Signaturen vor:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;
-      Synchrone Variante mit variabler Datenlänge über den zusätzlichen Parameter &lt;code&gt;DataLength&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91007" href="../../spec/record.html?id=SWS_Dcm_91007"&gt;[SWS_Dcm_91007]&lt;/a&gt;).
-    &lt;/li&gt;
-    &lt;li&gt;
-      Asynchrone Varianten unter Verwendung des Parameters &lt;code&gt;OpStatus&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91008" href="../../spec/record.html?id=SWS_Dcm_91008"&gt;[SWS_Dcm_91008]&lt;/a&gt;) bzw. kombiniert mit &lt;code&gt;DataLength&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91009" href="../../spec/record.html?id=SWS_Dcm_91009"&gt;[SWS_Dcm_91009]&lt;/a&gt;), die über den Rückgabewert &lt;code&gt;DCM_E_PENDING&lt;/code&gt; mehrstufige Ausführungen unterstützen.
-    &lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Xxx_WriteData&lt;/code&gt; wird vom Diagnostic Communication Manager (DCM) aufgerufen, um die Applikation zum Schreiben eines DID-Datenwerts (Data Identifier) aufzufordern (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;). Die Deklaration wird über den Header &lt;code&gt;Dcm_Externals.h&lt;/code&gt; bereitgestellt. Der Aufruf erfolgt synchron unter der Service-ID &lt;code&gt;0x51&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Parameter und Rückgabewerte:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Data&lt;/code&gt; (in): Zeiger auf den Puffer mit den zu schreibenden Nutzdaten (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ErrorCode&lt;/code&gt; (out): Zeiger auf die Variable, in die bei einem Fehlschlag der negative Diagnosecode (NRC) einzutragen ist (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;Rückgabewert (&lt;code&gt;Std_ReturnType&lt;/code&gt;): &lt;code&gt;E_OK&lt;/code&gt; signalisiert erfolgreiches Schreiben, &lt;code&gt;E_NOT_OK&lt;/code&gt; das Fehlschlagen der Operation (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Gibt die Funktion &lt;code&gt;E_NOT_OK&lt;/code&gt; zurück, liest das DCM-Modul den Parameter &lt;code&gt;ErrorCode&lt;/code&gt; aus und sendet eine negative Diagnoseantwort mit diesem NRC-Code (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;).&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Funktion ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert (&lt;a class="spec-record-ref" data-req="SWS_Dcm_00794" href="../../spec/record.html?id=SWS_Dcm_00794"&gt;[SWS_Dcm_00794]&lt;/a&gt;) und darf nicht nebenläufig ausgeführt werden.&lt;/p&gt;
+&lt;h4&gt;Zusammenspiel&lt;/h4&gt;
+&lt;p&gt;Da kein Längenparameter existiert, dürfte diese Variante für DIDs mit fester Datenlänge vorgesehen sein. Für DIDs mit variabler Länge stellt AUTOSAR die synchrone Signatur mit dem Parameter &lt;code&gt;DataLength&lt;/code&gt; bereit (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91007" href="../../spec/record.html?id=SWS_Dcm_91007"&gt;[SWS_Dcm_91007]&lt;/a&gt;). Zudem existieren für langwierige Abläufe asynchrone Varianten mit &lt;code&gt;OpStatus&lt;/code&gt; und möglicher Rückgabe von &lt;code&gt;DCM_E_PENDING&lt;/code&gt;, sowohl mit fester Datenlänge (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91008" href="../../spec/record.html?id=SWS_Dcm_91008"&gt;[SWS_Dcm_91008]&lt;/a&gt;) als auch mit variablem Längenparameter (&lt;a class="spec-record-ref" data-req="SWS_Dcm_91009" href="../../spec/record.html?id=SWS_Dcm_91009"&gt;[SWS_Dcm_91009]&lt;/a&gt;).&lt;/p&gt;
+&lt;!-- annahmen: 1) Eignung für DIDs mit fester Länge – Begründung: Der Signatur fehlt im Gegensatz zu SWS_Dcm_91007 ein DataLength-Parameter. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI auf Basis der Spezifikation AUTOSAR CP R20-11 generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -258,9 +265,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>90bd44eb1f3b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a454be11e891…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 1 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (1 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 4 <span class="dossier-meta-sub">(4 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 4 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -396,4 +403,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00794","k":"function","d":"AUTOSAR","t":"","n":"Xxx_WriteData"}],"inbound":[{"i":"SWS_Dcm_91007","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_91007].","n":"SWS_Dcm_91007"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/205466aec46d5b54.json?v=103a015d" data-total="4" data-new="4" data-figures="1" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Dcm_00794","k":"function","d":"AUTOSAR","t":"","n":"Xxx_WriteData"}],"inbound":[{"i":"SWS_Dcm_91007","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_Dcm_91007].","n":"SWS_Dcm_91007"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/205466aec46d5b54.json?v=d4aa70de" data-total="4" data-new="4" data-figures="2" data-used="0"></script></dialog>

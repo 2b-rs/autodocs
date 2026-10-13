@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-ns_log_apext_log_14fe26" class="dossier-modal dossier-workbench" data-dossier-sha="c045fe5d4ceae164" aria-labelledby="dossier-modal-ns_log_apext_log_14fe26-title">
+<dialog id="dossier-modal-ns_log_apext_log_14fe26" class="dossier-modal dossier-workbench" data-dossier-sha="cb44846128be12dd" aria-labelledby="dossier-modal-ns_log_apext_log_14fe26-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-ns_log_apext_log_14fe26-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (Namespace Guide: ns_log_apext_log_14fe26)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,879 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,402 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -118,6 +118,13 @@ ABSCHNITTSKATEGORIEN (nur die, für die der Payload Belege liefert; Reihenfolge 
   Erfinde NIEMALS eigene SWS-Nummern oder Referenzen. Wenn für einen Aspekt kein Beleg vorliegt, beschreibe ihn neutral ohne Scheinbeleg.
 - Das Fragment beginnt mit &lt;div class="ai namespace-guide"&gt; und endet mit &lt;p class="ai-note"&gt;…&lt;/p&gt;&lt;/div&gt;.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 3–5 Absätze &lt;p&gt; mit zusammen etwa 250–450 Wörtern, ohne &lt;h4&gt;-Überschriften (eine kurze &lt;ul&gt; ist erlaubt); jeder Absatz mit mindestens einem Beleg. Übernimm das wichtigste Diagramm oder die zwei wichtigsten Diagramme aus Stufe 4: ihr Platzhalter &lt;div class="diagram" id="diag-…"&gt;&lt;/div&gt; mit derselben ID wie in FRAGMENT, direkt gefolgt von einer eigenen &lt;p class="diagram-note"&gt;. Keine neuen Diagramme, keine weiteren DIAGRAM-Blöcke.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–5 Sätzen (60–110 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
@@ -141,8 +148,20 @@ Sequenz-Schema (JSON):
 ]}
 Antworten/Rückgaben: "pfeil": "offen", "gestrichelt": true. Zustands-, Kontext- und Aktivitätsdiagramme als dot.
 
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
+
 === USER PROMPT ===
 Erstelle den Namespace-Leitfaden für 'namespace apext::log' (R25-11).
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "classes": [],
@@ -210,12 +229,21 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-trace-prompt="9065aad392637eef6c24dedf2eaecd1e3679f3c599bf72c15ffe2fb8dc807c5c" data-trace-output="c045fe5d4ceae164ef688db23933273c4162819cd83c6be6ab8153ddf6853e3b" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai namespace-guide" data-ai-levels="4" data-trace-prompt="199c14229bd87bb2a5770e186456ee88b7767f4c03783d63ccd76926be3f667f" data-trace-output="cb44846128be12dd61d2062c48fa0cf15d58d0ae1abac4833dca69bbfc7fcfe4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Stellt eine threadsichere Schnittstelle zur Weiterleitung modellierter Nachrichten an externe Trace-Werkzeuge bereit." data-ai-level-cur="2" data-ai-level-kind="namespace" data-ai-levels-shown="2 4"&gt;
 
-&lt;h4&gt;Context&lt;/h4&gt;
-&lt;p&gt;The namespace &lt;code&gt;apext::log&lt;/code&gt; represents a platform-specific extension within the module &lt;code&gt;log&lt;/code&gt; of the AUTOSAR Adaptive Platform. Its central task is to provide a standardized interface between the logger framework and external runtime trace tools. The namespace comprises the interface function &lt;code&gt;TraceArti&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;, which is included via the header file &lt;code&gt;apext/log/trace_arti.h&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Three components are essentially involved in the interaction: the higher-level logger framework, the namespace &lt;code&gt;apext::log&lt;/code&gt; as an intermediary layer, and the respective trace tool used &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. The logger framework switches internally between standard logging and ARTI-based tracing and forwards modeled messages to the interface &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. The trace tool ultimately receives this data and processes it in a tool-specific manner &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="diagram" id="diag-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 450.26 64.80" style="max-width:600px"&gt;
+&lt;div class="ai-level-nav" role="group" aria-label="Ausführlichkeit"&gt;&lt;button type="button" class="ai-level-step ai-level-less" data-ai-level-step="-1" title="Kürzere Fassung zeigen" disabled&gt;‹ weniger&lt;/button&gt;&lt;span class="ai-level-picks"&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="2" aria-pressed="true" title="Kurzfassung in einem Absatz"&gt;Kurzfassung&lt;/button&gt;&lt;button type="button" class="ai-level-go" data-ai-level-go="4" aria-pressed="false" title="Vollständiger Guide"&gt;Ausführlich&lt;/button&gt;&lt;/span&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/div&gt;
+&lt;p class="ai-level ai-oneliner-lead" data-ai-level="1"&gt;Stellt eine threadsichere Schnittstelle zur Weiterleitung modellierter Nachrichten an externe Trace-Werkzeuge bereit.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="2"&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::log&lt;/code&gt; stellt mit der Funktionsschablone &lt;code&gt;TraceArti&lt;/code&gt; eine Schnittstelle zur Weiterleitung modellierter Trace-Nachrichten an externe Laufzeit-Trace-Werkzeuge bereit &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Die Funktion wird ausschließlich intern durch das Logger-Framework beim Umschalten zwischen Logging und Tracing aufgerufen und verarbeitet nachrichtenspezifische Bezeichner sowie variable Parameter &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Als zentrale Randbedingungen gelten ein minimaler Laufzeit-Overhead, vollständige Threadsicherheit sowie eine ausnahmesichere Ausführung ohne Fehler- oder Rückgabewerte.&lt;/p&gt;
+&lt;p class="ai-level-more-inline"&gt;&lt;button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="Ausführlichere Fassung zeigen"&gt;mehr ›&lt;/button&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Kontext&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::log&lt;/code&gt; stellt funktionale Schnittstellen für das Logging- und Tracing-Subsystem der AUTOSAR Adaptive Platform bereit. Seine primäre Verantwortung liegt in der Bereitstellung einer dedizierten Schnittstelle für externe Laufzeit-Trace-Werkzeuge über die Funktionsschablone &lt;code&gt;TraceArti&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Die Namensgebung mit dem Präfix &lt;code&gt;apext&lt;/code&gt; dürfte als Interpretation darauf hindeuten, dass es sich um eine Plattform-Erweiterung (Adaptive Platform Extension) handelt, die spezifische Tracing-Mechanismen wie das AUTOSAR Run-Time Interface (ARTI) an das Logging-Framework anbindet.&lt;/p&gt;
+
+&lt;p&gt;In der Systemarchitektur fungiert der Namespace als Bindeglied zwischen der internen Logging-Infrastruktur und nachgelagerten Analyse- bzw. Trace-Werkzeugen. Dabei interagieren im Wesentlichen drei Komponenten miteinander: das interne Logger-Framework, die Schnittstellenfunktion &lt;code&gt;TraceArti&lt;/code&gt; innerhalb von &lt;code&gt;apext::log&lt;/code&gt; sowie das angebundene Trace-Tool &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Das Logger-Framework verarbeitet Anwendungsereignisse und leitet modellierte Nachrichten bei entsprechender Umschaltung an &lt;code&gt;TraceArti&lt;/code&gt; weiter, welches die Daten an das herstellerspezifische Trace-Tool übergibt &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;div class="diagram" id="diag-trace-arti-kontext"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 525.52 64.80" style="max-width:701px"&gt;
 &lt;g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 50.4)"&gt;
 &lt;!-- logger --&gt;
 &lt;g id="node1" class="node"&gt;
@@ -223,57 +251,51 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 &lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M90.14,-36C90.14,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 90.14,0 90.14,0 96.14,0 102.14,-6 102.14,-12 102.14,-12 102.14,-24 102.14,-24 102.14,-30 96.14,-36 90.14,-36"&gt;&lt;/path&gt;
 &lt;text text-anchor="middle" x="51.07" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Logger-Framework&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- apext --&gt;
+&lt;!-- trace_arti --&gt;
 &lt;g id="node2" class="node"&gt;
-&lt;title&gt;apext&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M253.02,-36C253.02,-36 210.94,-36 210.94,-36 204.94,-36 198.94,-30 198.94,-24 198.94,-24 198.94,-12 198.94,-12 198.94,-6 204.94,0 210.94,0 210.94,0 253.02,0 253.02,0 259.02,0 265.02,-6 265.02,-12 265.02,-12 265.02,-24 265.02,-24 265.02,-30 259.02,-36 253.02,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="231.98" y="-21.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_log_apext_log_14fe26.html" href="../namespaces/ns_log_apext_log_14fe26.html"&gt;apext::log&lt;/a&gt;&lt;/text&gt;
-&lt;text text-anchor="middle" x="231.98" y="-8.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;(&lt;a class="diag-ref" data-ref="namespaces/ns_log_apext_log_14fe26.html#SWS_LOG_20000" href="../namespaces/ns_log_apext_log_14fe26.html#SWS_LOG_20000"&gt;TraceArti&lt;/a&gt;)&lt;/text&gt;
+&lt;title&gt;trace_arti&lt;/title&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M295.79,-36C295.79,-36 210.94,-36 210.94,-36 204.94,-36 198.94,-30 198.94,-24 198.94,-24 198.94,-12 198.94,-12 198.94,-6 204.94,0 210.94,0 210.94,0 295.79,0 295.79,0 301.79,0 307.79,-6 307.79,-12 307.79,-12 307.79,-24 307.79,-24 307.79,-30 301.79,-36 295.79,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="253.37" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;&lt;a class="diag-ref" data-ref="namespaces/ns_log_apext_log_14fe26.html#SWS_LOG_20000" href="../namespaces/ns_log_apext_log_14fe26.html#SWS_LOG_20000"&gt;apext::log::TraceArti&lt;/a&gt;&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- logger&amp;#45;&amp;gt;apext --&gt;
+&lt;!-- logger&amp;#45;&amp;gt;trace_arti --&gt;
 &lt;g id="edge1" class="edge"&gt;
-&lt;title&gt;logger-&amp;gt;apext&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M102.38,-18C128.97,-18 161.31,-18 186.9,-18"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="186.84,-21.5 196.84,-18 186.84,-14.5 186.84,-21.5"&gt;&lt;/polygon&gt;
+&lt;title&gt;logger-&amp;gt;trace_arti&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M102.61,-18C128.27,-18 159.73,-18 187.19,-18"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="187.02,-21.5 197.02,-18 187.02,-14.5 187.02,-21.5"&gt;&lt;/polygon&gt;
 &lt;text text-anchor="middle" x="150.54" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;interner Aufruf&lt;/text&gt;
 &lt;/g&gt;
 &lt;!-- trace_tool --&gt;
 &lt;g id="node3" class="node"&gt;
 &lt;title&gt;trace_tool&lt;/title&gt;
-&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M409.46,-36C409.46,-36 367.99,-36 367.99,-36 361.99,-36 355.99,-30 355.99,-24 355.99,-24 355.99,-12 355.99,-12 355.99,-6 361.99,0 367.99,0 367.99,0 409.46,0 409.46,0 415.46,0 421.46,-6 421.46,-12 421.46,-12 421.46,-24 421.46,-24 421.46,-30 415.46,-36 409.46,-36"&gt;&lt;/path&gt;
-&lt;text text-anchor="middle" x="388.73" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Trace-Tool&lt;/text&gt;
+&lt;path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M484.72,-36C484.72,-36 443.25,-36 443.25,-36 437.25,-36 431.25,-30 431.25,-24 431.25,-24 431.25,-12 431.25,-12 431.25,-6 437.25,0 443.25,0 443.25,0 484.72,0 484.72,0 490.72,0 496.72,-6 496.72,-12 496.72,-12 496.72,-24 496.72,-24 496.72,-30 490.72,-36 484.72,-36"&gt;&lt;/path&gt;
+&lt;text text-anchor="middle" x="463.99" y="-14.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"&gt;Trace-Tool&lt;/text&gt;
 &lt;/g&gt;
-&lt;!-- apext&amp;#45;&amp;gt;trace_tool --&gt;
+&lt;!-- trace_arti&amp;#45;&amp;gt;trace_tool --&gt;
 &lt;g id="edge2" class="edge"&gt;
-&lt;title&gt;apext-&amp;gt;trace_tool&lt;/title&gt;
-&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M265.42,-18C288.3,-18 319.19,-18 344.21,-18"&gt;&lt;/path&gt;
-&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="343.93,-21.5 353.93,-18 343.93,-14.5 343.93,-21.5"&gt;&lt;/polygon&gt;
-&lt;text text-anchor="middle" x="310.5" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;Weiterleitung&lt;/text&gt;
+&lt;title&gt;trace_arti-&amp;gt;trace_tool&lt;/title&gt;
+&lt;path fill="none" stroke="#28251d" stroke-width="1.1" d="M308.09,-18C342.71,-18 387.15,-18 419.54,-18"&gt;&lt;/path&gt;
+&lt;polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="419.22,-21.5 429.22,-18 419.22,-14.5 419.22,-21.5"&gt;&lt;/polygon&gt;
+&lt;text text-anchor="middle" x="369.52" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d"&gt;modellierte Nachricht&lt;/text&gt;
 &lt;/g&gt;
 &lt;/g&gt;
 &lt;/svg&gt;&lt;/div&gt;
-&lt;p class="diagram-note"&gt;Context diagram: Interaction between the logger framework, the extension namespace apext::log, and the trace tool. Sources: &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;&lt;/p&gt;
+&lt;p class="diagram-note"&gt;Kontextdiagramm: Einbettung von TraceArti zwischen Logger-Framework und Trace-Tool. Quellen: &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;&lt;/p&gt;
 
-&lt;h4&gt;Lifecycle&lt;/h4&gt;
-&lt;p&gt;In release R25-11, &lt;code&gt;apext::log&lt;/code&gt; does not define any standalone classes or stateful objects with a complex instantiation or destruction cycle. The interaction relies entirely on the free template function &lt;code&gt;TraceArti&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. The lifetime of the involved data is bound to the execution time of the respective call.&lt;/p&gt;
-&lt;p&gt;Regarding concurrency, the function &lt;code&gt;TraceArti&lt;/code&gt; is explicitly specified as thread-safe (&lt;code&gt;thread-safe&lt;/code&gt;) &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Multiple threads of an application or of the logger framework can thus call the function concurrently without requiring external synchronization measures to be implemented on the caller side. Regarding exception safety, the classification &lt;code&gt;exception safe&lt;/code&gt; applies; the function declaration is additionally provided with the specifier &lt;code&gt;noexcept&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Tracing calls must not destabilize the overall system at any time through uncontrollably propagating exceptions.&lt;/p&gt;
+&lt;h4&gt;Lebenszyklus&lt;/h4&gt;
+&lt;p&gt;Der Namespace &lt;code&gt;apext::log&lt;/code&gt; kapselt keine langlebigen Klasseninstanzen, Sitzungsobjekte oder zustandsbehafteten Entitäten mit eigenständigem Lebenszyklus. Es existieren im Namespace keine expliziten Initialisierungs- oder Terminierungsroutinen; vielmehr wird die Funktionalität ausschließlich durch freie Template-Funktionen realisiert &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Der Lebenszyklus der Tracing-Funktionalität ist somit vollständig an den übergeordneten Betriebslebenszyklus des Logger-Frameworks gekoppelt.&lt;/p&gt;
 
-&lt;h4&gt;Usage Path&lt;/h4&gt;
-&lt;p&gt;The function &lt;code&gt;TraceArti&lt;/code&gt; is not designed for direct invocation by application software. It is called exclusively internally by the logger framework when it switches between regular logging and TraceArti &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Interpretation: Application developers presumably do not interact directly with this namespace, but rather use the regular logging interfaces of the platform, while the switching is controlled internally by the framework.&lt;/p&gt;
-&lt;p&gt;The regular sequence of a tracing call is structured as follows:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;The logger framework detects an event to be logged and decides whether to forward it to the tracing subsystem &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;The framework calls &lt;code&gt;apext::log::TraceArti(msg_id, params...)&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. A message-identifying identifier (&lt;code&gt;msg_id&lt;/code&gt;) of an implementation-defined type as well as arbitrary message-specific arguments (&lt;code&gt;params...&lt;/code&gt;) are passed as parameters &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;The function processes the modeled message and passes the data to the connected trace tool &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;A central architectural goal is minimizing runtime overhead (&lt;code&gt;runtime overhead&lt;/code&gt;), which must be as low as possible &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. To achieve this, the specification explicitly provides for template specializations based on the type &lt;code&gt;MsgId&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. This allows serialization or direct placement in the tracing buffer to be optimally adapted to the target tool at compile time.&lt;/p&gt;
+&lt;p&gt;Hinsichtlich des Nebenläufigkeitsverhaltens und der Betriebssicherheit gelten strikte Garantien: Die Schnittstelle &lt;code&gt;TraceArti&lt;/code&gt; ist explizit als threadsicher (thread-safe) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Dies gestattet es dem Logger-Framework, Trace-Aufrufe parallel aus multiplen Ausführungskontexten und Threads ohne externe Synchronisation an den Namespace zu delegieren. Gleichzeitig ist die Funktion als ausnahmesicher (exception safe) und &lt;code&gt;noexcept&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;, sodass zu keinem Zeitpunkt Ressourcenlecks oder unkontrollierte Stack-Unwinding-Zustände während des Aufrufs auftreten können.&lt;/p&gt;
 
-&lt;h4&gt;Error Scenarios&lt;/h4&gt;
-&lt;p&gt;No return values are defined for the call of &lt;code&gt;TraceArti&lt;/code&gt; (&lt;code&gt;void&lt;/code&gt; or &lt;code&gt;None&lt;/code&gt;), and functional error codes are not provided &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. In conjunction with the &lt;code&gt;noexcept&lt;/code&gt; guarantee, this means that issues occurring during trace generation are not communicated to the caller via error messages or exceptions &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Interpretation: Potential error conditions in the trace tool, such as buffer overflows or dropped connections, are likely handled internally by the tool or discarded so as not to block the primary program flow.&lt;/p&gt;
-&lt;p&gt;As an essential precondition, the passed &lt;code&gt;msg_id&lt;/code&gt; must conform to the model expected by the trace tool &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Interpretation: If no matching template specialization exists for a passed message ID, this would likely either lead to compile-time errors or fall back to a generic fallback implementation, which could potentially lead to increased runtime overhead.&lt;/p&gt;
+&lt;h4&gt;Nutzungspfad&lt;/h4&gt;
+&lt;p&gt;Die Funktionen des Namespace &lt;code&gt;apext::log&lt;/code&gt; sind nicht für den direkten Aufruf durch allgemeine Anwendungssoftware konzipiert. Stattdessen wird &lt;code&gt;TraceArti&lt;/code&gt; ausschließlich intern durch das Logger-Framework aufgerufen, wenn dieses zwischen klassischem Logging und ARTI-basiertem Tracing umschaltet &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Entwickler oder Integratoren binden bei Bedarf die entsprechende Header-Datei &lt;code&gt;#include "apext/log/trace_arti.h"&lt;/code&gt; ein, um Zugriff auf die Deklaration zu erhalten &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;!-- annahmen: 1) Direkte Anwendungsaufrufe finden nicht statt – Begründung: SWS_LOG_20000 spezifiziert TraceArti explizit als internen Aufruf des Logger-Frameworks. 2) Werkzeuginterne Fehler werden verworfen oder lokal abgefangen – Begründung: SWS_LOG_20000 deklariert die Funktion mit noexcept und void-Rückgabe ohne Fehlercodes. 3) Nicht-spezialisierte MsgId-Typen führen zu Fallbacks oder Compiler-Fehlern – Begründung: SWS_LOG_20000 nennt Spezialisierungen explizit als Mittel zur Overhead-Minimierung. --&gt;
-&lt;p class="ai-note"&gt;This guide is based on the AUTOSAR Adaptive specification for the log module in release R25-11.&lt;/p&gt;
+&lt;p&gt;Beim Aufruf verarbeitet die Funktion modellierte Nachrichten (modeled messages), die für das jeweils verwendete Trace-Tool spezifisch sind &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Die Schnittstelle akzeptiert hierzu einen nachrichtenidentifizierenden Bezeichner &lt;code&gt;msg_id&lt;/code&gt; eines implementierungsdefinierten Typs &lt;code&gt;MsgId&lt;/code&gt; sowie ein variables Parameterpaket &lt;code&gt;params...&lt;/code&gt; beliebiger Typen &lt;code&gt;Params...&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Um die Laufzeitkosten im Trace-Pfad so gering wie möglich zu halten, fordert die Spezifikation eine strikte Minimierung des Laufzeit-Overheads; dies soll beispielsweise durch maßgeschneiderte Template-Spezialisierungen auf Basis der jeweiligen &lt;code&gt;MsgId&lt;/code&gt; erreicht werden &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Es ist zu vermuten, dass derartige Spezialisierungen typischerweise durch Werkzeug-Generatoren im Rahmen der Toolchain-Integration für die jeweiligen Zielsysteme erzeugt werden.&lt;/p&gt;
+
+&lt;h4&gt;Fehlerszenarien&lt;/h4&gt;
+&lt;p&gt;Im Bereich der Fehlerbehandlung verfolgt &lt;code&gt;apext::log&lt;/code&gt; ein fehlertolerantes Design ohne Signalisierung von Laufzeitfehlern an den Aufrufer. Die Funktionssignatur von &lt;code&gt;TraceArti&lt;/code&gt; definiert keinen Rückgabewert (&lt;code&gt;void&lt;/code&gt;) und verbietet über die &lt;code&gt;noexcept&lt;/code&gt;-Spezifikation das Werfen von C++-Exceptions vollständig &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;. Vorbedingungen wie die Gültigkeit von Nachrichten-IDs und übergebenen Nutzdaten müssen daher zwingend durch das aufrufende Logger-Framework oder die entsprechenden Spezialisierungen gewährleistet werden, da im Fehlerfall keine Fehlercodes transportiert werden können &lt;a class="spec-record-ref" data-req="SWS_LOG_20000" href="../spec/record.html?id=SWS_LOG_20000"&gt;[SWS_LOG_20000]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Die Benennung 'apext' steht vermutlich für Adaptive Platform Extension als Ergänzung zu Standard-Namespaces wie ara::log. – Begründung: Der Namespace ist apext::log und kapselt herstellerspezifische ARTI-Trace-Werkzeuge. 2) Template-Spezialisierungen basierend auf MsgId werden vermutlich von Werkzeug-Generatoren bereitgestellt. – Begründung: Die Spezifikation fordert minimale Laufzeitkosten durch Spezialisierungen auf MsgId, definiert im C++-Interface aber keine Standard-Spezialisierungen. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Leitfaden wurde durch eine KI erstellt und fasst die Spezifikation zur Schnittstelle apext::log zusammen.&lt;/p&gt;
 
 
 &lt;/div&gt;</pre>
@@ -315,9 +337,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>9065aad39263…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>199c14229bd8…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 12 <span class="dossier-meta-sub">(12 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 12 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -352,8 +374,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">13</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">12</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">3</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">2</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -390,7 +412,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 12 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 2 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -453,4 +475,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LOG_20000","k":"function","d":"LOG","t":"function TraceArti [SWS_LOG_20000] Upstream: RS_LT_00003 template \u003ctypename MsgId, typename... Params> void TraceArti (const MsgId &msg_id, const Params &... params) noexcept; Handles a modeled message, specific to the used trace tool. This function is only called internally by the Logger framework when switching between Log and TraceArti. It represents the interface to trace tools. The runtime overhead of this function shall be kept as minimal as possible, e.g. by using specializations based on the MsgId. Header-Datei #include \"apext/log/trace_arti.h\" class mono Scope namespace apext::log class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Template-Parameter th Parameter th Beschreibung td MsgIdParams td the type of the msg_id parameter the types of the params parameters Parameter (in) th Parameter th Beschreibung td msg_id td an implementation-defined type identifying the message object td params td the arguments of the message Rückgabewert th Typ th Beschreibung td None td","n":"TraceArti"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/c21eb8204f19aec1.json?v=0deeb663" data-total="12" data-new="12" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_LOG_20000","k":"function","d":"LOG","t":"function TraceArti [SWS_LOG_20000] Upstream: RS_LT_00003 template \u003ctypename MsgId, typename... Params> void TraceArti (const MsgId &msg_id, const Params &... params) noexcept; Handles a modeled message, specific to the used trace tool. This function is only called internally by the Logger framework when switching between Log and TraceArti. It represents the interface to trace tools. The runtime overhead of this function shall be kept as minimal as possible, e.g. by using specializations based on the MsgId. Header-Datei #include \"apext/log/trace_arti.h\" class mono Scope namespace apext::log class mono Exception-Sicherheit exception safe class mono Thread-Sicherheit thread-safe class mono Template-Parameter th Parameter th Beschreibung td MsgIdParams td the type of the msg_id parameter the types of the params parameters Parameter (in) th Parameter th Beschreibung td msg_id td an implementation-defined type identifying the message object td params td the arguments of the message Rückgabewert th Typ th Beschreibung td None td","n":"TraceArti"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../" data-src="dossier-data/c21eb8204f19aec1.json?v=a94a55da" data-total="2" data-new="2" data-figures="2" data-used="0"></script></dialog>

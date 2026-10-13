@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_Ea_00091" class="dossier-modal dossier-workbench" data-dossier-sha="54e8b2f54bf75134" aria-labelledby="dossier-modal-SWS_Ea_00091-title">
+<dialog id="dossier-modal-SWS_Ea_00091" class="dossier-modal dossier-workbench" data-dossier-sha="6e7f1db78eba0f26" aria-labelledby="dossier-modal-SWS_Ea_00091-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_Ea_00091-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_Ea_00091)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,220 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,675 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'Ea_InvalidateBlock'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,33 +193,19 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="c4cb24c9fa63d72216dc18fd520d80e6ccbb7410b23ab662e54e07b287ed6d27" data-trace-output="54e8b2f54bf75134d7d37d5687af9662e29c5ca6bdaa4d0f522ac8056d81cab0" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="2c1c29a1fe37321f5e832430b3765e7b677131b6035a77a6941cf092074c35c4" data-trace-output="6e7f1db78eba0f268ffae3bbf5121ae1574601cddb03807612a2dfef171d386e" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Invalidiert asynchron einen logischen Block im EEPROM anhand der übergebenen Blocknummer." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;
-    The function &lt;code&gt;Ea_InvalidateBlock&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;) serves to invalidate a logical block. The interface is declared via &lt;code&gt;Ea.h&lt;/code&gt; and has the service ID &lt;code&gt;0x07&lt;/code&gt;. Execution is asynchronous (&lt;em&gt;Asynchronous&lt;/em&gt;): the call accepts the job for block invalidation in the EA module, whereas the actual execution is processed asynchronously (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;).
-  &lt;/p&gt;
-  &lt;p&gt;
-    Parameters:
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;Block Number&lt;/code&gt; (&lt;code&gt;uint16&lt;/code&gt;, in): Number of the logical block, which also designates the start address of this block in the EEPROM (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Return Values and Error Handling&lt;/h4&gt;
-  &lt;p&gt;
-    Via the return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt;, the function signals whether the invalidation job could be accepted (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;):
-  &lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The requested job was successfully accepted by the EA module.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The requested job was not accepted. According to the specification, this status is returned only when development error detection (DET) is enabled (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;).&lt;/li&gt;
-  &lt;/ul&gt;
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;
-    &lt;code&gt;Ea_InvalidateBlock&lt;/code&gt; is specified as non-reentrant (&lt;em&gt;Non Reentrant&lt;/em&gt;) (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;). Calls must therefore not be issued concurrently or interrupting across multiple contexts for the same module.
-  &lt;/p&gt;
-  &lt;p class="ai-note"&gt;
-    This usage note was generated automatically based on the specification AUTOSAR R20-11 (&lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;).
-  &lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die Funktion &lt;code&gt;Ea_InvalidateBlock&lt;/code&gt; dient der Invalidierung eines durch die logische Blocknummer angegebenen Blocks &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;. Sie besitzt die Service-ID &lt;code&gt;0x07&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;Ea.h&lt;/code&gt; bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;. Als Eingabeparameter nimmt sie &lt;code&gt;Block Number&lt;/code&gt; vom Typ &lt;code&gt;uint16&lt;/code&gt; entgegen; dieser bezeichnet die logische Blocknummer und gibt zugleich die Startadresse des betreffenden Blocks im EEPROM an &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;. Ein-/Ausgabeparameter oder reine Ausgabeparameter sind für diesen Dienst nicht definiert &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Der Aufruf wird als asynchrone Operation (&lt;code&gt;Asynchronous&lt;/code&gt;) ausgeführt &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;. Ein Rückgabewert &lt;code&gt;E_OK&lt;/code&gt; vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; bestätigt dem Aufrufer, dass das EA-Modul die Auftragsanforderung zur weiteren Bearbeitung angenommen hat &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Konnte das EA-Modul den angeforderten Auftrag nicht annehmen, wird der Fehlerwert &lt;code&gt;E_NOT_OK&lt;/code&gt; zurückgegeben &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;. Laut Spezifikation erfolgt diese Rückgabe von &lt;code&gt;E_NOT_OK&lt;/code&gt; jedoch ausschließlich dann, wenn DET aktiviert ist &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Die Schnittstelle ist als nicht reentrant (&lt;code&gt;Non Reentrant&lt;/code&gt;) spezifiziert &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;. Interpretation: Aufrufer dürfen die Funktion folglich vermutlich nicht parallel oder unterbrechend aufrufen, da keine modulseitige Reentranz gewährleistet wird &lt;a class="spec-record-ref" data-req="SWS_Ea_00091" href="../../spec/record.html?id=SWS_Ea_00091"&gt;[SWS_Ea_00091]&lt;/a&gt;.&lt;/p&gt;
+&lt;!-- annahmen: 1) Aufrufer müssen parallele oder unterbrechende Aufrufe selbst verhindern. – Begründung: Das Element ist als Non Reentrant spezifiziert, ohne dass der Payload konkrete Synchronisationsmechanismen nennt. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde automatisiert auf Basis der Spezifikation von AUTOSAR Classic R20-11 erstellt.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -241,7 +245,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>c4cb24c9fa63…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>2c1c29a1fe37…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
               <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 2 <span class="dossier-meta-sub">(2 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 2 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
@@ -379,4 +383,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Ea_00091","k":"function","d":"AUTOSAR","t":"","n":"Ea_InvalidateBlock"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/962dd9efa841597b.json?v=54c6480b" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_Ea_00091","k":"function","d":"AUTOSAR","t":"","n":"Ea_InvalidateBlock"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/962dd9efa841597b.json?v=b530c671" data-total="2" data-new="2" data-figures="0" data-used="0"></script></dialog>

@@ -1,7 +1,6 @@
 {
  "annahmen": [
-  "1) Dlt_CopyTxData/Dlt_TpTxConfirmation dürften für TP-basierte Sendekanäle dienen, Dlt_TriggerTransmit für trigger-gesteuerte PDUs – Begründung: Die Signaturen liegen im Payload vor, ihre Zuordnung zu Kanalarten aber nicht.",
-  "2) Die Wahl zwischen Dlt_RxIndication und den TP-Empfangs-Callbacks steuert vermutlich DltRxPduUsesTp – Begründung: Die ECUC-Beschreibung nennt den Schalter und alle vier Callbacks, die Semantik ist aus dem Parameternamen abgeleitet."
+  "1) VFB-Trace-Nachrichten durchlaufen denselben gepufferten Sendepfad (Filter, LogChannel, Dlt_TxFunction, PduR) wie explizite Trace-Nachrichten – Begründung: SWS_Dlt_00285 fordert eine zu Dlt_SendTraceMessage äquivalente interne Funktion; das VFB-Sequenzschaubild im Payload zeigt nur den älteren DltCom-Pfad."
  ],
  "diagrams": [
   {
@@ -10,24 +9,24 @@
    "quelle": "anchor_r20_11.diag-kontext.dot"
   },
   {
+   "art": "dot",
+   "id": "diag-lebenszyklus",
+   "quelle": "anchor_r20_11.diag-lebenszyklus.dot"
+  },
+  {
    "art": "seq",
    "id": "diag-init",
    "quelle": "anchor_r20_11.diag-init.seq.json"
   },
   {
    "art": "dot",
-   "id": "diag-registrierung",
-   "quelle": "anchor_r20_11.diag-registrierung.dot"
-  },
-  {
-   "art": "dot",
-   "id": "diag-sendepfad",
-   "quelle": "anchor_r20_11.diag-sendepfad.dot"
+   "id": "diag-kanalwahl",
+   "quelle": "anchor_r20_11.diag-kanalwahl.dot"
   },
   {
    "art": "seq",
-   "id": "diag-tx",
-   "quelle": "anchor_r20_11.diag-tx.seq.json"
+   "id": "diag-senden",
+   "quelle": "anchor_r20_11.diag-senden.seq.json"
   },
   {
    "art": "seq",
@@ -36,26 +35,22 @@
   },
   {
    "art": "seq",
-   "id": "diag-laufzeit",
-   "quelle": "anchor_r20_11.diag-laufzeit.seq.json"
+   "id": "diag-loglevel",
+   "quelle": "anchor_r20_11.diag-loglevel.seq.json"
   }
  ],
  "fragment": "content/ai/classic/modules/dlt/anchor_r20_11.html",
  "kontext": {
   "ausgelassen": {
-   "budget": [
-    "FIG-2cc48ab0c1f133c7",
-    "FIG-3ba65a2840d8f42a",
-    "FIG-575a02b9058daae0",
-    "FIG-650d06a144c2d504",
-    "FIG-7299b062495e6ba2",
-    "FIG-c0efff053adca5f6",
-    "SNIP_CLASSIC_CAN_FIGURE_Figure_5_4_LOGANDTRACEPROTOCOL"
-   ],
+   "budget": [],
    "dublette": {
     "SNIP_CLASSIC_COM_SECTION_4_CAN_FlexRay": "SNIP_CLASSIC_DLT_SECTION_4_CAN_FlexRay",
     "SNIP_CLASSIC_COM_SECTION_4_CAN_Flexray": "SNIP_CLASSIC_DLT_SECTION_4_CAN_Flexray",
     "SNIP_CLASSIC_DLT_SECTION_8_7_1_4_DltSwcMessageService": "SNIP_CLASSIC_PLATFORM_SECTION_8_7_1_4_DltSwcMessageService",
+    "SNIP_CLASSIC_FEE_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC": "SNIP_CLASSIC_DLT_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC",
+    "SNIP_CLASSIC_NVM_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC": "SNIP_CLASSIC_DLT_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC",
+    "SNIP_CLASSIC_OS_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC": "SNIP_CLASSIC_DLT_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC",
+    "SNIP_CLASSIC_STD_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC": "SNIP_CLASSIC_DLT_SECTION_00493_ECUC_Can_00002_ECUC_Can_00147_ECUC",
     "SNIP_CLASSIC_STD_SECTION_8_3_16_Dlt_GetDefaultTraceStatus": "SNIP_CLASSIC_PLATFORM_SECTION_8_3_16_Dlt_GetDefaultTraceStatus"
    },
    "inhaltsverzeichnis": [],
@@ -77,14 +72,52 @@
    ],
    "ohne_text": []
   },
-  "im_prompt": 184,
-  "im_prompt_schaubilder": 69,
-  "kandidaten": 209,
+  "im_prompt": 172,
+  "im_prompt_schaubilder": 58,
+  "kandidaten": 194,
   "schema": "guide-context@1"
  },
- "lint": [],
- "output_sha256": "e4f0d2002f71a9ffb6fed274fc37cb5f0b73cf03037baf18a7a287e4876be179",
- "output_store": "ai/store/outputs/e4/e4f0d2002f71a9ffb6fed274fc37cb5f0b73cf03037baf18a7a287e4876be179.html",
+ "levels": {
+  "count": 4,
+  "level3_diagrams": [
+   "diag-kontext",
+   "diag-senden"
+  ],
+  "oneliner_chars": 110,
+  "schema": "ai-levels@1",
+  "words": {
+   "2": 69,
+   "3": 266,
+   "4": 1852
+  }
+ },
+ "lint": [
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_Sending_of_Log_and_Trace_Messages: SWS_DiagnosticLogAndTrace S. 26 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_FIGURE_Figure_1_1_DIAGNOSTICLOGANDTRACE: SWS_DiagnosticLogAndTrace S. 9 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_General_Overview: SWS_DiagnosticLogAndTrace S. 1 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_6_Startup_behavior: SWS_DiagnosticLogAndTrace S. 25 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_6_Startup_behavior: SWS_DiagnosticLogAndTrace S. 25 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip FIG-cb53132001ee1c4c: AUTOSAR_SWS_DiagnosticLogAndTrace S. 159 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_3_Select_target_LogChannel: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_4_Check_message_length: SWS_DiagnosticLogAndTrace S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_6_Copying_Dlt_message_to_the_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_8_Sending_messages_from_LogChannel_Buffer: SWS_DiagnosticLogAndTrace S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_10_Removing_messages_from_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_3_VFB_trace: SWS_DiagnosticLogAndTrace S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_3_2_Generating_hook_functions: SWS_DiagnosticLogAndTrace S. 23 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_2_1_Registering_ApplicationIDs_and_ContextIds_to_Dlt: SWS_DiagnosticLogAndTrace S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_3_16_Dlt_GetDefaultTraceStatus: SWS_DiagnosticLogAndTrace S. 56 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_8_7_2_14_Dlt_AssignmentOperation: SWS_DiagnosticLogAndTrace S. 87 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_4_Check_message_length: SWS_DiagnosticLogAndTrace S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_6_Copying_Dlt_message_to_the_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_8_1_Generating_the_timestamp: SWS_DiagnosticLogAndTrace S. 30 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_10_Removing_messages_from_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_10_1_SetLogLevel: SWS_DiagnosticLogAndTrace S. 39 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+  "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_General_Overview: SWS_DiagnosticLogAndTrace S. 1 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+  "Stufe 3: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_6_Copying_Dlt_message_to_the_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+ ],
+ "output_sha256": "82bb53aa62028086e26ff2efc6fbd0da335bbf9a737eab5d255f3df348c729cd",
+ "output_store": "ai/store/outputs/82/82bb53aa62028086e26ff2efc6fbd0da335bbf9a737eab5d255f3df348c729cd.html",
  "params": {
   "module": "dlt",
   "platform": "classic",
@@ -113,9 +146,9 @@
   "top_p": null
  },
  "profile_id": "claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50",
- "prompt_hash": "9b0617762d0e33e1b6af36bcfc6825302853785436a8271552b10db6d88d8e81",
- "prompt_store": "ai/store/prompts/9b/9b0617762d0e33e1b6af36bcfc6825302853785436a8271552b10db6d88d8e81.txt",
- "recipe": "module-guide@2",
+ "prompt_hash": "dfa88865c54d310745f8938e08748467408fa8eb4006c5b4e42bc7d63653c447",
+ "prompt_store": "ai/store/prompts/df/dfa88865c54d310745f8938e08748467408fa8eb4006c5b4e42bc7d63653c447.txt",
+ "recipe": "module-guide@3",
  "releases": [
   "R20-11"
  ],
@@ -128,14 +161,38 @@
  "runs": [
   {
    "attempt": 1,
-   "client": "2.1.287 (Claude Code)",
-   "cost_usd_list": 1.643064,
-   "cost_usd_reported": 1.6430639999999999,
-   "created_at": "2026-10-09T06:53:40Z",
-   "duration_api_seconds": 381.615,
-   "duration_seconds": 381.811,
+   "client": "2.1.296 (Claude Code)",
+   "cost_usd_list": 1.472572,
+   "cost_usd_reported": 1.472572,
+   "created_at": "2026-10-13T02:38:08Z",
+   "duration_api_seconds": 343.406,
+   "duration_seconds": 344.548,
    "effort": "high",
-   "lint_warnings": [],
+   "lint_warnings": [
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_Sending_of_Log_and_Trace_Messages: SWS_DiagnosticLogAndTrace S. 26 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_FIGURE_Figure_1_1_DIAGNOSTICLOGANDTRACE: SWS_DiagnosticLogAndTrace S. 9 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_General_Overview: SWS_DiagnosticLogAndTrace S. 1 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_6_Startup_behavior: SWS_DiagnosticLogAndTrace S. 25 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_6_Startup_behavior: SWS_DiagnosticLogAndTrace S. 25 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip FIG-cb53132001ee1c4c: AUTOSAR_SWS_DiagnosticLogAndTrace S. 159 ohne Release-Angabe (Anker R20-11) (INV-QL-09-OHNE-RELEASE)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_3_Select_target_LogChannel: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_4_Check_message_length: SWS_DiagnosticLogAndTrace S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_6_Copying_Dlt_message_to_the_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_8_Sending_messages_from_LogChannel_Buffer: SWS_DiagnosticLogAndTrace S. 35 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_10_Removing_messages_from_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_3_VFB_trace: SWS_DiagnosticLogAndTrace S. 23 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_3_2_Generating_hook_functions: SWS_DiagnosticLogAndTrace S. 23 nicht im Anker R20-11 (Snippet-Releases: R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_2_1_Registering_ApplicationIDs_and_ContextIds_to_Dlt: SWS_DiagnosticLogAndTrace S. 20 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_PLATFORM_SECTION_8_3_16_Dlt_GetDefaultTraceStatus: SWS_DiagnosticLogAndTrace S. 56 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_8_7_2_14_Dlt_AssignmentOperation: SWS_DiagnosticLogAndTrace S. 87 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_4_Check_message_length: SWS_DiagnosticLogAndTrace S. 31 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_6_Copying_Dlt_message_to_the_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_8_1_Generating_the_timestamp: SWS_DiagnosticLogAndTrace S. 30 nicht im Anker R20-11 (Snippet-Releases: R25-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_10_Removing_messages_from_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 38 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_10_1_SetLogLevel: SWS_DiagnosticLogAndTrace S. 39 nicht im Anker R20-11 (Snippet-Releases: R24-11) (INV-QL-09)",
+    "Stufe 4: data-snip SNIP_CLASSIC_DLT_SECTION_General_Overview: SWS_DiagnosticLogAndTrace S. 1 nicht im Anker R20-11 (Snippet-Releases: R23-11, R24-11, R25-11) (INV-QL-09)",
+    "Stufe 3: data-snip SNIP_CLASSIC_DLT_SECTION_7_1_9_6_Copying_Dlt_message_to_the_LogChannel_buffer: SWS_DiagnosticLogAndTrace S. 32 nicht im Anker R20-11 (Snippet-Releases: R23-11) (INV-QL-09)"
+   ],
    "model": "claude-opus-5-5",
    "model_usage": {
     "claude-opus-5-5": {
@@ -144,19 +201,19 @@
      "canonicalModel": "claude-opus-5-5",
      "contextWindow": 1000000,
      "costBasis": "list",
-     "costUSD": 1.6430639999999999,
-     "inputTokens": 152331,
+     "costUSD": 1.472572,
+     "inputTokens": 143008,
      "maxOutputTokens": 128000,
-     "outputTokens": 51687,
+     "outputTokens": 45027,
      "provider": "firstParty",
-     "thinkingTokens": 28992,
+     "thinkingTokens": 20511,
      "webSearchRequests": 0
     }
    },
    "route": "claude-cli-print",
-   "run_id": "62db907c-89d5-4f3e-8ab1-2fac31d999f2",
+   "run_id": "772c477a-973b-4bf3-a2c8-850af3f533ad",
    "stop_reason": "end_turn",
-   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/62db907c-89d5-4f3e-8ab1-2fac31d999f2.json",
+   "transcript": "_src/ai/store/transcripts/claude-opus-5-5__effort-high__temp-uncontrolled__claude-cli-print__6c53a2006d50/772c477a-973b-4bf3-a2c8-850af3f533ad.json",
    "usage": {
     "cache_creation": {
      "ephemeral_1h_input_tokens": 0,
@@ -165,11 +222,11 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "fallback_credit": null,
-    "inference_geo": "not_available",
-    "input_tokens": 152331,
-    "output_tokens": 51687,
+    "inference_geo": "global",
+    "input_tokens": 143008,
+    "output_tokens": 45027,
     "output_tokens_details": {
-     "thinking_tokens": 28992
+     "thinking_tokens": 20511
     },
     "server_tool_use": {
      "web_fetch_requests": 0,
@@ -181,11 +238,11 @@
    "usage_normalized": {
     "cache_write": 0,
     "cached": 0,
-    "input_uncached": 152331,
-    "output": 51687,
-    "thinking": 28992
+    "input_uncached": 143008,
+    "output": 45027,
+    "thinking": 20511
    },
-   "wall_seconds": 385.118
+   "wall_seconds": 346.305
   }
  ],
  "schema": "ai-trace@2",

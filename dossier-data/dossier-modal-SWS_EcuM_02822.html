@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_EcuM_02822" class="dossier-modal dossier-workbench" data-dossier-sha="cde4942bcfb1cfa1" aria-labelledby="dossier-modal-SWS_EcuM_02822-title">
+<dialog id="dossier-modal-SWS_EcuM_02822" class="dossier-modal dossier-workbench" data-dossier-sha="9a87f17ff4f671db" aria-labelledby="dossier-modal-SWS_EcuM_02822-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_EcuM_02822-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_EcuM_02822)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,648 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~2,103 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'EcuM_SelectShutdownTarget'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -188,28 +206,25 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="232830ad61583e9e334b3d9bccd12e99524c687e97e827a5a5d992100110689f" data-trace-output="cde4942bcfb1cfa1754d2070e15ff747aff38d06ce0df70b63b212af68650e2c" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="a39197138cfbb61e5f92bc597ff800fdce414ab8db36c160ceeff00adecf8b31" data-trace-output="9a87f17ff4f671db0e97561573bf9c64de17c1a938f5b941af269ad80c5201f4" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Wählt das Ziel und den Modus für das spätere Herunterfahren oder den Schlafzustand des Steuergeräts aus." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-&lt;h4&gt;use&lt;/h4&gt;
-&lt;p&gt;The synchronous function &lt;code&gt;EcuM_SelectShutdownTarget&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;) serves to select the shutdown target in the ECU Manager. It is available via &lt;code&gt;EcuM.h&lt;/code&gt; and belongs to the port interface of the module.&lt;/p&gt;
-&lt;p&gt;Two input parameters are passed:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;shutdownTarget&lt;/code&gt;: Determines the selected shutdown target to whose value the target function is set (&lt;a class="spec-record-ref" data-req="SWS_EcuM_00624" href="../../spec/record.html?id=SWS_EcuM_00624"&gt;[SWS_EcuM_00624]&lt;/a&gt;).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;shutdownMode&lt;/code&gt;: Specifies the identifier of a sleep mode (if the target is &lt;code&gt;ECUM_SHUTDOWN_TARGET_SLEEP&lt;/code&gt;) or defines a reset mechanism (if the target is &lt;code&gt;ECUM_SHUTDOWN_TARGET_RESET&lt;/code&gt;) according to the configuration (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;p&gt;Die synchrone Service-Funktion &lt;code&gt;EcuM_SelectShutdownTarget&lt;/code&gt; dient der Auswahl des Shutdown-Ziels für das Steuergerät und wird über die Header-Datei &lt;code&gt;EcuM.h&lt;/code&gt; sowie als Teil des Port-Interfaces des ECU-Manager-Moduls bereitgestellt &lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;. Durch den Aufruf wird das interne Shutdown-Ziel auf den Wert des übergebenen Parameters &lt;code&gt;shutdownTarget&lt;/code&gt; gesetzt &lt;a class="spec-record-ref" data-req="SWS_EcuM_00624" href="../../spec/record.html?id=SWS_EcuM_00624"&gt;[SWS_EcuM_00624]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h4&gt;Error Handling and Return Values&lt;/h4&gt;
-&lt;p&gt;The function returns a &lt;code&gt;Std_ReturnType&lt;/code&gt; as a result (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The new shutdown target was successfully accepted.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The new shutdown target could not be set.&lt;/li&gt;
-&lt;/ul&gt;
+  &lt;p&gt;Die Funktion erwartet zwei Eingabeparameter &lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;code&gt;shutdownTarget&lt;/code&gt;: Bestimmt das ausgewählte Ziel für das Herunterfahren &lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;&lt;code&gt;shutdownMode&lt;/code&gt;: Enthält die Kennung eines Sleep-Modus (wenn das Ziel &lt;code&gt;ECUM_SHUTDOWN_TARGET_SLEEP&lt;/code&gt; ist) oder eines Reset-Mechanismus (wenn das Ziel &lt;code&gt;ECUM_SHUTDOWN_TARGET_RESET&lt;/code&gt; ist) gemäß Konfiguration &lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;.&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;h4&gt;Concurrency and Interaction&lt;/h4&gt;
-&lt;p&gt;The function is specified as reentrant (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;). In the internal behavior description (&lt;code&gt;InternalBehavior EcuStateManager&lt;/code&gt;), the runnable entity &lt;code&gt;SelectShutdownTarget&lt;/code&gt; is defined with &lt;code&gt;canbeInvokedConcurrently = TRUE&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;), which supports concurrent invocation via the local RTE.&lt;/p&gt;
-&lt;p&gt;With regard to execution, &lt;code&gt;EcuM_SelectShutdownTarget&lt;/code&gt; does not trigger any immediate setup or shutdown activities, but merely saves the target value for later use in the &lt;code&gt;SHUTDOWN&lt;/code&gt; or &lt;code&gt;SLEEP&lt;/code&gt; phase (&lt;a class="spec-record-ref" data-req="SWS_EcuM_02585" href="../../spec/record.html?id=SWS_EcuM_02585"&gt;[SWS_EcuM_02585]&lt;/a&gt;).&lt;/p&gt;
+  &lt;p&gt;Der Aufruf stößt keine unmittelbaren Einrichtungs- oder Ausführungsaktivitäten (Setup) an, sondern speichert die Werte lediglich für die spätere Verwendung in der Phase &lt;code&gt;SHUTDOWN&lt;/code&gt; oder &lt;code&gt;SLEEP&lt;/code&gt; &lt;a class="spec-record-ref" data-req="SWS_EcuM_02585" href="../../spec/record.html?id=SWS_EcuM_02585"&gt;[SWS_EcuM_02585]&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p class="ai-note"&gt;This usage note was generated automatically based on the AUTOSAR R20-11 specification for EcuM.&lt;/p&gt;
+  &lt;p&gt;Hinsichtlich der Nebenläufigkeit ist die Funktion reentrant spezifiziert &lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;. Im RTE-Internal-Behavior des ECU State Managers ist die korrespondierende Runnable Entity &lt;code&gt;SelectShutdownTarget&lt;/code&gt; mit &lt;code&gt;canbeInvokedConcurrently = TRUE&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_EcuM_03018" href="../../spec/record.html?id=SWS_EcuM_03018"&gt;[SWS_EcuM_03018]&lt;/a&gt;, wodurch parallele Aufrufe zulässig sind.&lt;/p&gt;
+
+  &lt;p&gt;Der Rückgabewert vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; signalisiert mit &lt;code&gt;E_OK&lt;/code&gt;, dass das neue Shutdown-Ziel erfolgreich gesetzt wurde, und mit &lt;code&gt;E_NOT_OK&lt;/code&gt;, dass die Übernahme fehlschlug &lt;a class="spec-record-ref" data-req="SWS_EcuM_02822" href="../../spec/record.html?id=SWS_EcuM_02822"&gt;[SWS_EcuM_02822]&lt;/a&gt;. Konkrete Fehlerursachen für &lt;code&gt;E_NOT_OK&lt;/code&gt; oder DET-Meldungen nennt die Spezifikation an dieser Stelle nicht; vermutlich führen unzulässige oder nicht konfigurierte Kombinationen von Ziel und Modus zur Ablehnung.&lt;/p&gt;
+&lt;!-- annahmen: 1) Ursache für den Rückgabewert E_NOT_OK dürfte vermutlich die Übergabe unzulässiger oder unkonfigurierter Ziel- und Moduskombinationen sein – Begründung: SWS_EcuM_02822 führt E_NOT_OK als Rückgabewert auf, nennt im Payload jedoch keine expliziten Vorprüfungen oder Fehlercodes. --&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Text wurde von einer KI generiert und basiert auf den Spezifikationen des Release R20-11.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -249,9 +264,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>232830ad6158…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>a39197138cfb…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 34 <span class="dossier-meta-sub">(34 neu · 14 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 34 Belege dazugekommen (14 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 1</div><div><strong>Aktuell zugeordnet:</strong> 30 <span class="dossier-meta-sub">(30 neu · 11 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 30 Belege dazugekommen (11 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -286,8 +301,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">36</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">35</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">32</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">31</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -324,7 +339,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 34 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (1 im Prompt · 30 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -387,4 +402,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02822","k":"function","d":"AUTOSAR","t":"","n":"EcuM_SelectShutdownTarget"}],"inbound":[{"i":"SWS_EcuM_00624","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_00624].","n":"SWS_EcuM_00624"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a17abca74eab2c66.json?v=7df000f1" data-total="34" data-new="34" data-figures="14" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_EcuM_02822","k":"function","d":"AUTOSAR","t":"","n":"EcuM_SelectShutdownTarget"}],"inbound":[{"i":"SWS_EcuM_00624","d":"AUTOSAR Specification","p":1,"t":"In diesem KI-Leitfaden zitierte Anforderung [SWS_EcuM_00624].","n":"SWS_EcuM_00624"}]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/a17abca74eab2c66.json?v=04bb93af" data-total="30" data-new="30" data-figures="11" data-used="0"></script></dialog>

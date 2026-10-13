@@ -830,6 +830,294 @@
     return out.join("");
   }
 
+
+  // ------------------------------------------------------------------ Zeitachse und Vergleich (geteilt)
+  // Karten der Revisions-Zeitachse und Vergleich zweier Fassungen für Elemente und Snippets (static/text-diff.js,
+  // TD.revisions). Gemeinsam genutzt vom Explorer-Viewer, der Record-Seite (<lang>/spec/record.html) und den
+  // Belegseiten (static/evidence-sections.js): dieselben Karten, Bedienung und Texte (versions-explorer-i18n.js).
+  // o: { t: Übersetzer, esc, TD: window.TextDiff, root: Site-Wurzel für Seitenbilder }
+  function revisionKit(o) {
+    o = o || {};
+    var t = o.t || function (k) { return k; }, esc = o.esc || escHtml, TD = o.TD, ROOT = o.root || "";
+    var C = { releaseKey: releaseKey, decodeFully: decodeFully, versionHash: versionHash, snippetScreenshotUrl: snippetScreenshotUrl };
+    function revLabels() {
+      return {
+        tl_title: t("tl_title"), tl_hint: t("tl_hint"), cmp: t("cmp"), left: t("ep_left"), right: t("ep_right"),
+        right_drop: t("ep_right_drop"), swap: t("swap"), swap_title: t("swap_title"), base_side: t("base"), target_side: t("target"),
+        mode_side: t("mode_side"), mode_unified: t("mode_unified"), mode_raw: t("mode_raw"), identical: t("identical"),
+        no_data: t("no_data"), loading: t("td_loading"), stats: t("td_stats"), err: t("err_diff"), same: t("td_same"),
+        single: t("tl_single")
+      };
+    }
+    function spanText(rels) { rels = rels || []; return rels.length > 1 ? rels[0] + " → " + rels[rels.length - 1] : (rels[0] || "–"); }
+    function relPillsHtml(rels) {
+      return '<div class="ve-epoch-subreleases">' + (rels || []).map(function (r) { return '<span class="ve-epoch-rel-pill">' + esc(r) + "</span>"; }).join(" ") + "</div>";
+    }
+    function epochStatus(seg, rel) {
+      if (seg.isChange) return { text: t("ep_changed", { rel: rel }), cls: "ve-status-changed" };
+      if (seg.isRevert) return { text: t("ep_revert", { rel: rel }), cls: "ve-status-revert" };
+      if (!seg.isInitial) return { text: t("ep_unchanged"), cls: "ve-status-stable" };
+      return { text: t("ep_baseline"), cls: "ve-status-initial" };
+    }
+
+    // Abschnitte der Element-Zeitachse (C.buildTimeline) als Karten
+    function elementSegments(rec) {
+      var lc = rec.lifecycle || {};
+      return (rec.timeline || []).map(function (seg) {
+        var span = spanText(seg.releases), pills = relPillsHtml(seg.releases);
+        if (seg.type === "absent" || seg.type === "gap") {
+          var lastRel = seg.releases[seg.releases.length - 1];
+          return { span: seg.type === "absent" ? t("ep_absent_until", { rel: lastRel }) : span, cls: "ve-epoch-absent",
+                   status: { text: t("ep_absent"), cls: "ve-status-absent" },
+                   body: "<div>" + esc(seg.type === "absent" ? t("ep_absent_text", { rel: lastRel }) : t("ep_gap_text", { rels: seg.releases.join(", ") })) +
+                     "</div>" + pills };
+        }
+        if (seg.type === "presence" || seg.type === "unchecked") {
+          var isPres = seg.type === "presence";
+          return { span: span, cls: "ve-epoch-absent ve-epoch-" + seg.type,
+                   status: { text: t(isPres ? "ep_presence" : "ep_unchecked"), cls: isPres ? "ve-status-presence" : "ve-status-unchecked" },
+                   body: "<div>" + esc(t(isPres ? "ep_presence_text" : "ep_unchecked_text")) + "</div>" + pills };
+        }
+        if (seg.type === "dropped") {
+          return { key: seg.from, keys: seg.releases, pick: "right", cls: "ve-epoch-dropped", span: t("ep_from", { rel: seg.from }),
+                   status: { text: t("st_removed"), cls: "ve-status-dropped" },
+                   body: "<div><strong>" + esc(t("ep_dropped_title")) + '</strong></div><div class="ve-epoch-subreleases ve-muted">' +
+                     esc(t("ep_dropped_sub", { rels: seg.releases.join(", "), last: lc.last_active_release || "" })) + "</div>" };
+        }
+        var sub = seg.releases.length === 1 ? esc(t("ep_one", { hash: seg.hash8 }))
+          : "<strong>" + esc(t("ep_many", { n: seg.releases.length })) + "</strong> · #" + esc(seg.hash8);
+        if (seg.hashes.length > 1) sub += '<div class="ve-epoch-variants">' + esc(t("ep_variants", { n: seg.hashes.length })) + "</div>";
+        // Wortlaut ohne Seitenkopf und -fuß (export_versions/record_text_cleaning.jsonl): offen benennen, was fehlt
+        var cleaned = [];
+        seg.versions.forEach(function (v) { ((v.cleaning || {}).removed || []).forEach(function (x) { cleaned.push(x); }); });
+        if (cleaned.length) sub += '<div class="ve-epoch-cleaned" title="' + esc(t("ep_cleaned_title", { list: cleaned.join(" · ") })) +
+          '">' + esc(t("ep_cleaned", { n: cleaned.length })) + "</div>";
+        return { key: seg.firstRelease, keys: seg.releases, span: span, status: epochStatus(seg, seg.firstRelease),
+                 body: "<div>" + sub + "</div>" + pills };
+      });
+    }
+
+    function elementDiff(rec, from, to) {
+      var d = performClientDiff(rec, from, to);
+      var tomb = d.to.is_dropped
+        ? '<div class="ve-block-tombstone"><div class="ve-tombstone-icon">🚫</div><h4>' + esc(t("drop_title", { rel: d.to.release })) +
+          "</h4><p>" + esc(t("drop_text", { rel: d.to.release })) + '</p><span class="ve-pill-dropped">' + esc(t("last_state", { rel: d.from.release })) + "</span></div>"
+        : null;
+      function raw(x) {
+        var v = x.version;
+        return { head: esc(t("raw_version")) + " " + esc(v ? v.version_id : (x.is_dropped ? t("st_removed") + " (" + x.release + ")" : t("none"))),
+                 html: "<pre>" + esc(v ? C.decodeFully(v.content || "") : (x.is_dropped ? t("raw_dropped") : t("raw_empty"))) + "</pre>" };
+      }
+      return {
+        src: d, blocks: d.aligned_blocks, lines: d.diff_lines, tombstoneHtml: tomb,
+        left: { label: esc(t("base")) + " <strong>" + esc(d.from.release) + "</strong>", tag: "#" + C.versionHash(d.from.version) },
+        right: { label: esc(t("target")) + " <strong>" + esc(d.to.release) + "</strong>",
+                 tag: "#" + (d.to.is_dropped ? t("st_removed") : C.versionHash(d.to.version)) },
+        raw: { left: raw(d.from), right: raw(d.to) }
+      };
+    }
+
+    function formatReqLines(text) {
+      if (!text) return [];
+      var delimiters = ["Definition of callback function", "Definition of", "Upstream requirements:?", "Service [Nn]ame:?", "Syntax:?",
+        "Service ID\\s*(?:\\[[^\\]]+\\])?:?", "Sync\\s*/\\s*Async:?", "Reentrancy:?", "Parameters\\s*\\((?:in|out|inout)\\):?", "Parameters:?",
+        "\\(in\\)", "\\(inout\\)", "\\(out\\)", "Return value:?", "E_OK:?", "E_ OK:?", "E_NOT_OK:?", "E_ NOT_ OK:?", "Description:?",
+        "Available via:?", "Specification of [^\\n:]+:", "Specification of [^\\n]+", "Document ID \\d+ : [^\\n]*", "Document ID \\d+ :", "AUTOSAR_[A-Z0-9_]+"];
+      var delimRe = new RegExp("(" + delimiters.join("|") + "|\\([a-z]+\\))", "i");
+      var parts = text.split(delimRe), lines = [], curr = "";
+      parts.forEach(function (p) {
+        if (!p) return;
+        var ps = p.trim();
+        var isDelim = delimiters.some(function (d) { return new RegExp("^" + d + "$", "i").test(ps); }) || ["(in)", "(out)", "(inout)"].indexOf(ps) >= 0;
+        if (isDelim) { if (curr.trim()) lines.push(curr.trim()); curr = ps + " "; } else curr += p;
+      });
+      if (curr.trim()) lines.push(curr.trim());
+      var out = [];
+      lines.forEach(function (l) {
+        var s = l.trim();
+        if (!s) return;
+        if (s.length > 100) s.split(/(?<=[.!?])\s+(?=[A-Z])/).forEach(function (x) { if (x.trim()) out.push(x.trim()); });
+        else out.push(s);
+      });
+      return out;
+    }
+
+    function performClientDiff(rec, fromRel, toRel) {
+      var versions = rec.versions || [], lc = rec.lifecycle || {};
+      var dropA = !!(lc.is_dropped && (lc.dropped_in || []).indexOf(fromRel) >= 0);
+      var dropB = !!(lc.is_dropped && (lc.dropped_in || []).indexOf(toRel) >= 0);
+      var kA = C.releaseKey(fromRel), kB = C.releaseKey(toRel);
+      var eligA = versions.filter(function (v) { return C.releaseKey(v.release) <= kA; });
+      var eligB = versions.filter(function (v) { return C.releaseKey(v.release) <= kB; });
+      var vA = dropA ? null : (eligA.length ? eligA[eligA.length - 1] : null);
+      var vB = dropB ? null : (eligB.length ? eligB[eligB.length - 1] : null);
+      // Adaptive-Versionstexte sind als HTML-Text erfasst; ältere Store-Zeilen tragen noch doppelt
+      // maskierte Kopfzeilen (&amp;lt;, Quelle inzwischen korrigiert). Zur Anzeige bis zum Fixpunkt auflösen.
+      var linesA = formatReqLines(vA ? C.decodeFully(vA.content || "") : ""), linesB = formatReqLines(vB ? C.decodeFully(vB.content || "") : "");
+      var blocks = [], lines = [], bi = 0;
+      if (dropB) {
+        linesA.forEach(function (l) {
+          blocks.push({ id: "b-" + (++bi), tag: "delete", left_lines: [l], right_lines: [], left_html: esc(l), right_html: "" });
+          lines.push({ type: "deleted", text: l });
+        });
+      } else {
+        var al = TD.align(linesA, linesB);
+        blocks = al.blocks; lines = al.lines;
+      }
+      return { from: { release: fromRel, is_dropped: dropA, version: vA }, to: { release: toRel, is_dropped: dropB, version: vB },
+               aligned_blocks: blocks, diff_lines: lines };
+    }
+
+    function snippetSegments(info, segs) {
+      return segs.map(function (seg) {
+        var pills = relPillsHtml(seg.releases), span = spanText(seg.releases);
+        var page = seg.page ? "<div>" + esc(t("page_n", { p: seg.page })) + "</div>" : "";
+        if (seg.type === "dropped") {
+          return { key: seg.from, keys: seg.releases, pick: "right", cls: "ve-epoch-dropped", span: t("ep_from", { rel: seg.from }),
+                   status: { text: t("st_removed"), cls: "ve-status-dropped" }, body: "<div><strong>" + esc(t("snip_dropped")) + "</strong></div>" };
+        }
+        if (seg.type === "presence") {
+          return { span: span, cls: "ve-epoch-absent ve-epoch-presence", status: { text: t("snip_presence"), cls: "ve-status-presence" },
+                   body: "<div>" + esc(t("ep_presence_text")) + "</div>" + pills };
+        }
+        if (seg.type === "nocapture") {
+          return { span: span, cls: "ve-epoch-absent ve-epoch-unchecked", status: { text: t("snip_nf_status"), cls: "ve-status-unchecked" },
+                   body: "<div>" + esc(t(seg.reason === "page_excerpt" ? "snip_nf_page" : "snip_nf_none")) + "</div>" + page + pills };
+        }
+        var st = epochStatus(seg, seg.releases[0]);
+        var shot = seg.screenshot || seg.screenshot_path;
+        if (!shot && seg.entries) {
+          for (var i = 0; i < seg.entries.length; i++) {
+            if (seg.entries[i].screenshot || seg.entries[i].screenshot_path) {
+              shot = seg.entries[i].screenshot || seg.entries[i].screenshot_path;
+              break;
+            }
+          }
+        }
+        if (!shot && (info.screenshot_path || info.screenshot)) {
+          if (seg.type === "content" || (info.trel && seg.releases && seg.releases.indexOf(info.trel) >= 0)) {
+            shot = info.screenshot_path || info.screenshot;
+          }
+        }
+        var shotBadge = "";
+        if (shot) {
+          var mShot = /([0-9a-f]{12})\/page_(\d+)\.webp/.exec(shot);
+          var sHash = mShot ? mShot[1] : "";
+          var sPage = mShot ? mShot[2] : "";
+          var shotUrl = C.snippetScreenshotUrl(ROOT, shot);
+          shotBadge = '<div class="ve-epoch-shot">' +
+            '<a href="' + esc(shotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-shot-badge" ' +
+            (sHash && sPage ? 'data-snip-hash="' + esc(sHash) + '" data-snip-page="' + esc(sPage) + '" ' : "") +
+            'title="' + esc(t("open_page")) + '">' +
+            '<span class="ve-shot-icon" aria-hidden="true">🖼️</span> ' + esc(t("v_snip")) +
+            '</a></div>';
+        }
+        if (seg.type === "other") {
+          return { span: span, cls: "ve-epoch-absent", status: st, body: "<div>" + esc(t("snip_other")) + "</div>" + page + pills + shotBadge };
+        }
+        if (seg.entries) {
+          // Wortlaut je Release aus dem PDF: Quelle, Varianten, Schnitt, entfernte Seitenköpfe
+          var sub = seg.releases.length === 1 ? "" : "<strong>" + esc(t("ep_many", { n: seg.releases.length })) + "</strong>";
+          if (seg.texts.length > 1) sub += '<div class="ve-epoch-variants">' + esc(t("ep_variants", { n: seg.texts.length })) + "</div>";
+          var ncl = 0, cut = false;
+          seg.entries.forEach(function (v) {
+            ncl += v.cl || 0;
+            cut = cut || !!v.cut;
+          });
+          if (ncl) sub += '<div class="ve-epoch-cleaned">' + esc(t("ep_cleaned", { n: ncl })) + "</div>";
+          if (cut) sub += '<div class="ve-epoch-cleaned">' + esc(t("snip_cut")) + "</div>";
+          return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
+                   body: (sub ? "<div>" + sub + "</div>" : "") + page + pills + shotBadge };
+        }
+        var own = info.trel && seg.releases.indexOf(info.trel) >= 0;
+        return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
+                 body: "<div>" + esc(own ? t("snip_captured_rel", { rel: info.trel }) : t("snip_captured_same")) + "</div>" + page + pills + shotBadge };
+      });
+    }
+    // Fassungen ordnen: Präsenz-Einträge (im PDF vorhanden, Wortlaut nicht erfasst) gehören in die Zeitachse,
+    // aber nicht in den Vergleich – rec.versions enthält danach nur erfassten Wortlaut. Wiederholt aufrufbar.
+    function prepareRecord(rec) {
+      if (!rec.allVersions) {
+        rec.allVersions = sortVersions(rec.versions || []);
+        rec.versions = rec.allVersions.filter(function (v) { return v.text_captured !== false; });
+      }
+      rec.timeline = buildTimeline(rec.allVersions, rec.lifecycle || {});
+      rec.epochs = rec.timeline.filter(function (x) { return x.type === "content"; });
+      return rec;
+    }
+    // Anfangspaar des Vergleichs: gewünschtes Paar, sonst erste gegen letzte Fassung, sonst letzte gegen Wegfall
+    function initialPair(rec, from, to) {
+      var versions = rec.versions || [], lifecycle = rec.lifecycle || {}, e = rec.epochs || [];
+      var drop = (rec.timeline || []).filter(function (x) { return x.type === "dropped"; })[0];
+      var hasRel = function (r) { return versions.some(function (v) { return v.release === r; }); };
+      if (from && to && hasRel(from) && (hasRel(to) || (lifecycle.is_dropped && (lifecycle.dropped_in || []).indexOf(to) >= 0))) return [from, to];
+      if (e.length > 1) return [e[0].firstRelease, e[e.length - 1].firstRelease];
+      if (e.length === 1 && drop) return [e[0].lastRelease, drop.from];
+      if (versions.length > 1) return [versions[0].release, versions[versions.length - 1].release];
+      if (versions.length === 1) return [versions[0].release, versions[0].release];
+      return [null, null];
+    }
+    // Revisions-Zeitachse eines Elements mit Vergleich in container (Rückgabe: Steuerobjekt von TD.revisions)
+    function mountElement(container, rec, m) {
+      m = m || {};
+      return TD.revisions(container, {
+        segments: elementSegments(rec), from: m.from, to: m.to,
+        diff: function (a, b) { return elementDiff(rec, a, b); },
+        onChange: m.onChange, onRender: m.onRender
+      }, { labels: revLabels(), mode: m.mode || "side", onMode: m.onMode });
+    }
+    // Snippet-Zeitachse (snippetTimeline) mit Vergleich der Wortlaute je Release
+    function mountSnippet(box, info, m) {
+      m = m || {};
+      var gsegs = snippetSegments(info, snippetTimeline(info));
+      if (!gsegs.length) { box.innerHTML = '<p class="ve-muted">' + esc(t("snip_notext")) + "</p>"; return null; }
+      var contents = gsegs.filter(function (g) { return g.key != null && g.pick !== "right"; });
+      var drop = gsegs.filter(function (g) { return g.pick === "right"; })[0] || null;
+      var valid = function (k) { return !!k && gsegs.some(function (g) { return g.key != null && (g.keys || []).indexOf(k) >= 0; }); };
+      var from = null, to = null;
+      if (valid(m.from) && valid(m.to)) { from = m.from; to = m.to; }
+      else if (contents.length > 1) { from = contents[0].key; to = contents[contents.length - 1].key; }
+      else if (contents.length === 1) { from = contents[0].key; to = drop ? drop.key : contents[0].key; }
+      // Wortlaut je Release (rv/rt) oder – ohne diese Angaben – der eine gespeicherte Wortlaut
+      var perRel = !!(info.rv && info.rv.length), byRel = {};
+      (info.rv || []).forEach(function (v) { byRel[v.r] = v; });
+      function textOf(k) {
+        if (!perRel) return C.decodeFully(info.text || "");
+        var v = byRel[k];
+        var relText = (v && v.t != null && info.rt) ? C.decodeFully(info.rt[v.t] || "") : "";
+        return relText || C.decodeFully(info.text || "");
+      }
+      // PDF-Zeilen sind Layout-Umbrüche: zu Fließtext verbinden, dann an Satzgrenzen teilen
+      function linesOf(k) { return TD.splitLong([textOf(k).replace(/\s*\n\s*/g, " ")]); }
+      var isDrop = function (k) { return !!drop && k === drop.key; };
+      function pageTag(k) { var v = byRel[k]; return v && v.p ? t("page_n", { p: v.p }) : ""; }
+      function raw(k) {
+        return { head: esc(t("raw_version")) + " " + esc(k) + (isDrop(k) ? " (" + esc(t("st_removed")) + ")" : (pageTag(k) ? " · " + esc(pageTag(k)) : "")),
+                 html: "<pre>" + esc(isDrop(k) ? t("snip_dropped") : textOf(k)) + "</pre>" };
+      }
+      return TD.revisions(box, {
+        segments: gsegs, from: from, to: to, hint: perRel ? null : t("snip_rev_hint"),
+        emptyText: t("snip_notext"), singleText: !contents.length ? (info.text ? t("snip_rev_single") : t("snip_notext")) : (perRel ? t("tl_single") : t("snip_rev_single")),
+        diff: function (a, b) {
+          var al = TD.align(isDrop(a) ? [] : linesOf(a), isDrop(b) ? [] : linesOf(b));
+          return {
+            blocks: al.blocks, lines: al.lines,
+            tombstoneHtml: isDrop(b) ? '<div class="ve-block-tombstone"><div class="ve-tombstone-icon">🚫</div><h4>' +
+              esc(t("snip_drop_title", { rel: b })) + "</h4></div>" : null,
+            left: { label: esc(t("base")) + " <strong>" + esc(a) + "</strong>", tag: isDrop(a) ? "" : pageTag(a) },
+            right: { label: esc(t("target")) + " <strong>" + esc(b) + "</strong>", tag: isDrop(b) ? "" : pageTag(b) },
+            raw: { left: raw(a), right: raw(b) }
+          };
+        },
+        onChange: m.onChange
+      }, { labels: revLabels(), mode: m.mode || "side", onMode: m.onMode });
+    }
+    return { revLabels: revLabels, spanText: spanText, relPillsHtml: relPillsHtml, epochStatus: epochStatus,
+             elementSegments: elementSegments, elementDiff: elementDiff, performClientDiff: performClientDiff,
+             formatReqLines: formatReqLines, snippetSegments: snippetSegments, prepareRecord: prepareRecord,
+             initialPair: initialPair, mountElement: mountElement, mountSnippet: mountSnippet };
+  }
+
   return {
     STATUS: STATUS, HAS: HAS, PARAMS: PARAMS, emptyState: emptyState, parseState: parseState,
     serializeState: serializeState, activeCount: activeCount, decodeElements: decodeElements,
@@ -843,7 +1131,7 @@
     decodeEntities: decodeEntities, decodeFully: decodeFully, citedIds: citedIds, linkifyIds: linkifyIds, resolveId: resolveId,
     UNIVERSES: UNIVERSES,
     isAbortError: isAbortError, isNetworkError: isNetworkError, loadJson: loadJson, renderMarkdown: renderMarkdown,
-    rootFromSrc: rootFromSrc, localApiAllowed: localApiAllowed,
+    rootFromSrc: rootFromSrc, localApiAllowed: localApiAllowed, revisionKit: revisionKit,
     mdInline: mdInline, catalogCollapsedOnLoad: catalogCollapsedOnLoad
   };
 });
@@ -887,6 +1175,11 @@
   }
   var ROOT = getRootPrefix();
   var API = C.localApiAllowed(new URL(ROOT, window.location.href).href);
+  // Zeitachse und Vergleich: geteilt mit Record-Seite und Belegseiten (C.revisionKit)
+  var K = C.revisionKit({ t: t, esc: esc, TD: window.TextDiff, root: ROOT });
+  var revLabels = K.revLabels, spanText = K.spanText, relPillsHtml = K.relPillsHtml, epochStatus = K.epochStatus,
+      elementSegments = K.elementSegments, elementDiff = K.elementDiff, snippetSegments = K.snippetSegments,
+      formatReqLines = K.formatReqLines;
   var narrowMQ = window.matchMedia ? window.matchMedia("(max-width: 899px)") : { matches: false };
   var wideMQ = window.matchMedia ? window.matchMedia("(min-width: 1180px)") : { matches: true };
 
@@ -1734,8 +2027,7 @@
         // Präsenz-Einträge (im PDF vorhanden, Wortlaut nicht erfasst) gehören in die Zeitachse,
         // aber nicht in den Vergleich: rec.versions enthält nur erfassten Wortlaut.
         if (rec.citation_only && state.view === "ver") state.view = "cit";
-        rec.allVersions = C.sortVersions(rec.versions || []);
-        rec.versions = rec.allVersions.filter(function (v) { return v.text_captured !== false; });
+        K.prepareRecord(rec);
         EL.rec = rec;
         EL.figShown = PAGE.fig; EL.snipShown = PAGE.snip;
         initCompare(rec);
@@ -1752,24 +2044,9 @@
   }
 
   function initCompare(rec) {
-    var versions = rec.versions || [];
-    var lifecycle = rec.lifecycle || {};
-    rec.timeline = C.buildTimeline(rec.allVersions || versions, lifecycle);
-    var e = rec.epochs = rec.timeline.filter(function (x) { return x.type === "content"; });
-    var drop = rec.timeline.filter(function (x) { return x.type === "dropped"; })[0];
-    var from = state.from, to = state.to;
-    var hasRel = function (r) { return versions.some(function (v) { return v.release === r; }); };
-    if (from && to && hasRel(from) && (hasRel(to) || (lifecycle.is_dropped && (lifecycle.dropped_in || []).indexOf(to) >= 0))) {
-      EL.from = from; EL.to = to;
-    } else if (e.length > 1) {
-      EL.from = e[0].firstRelease; EL.to = e[e.length - 1].firstRelease;
-    } else if (e.length === 1 && drop) {
-      EL.from = e[0].lastRelease; EL.to = drop.from;
-    } else if (versions.length > 1) {
-      EL.from = versions[0].release; EL.to = versions[versions.length - 1].release;
-    } else if (versions.length === 1) {
-      EL.from = EL.to = versions[0].release;
-    } else { EL.from = EL.to = null; }
+    K.prepareRecord(rec);
+    var pair = K.initialPair(rec, state.from, state.to);
+    EL.from = pair[0]; EL.to = pair[1];
   }
 
   function statusPill(rec) {
@@ -2109,83 +2386,6 @@
   // ------------------------------------------------------------------ Versionen & Diff
   // Zeitachse und Vergleich aus static/text-diff.js (TD.revisions): dieselbe Bedienung für Elemente,
   // Fassungen einer Bildreihe und Snippets.
-  function revLabels() {
-    return {
-      tl_title: t("tl_title"), tl_hint: t("tl_hint"), cmp: t("cmp"), left: t("ep_left"), right: t("ep_right"),
-      right_drop: t("ep_right_drop"), swap: t("swap"), swap_title: t("swap_title"), base_side: t("base"), target_side: t("target"),
-      mode_side: t("mode_side"), mode_unified: t("mode_unified"), mode_raw: t("mode_raw"), identical: t("identical"),
-      no_data: t("no_data"), loading: t("td_loading"), stats: t("td_stats"), err: t("err_diff"), same: t("td_same"),
-      single: t("tl_single")
-    };
-  }
-  function spanText(rels) { rels = rels || []; return rels.length > 1 ? rels[0] + " → " + rels[rels.length - 1] : (rels[0] || "–"); }
-  function relPillsHtml(rels) {
-    return '<div class="ve-epoch-subreleases">' + (rels || []).map(function (r) { return '<span class="ve-epoch-rel-pill">' + esc(r) + "</span>"; }).join(" ") + "</div>";
-  }
-  function epochStatus(seg, rel) {
-    if (seg.isChange) return { text: t("ep_changed", { rel: rel }), cls: "ve-status-changed" };
-    if (seg.isRevert) return { text: t("ep_revert", { rel: rel }), cls: "ve-status-revert" };
-    if (!seg.isInitial) return { text: t("ep_unchanged"), cls: "ve-status-stable" };
-    return { text: t("ep_baseline"), cls: "ve-status-initial" };
-  }
-
-  // Abschnitte der Element-Zeitachse (C.buildTimeline) als Karten
-  function elementSegments(rec) {
-    var lc = rec.lifecycle || {};
-    return (rec.timeline || []).map(function (seg) {
-      var span = spanText(seg.releases), pills = relPillsHtml(seg.releases);
-      if (seg.type === "absent" || seg.type === "gap") {
-        var lastRel = seg.releases[seg.releases.length - 1];
-        return { span: seg.type === "absent" ? t("ep_absent_until", { rel: lastRel }) : span, cls: "ve-epoch-absent",
-                 status: { text: t("ep_absent"), cls: "ve-status-absent" },
-                 body: "<div>" + esc(seg.type === "absent" ? t("ep_absent_text", { rel: lastRel }) : t("ep_gap_text", { rels: seg.releases.join(", ") })) +
-                   "</div>" + pills };
-      }
-      if (seg.type === "presence" || seg.type === "unchecked") {
-        var isPres = seg.type === "presence";
-        return { span: span, cls: "ve-epoch-absent ve-epoch-" + seg.type,
-                 status: { text: t(isPres ? "ep_presence" : "ep_unchecked"), cls: isPres ? "ve-status-presence" : "ve-status-unchecked" },
-                 body: "<div>" + esc(t(isPres ? "ep_presence_text" : "ep_unchecked_text")) + "</div>" + pills };
-      }
-      if (seg.type === "dropped") {
-        return { key: seg.from, keys: seg.releases, pick: "right", cls: "ve-epoch-dropped", span: t("ep_from", { rel: seg.from }),
-                 status: { text: t("st_removed"), cls: "ve-status-dropped" },
-                 body: "<div><strong>" + esc(t("ep_dropped_title")) + '</strong></div><div class="ve-epoch-subreleases ve-muted">' +
-                   esc(t("ep_dropped_sub", { rels: seg.releases.join(", "), last: lc.last_active_release || "" })) + "</div>" };
-      }
-      var sub = seg.releases.length === 1 ? esc(t("ep_one", { hash: seg.hash8 }))
-        : "<strong>" + esc(t("ep_many", { n: seg.releases.length })) + "</strong> · #" + esc(seg.hash8);
-      if (seg.hashes.length > 1) sub += '<div class="ve-epoch-variants">' + esc(t("ep_variants", { n: seg.hashes.length })) + "</div>";
-      // Wortlaut ohne Seitenkopf und -fuß (export_versions/record_text_cleaning.jsonl): offen benennen, was fehlt
-      var cleaned = [];
-      seg.versions.forEach(function (v) { ((v.cleaning || {}).removed || []).forEach(function (x) { cleaned.push(x); }); });
-      if (cleaned.length) sub += '<div class="ve-epoch-cleaned" title="' + esc(t("ep_cleaned_title", { list: cleaned.join(" · ") })) +
-        '">' + esc(t("ep_cleaned", { n: cleaned.length })) + "</div>";
-      return { key: seg.firstRelease, keys: seg.releases, span: span, status: epochStatus(seg, seg.firstRelease),
-               body: "<div>" + sub + "</div>" + pills };
-    });
-  }
-
-  function elementDiff(rec, from, to) {
-    var d = performClientDiff(rec, from, to);
-    var tomb = d.to.is_dropped
-      ? '<div class="ve-block-tombstone"><div class="ve-tombstone-icon">🚫</div><h4>' + esc(t("drop_title", { rel: d.to.release })) +
-        "</h4><p>" + esc(t("drop_text", { rel: d.to.release })) + '</p><span class="ve-pill-dropped">' + esc(t("last_state", { rel: d.from.release })) + "</span></div>"
-      : null;
-    function raw(x) {
-      var v = x.version;
-      return { head: esc(t("raw_version")) + " " + esc(v ? v.version_id : (x.is_dropped ? t("st_removed") + " (" + x.release + ")" : t("none"))),
-               html: "<pre>" + esc(v ? C.decodeFully(v.content || "") : (x.is_dropped ? t("raw_dropped") : t("raw_empty"))) + "</pre>" };
-    }
-    return {
-      src: d, blocks: d.aligned_blocks, lines: d.diff_lines, tombstoneHtml: tomb,
-      left: { label: esc(t("base")) + " <strong>" + esc(d.from.release) + "</strong>", tag: "#" + C.versionHash(d.from.version) },
-      right: { label: esc(t("target")) + " <strong>" + esc(d.to.release) + "</strong>",
-               tag: "#" + (d.to.is_dropped ? t("st_removed") : C.versionHash(d.to.version)) },
-      raw: { left: raw(d.from), right: raw(d.to) }
-    };
-  }
-
   function mountElementRevisions(box) {
     var rec = EL.rec;
     box.innerHTML = '<div data-role="rev"></div><div class="ve-audit-box"><h3 class="ve-audit-title">' + esc(t("audit_title")) +
@@ -2193,67 +2393,15 @@
       [["a_actor", "ve-audit-actor"], ["a_hash", "ve-audit-hash"], ["a_recorded", "ve-audit-recorded"], ["a_evidence", "ve-audit-evidence"]].map(function (a) {
         return '<div class="ve-audit-card"><span>' + esc(t(a[0])) + '</span><strong id="' + a[1] + '">-</strong></div>';
       }).join("") + "</div></div>";
-    EL.rev = TD.revisions(box.querySelector("[data-role=rev]"), {
-      segments: elementSegments(rec), from: EL.from, to: EL.to,
-      diff: function (a, b) { return elementDiff(rec, a, b); },
+    EL.rev = K.mountElement(box.querySelector("[data-role=rev]"), rec, {
+      from: EL.from, to: EL.to, mode: cmpMode, onMode: function (m) { cmpMode = m; },
       onChange: function (a, b) { EL.from = a; EL.to = b; state.from = a || ""; state.to = b || ""; commit(false); },
       onRender: function (a, b, d) { if (d && d.src) updateAuditBox(d.src); }
-    }, { labels: revLabels(), mode: cmpMode, onMode: function (m) { cmpMode = m; } });
-  }
-
-  function formatReqLines(text) {
-    if (!text) return [];
-    var delimiters = ["Definition of callback function", "Definition of", "Upstream requirements:?", "Service [Nn]ame:?", "Syntax:?",
-      "Service ID\\s*(?:\\[[^\\]]+\\])?:?", "Sync\\s*/\\s*Async:?", "Reentrancy:?", "Parameters\\s*\\((?:in|out|inout)\\):?", "Parameters:?",
-      "\\(in\\)", "\\(inout\\)", "\\(out\\)", "Return value:?", "E_OK:?", "E_ OK:?", "E_NOT_OK:?", "E_ NOT_ OK:?", "Description:?",
-      "Available via:?", "Specification of [^\\n:]+:", "Specification of [^\\n]+", "Document ID \\d+ : [^\\n]*", "Document ID \\d+ :", "AUTOSAR_[A-Z0-9_]+"];
-    var delimRe = new RegExp("(" + delimiters.join("|") + "|\\([a-z]+\\))", "i");
-    var parts = text.split(delimRe), lines = [], curr = "";
-    parts.forEach(function (p) {
-      if (!p) return;
-      var ps = p.trim();
-      var isDelim = delimiters.some(function (d) { return new RegExp("^" + d + "$", "i").test(ps); }) || ["(in)", "(out)", "(inout)"].indexOf(ps) >= 0;
-      if (isDelim) { if (curr.trim()) lines.push(curr.trim()); curr = ps + " "; } else curr += p;
     });
-    if (curr.trim()) lines.push(curr.trim());
-    var out = [];
-    lines.forEach(function (l) {
-      var s = l.trim();
-      if (!s) return;
-      if (s.length > 100) s.split(/(?<=[.!?])\s+(?=[A-Z])/).forEach(function (x) { if (x.trim()) out.push(x.trim()); });
-      else out.push(s);
-    });
-    return out;
   }
 
   // Zeilen-/Wortvergleich, Zeitachse und Darstellung: gemeinsam mit den Schaubild-Seiten in static/text-diff.js
   var TD = window.TextDiff;
-
-  function performClientDiff(rec, fromRel, toRel) {
-    var versions = rec.versions || [], lc = rec.lifecycle || {};
-    var dropA = !!(lc.is_dropped && (lc.dropped_in || []).indexOf(fromRel) >= 0);
-    var dropB = !!(lc.is_dropped && (lc.dropped_in || []).indexOf(toRel) >= 0);
-    var kA = C.releaseKey(fromRel), kB = C.releaseKey(toRel);
-    var eligA = versions.filter(function (v) { return C.releaseKey(v.release) <= kA; });
-    var eligB = versions.filter(function (v) { return C.releaseKey(v.release) <= kB; });
-    var vA = dropA ? null : (eligA.length ? eligA[eligA.length - 1] : null);
-    var vB = dropB ? null : (eligB.length ? eligB[eligB.length - 1] : null);
-    // Adaptive-Versionstexte sind als HTML-Text erfasst; ältere Store-Zeilen tragen noch doppelt
-    // maskierte Kopfzeilen (&amp;lt;, Quelle inzwischen korrigiert). Zur Anzeige bis zum Fixpunkt auflösen.
-    var linesA = formatReqLines(vA ? C.decodeFully(vA.content || "") : ""), linesB = formatReqLines(vB ? C.decodeFully(vB.content || "") : "");
-    var blocks = [], lines = [], bi = 0;
-    if (dropB) {
-      linesA.forEach(function (l) {
-        blocks.push({ id: "b-" + (++bi), tag: "delete", left_lines: [l], right_lines: [], left_html: esc(l), right_html: "" });
-        lines.push({ type: "deleted", text: l });
-      });
-    } else {
-      var al = TD.align(linesA, linesB);
-      blocks = al.blocks; lines = al.lines;
-    }
-    return { from: { release: fromRel, is_dropped: dropA, version: vA }, to: { release: toRel, is_dropped: dropB, version: vB },
-             aligned_blocks: blocks, diff_lines: lines };
-  }
 
   function updateAuditBox(d) {
     var v = d.to && d.to.version, dropped = d.to && d.to.is_dropped;
@@ -2364,118 +2512,14 @@
 
   // Snippet: dieselbe Zeitachse über die Releases (C.snippetTimeline). Der Speicher hält einen Wortlaut je
   // Snippet; Spannen mit anderem Inhalts-Hash (Snippet-Manifest) erscheinen, sind aber nicht vergleichbar.
-  function snippetSegments(info, segs) {
-    return segs.map(function (seg) {
-      var pills = relPillsHtml(seg.releases), span = spanText(seg.releases);
-      var page = seg.page ? "<div>" + esc(t("page_n", { p: seg.page })) + "</div>" : "";
-      if (seg.type === "dropped") {
-        return { key: seg.from, keys: seg.releases, pick: "right", cls: "ve-epoch-dropped", span: t("ep_from", { rel: seg.from }),
-                 status: { text: t("st_removed"), cls: "ve-status-dropped" }, body: "<div><strong>" + esc(t("snip_dropped")) + "</strong></div>" };
-      }
-      if (seg.type === "presence") {
-        return { span: span, cls: "ve-epoch-absent ve-epoch-presence", status: { text: t("snip_presence"), cls: "ve-status-presence" },
-                 body: "<div>" + esc(t("ep_presence_text")) + "</div>" + pills };
-      }
-      if (seg.type === "nocapture") {
-        return { span: span, cls: "ve-epoch-absent ve-epoch-unchecked", status: { text: t("snip_nf_status"), cls: "ve-status-unchecked" },
-                 body: "<div>" + esc(t(seg.reason === "page_excerpt" ? "snip_nf_page" : "snip_nf_none")) + "</div>" + page + pills };
-      }
-      var st = epochStatus(seg, seg.releases[0]);
-      var shot = seg.screenshot || seg.screenshot_path;
-      if (!shot && seg.entries) {
-        for (var i = 0; i < seg.entries.length; i++) {
-          if (seg.entries[i].screenshot || seg.entries[i].screenshot_path) {
-            shot = seg.entries[i].screenshot || seg.entries[i].screenshot_path;
-            break;
-          }
-        }
-      }
-      if (!shot && (info.screenshot_path || info.screenshot)) {
-        if (seg.type === "content" || (info.trel && seg.releases && seg.releases.indexOf(info.trel) >= 0)) {
-          shot = info.screenshot_path || info.screenshot;
-        }
-      }
-      var shotBadge = "";
-      if (shot) {
-        var mShot = /([0-9a-f]{12})\/page_(\d+)\.webp/.exec(shot);
-        var sHash = mShot ? mShot[1] : "";
-        var sPage = mShot ? mShot[2] : "";
-        var shotUrl = C.snippetScreenshotUrl(ROOT, shot);
-        shotBadge = '<div class="ve-epoch-shot">' +
-          '<a href="' + esc(shotUrl) + '" target="_blank" rel="noopener noreferrer" class="ve-shot-badge" ' +
-          (sHash && sPage ? 'data-snip-hash="' + esc(sHash) + '" data-snip-page="' + esc(sPage) + '" ' : "") +
-          'title="' + esc(t("open_page")) + '">' +
-          '<span class="ve-shot-icon" aria-hidden="true">🖼️</span> ' + esc(t("v_snip")) +
-          '</a></div>';
-      }
-      if (seg.type === "other") {
-        return { span: span, cls: "ve-epoch-absent", status: st, body: "<div>" + esc(t("snip_other")) + "</div>" + page + pills + shotBadge };
-      }
-      if (seg.entries) {
-        // Wortlaut je Release aus dem PDF: Quelle, Varianten, Schnitt, entfernte Seitenköpfe
-        var sub = seg.releases.length === 1 ? "" : "<strong>" + esc(t("ep_many", { n: seg.releases.length })) + "</strong>";
-        if (seg.texts.length > 1) sub += '<div class="ve-epoch-variants">' + esc(t("ep_variants", { n: seg.texts.length })) + "</div>";
-        var ncl = 0, cut = false;
-        seg.entries.forEach(function (v) {
-          ncl += v.cl || 0;
-          cut = cut || !!v.cut;
-        });
-        if (ncl) sub += '<div class="ve-epoch-cleaned">' + esc(t("ep_cleaned", { n: ncl })) + "</div>";
-        if (cut) sub += '<div class="ve-epoch-cleaned">' + esc(t("snip_cut")) + "</div>";
-        return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
-                 body: (sub ? "<div>" + sub + "</div>" : "") + page + pills + shotBadge };
-      }
-      var own = info.trel && seg.releases.indexOf(info.trel) >= 0;
-      return { key: seg.releases[0], keys: seg.releases, span: span, status: st,
-               body: "<div>" + esc(own ? t("snip_captured_rel", { rel: info.trel }) : t("snip_captured_same")) + "</div>" + page + pills + shotBadge };
-    });
-  }
   function mountSnipRevisions(vbody, info) {
     var box = vbody.querySelector("[data-role=sniprev]");
     SR.ctl = null;
     if (!box) return;
-    var gsegs = snippetSegments(info, C.snippetTimeline(info));
-    if (!gsegs.length) { box.innerHTML = '<p class="ve-muted">' + esc(t("snip_notext")) + "</p>"; return; }
-    var contents = gsegs.filter(function (g) { return g.key != null && g.pick !== "right"; });
-    var drop = gsegs.filter(function (g) { return g.pick === "right"; })[0] || null;
-    var valid = function (k) { return !!k && gsegs.some(function (g) { return g.key != null && (g.keys || []).indexOf(k) >= 0; }); };
-    var from = null, to = null;
-    if (valid(state.sfrom) && valid(state.sto)) { from = state.sfrom; to = state.sto; }
-    else if (contents.length > 1) { from = contents[0].key; to = contents[contents.length - 1].key; }
-    else if (contents.length === 1) { from = contents[0].key; to = drop ? drop.key : contents[0].key; }
-    // Wortlaut je Release (rv/rt) oder – ohne diese Angaben – der eine gespeicherte Wortlaut
-    var perRel = !!(info.rv && info.rv.length), byRel = {};
-    (info.rv || []).forEach(function (v) { byRel[v.r] = v; });
-    function textOf(k) {
-      if (!perRel) return C.decodeFully(info.text || "");
-      var v = byRel[k];
-      var relText = (v && v.t != null && info.rt) ? C.decodeFully(info.rt[v.t] || "") : "";
-      return relText || C.decodeFully(info.text || "");
-    }
-    // PDF-Zeilen sind Layout-Umbrüche: zu Fließtext verbinden, dann an Satzgrenzen teilen
-    function linesOf(k) { return TD.splitLong([textOf(k).replace(/\s*\n\s*/g, " ")]); }
-    var isDrop = function (k) { return !!drop && k === drop.key; };
-    function pageTag(k) { var v = byRel[k]; return v && v.p ? t("page_n", { p: v.p }) : ""; }
-    function raw(k) {
-      return { head: esc(t("raw_version")) + " " + esc(k) + (isDrop(k) ? " (" + esc(t("st_removed")) + ")" : (pageTag(k) ? " · " + esc(pageTag(k)) : "")),
-               html: "<pre>" + esc(isDrop(k) ? t("snip_dropped") : textOf(k)) + "</pre>" };
-    }
-    SR.ctl = TD.revisions(box, {
-      segments: gsegs, from: from, to: to, hint: perRel ? null : t("snip_rev_hint"),
-      emptyText: t("snip_notext"), singleText: !contents.length ? (info.text ? t("snip_rev_single") : t("snip_notext")) : (perRel ? t("tl_single") : t("snip_rev_single")),
-      diff: function (a, b) {
-        var al = TD.align(isDrop(a) ? [] : linesOf(a), isDrop(b) ? [] : linesOf(b));
-        return {
-          blocks: al.blocks, lines: al.lines,
-          tombstoneHtml: isDrop(b) ? '<div class="ve-block-tombstone"><div class="ve-tombstone-icon">🚫</div><h4>' +
-            esc(t("snip_drop_title", { rel: b })) + "</h4></div>" : null,
-          left: { label: esc(t("base")) + " <strong>" + esc(a) + "</strong>", tag: isDrop(a) ? "" : pageTag(a) },
-          right: { label: esc(t("target")) + " <strong>" + esc(b) + "</strong>", tag: isDrop(b) ? "" : pageTag(b) },
-          raw: { left: raw(a), right: raw(b) }
-        };
-      },
+    SR.ctl = K.mountSnippet(box, info, {
+      from: state.sfrom, to: state.sto, mode: cmpMode, onMode: function (m) { cmpMode = m; },
       onChange: function (a, b) { state.sfrom = a || ""; state.sto = b || ""; commit(false); }
-    }, { labels: revLabels(), mode: cmpMode, onMode: function (m) { cmpMode = m; } });
+    });
   }
 
   // KI-Beschreibung des Schaubilds (Item-Feld "ai", export_explorer.ai_info): oben im Viewer, Markdown sicher

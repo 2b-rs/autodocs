@@ -1,4 +1,4 @@
-<dialog id="dossier-modal-SWS_SecOC_00112" class="dossier-modal dossier-workbench" data-dossier-sha="9d6ddb3a30408c4e" aria-labelledby="dossier-modal-SWS_SecOC_00112-title">
+<dialog id="dossier-modal-SWS_SecOC_00112" class="dossier-modal dossier-workbench" data-dossier-sha="eff1e2668fc4e565" aria-labelledby="dossier-modal-SWS_SecOC_00112-title">
   <div class="dossier-modal-head">
     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <h3 id="dossier-modal-SWS_SecOC_00112-title"><span class="ai-badge" style="font-size:0.75em; padding:2px 6px; background:#01696f; color:#fff; border-radius:3px;">Audit-Dossier</span> Agenten-Kontext &amp; Nachweis-Dossier (SWS_SecOC_00112)</h3>
@@ -21,7 +21,7 @@
           Originalgetreuer 1:1 Prompt gemäß <code>_src/ai_workflow.py</code> &amp; <code>_src/ai/policy.json</code>. Im Textfeld editierbar.
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,276 Tokens</span>
+          <span class="raw-prompt-tokens-badge" id="raw-prompt-tokens-badge" style="font-size:0.85em; padding:3px 8px; border-radius:12px; background:var(--bg-tag, #e8f4f8); color:var(--color-brand, #006d73); font-weight:600; font-family:var(--font-mono, monospace);">~1,731 Tokens</span>
           <button type="button" class="btn-copy-raw-prompt" id="btn-copy-raw-prompt" title="Vollständigen Text-Prompt in die Zwischenablage kopieren">📋 Prompt kopieren</button>
           <span class="copy-success-hint" id="copy-success-hint" hidden>✓ Kopiert!</span>
         </div>
@@ -101,13 +101,31 @@ INHALT DES NUTZUNGSHINWEISES (nur, wo die Quellen etwas hergeben; sonst Aspekt w
 4. Zusammenspiel: Bezüge zu den verwandten Requirements aus dem Payload.
 Umfang: 120–350 Wörter, gegliedert mit &lt;p&gt; bzw. &lt;ul&gt;; keine Diagramme.
 
+AUSFÜHRLICHKEITSSTUFEN (verbindlich): Der Text wird in vier Stufen geliefert, zwischen denen Leser per Klick wechseln. Alle Stufen stützen sich nur auf den Payload und widersprechen einander nicht; jede kürzere Stufe verdichtet die ausführliche und bringt nichts, was dort fehlt.
+- Stufe 4 „Ausführlich“ (Block FRAGMENT): der vollständige Text genau nach den Vorgaben oben (Umfang, Gliederung, Belege, Diagramme, &lt;p class="ai-note"&gt;, Annahmen-Kommentar). Wegen der anderen Stufen nicht kürzen.
+- Stufe 3 „Überblick“ (Block MEDIUM): 2–3 Absätze &lt;p&gt; mit zusammen 80–160 Wörtern (höchstens etwa die Hälfte von Stufe 4); jeder Absatz mit mindestens einem Beleg; keine Diagramme, keine Überschriften.
+- Stufe 2 „Kurzfassung“ (Block SHORT): genau ein &lt;p&gt; mit 3–4 Sätzen (40–80 Wörter): Zweck, wichtigste Pflichten oder Abläufe, wichtigste Randbedingung. 1–2 Belege im Format oben; keine Diagramme, keine Listen, keine Überschriften.
+- Stufe 1 „Einzeiler“ (Block ONELINER): genau ein deutscher Satz mit höchstens 120 Zeichen, reiner Text ohne Markup, ohne Kennungen und ohne Belege. Er steht im eingeklappten Kopf neben dem Namen des Gegenstands; beginne deshalb nicht mit diesem Namen, sondern sage, wofür der Gegenstand da ist.
+- MEDIUM und SHORT sind HTML ohne umschließendes &lt;div class="ai …"&gt;, ohne &lt;p class="ai-note"&gt; und ohne Annahmen-Kommentar; Annahmen sind dort wie in Stufe 4 als Interpretation erkennbar. Erlaubte Elemente wie in den Richtlinien.
+
 AUSGABEFORMAT (verbindlich, nichts außerhalb dieser Blöcke):
 &lt;&lt;&lt;FRAGMENT
 &lt;div class="…"&gt; … &lt;/div&gt;
 FRAGMENT&gt;&gt;&gt;
+Zuletzt, nach FRAGMENT und allen DIAGRAM-Blöcken, die drei kürzeren Stufen in dieser Reihenfolge (Diagramm-Platzhalter in MEDIUM wiederholen Diagramme aus FRAGMENT und bekommen keinen eigenen DIAGRAM-Block):
+&lt;&lt;&lt;MEDIUM
+…
+MEDIUM&gt;&gt;&gt;
+&lt;&lt;&lt;SHORT
+&lt;p&gt;…&lt;/p&gt;
+SHORT&gt;&gt;&gt;
+&lt;&lt;&lt;ONELINER
+Ein Satz.
+ONELINER&gt;&gt;&gt;
 
 === USER PROMPT ===
 Erstelle den Nutzungshinweis für 'SecOC_IfTransmit'.
+Liefere alle vier Ausführlichkeitsstufen in einer Antwort (AUSGABEFORMAT).
 Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 {
  "dokumentstellen": [],
@@ -175,28 +193,28 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
       <div class="raw-subtab-content-area" id="raw-subtab-content-area">
         <div class="raw-content-pane raw-pane-current" id="raw-pane-current">
-          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-trace-prompt="eea2d20d2a9b4a51aa32f57f307230738c1575aaf226d8784a186d5003c92b8e" data-trace-output="9d6ddb3a30408c4e14be7b7125a6d0173e38a29733e1b563d84b5274534638c7" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium"&gt;
+          <pre class="raw-code-box" id="raw-current-output-code">&lt;div class="ai usage" data-ai-levels="4" data-trace-prompt="4ad6d7766599807355c2dbd123d18a286d7fa3a45e118d545f1e76e3fb69abc4" data-trace-output="eff1e2668fc4e5654c99a256c7188d476da0de732bc4aecb32fb076baaf00780" data-trace-model="gemini-3.8-flash-medium" data-trace-review="unreviewed" data-trace-effort="medium" data-ai-oneliner="Fordert synchron die Übertragung einer PDU an und bestätigt die Annahme über den Rückgabewert." data-ai-level-cur="4" data-ai-level-kind="element" data-ai-levels-shown="4"&gt;
 
-  &lt;h4&gt;Usage and Semantics&lt;/h4&gt;
-  &lt;p&gt;The function &lt;code&gt;SecOC_IfTransmit&lt;/code&gt; (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;) serves to request the transmission of a PDU via the module &lt;code&gt;SecOC&lt;/code&gt;. The interface is executed synchronously and is available via the header file &lt;code&gt;SecOC.h&lt;/code&gt; with the service ID &lt;code&gt;0x49&lt;/code&gt;.&lt;/p&gt;
-  
-  &lt;p&gt;The following parameters are passed upon the call:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;TxPduId&lt;/code&gt;: Unique identifier (&lt;code&gt;PduIdType&lt;/code&gt;) of the PDU to be transmitted.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;PduInfoPtr&lt;/code&gt;: Pointer to a structure of type &lt;code&gt;const PduInfoType*&lt;/code&gt;, which provides the length of the data, the pointer to the payload, and a pointer to metadata.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Return Values&lt;/h4&gt;
-  &lt;p&gt;The return value of type &lt;code&gt;Std_ReturnType&lt;/code&gt; signals the acceptance of the transmission request (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;):&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: The transmission request was accepted by the module.&lt;/li&gt;
-    &lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: The transmit request was rejected.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;h4&gt;Concurrency and Limitations&lt;/h4&gt;
-  &lt;p&gt;According to the specification, &lt;code&gt;SecOC_IfTransmit&lt;/code&gt; is reentrant for different PDU IDs. For the same &lt;code&gt;TxPduId&lt;/code&gt;, however, the function is non-reentrant (&lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;). Parallel or interrupting calls for the same PDU ID must therefore be avoided or synchronized on the caller side.&lt;/p&gt;
-
-  &lt;p class="ai-note"&gt;This usage note is based exclusively on the specification details for &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt; from AUTOSAR CP R20-11.&lt;/p&gt;
+&lt;div class="ai-level" data-ai-level="4"&gt;
+&lt;h4&gt;Verwendung&lt;/h4&gt;
+&lt;p&gt;Die synchrone Service-Funktion &lt;code&gt;SecOC_IfTransmit&lt;/code&gt; dient dazu, die Übertragung einer PDU im Modul &lt;code&gt;SecOC&lt;/code&gt; anzufordern &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;. Sie besitzt die Service-ID &lt;code&gt;0x49&lt;/code&gt; und wird über die Header-Datei &lt;code&gt;SecOC.h&lt;/code&gt; deklariert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Die Funktion erwartet zwei Eingangsparameter &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;TxPduId&lt;/code&gt;: Der Bezeichner der zu übertragenden PDU (Typ &lt;code&gt;PduIdType&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PduInfoPtr&lt;/code&gt;: Ein Zeiger auf eine Struktur vom Typ &lt;code&gt;PduInfoType&lt;/code&gt;, welche die Datenlänge sowie Zeiger auf die PDU-Daten und auf Metadaten bereitstellt.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Es existieren weder Ein-/Ausgangs- noch reine Ausgangsparameter &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Rückgabewerte und Fehlerbehandlung&lt;/h4&gt;
+&lt;p&gt;Als synchroner Rückgabewert wird ein Status vom Typ &lt;code&gt;Std_ReturnType&lt;/code&gt; zurückgeliefert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;E_OK&lt;/code&gt;: Die Übertragungsanforderung wurde akzeptiert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;E_NOT_OK&lt;/code&gt;: Die Übertragungsanforderung wurde nicht akzeptiert &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Im Fehlerfall wird das Scheitern der Anforderung unmittelbar durch &lt;code&gt;E_NOT_OK&lt;/code&gt; signalisiert; spezifische Fehlercodes für DET oder DEM werden in der Funktionsspezifikation nicht gesondert ausgewiesen &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Nebenläufigkeit und Einschränkungen&lt;/h4&gt;
+&lt;p&gt;Bezüglich der Nebenläufigkeit ist die Funktion reentrant für unterschiedliche PDU-IDs, jedoch nicht reentrant für dieselbe PDU-ID &lt;a class="spec-record-ref" data-req="SWS_SecOC_00112" href="../../spec/record.html?id=SWS_SecOC_00112"&gt;[SWS_SecOC_00112]&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p class="ai-note"&gt;Dieser Nutzungshinweis wurde von einer KI auf Basis der AUTOSAR-Spezifikation generiert.&lt;/p&gt;
 &lt;/div&gt;</pre>
         </div>
         <div class="raw-preview-panes-container" id="raw-preview-panes-container">
@@ -236,9 +254,9 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
               <div><strong>Modell:</strong> <span>gemini-3.8-flash-medium</span></div>
               <div><strong>Thinking Effort:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">medium</code></div>
               <div><strong>Review-Status:</strong> <code style="background:#eaf2f1; padding:2px 5px; border-radius:3px;">unreviewed</code></div>
-              <div><strong>Prompt-Hash:</strong> <code>eea2d20d2a9b…</code></div>
+              <div><strong>Prompt-Hash:</strong> <code>4ad6d7766599…</code></div>
               <div><strong>Konstituierende Records:</strong> 1</div>
-              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 3 <span class="dossier-meta-sub">(3 neu · 2 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 3 Belege dazugekommen (2 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
+              <div><strong>Inbound-Belege im Prompt:</strong> 0</div><div><strong>Aktuell zugeordnet:</strong> 1 <span class="dossier-meta-sub">(1 neu · 0 Schaubilder)</span></div><div class="dossier-stale-banner" role="status"><strong>Kontext hat sich geändert:</strong> Seit dieser Generierung sind 1 Belege dazugekommen (0 Schaubilder). Der Text beruht noch auf dem älteren Kontext. <button type="button" class="curation-btn" data-dossier-show-new>Neue Belege anzeigen</button> <button type="button" class="curation-btn" data-dossier-regen-new>⚡ Aus Kontext neu generieren</button></div>
             </div>
           </div>
 
@@ -273,8 +291,8 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
             <div class="dossier-filter-row">
               <div class="dossier-filter-group" role="group" aria-label="Nach Element-Art filtern">
                 <span class="filter-group-label">Art:</span>
-                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">4</span></button>
-                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">3</span></button>
+                <button type="button" class="dossier-filter-pill is-active" data-filter-kind="all">Alle <span class="pill-count" id="count-kind-all">2</span></button>
+                <button type="button" class="dossier-filter-pill" data-filter-kind="inbound">Inbound <span class="pill-count" id="count-kind-inbound">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="function">Funktionen <span class="pill-count" id="count-kind-func">1</span></button>
                 <button type="button" class="dossier-filter-pill" data-filter-kind="type">Typen <span class="pill-count" id="count-kind-type">0</span></button>
               </div>
@@ -311,7 +329,7 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
 
           <!-- 2. Inbound-Snippets & Dokumentstellen -->
           <div class="dossier-section-head section-head-inbound" style="margin-top: 24px; margin-bottom: 8px;">
-            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 3 seit der Generierung zugeordnet)</h3>
+            <h3>Inbound-Snippets &amp; Schaubilder (0 im Prompt · 1 seit der Generierung zugeordnet)</h3>
             <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">Verifizierte Textbelege aus Nachbardokumenten, die Anforderungen und Aufrufverträge für dieses Element definieren.</p>
           </div>
           <div class="snippets-container" id="snippets-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
@@ -374,4 +392,4 @@ Verwende KEINE Werkzeuge. Alle Daten stehen im folgenden Payload:
       </div>
     </div>
   </div>
-<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00112","k":"function","d":"AUTOSAR","t":"","n":"SecOC_IfTransmit"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/077a7cbf1394a5e1.json?v=65ee70e6" data-total="3" data-new="3" data-figures="2" data-used="0"></script></dialog>
+<script type="application/json" class="dossier-prompt-context">{"records":[{"i":"SWS_SecOC_00112","k":"function","d":"AUTOSAR","t":"","n":"SecOC_IfTransmit"}],"inbound":[]}</script><script type="application/json" class="dossier-data-ref" data-root="../../../" data-src="dossier-data/077a7cbf1394a5e1.json?v=40df457c" data-total="1" data-new="1" data-figures="0" data-used="0"></script></dialog>
