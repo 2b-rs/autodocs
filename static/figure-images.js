@@ -26,14 +26,22 @@
   "use strict";
   var SHA_RE = /^[0-9a-f]{64}$/;
 
-  // HTTP-Status des Workers -> Zustand des Platzhalters
-  function statusKind(status) {
+  // HTTP-Status (und Fehlercode) des Workers -> Zustand des Platzhalters. Nur 429 heißt „zu viele Abrufe“;
+  // ein nicht eingerichteter Speicher ist kein vorübergehender Zustand und bekommt keinen Wiederholen-Knopf.
+  function statusKind(status, code) {
     if (status === 200) return "ok";
     if (status === 401) return "signin";
     if (status === 403) return "forbidden";
     if (status === 404) return "missing";
-    if (status === 429 || status === 503) return "busy";
+    if (status === 429) return "busy";
+    if (status === 503 && code === "store_unconfigured") return "unavailable";
+    if (status === 503 || status === 502) return "down";
     return "error";
+  }
+
+  function errorCode(res) {
+    if (!res || typeof res.json !== "function") return Promise.resolve(null);
+    return res.json().then(function (j) { return (j && j.error && j.error.code) || null; }, function () { return null; });
   }
 
   function hostLocal(hostname) { return /^(localhost|127\.0\.0\.1|\[::1\]|::1)$/.test(String(hostname || "")); }
@@ -72,6 +80,8 @@
       private_t: "Bild nicht öffentlich.",
       missing_t: "Bild nicht im Bildarchiv.",
       busy_t: "Zu viele Bildabrufe – bitte kurz warten.",
+      down_t: "Bilddienst gerade nicht erreichbar – bitte später erneut laden.",
+      unavailable_t: "Für diese Bilder ist der Bildspeicher noch nicht eingerichtet.",
       error_t: "Bild konnte nicht geladen werden.",
       retry: "Erneut laden"
     },
@@ -84,12 +94,14 @@
       private_t: "Image not public.",
       missing_t: "Image not in the image archive.",
       busy_t: "Too many image requests – please wait a moment.",
+      down_t: "The image service is not reachable right now – please load again later.",
+      unavailable_t: "The image store for these images is not set up yet.",
       error_t: "The image could not be loaded.",
       retry: "Load again"
     }
   };
 
-  return { SHA_RE: SHA_RE, SNIP_RE: SNIP_RE, statusKind: statusKind, isLocalHost: isLocalHost, serviceFrom: serviceFrom,
+  return { SHA_RE: SHA_RE, SNIP_RE: SNIP_RE, statusKind: statusKind, errorCode: errorCode, isLocalHost: isLocalHost, serviceFrom: serviceFrom,
            figureUrl: figureUrl, snippetUrl: snippetUrl, localUrl: localUrl, localSnippetUrl: localSnippetUrl, rootFromSrc: rootFromSrc, TEXTS: TEXTS };
 });
 
@@ -182,6 +194,8 @@
     private: { t: "private_t", ico: ICON },
     missing: { t: "missing_t", ico: ICON_IMG },
     busy: { t: "busy_t", act: "retry", label: "retry", ico: ICON_IMG },
+    down: { t: "down_t", act: "retry", label: "retry", ico: ICON_IMG },
+    unavailable: { t: "unavailable_t", ico: ICON_IMG },
     error: { t: "error_t", act: "retry", label: "retry", ico: ICON_IMG }
   };
 
@@ -240,7 +254,10 @@
         if (res.status !== 401) return res;
         return token(true).then(function (t2) { return t2 ? request(sha, t2) : res; });
       }).then(function (res) {
-        var kind = C.statusKind(res.status);
+        return res.status === 503 ? C.errorCode(res).then(function (code) { return { res: res, code: code }; })
+                                  : { res: res, code: null };
+      }).then(function (rc) {
+        var res = rc.res, kind = C.statusKind(res.status, rc.code);
         if (kind === "ok") {
           return res.blob().then(function (b) {
             var url = URL.createObjectURL(b);
@@ -271,7 +288,10 @@
         if (res.status !== 401) return res;
         return token(true).then(function (t2) { return t2 ? requestSnippet(hash, page, t2) : res; });
       }).then(function (res) {
-        var kind = C.statusKind(res.status);
+        return res.status === 503 ? C.errorCode(res).then(function (code) { return { res: res, code: code }; })
+                                  : { res: res, code: null };
+      }).then(function (rc) {
+        var res = rc.res, kind = C.statusKind(res.status, rc.code);
         if (kind === "ok") {
           return res.blob().then(function (b) {
             var url = URL.createObjectURL(b);

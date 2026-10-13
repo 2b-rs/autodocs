@@ -374,6 +374,21 @@
     return out;
   }
   function normContent(text) { return decodeFully(text).replace(NORM_DROP, ""); }
+  // Angezeigter Wortlaut einer Fassung: Zeilenend-Trennungen und abgetrennte Plural-„s“ zusammengeführt
+  // (export_versions/text_rejoin.py, Vermerk rejoin.e = [Beginn, Länge, Ersatz] in UTF-16-Einheiten über content).
+  // Der gespeicherte Wortlaut (content, Rohansicht) bleibt unverändert.
+  function shownContent(v) {
+    var s = (v && v.content) || "", r = v && v.rejoin;
+    if (!r || r.applied || !r.e || !r.e.length) return s;
+    var out = "", pos = 0;
+    for (var i = 0; i < r.e.length; i++) {
+      var e = r.e[i];
+      if (e[0] < pos || e[0] + e[1] > s.length) return s;
+      out += s.slice(pos, e[0]) + e[2];
+      pos = e[0] + e[1];
+    }
+    return out + s.slice(pos);
+  }
 
   // Spezifikationskennungen in Belegtexten (gleiche Regel wie export_explorer.CITE_RE)
   var CITE_SRC = "((?:AP_|CP_|FO_)?(?:SWS|SRS|RS|PRS|TPS|ECUC)_[A-Za-z][A-Za-z0-9]*(?:_CONSTR)?_\\d{4,5})(?![A-Za-z0-9])";
@@ -839,7 +854,7 @@
   function revisionKit(o) {
     o = o || {};
     var t = o.t || function (k) { return k; }, esc = o.esc || escHtml, TD = o.TD, ROOT = o.root || "";
-    var C = { releaseKey: releaseKey, decodeFully: decodeFully, versionHash: versionHash, snippetScreenshotUrl: snippetScreenshotUrl };
+    var C = { releaseKey: releaseKey, decodeFully: decodeFully, shownContent: shownContent, versionHash: versionHash, snippetScreenshotUrl: snippetScreenshotUrl };
     function revLabels() {
       return {
         tl_title: t("tl_title"), tl_hint: t("tl_hint"), cmp: t("cmp"), left: t("ep_left"), right: t("ep_right"),
@@ -953,7 +968,7 @@
       var vB = dropB ? null : (eligB.length ? eligB[eligB.length - 1] : null);
       // Adaptive-Versionstexte sind als HTML-Text erfasst; ältere Store-Zeilen tragen noch doppelt
       // maskierte Kopfzeilen (&amp;lt;, Quelle inzwischen korrigiert). Zur Anzeige bis zum Fixpunkt auflösen.
-      var linesA = formatReqLines(vA ? C.decodeFully(vA.content || "") : ""), linesB = formatReqLines(vB ? C.decodeFully(vB.content || "") : "");
+      var linesA = formatReqLines(vA ? C.decodeFully(C.shownContent(vA)) : ""), linesB = formatReqLines(vB ? C.decodeFully(C.shownContent(vB)) : "");
       var blocks = [], lines = [], bi = 0;
       if (dropB) {
         linesA.forEach(function (l) {
@@ -1126,7 +1141,7 @@
     figureHref: figureHref, itemFile: itemFile, recordFile: recordFile, caseMask: caseMask, safeStem: safeStem,
     markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
     snippetScreenshotUrl: snippetScreenshotUrl,
-    catalogPdfUrl: catalogPdfUrl, textMatcher: textMatcher, normContent: normContent, releaseKey: releaseKey,
+    catalogPdfUrl: catalogPdfUrl, textMatcher: textMatcher, normContent: normContent, shownContent: shownContent, releaseKey: releaseKey,
     sortVersions: sortVersions, buildTimeline: buildTimeline, snippetTimeline: snippetTimeline, versionHash: versionHash,
     decodeEntities: decodeEntities, decodeFully: decodeFully, citedIds: citedIds, linkifyIds: linkifyIds, resolveId: resolveId,
     UNIVERSES: UNIVERSES,
@@ -2120,7 +2135,7 @@
     if (rec.citation_only) return "";
     var vs = rec.versions || [], v = vs[vs.length - 1], lc = rec.lifecycle || {};
     if (!v) return '<section class="ve-req ve-req-none"><p class="ve-muted">' + esc(t("req_none")) + "</p></section>";
-    var lines = formatReqLines(C.decodeFully(v.content || "")).map(function (l) { return l.replace(/[ \t\u00a0]{2,}/g, " "); });
+    var lines = formatReqLines(C.decodeFully(C.shownContent(v))).map(function (l) { return l.replace(/[ \t\u00a0]{2,}/g, " "); });
     var text = lines.join("\n");
     var long = text.length > 700 || lines.length > 9;
     var removed = (v.cleaning || {}).removed || [];

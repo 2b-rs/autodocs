@@ -1247,11 +1247,22 @@
   });
 
   var TOGGLE_NAMES = {
-    de: ["Dunkles Design", "Kompakte Ansicht"], en: ["Dark mode", "Compact mode"], es: ["Modo oscuro", "Vista compacta"],
-    pt: ["Modo escuro", "Vista compacta"], fr: ["Mode sombre", "Affichage compact"], ru: ["Тёмная тема", "Компактный вид"],
-    ar: ["الوضع الداكن", "عرض مضغوط"], hi: ["डार्क मोड", "संक्षिप्त दृश्य"], ko: ["다크 모드", "간결한 보기"],
-    zh: ["深色模式", "紧凑视图"], nl: ["Donkere modus", "Compacte weergave"]
+    de: ["Dunkles Design"], en: ["Dark mode"], es: ["Modo oscuro"], pt: ["Modo escuro"], fr: ["Mode sombre"],
+    ru: ["Тёмная тема"], ar: ["الوضع الداكن"], hi: ["डार्क मोड"], ko: ["다크 모드"], zh: ["深色模式"], nl: ["Donkere modus"]
   };
+  // Dichteschalter: kurzer Tooltip (aktuelle Ansicht zuerst, dann Ziel des Klicks) und aria-label in ganzen
+  // Worten. Die Vorlage setzt beide Zustände in der Seitensprache (data-density-tip-*, data-density-label-*,
+  // UI-Katalog ui.json); ohne sie der Katalog über T().
+  function densityTip(btn, dens) {
+    var compact = dens === "compact";
+    return btn.getAttribute(compact ? "data-density-tip-compact" : "data-density-tip-comfortable")
+      || (compact ? T("Kompakt – Klick: Komfort") : T("Komfort – Klick: Kompakt"));
+  }
+  function densityLabel(btn, dens) {
+    var compact = dens === "compact";
+    return btn.getAttribute(compact ? "data-density-label-compact" : "data-density-label-comfortable")
+      || (compact ? T("Ansicht: kompakt – klicken für komfortabel") : T("Ansicht: komfortabel – klicken für kompakt"));
+  }
   function syncShellControls() {
     var root = document.documentElement;
     var themeBtn = document.querySelector("[data-theme-toggle]");
@@ -1269,7 +1280,11 @@
     }
     if (densBtn) {
       densBtn.setAttribute("aria-pressed", dens === "compact" ? "true" : "false");
-      if (densBtn.hasAttribute("data-icon-toggle")) { densBtn.title = names[1]; densBtn.setAttribute("aria-label", names[1]); }
+      if (densBtn.hasAttribute("data-icon-toggle")) {
+        // Symbol wechselt per CSS mit html[data-density]; Name, Zustand und Wirkung in Tooltip und aria-label
+        densBtn.title = densityTip(densBtn, dens);
+        densBtn.setAttribute("aria-label", densityLabel(densBtn, dens));
+      }
       else densBtn.textContent = dens === "compact" ? "Compact" : "Comfortable";
     }
     if (prefsLabel) {
@@ -1369,8 +1384,11 @@
 
   // ---- Ausführlichkeitsstufen der User Guides (guide-levels, Fragmentschema ai-levels@1)
   // Ein Guide mit data-ai-levels trägt Einzeiler (1), Kurzfassung (2), Überblick (3) und ausführliche
-  // Fassung (4). Sichtbar ist die Stufe in data-ai-level-cur (CSS); „mehr ›“/„‹ weniger“ und die
-  // Stufennamen schalten um. Die Wahl gilt je Guide-Art (data-ai-level-kind: element, module, cluster …)
+  // Fassung (4). Sichtbar ist die Stufe in data-ai-level-cur (CSS). Die Stufen-Badges sind ein Knopf
+  // (.ai-level-nav[data-ai-level-cycle]): Klick, Enter oder Leertaste schalten eine Stufe weiter, nach der
+  // höchsten gezeigten wieder zur niedrigsten; ein Klick auf ein anderes Badge springt direkt dorthin.
+  // „mehr ›“ am Ende einer Stufe zeigt die nächste. Bei nur einer gezeigten Stufe gibt es keinen Knopf.
+  // Die Wahl gilt je Guide-Art (data-ai-level-kind: element, module, cluster …)
   // und liegt im Browser-Speicher; neue Seiten öffnen die Guides dieser Art in der gemerkten Stufe.
   // Der Einzeiler des sichtbaren Guides steht im Kopf des Folds (.ai-oneliner), auch eingeklappt.
   var GUIDE_LEVEL_KEY = "autodocs-guide-level:";
@@ -1396,13 +1414,15 @@
       n = levels.filter(function (x) { return x >= n; })[0] || levels[levels.length - 1];
     }
     ai.setAttribute("data-ai-level-cur", String(n));
-    var i = levels.indexOf(n);
-    ai.querySelectorAll("[data-ai-level-step]").forEach(function (b) {
-      var step = parseInt(b.getAttribute("data-ai-level-step"), 10);
-      b.disabled = step < 0 ? i <= 0 : i >= levels.length - 1;
-    });
-    ai.querySelectorAll("[data-ai-level-go]").forEach(function (b) {
-      b.setAttribute("aria-pressed", String(parseInt(b.getAttribute("data-ai-level-go"), 10) === n));
+    // Badges und Beschriftung der Gruppe (aktuelle und nächste Stufe, serverseitig in der Seitensprache)
+    ai.querySelectorAll(".ai-level-nav").forEach(function (nav) {
+      if (nav.closest(".ai[data-ai-levels]") !== ai) return;
+      nav.querySelectorAll("[data-ai-level-go]").forEach(function (b) {
+        var on = parseInt(b.getAttribute("data-ai-level-go"), 10) === n;
+        b.classList.toggle("is-current", on);
+        var lbl = on && b.getAttribute("data-ai-level-label");
+        if (lbl) { nav.title = lbl; nav.setAttribute("aria-label", lbl); }
+      });
     });
     if (remember) {
       try { localStorage.setItem(GUIDE_LEVEL_KEY + (ai.getAttribute("data-ai-level-kind") || "guide"), String(n)); } catch (e) {}
@@ -1437,29 +1457,26 @@
     try { tel = tid && document.getElementById(tid); } catch (e) { tel = null; }
     var tlv = tel && tel.closest(".ai-level[data-ai-level]");
     if (tlv) window.autodocsGuideLevels.showLevelOf(tlv);
+    // Enter und Leertaste lösen am Knopf selbst einen Klick aus (Ziel ist dann der Knopf, nicht ein Badge)
     document.addEventListener("click", function (e) {
-      var b = e.target.closest && e.target.closest("[data-ai-level-step], [data-ai-level-go]");
+      var b = e.target.closest && e.target.closest("[data-ai-level-cycle], [data-ai-level-step]");
       if (!b) return;
       var ai = b.closest(".ai[data-ai-levels]");
       if (!ai) return;
+      var lv = guideLevels(ai);
+      if (lv.length < 2) return;
       e.preventDefault();
       var cur = parseInt(ai.getAttribute("data-ai-level-cur"), 10) || GUIDE_LEVEL_START;
-      var inline = !!b.closest(".ai-level-more-inline");
-      var lv = guideLevels(ai), ci = Math.max(0, lv.indexOf(cur));
-      var n = b.hasAttribute("data-ai-level-go") ? parseInt(b.getAttribute("data-ai-level-go"), 10)
-        : lv[Math.max(0, Math.min(lv.length - 1, ci + parseInt(b.getAttribute("data-ai-level-step"), 10)))];
+      var ci = lv.indexOf(cur), inline = !b.hasAttribute("data-ai-level-cycle");
+      var go = !inline && e.target.closest("[data-ai-level-go]");
+      var g = go ? parseInt(go.getAttribute("data-ai-level-go"), 10) : 0;
+      var n = g && g !== cur && lv.indexOf(g) >= 0 ? g                       // anderes Badge: direkt dorthin
+        : inline ? lv[Math.min(lv.length - 1, ci + 1)]                        // „mehr ›“: nächste, kein Umlauf
+        : lv[(ci + 1) % lv.length];                                           // Gruppe: weiter, mit Umlauf
       setGuideLevel(ai, n, true);
-      // Fokus bleibt in der Leiste; ein deaktivierter Knopf gibt ihn an den Gegenknopf ab
-      var nav = ai.querySelector(".ai-level-nav");
-      var focus = b;
-      if (nav && (inline || b.disabled)) {
-        var dir = b.hasAttribute("data-ai-level-step") ? parseInt(b.getAttribute("data-ai-level-step"), 10) : 0;
-        var same = nav.querySelector(dir > 0 ? ".ai-level-more" : ".ai-level-less");
-        var other = nav.querySelector(dir > 0 ? ".ai-level-less" : ".ai-level-more");
-        focus = same && !same.disabled ? same : other && !other.disabled ? other
-          : nav.querySelector('[data-ai-level-go][aria-pressed="true"]');
-      }
-      if (focus && focus.focus) focus.focus({ preventScroll: true });
+      // Fokus bleibt auf der Gruppe (auch nach „mehr ›“ am Ende einer Stufe)
+      var nav = inline ? ai.querySelector(".ai-level-nav") : b;
+      if (nav && nav.focus) nav.focus({ preventScroll: true });
       if (inline && nav && nav.getBoundingClientRect().top < 0) nav.scrollIntoView({ block: "nearest" });
     });
   }
