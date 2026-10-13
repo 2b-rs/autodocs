@@ -2,11 +2,11 @@
 <html lang="es" data-theme="light" data-density="comfortable"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="review-github-repo" content="2b-rs/autodocs">
-<title>Explorador de versiones &amp; procedencia — AUTOSAR Spec History</title><link rel="stylesheet" href="../style.css">
+<title>Explorador de versiones &amp; procedencia — AUTOSAR Spec History</title><script>(function(){try{var q=new URLSearchParams(location.search),t=q.get("tab"),k=t==="fig"||t==="snip"?t:"el",F={el:"q query kind plat st doc mod cl first last chg has g s",fig:"fq fplat fmod fdoc fmulti frole fg fs",snip:"sq splat smod sdoc srole sg ss"}[k].split(" "),b="../versions/explorer/"+{el:"elements",fig:"figures",snip:"snippets"}[k],g=function(x){var u=new URL(b+x,location.href).href,p=fetch(u,{priority:"high"}).then(function(r){if(!r.ok)throw new Error(r.status+" "+u);return r.text();});p.catch(function(){});return{url:u,p:p};},f=F.some(function(n){return q.get(n);});if(!f){try{var o=JSON.parse(localStorage.getItem("autodocs-ve-order")||"{}")[k];f=!!(o&&(o.g||o.s));}catch(e){}}window.__veBoot=f?{full:g(".json")}:{head:g(".head.json")};}catch(e){}})();</script><link rel="stylesheet" href="../style.css">
 <script>
 (function(){try{var t=localStorage.getItem("autodocs-theme");var d=localStorage.getItem("autodocs-density");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(d==="compact"||d==="comfortable")document.documentElement.setAttribute("data-density",d);}catch(e){}})();
 </script>
-<script src="../ai-access.js" defer></script><script src="../fold.js" defer></script><script src="../review.js" defer></script><script src="../review_request.js" defer></script><script src="../static/discuss.js" defer></script><script src="../cytoscape.min.js" defer></script><script src="../component-graph.js" defer></script><script src="../component-inspector.js" defer></script><script src="../classic-filter.js" defer></script><script src="../ns-index.js" defer></script></head>
+<script src="../ai-access.js" defer></script><script src="../fold.js" defer></script><script src="../review.js" defer></script><script src="../review_request.js" defer></script><script src="../static/discuss.js" defer></script></head>
 <body class="ve-page"><a class="skip-link" href="#main">Skip to content</a>
 <header class="shell" role="banner"><div class="titleblock"><a class="home" href="index.html">autodocs</a></div>
 <nav class="shell-domains" aria-label="Application domains"><details class="shell-dropdown domain-dropdown"><summary class="shell-toggle domain-toggle" aria-haspopup="true"><span class="domain-current">Explore</span> <span class="dropdown-caret" aria-hidden="true">▾</span></summary><div class="shell-dropdown-menu"><a data-domain="explore" href="index.html">Explore</a><a data-domain="extract" href="extraction-reports.html">Extract</a><a data-domain="build" href="build-reports.html">Build</a><a data-domain="curate" href="curation-report.html">Curate</a><a data-domain="review" href="open-reviews.html">Review</a><a data-domain="trace" href="adaptive/index.html#component-graph-data">Trace</a><a data-domain="work" href="process.html">Work</a></div></details></nav>
@@ -78,6 +78,28 @@ html,body{overflow-x:hidden;max-width:100%}
 .ve-row{position:absolute;left:0;right:0;padding:.4rem .75rem;border-bottom:1px solid var(--border-subtle,var(--border-default));cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:.15rem;overflow:hidden}
 .ve-row:hover{background:var(--bg-subtle)}
 .ve-row.is-active{background:rgba(0,109,115,.08);box-shadow:inset 0 0 0 1px var(--color-teal-600)}
+/* Gruppieren & Sortieren (Panel und Gruppenköpfe in der virtuellen Liste) */
+.ve-orderpanel{border:1px solid var(--border-default);border-radius:10px;background:var(--bg-surface);padding:.5rem .75rem;margin:0 0 .5rem;display:flex;flex-direction:column;gap:.45rem}
+.ve-orderpanel[hidden]{display:none}
+.ve-ohint{margin:0;font-size:.78rem;color:var(--color-ink-muted);line-height:1.35}
+.ve-orow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.4rem .5rem}
+.ve-olvl{font-size:.72rem;font-weight:700;color:var(--color-ink-muted);min-width:4.5rem;align-self:center;text-transform:uppercase;letter-spacing:.04em}
+.ve-osel{display:flex;flex-direction:column;gap:.1rem;font-size:.74rem;color:var(--color-ink-muted)}
+.ve-osel select{min-width:11rem;padding:.3rem .4rem;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-canvas);color:var(--color-ink);font:inherit;font-size:.84rem}
+.ve-odir{padding:.3rem .55rem;min-width:2.1rem;justify-content:center}
+.ve-oacts{display:flex;flex-wrap:wrap;gap:.4rem}
+.ve-order-toggle[aria-expanded=true]{background:var(--bg-subtle)}
+.ve-grow{background:var(--bg-subtle);justify-content:center}
+.ve-grow:hover{filter:brightness(.97)}
+.ve-ghead{display:flex;align-items:center;gap:.35rem;min-width:0;font-size:.82rem;white-space:nowrap;overflow:hidden}
+.ve-gcaret{width:1rem;flex-shrink:0;color:var(--color-ink-muted);font-size:.95rem;line-height:1}
+.ve-gfield{color:var(--color-ink-muted);font-size:.74rem;flex-shrink:0}
+.ve-glabel{font-weight:700;color:var(--color-ink);overflow:hidden;text-overflow:ellipsis}
+.ve-gcount{margin-inline-start:auto;flex-shrink:0;font-size:.72rem;font-weight:600;background:var(--bg-canvas);border:1px solid var(--border-default);border-radius:999px;padding:0 .45rem;font-variant-numeric:tabular-nums}
+@media (max-width:899px){.ve-osel{flex:1 1 40%}.ve-osel select{min-width:0;width:100%}}
+.ve-row-ph{cursor:default;justify-content:center}
+.ve-row-ph::before{content:"";display:block;height:.6rem;width:55%;border-radius:4px;background:var(--bg-subtle)}
+.ve-row-ph:hover{background:transparent}
 .ve-row.is-open{background:rgba(0,109,115,.14);border-inline-start:4px solid var(--color-teal-600)}
 .ve-row-top{display:flex;justify-content:space-between;align-items:center;gap:.4rem;min-width:0}
 .ve-row-id{font-family:var(--font-mono);font-size:.86rem;font-weight:600;color:var(--color-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

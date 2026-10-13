@@ -977,31 +977,86 @@
       .replace(/'/g, '&#039;');
   }
 
-  function extractFields(text) {
-    const data = {};
-    if (!text) return data;
-    const fields = [
-      "Service Name", "Service name", "Syntax", "Service ID", "Service ID[hex]",
-      "Service ID [hex]", "Sync/Async", "Sync/ Async", "Reentrancy",
-      "Parameters (in)", "Parameters (inout)", "Parameters (out)",
-      "Parameters", "Return value", "Description", "Available via",
-      "Header-Datei", "Header file", "Scope", "Hinweis", "Note", "Notes",
-      "Upstream requirements", "Upstream requirement"
-    ];
-    const pattern = new RegExp("(?:^|\\s)(" + fields.map(f => f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join("|") + ")[:\\s]", "i");
-    const splits = text.split(pattern);
-    if (splits.length > 1) {
-      data["preamble"] = splits[0].trim();
-      for (let i = 1; i < splits.length; i += 2) {
-        const k = splits[i].trim();
-        const v = (splits[i+1] || '').trim();
-        data[k] = v;
+  // Angaben einer API-Tabelle („Scope“, „Thread Safety“, „Parameters (in)“ …) liefert der Export als Vermerk
+  // „fields“ je Versionszeile (export_versions.py, _src/tools/api_fields.py, Regel api-fields@1): Spannen in
+  // UTF-16-Einheiten über content, aus geschlossenen Beschriftungsmengen je Plattform und Release. Die Seite
+  // zerlegt den Wortlaut nicht mehr selbst an einer Wortliste (bis api-fields@1 landete jede unbekannte
+  // Beschriftung samt Rest in der vorigen Angabe, bei SWS_EM_02278 alles unter „Scope“). Ohne Vermerk bleibt
+  // der Wortlaut ungeteilt; nur die Upstream-Kennungen werden herausgelesen.
+  /* api-fields:begin */
+  const FIELD_ELSEWHERE = ['Service Name', 'Name', 'Kind', 'Syntax', 'Description', 'Upstream requirements', 'Text'];
+  // Die Adaptive-Fassungen aus den Seiten-Records tragen HTML-Entitäten („&lt; void &gt;“); einmal auflösen
+  function decodeEntities(s) {
+    if (!s || s.indexOf('&') < 0) return s;
+    const named = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'", nbsp: '\u00a0' };
+    return s.replace(/&(#x[0-9a-fA-F]+|#[0-9]+|[A-Za-z]+);/g, (m, e) => {
+      if (e[0] === '#') {
+        const n = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return isFinite(n) ? String.fromCodePoint(n) : m;
       }
-    } else {
-      data["raw"] = text;
+      return Object.prototype.hasOwnProperty.call(named, e) ? named[e] : m;
+    });
+  }
+  // Text einer Spanne; Zusammenführungen aus „rejoin“ (text_rejoin.py) innerhalb der Spanne angewandt
+  function spanText(ver, sp, ent) {
+    const text = ver.content || '';
+    const a = sp[0], b = sp[1];
+    const edits = ((ver.rejoin && ver.rejoin.e) || [])
+      .filter(e => e[0] >= a && e[0] + e[1] <= b)
+      .sort((x, y) => x[0] - y[0]);
+    let out = '', pos = a;
+    edits.forEach(e => { if (e[0] >= pos) { out += text.slice(pos, e[0]) + e[2]; pos = e[0] + e[1]; } });
+    out += text.slice(pos, b);
+    out = out.trim();
+    return ent ? decodeEntities(out) : out;
+  }
+  function noteFields(ver) {
+    const note = ver && ver.fields;
+    if (!note || !Array.isArray(note.f) || !ver.content) return null;
+    const ent = !!note.ent;
+    let first = ver.content.length;
+    const list = note.f.map(f => {
+      (f.v || []).concat(f.l ? [f.l] : []).forEach(sp => { if (sp[0] < first) first = sp[0]; });
+      return {
+        k: f.k,
+        label: f.l ? ver.content.slice(f.l[0], f.l[1]).replace(/\s+/g, ' ').replace(/:$/, '').trim() : '',
+        value: (f.v || []).map(sp => spanText(ver, sp, ent)).filter(Boolean).join('\n'),
+        head: (f.head || []).map(sp => spanText(ver, sp, ent)),
+        rows: (f.rows || []).map(r => r.map(sp => spanText(ver, sp, ent))),
+        unknown: !!f.u
+      };
+    });
+    return { list, preamble: ver.content.slice(0, first).trim() };
+  }
+  function extractFields(ver) {
+    const data = { list: [] };
+    const text = (ver && ver.content) || '';
+    if (!text) return data;
+    const nf = noteFields(ver);
+    if (nf) {
+      data.list = nf.list;
+      nf.list.forEach(f => {
+        if (!f.value) return;
+        data[f.k] = data[f.k] ? data[f.k] + '\n' + f.value : f.value;
+      });
+      if (nf.preamble) data['preamble'] = nf.preamble;
+      return data;
     }
+    data['raw'] = text;
+    const up = text.match(/Upstream requirements?\s*:\s*((?:S?RS_[A-Za-z0-9_]+[\s,]*)+)/);
+    if (up) data['Upstream requirements'] = up[1].trim();
     return data;
   }
+  function fieldValueHtml(f) {
+    if (f.rows.length || f.head.length) {
+      const cell = (c, tag) => '<' + tag + ' style="text-align:left; padding:2px 10px 2px 0; vertical-align:top;">' + escapeHtml(c).replace(/\n/g, '<br>') + '</' + tag + '>';
+      return '<table class="rec-subtable" style="border-collapse:collapse; font-size:13px;">' +
+        (f.head.length ? '<tr>' + f.head.map(c => cell(c, 'th')).join('') + '</tr>' : '') +
+        f.rows.map(r => '<tr>' + r.map(c => cell(c, 'td')).join('') + '</tr>').join('') + '</table>';
+    }
+    return escapeHtml(f.value).replace(/\n/g, '<br>');
+  }  /* api-fields:end */
+
 
   function deriveModuleAndPlatform(id, canonicalId) {
     const cid = canonicalId || '';
@@ -1480,9 +1535,9 @@
     }
 
     const curRel = targetRel || activeVer.release;
-    const fields = extractFields(activeVer.content || '');
+    const fields = extractFields(activeVer);
 
-    let name = fields['Service Name'] || fields['Service name'] || '';
+    let name = fields['Service Name'] || fields['Name'] || (fields['Symbol'] ? fields['Symbol'].split('(')[0].trim() : '');
     if (!name) {
       const lines = (activeVer.content || '').split('\n');
       if (lines.length > 0 && lines[0].length < 80) {
@@ -1492,7 +1547,8 @@
     if (!name) name = reqId;
 
     let kind = 'Requirement';
-    if (fields['Syntax'] || (activeVer.content && activeVer.content.includes('Syntax'))) kind = 'function';
+    if (fields['Kind']) kind = fields['Kind'].split('\n')[0].trim();
+    else if (fields['Syntax'] || (activeVer.content && activeVer.content.includes('Syntax'))) kind = 'function';
     else if (activeVer.content && (activeVer.content.includes('enum class') || activeVer.content.includes('enumeration'))) kind = 'enumeration';
     else if (activeVer.content && (activeVer.content.includes('typedef') || activeVer.content.includes('using '))) kind = 'type alias';
     else if (activeVer.content && activeVer.content.includes('struct ')) kind = 'struct';
@@ -1661,21 +1717,18 @@
       syntaxWrap.style.display = 'none';
     }
 
-    const descStr = fields['Description'] || fields['raw'] || fields['preamble'] || activeVer.content || '';
+    const descStr = [fields['Description'], fields['Text']].filter(Boolean).join('\n\n') || fields['raw'] || fields['preamble'] || activeVer.content || '';
     descBody.innerHTML = '<p>' + escapeHtml(descStr).replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
     if (!activeVer.content && presenceSelected) {
       descBody.innerHTML = '<p style="color:var(--color-ink-muted);"><em>' + escapeHtml(t.presence_no_text) + '</em></p>';
     }
 
-    const propKeys = ['Return value', 'Parameters (in)', 'Parameters (out)', 'Reentrancy', 'Sync/Async', 'Header-Datei', 'Header file', 'Scope', 'Available via', 'Hinweis', 'Note'];
-    const foundProps = [];
-    propKeys.forEach(k => {
-      if (fields[k]) foundProps.push({ k, v: fields[k] });
-    });
+    // Übrige Angaben der Tabelle in ihrer Reihenfolge; unbekannte Beschriftungen bleiben eigene Zeilen
+    const foundProps = fields.list.filter(f => f.value && FIELD_ELSEWHERE.indexOf(f.k) < 0);
 
     if (foundProps.length > 0) {
       propsWrap.style.display = 'block';
-      propsTable.innerHTML = foundProps.map(p => '<tr><th style="width:220px; text-align:left; padding:6px 0; color:var(--color-ink-muted);">' + escapeHtml(p.k) + '</th><td style="padding:6px 0;">' + escapeHtml(p.v) + '</td></tr>').join('');
+      propsTable.innerHTML = foundProps.map(p => '<tr' + (p.unknown ? ' data-unknown-label="1"' : '') + '><th style="width:220px; text-align:left; padding:6px 0; vertical-align:top; color:var(--color-ink-muted);"' + (p.label && p.label !== p.k ? ' title="' + escapeHtml(p.label) + '"' : '') + '>' + escapeHtml(p.k) + '</th><td style="padding:6px 0;">' + fieldValueHtml(p) + '</td></tr>').join('');
     } else {
       propsWrap.style.display = 'none';
     }

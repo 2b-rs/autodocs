@@ -25,6 +25,11 @@
   var ORDER_KEY = "nsx-fold-order", BY_KEY = "nsx-group-by", W_KEY = "nsx-aside-w", TDOCK_KEY = "nsx-titledock", TOPDOCK_KEY = "nsx-topdock";
   var ICON_DOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7M5 6.5l3 3 3-3M2.5 13h11"/></svg>';
   var ICON_CLOSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+  // Lösen aus der Titelleiste auf die Fläche (Panel eines angedockten Reiters): Kasten mit Pfeil nach außen.
+  // Ein „ד bedeutet Schließen und bleibt echten Schließknöpfen vorbehalten (Admin, 2026-10-13).
+  var ICON_UNDOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5L8 8"/><path d="M11.5 9.5v4h-9v-9h4"/></svg>';
+  // Aus einer Ablage der Fläche in die mittlere Spalte: drei Spalten, Pfeil in die mittlere
+  var ICON_TOCENTER = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5h11v11h-11z"/><path d="M6 2.5v11M10 2.5v11"/><path d="M8 4.5v6M6.8 9.2L8 10.5l1.2-1.3"/></svg>';
   var ICON_TABDOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 3.5h11v9h-11z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 6.5h11" stroke="currentColor" stroke-width="1.4"/><path d="M6 3.5v3" stroke="currentColor" stroke-width="1.4"/></svg>';
 
   function clearSelection() {
@@ -220,7 +225,7 @@
       ovSm.appendChild(ovGr);
       var ovH2 = document.createElement("h2");
       ovH2.className = "sect";
-      ovH2.textContent = "Definition";
+      ovH2.textContent = labels.overview || "Definition";
       ovSm.appendChild(ovH2);
       ovFold.appendChild(ovSm);
       cluOv.parentNode.insertBefore(ovFold, cluOv);
@@ -230,7 +235,7 @@
     var cluCards = isClu && document.querySelector("main > div.cards");
     if (cluCards && !cluCards.closest("details[data-fold]")) {
       var ch2 = cluCards.previousElementSibling;
-      var cardsTitle = (ch2 && ch2.matches("h2.sect")) ? ch2.textContent.trim() : "Module im Cluster";
+      var cardsTitle = (ch2 && ch2.matches("h2.sect")) ? ch2.textContent.trim() : (labels.cards || "Module im Cluster");
       if (ch2 && ch2.matches("h2.sect")) ch2.remove();
 
       var cardsFold = document.createElement("details");
@@ -268,7 +273,7 @@
       elHead.appendChild(elGr);
       var elH2 = document.createElement("h2");
       elH2.className = "sect";
-      elH2.textContent = "Elemente";
+      elH2.textContent = labels.elements || "Elemente";
       elHead.appendChild(elH2);
       root.insertBefore(elHead, root.firstChild);
     }
@@ -280,7 +285,7 @@
       elChev.className = "nsx-elchev";
       elChev.setAttribute("role", "button");
       elChev.setAttribute("tabindex", "0");
-      elChev.setAttribute("aria-label", "Elemente");
+      elChev.setAttribute("aria-label", labels.elements || "Elemente");
       var elH = elHead.querySelector("h2");
       elHead.insertBefore(elChev, elH || null);
     }
@@ -936,7 +941,7 @@
         if (mCode) model = mCode.textContent.trim();
       }
       if (model) {
-        parts.push('<span class="nsx-st nsx-st-model" title="KI-Modell">' + esc(formatModelName(model)) + '</span>');
+        parts.push('<span class="nsx-st nsx-st-model" title="' + esc(labels.model || "KI-Modell") + '">' + esc(formatModelName(model)) + '</span>');
       }
 
       var asof = v.getAttribute && v.getAttribute("data-asof-release");
@@ -951,7 +956,7 @@
       var dossierHtml = "";
       if (dosBtn) {
         var tgt = dosBtn.getAttribute("data-dossier-target") || "";
-        dossierHtml = '<button type="button" class="nsx-st nsx-st-dossier dossier-open-link" data-dossier-target="' + esc(tgt) + '" title="Audit-Dossier öffnen">🗎 Dossier</button>';
+        dossierHtml = '<button type="button" class="nsx-st nsx-st-dossier dossier-open-link" data-dossier-target="' + esc(tgt) + '" title="' + esc(labels.dossier || "Audit-Dossier öffnen") + '">🗎 ' + esc(labels.dossierbtn || "Dossier") + '</button>';
       }
 
       // Die Metadaten-Pillen in einen schrumpfbaren Track packen, Dossier direkt daneben anheften
@@ -1003,13 +1008,23 @@
     function canCenter(f) { return !!f && f !== root && !isGuideFold(f); }
 
     // ---- Elemente ein- und ausklappen (gelöst über die Kopfzeile, angedockt über den Reiter)
+    // Gelöst klappen die Elemente an ihrem Platz auf der Fläche auf, nie als schwebendes Panel.
+    // Angedockt gehören sie dem Reiter wie jeder andere angedockte Fold (Admin, 2026-10-13):
+    // eingeklappt nicht auf der Fläche, ausgeklappt als Panel unter dem Reiter.
     function elementsOpen() { return !root.classList.contains("nsx-collapsed"); }
-    function setElementsOpen(open) {
+    function markElementsOpen(open) {
       root.classList.toggle("nsx-collapsed", !open);
       elHead.setAttribute("aria-expanded", String(open));
       if (elChev) elChev.setAttribute("aria-expanded", String(open));
       var tb = tdock && tdock.querySelector('[data-fold="elements"]');
       if (tb) tb.setAttribute("aria-expanded", String(open));
+    }
+    function setElementsOpen(open) {
+      markElementsOpen(open);
+      if (root.classList.contains("nsx-tdocked")) {
+        if (open && popFold !== root) setPop(root);
+        else if (!open && popFold === root) setPop(null);
+      }
       updateEmpty();
       placePop();
       if (open && selected) drawArrows(selected);
@@ -1026,7 +1041,7 @@
     });
     function foldLabel(f) {
       if (!f) return "";
-      if (f === root || f.getAttribute("data-fold") === "elements") return "Elemente";
+      if (f === root || f.getAttribute("data-fold") === "elements") return labels.elements || "Elemente";
       var h = f.querySelector("summary > h2, .nsx-elements-head > h2");
       if (!h) return f.getAttribute("data-fold") || "";
       var c = h.cloneNode(true);
@@ -1042,6 +1057,11 @@
     var tdockKey = TDOCK_KEY + (isCls ? "-cls" : "");
     var topDockKey = TOPDOCK_KEY + (isCls ? "-cls" : "");
     var pageDockKey = "nsx-docks:" + location.pathname;
+    // Angedockte Elemente überstehen ein Neuladen derselben Seite (Sitzung des Tabs); beim Öffnen
+    // in einer neuen Sitzung stehen sie wie vorgesehen gelöst und ausgeklappt auf der Fläche.
+    var elDockKey = "nsx-el-docked:" + location.pathname;
+    function sessionLoad(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+    function sessionSave(k, v) { try { if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* ohne Speicher */ } }
 
     function saveTitleDock() {
       var keys = tdock ? Array.prototype.filter.call(tdock.children, function (b) { return !b.hidden; })
@@ -1096,6 +1116,13 @@
           if (gr2 - gl2 >= t.width) { left = gl2; w = gr2 - gl2; }
         }
       }
+      if (popFold === root) {
+        // Elemente: Panel über die Breite der Seite, Höhe bis knapp über den Fensterrand
+        var mb = root.parentNode.getBoundingClientRect();
+        left = Math.max(12, Math.min(mb.left, t.left));
+        w = Math.max(t.width, Math.min(innerWidth - 12, Math.max(mb.right, t.right)) - left);
+        popFold.style.setProperty("--nsx-pop-h", Math.max(240, innerHeight - t.bottom - 12) + "px");
+      }
       var tabx = rtl ? left + w - t.right : t.left - left;
       popFold.style.top = t.bottom - 1 + "px";
       popFold.style.left = left + "px";
@@ -1105,15 +1132,19 @@
       popFold.classList.toggle("nsx-pop-shift", tabx > 1);
     }
     function setPop(f) {
-      if (f === root) f = null;      // Elemente klappen an ihrem Platz auf, nie als schwebendes Panel
+      // Elemente erscheinen nur angedockt als Panel unter ihrem Reiter; gelöst klappen sie an ihrem Platz auf
+      if (f === root && !root.classList.contains("nsx-tdocked")) f = null;
       if (popFold && popFold !== f) {
         popFold.classList.remove("nsx-pop", "nsx-pop-shift");
         ["top", "left", "width"].forEach(function (k) { popFold.style[k] = ""; });
+        popFold.style.removeProperty("--nsx-pop-h");
         var ob = tdock.querySelector('[data-fold="' + popFold.getAttribute("data-fold") + '"]');
         if (ob) ob.setAttribute("aria-expanded", "false");
+        if (popFold === root) markElementsOpen(false);   // Panel zu: angedockte Elemente eingeklappt
       }
       popFold = f;
       if (!f) return;
+      if (f === root) markElementsOpen(true);
       f.classList.add("nsx-pop");
       if (f.tagName === "DETAILS") f.open = true;
       placePop();
@@ -1191,9 +1222,6 @@
           backBtn = document.createElement("button");
           backBtn.type = "button";
           backBtn.className = "nsx-hbtn nsx-backbtn";
-          backBtn.innerHTML = ICON_CLOSE;
-          backBtn.title = labels.tback || "In die mittlere Spalte";
-          backBtn.setAttribute("aria-label", labels.tback || "In die mittlere Spalte");
           backBtn.addEventListener("click", function (ev) {
             ev.preventDefault();
             ev.stopPropagation();
@@ -1205,6 +1233,16 @@
           });
           sm.appendChild(backBtn);
         }
+        // Symbol und Beschriftung folgen dem Zustand (derselbe Knopf wandert zwischen Ablage und Reiter)
+        var undock = f.classList.contains("nsx-tdocked");
+        var act = undock ? "undock" : "center";
+        var blab = undock ? (labels.tpop || "Abdocken – im Inhalt anzeigen") : (labels.tback || "In die mittlere Spalte");
+        if (backBtn.getAttribute("data-act") !== act) {
+          backBtn.innerHTML = undock ? ICON_UNDOCK : ICON_TOCENTER;
+          backBtn.setAttribute("data-act", act);
+        }
+        backBtn.title = blab;
+        backBtn.setAttribute("aria-label", blab);
       } else if (backBtn && !f.classList.contains("nsx-pop")) {
         backBtn.remove();
       }
@@ -1238,6 +1276,11 @@
       }
       fillTab(f);
       decorateFoldButtons(f);
+      if (f === root) {
+        // Angedockt verlassen die Elemente die Fläche: der Reiter besitzt sie, zunächst eingeklappt
+        setElementsOpen(false);
+        sessionSave(elDockKey, "1");
+      }
       saveAllDocks();
       updateEmpty();
     }
@@ -1246,6 +1289,11 @@
       if (!f || !f.classList.contains("nsx-tdocked")) return;
       if (popFold === f) setPop(null);
       f.classList.remove("nsx-tdocked");
+      if (f === root) {
+        // Zurück auf die Fläche: Lösen stellt Gliederung, Mitte und Inspektor ausgeklappt wieder her
+        markElementsOpen(true);
+        sessionSave(elDockKey, null);
+      }
       var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
       if (b) { if (preview) b.hidden = true; else b.remove(); }
       if (f !== root && !canCenter(f)) {
@@ -1334,8 +1382,11 @@
         try { saved = JSON.parse(raw); } catch (e) { saved = null; }
       }
       var savedTitle = (saved && saved.title) || (load(tdockKey) || "").split(",").filter(Boolean);
-      // Beim Öffnen stehen die Elemente immer gelöst und ausgeklappt auf der Fläche
-      var td = savedTitle.filter(function (k) { return k !== "elements" && foldByKey(k); });
+      // Beim Öffnen stehen die Elemente gelöst und ausgeklappt auf der Fläche; nur ein Neuladen in
+      // derselben Sitzung behält sie angedockt (eingeklappt im Reiter, ohne Doppel auf der Fläche)
+      var elDocked = sessionLoad(elDockKey) === "1" && canTitleDock(root);
+      var td = savedTitle.filter(function (k) { return k === "elements" ? elDocked : !!foldByKey(k); });
+      if (elDocked && td.indexOf("elements") < 0) td.push("elements");
       // Beim Öffnen immer angedockt (Aufnahme 12:02; Clusterseiten: „Module im Cluster“ angedockt
       // und eingeklappt, Wunsch des Admins vom 2026-10-13), auch wenn eine frühere Sitzung sie auf
       // der Fläche abgelegt hatte
@@ -1362,7 +1413,8 @@
       });
       foldList().forEach(decorateFoldButtons);
       decorateFoldButtons(root);
-      setElementsOpen(true);
+      if (root.classList.contains("nsx-tdocked")) markElementsOpen(false);
+      else setElementsOpen(true);
       updateEmpty();
     }
 
@@ -1423,7 +1475,7 @@
         if (!b) return;
         clearSelection();
         var f = foldByKey(b.getAttribute("data-fold"));
-        if (f === root) { setElementsOpen(!elementsOpen()); return; }   // an ihrem Platz auf der Fläche
+        if (f === root) { setElementsOpen(!elementsOpen()); return; }   // Panel der Elemente auf/zu
         setPop(popFold === f ? null : f);
       });
       tdock.addEventListener("keydown", function (ev) {
@@ -1490,9 +1542,15 @@
         dockTitle(f);
         cleanupDnd();
       });
-      document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && popFold) setPop(null); });
+      document.addEventListener("keydown", function (ev) {
+        if (ev.key !== "Escape" || !popFold) return;
+        // Escape in einem Dialog oder Eingabefeld der Elemente schließt nur diesen, nicht das Panel
+        if (popFold === root && ev.target.closest && ev.target.closest("dialog, input, textarea, select, [contenteditable]")) return;
+        setPop(null);
+      });
       document.addEventListener("click", function (ev) {
-        if (popFold && !popFold.contains(ev.target) && !tdock.contains(ev.target)) setPop(null);
+        // Das Panel der Elemente ist Arbeitsfläche (Dialoge, Kuration): Klick daneben lässt es offen
+        if (popFold && popFold !== root && !popFold.contains(ev.target) && !tdock.contains(ev.target)) setPop(null);
       });
       window.addEventListener("scroll", placePop, { passive: true });
       window.addEventListener("resize", placePop);
@@ -2465,7 +2523,9 @@
         histPick = null;
         root.querySelectorAll(".nsx-hc.sel").forEach(function (x) { x.classList.remove("sel"); });
       }
-      if (opts.from && popFold && popFold.contains(opts.from)) setPop(null);   // Auswahl im Panel schließt es
+      if (opts.from && popFold && popFold !== root && popFold.contains(opts.from)) setPop(null);   // Auswahl im Panel schließt es
+      // Angedockte, eingeklappte Elemente: die Auswahl öffnet ihr Panel, damit die Detailansicht sichtbar ist
+      if (root.classList.contains("nsx-tdocked") && !elementsOpen()) setElementsOpen(true);
       var origin = opts.origin || "side", was = detailVisible();
       var jump = !!(opts.ai || opts.anchor);
       var go = !jump && (origin === "nav" || !was || (origin !== "map" && headerAbove()));
@@ -2776,6 +2836,9 @@
       notext: "Wording not captured for this release", pick: "Hover or click a cell: compare with the selected release · Click a release header: select the release",
       selrel: "Select release", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording"
     };
+    // Beschriftungen der Seite (übersetzt über _src/i18n/ui.json, Gruppe „kind“) haben Vorrang;
+    // die Tabellen oben sind nur der Rückfall für Seiten ohne diese Beschriftungen
+    Object.keys(HL).forEach(function (k) { if (labels["h" + k]) HL[k] = labels["h" + k]; });
     function histKey(r) {
       var m = /^R(\d+)-(\d+)/.exec(r || "");
       if (m) return +m[1] * 100 + +m[2];

@@ -11,9 +11,17 @@
  * Kennungen, die sich nur in der Schreibweise unterscheiden, <id>~<Maske>. Welche
  * Stämme abweichen, steht in elements.json ("names") bzw. im "file" des Katalogs.
  *
- * Der reine Kern (Zustand <-> URL, Facettenfilter, Zählungen, abbruchsicheres Laden,
- * Markdown der KI-Beschreibungen) ist unter Node als module.exports verfügbar und wird
+ * Der reine Kern (Zustand <-> URL, Facettenfilter, Zählungen, Gruppieren & Sortieren, abbruchsicheres
+ * Laden, Markdown der KI-Beschreibungen) ist unter Node als module.exports verfügbar und wird
  * von _src/tests/test_versions_explorer.py und test_figure_access.py geprüft.
+ *
+ * Laden (docs/design/versions-explorer-load.md): Das Kopfskript der Seite (versions.json "head_html") holt
+ * den Kopf des aktiven Index (<name>.head.json: erste Zeilen, Facettenzähler) bzw. bei Filtern, Suche oder
+ * Gruppierung gleich den vollen Index; der Explorer übernimmt ihn (takeBoot). Schaubild- und Snippet-Index
+ * kommen ohne elements.json aus; der Elementindex lädt im Leerlauf nach dem ersten Zeichnen.
+ *
+ * Gruppieren & Sortieren: bis zu drei Ebenen (Gruppierung + Sortierung je Ebene), in der URL (g/s, fg/fs,
+ * sg/ss) und je Browser in localStorage ("autodocs-ve-order"); Gruppenköpfe sind Zeilen der virtuellen Liste.
  *
  * Schaubilder sind nicht öffentlich: Bilder lädt static/figure-images.js (geschützt über
  * den Worker, nur mit Anmeldung und Freigabe); der Explorer setzt nur Platzhalter.
@@ -48,6 +56,7 @@
     var s = { tab: "el", id: "", view: "ver", from: "", to: "", ffrom: "", fto: "", sfrom: "", sto: "", el: {}, fig: {}, snip: {} };
     TABS.forEach(function (t) {
       PARAMS[t].forEach(function (p) { s[t][p[0]] = p[2] ? [] : ""; });
+      s[t].g = []; s[t].s = [];   // Gruppierung/Sortierung (Ebenen), kein Filter
     });
     return s;
   }
@@ -70,6 +79,8 @@
         if (v == null) return;
         s[t][p[0]] = p[2] ? v.split(",").map(function (x) { return x.trim(); }).filter(Boolean) : v.trim();
       });
+      s[t].g = parseOrderList(t, u.get(ORDER_PARAMS[t][0]), "g");
+      s[t].s = parseOrderList(t, u.get(ORDER_PARAMS[t][1]), "s");
     });
     return s;
   }
@@ -83,6 +94,8 @@
         if (p[2]) { if (v && v.length) u.set(p[1], v.join(",")); }
         else if (v) u.set(p[1], v);
       });
+      if (s[t].g && s[t].g.length) u.set(ORDER_PARAMS[t][0], orderListText(s[t].g));
+      if (s[t].s && s[t].s.length) u.set(ORDER_PARAMS[t][1], orderListText(s[t].s));
     });
     if (s.id) u.set("id", s.id);
     if (s.id && s.view && s.view !== "ver") u.set("view", s.view);
@@ -118,14 +131,25 @@
       dict: { kind: raw.kinds, plat: raw.platforms, doc: raw.docs, mod: raw.modules, cl: raw.clusters,
               rel: raw.releases, modUni: raw.module_universe || [] },
       aliases: raw.aliases || {}, lower: null,
-      counts: raw.counts || {}, byId: new Map(), hay: new Array(n)
+      counts: raw.counts || {}, byId: new Map(), hay: null,
+      // Suchtext erst bei der ersten Suche (haystack): spart beim Start ~43 000 Zeichenketten
+      mkHay: function () {
+        var h = new Array(n);
+        for (var k = 0; k < n; k++) {
+          var m = c.mod[k] >= 0 ? raw.modules[c.mod[k]] : "";
+          h[k] = (c.id[k] + " " + (c.name[k] || "") + " " + m).toLowerCase();
+        }
+        return h;
+      }
     };
-    for (var i = 0; i < n; i++) {
-      idx.byId.set(c.id[i], i);
-      var m = c.mod[i] >= 0 ? raw.modules[c.mod[i]] : "";
-      idx.hay[i] = (c.id[i] + " " + (c.name[i] || "") + " " + m).toLowerCase();
-    }
+    for (var i = 0; i < n; i++) idx.byId.set(c.id[i], i);
     return idx;
+  }
+
+  // Kleinschreibung des Suchtexts je Eintrag, beim ersten Bedarf gebaut
+  function haystack(idx) {
+    if (!idx.hay) idx.hay = idx.mkHay();
+    return idx.hay;
   }
 
   // Zitierte Kennung -> Index des Elements: exakt, über einen Alias (andere Schreibweise)
@@ -281,52 +305,84 @@
   }
 
   function filterElements(idx, sel) {
-    return facetFilter(idx.n, elementGroups(idx), sel, textMatcher(idx.hay, sel.q));
+    return facetFilter(idx.n, elementGroups(idx), sel, String(sel.q || "").trim() ? textMatcher(haystack(idx), sel.q) : null);
   }
 
   // ------------------------------------------------------------------ Schaubilder & Snippets
 
+  // Schaubild-/Snippet-Index. v2 (export_explorer.slim_item_index, "cols"): Wörterbücher, Anzahl der Ziele
+  // (nt) und deren Module (mod) sind vorberechnet; der Reiter braucht dafür elements.json nicht. v1 (ältere
+  // Indizes, Testdaten: id/title/doc/…/targets je Feld) leitet die Module über elementIdx aus den Zielen ab.
+  var ITEM_ROLES = ["constitutive", "heuristic"];
   function decodeItems(raw, elementIdx) {
-    var n = raw.id.length;
-    var plats = [], docs = [], roles = ["constitutive", "heuristic"];
-    var pi = {}, di = {};
-    var it = { n: n, ids: raw.id, title: raw.title, doc: raw.doc, page: raw.page, rel: raw.rel,
-               targets: raw.targets, nser: raw.nser, sha: raw.sha, src: raw.src, role: raw.role,
-               platCode: new Array(n), docCode: new Array(n), roleBits: new Array(n), modBits: new Array(n),
-               hay: new Array(n), byId: new Map(), dict: { plat: plats, doc: docs, role: roles, mod: [] } };
-    var mods = elementIdx && elementIdx.full ? elementIdx.dict.mod : [];
-    it.dict.mod = mods;
-    for (var i = 0; i < n; i++) {
-      it.byId.set(raw.id[i], i);
-      var p = raw.plat[i] || "";
-      if (!(p in pi)) { pi[p] = plats.length; plats.push(p); }
-      it.platCode[i] = pi[p];
-      var d = raw.doc[i] || "";
-      if (!(d in di)) { di[d] = docs.length; docs.push(d); }
-      it.docCode[i] = di[d];
-      var rb = 0;
+    var v2 = !!(raw && raw.cols);
+    var c = v2 ? raw.cols : raw;
+    var n = c.id.length;
+    var it = { n: n, ids: c.id, title: c.title, page: c.page, v2: v2,
+               platCode: null, docCode: null, roleBits: null, modBits: null, nt: null, relCode: null,
+               nser: c.nser || null, conf: c.conf || null, sha: v2 ? null : (c.sha || null),
+               hay: null, byId: new Map(), names: (v2 && raw.names) || {}, counts: (v2 && raw.counts) || null,
+               dict: { plat: [], doc: [], role: ITEM_ROLES.slice(), mod: [], modUni: [], relsets: [] } };
+    for (var i = 0; i < n; i++) it.byId.set(c.id[i], i);
+    if (v2) {
+      it.platCode = c.plat; it.docCode = c.doc; it.roleBits = c.role; it.modBits = c.mod; it.nt = c.nt;
+      it.relCode = c.rel;
+      it.dict.plat = raw.platforms || []; it.dict.doc = raw.docs || []; it.dict.relsets = raw.relsets || [];
+      it.dict.mod = raw.modules || []; it.dict.modUni = raw.module_universe || [];
+      if (raw.roles && raw.roles.length) it.dict.role = raw.roles.slice();
+    } else {
+      var plats = it.dict.plat, docs = it.dict.doc, rels = it.dict.relsets, pi = {}, di = {}, ri = {};
+      it.platCode = new Array(n); it.docCode = new Array(n); it.roleBits = new Array(n); it.modBits = new Array(n);
+      it.nt = new Array(n); it.relCode = new Array(n);
+      var mods = elementIdx && elementIdx.full ? elementIdx.dict.mod : [];
+      it.dict.mod = mods;
+      it.dict.modUni = (elementIdx && elementIdx.dict.modUni) || [];
       // Ältere Indizes ohne role-Spalte bleiben filterbar (keine Rolle = kein Treffer bei gesetztem Filter).
-      var roleCol = Array.isArray(raw.role) ? raw.role : [];
-      String(roleCol[i] || "").split(",").forEach(function (r) {
-        var k = roles.indexOf(r); if (k >= 0) rb |= (1 << k);
-      });
-      it.roleBits[i] = rb;
-      var ms = [];
-      if (mods.length) {
-        (raw.targets[i] || []).forEach(function (tid) {
-          var e = elementIdx.byId.get(tid);
-          if (e != null && elementIdx.mod[e] >= 0 && ms.indexOf(elementIdx.mod[e]) < 0) ms.push(elementIdx.mod[e]);
+      var roleCol = Array.isArray(c.role) ? c.role : [];
+      for (var j = 0; j < n; j++) {
+        var p = c.plat[j] || "";
+        if (!(p in pi)) { pi[p] = plats.length; plats.push(p); }
+        it.platCode[j] = pi[p];
+        var d = c.doc[j] || "";
+        if (!(d in di)) { di[d] = docs.length; docs.push(d); }
+        it.docCode[j] = di[d];
+        var rs = (c.rel && c.rel[j]) || "";
+        if (!(rs in ri)) { ri[rs] = rels.length; rels.push(rs); }
+        it.relCode[j] = ri[rs];
+        var rb = 0;
+        String(roleCol[j] || "").split(",").forEach(function (r) {
+          var k = ITEM_ROLES.indexOf(r); if (k >= 0) rb |= (1 << k);
         });
+        it.roleBits[j] = rb;
+        var tg = c.targets[j] || [];
+        it.nt[j] = tg.length;
+        var ms = [];
+        if (mods.length) {
+          tg.forEach(function (tid) {
+            var e = elementIdx.byId.get(tid);
+            if (e != null && elementIdx.mod[e] >= 0 && ms.indexOf(elementIdx.mod[e]) < 0) ms.push(elementIdx.mod[e]);
+          });
+        }
+        it.modBits[j] = ms;
       }
-      it.modBits[i] = ms;
-      it.hay[i] = (raw.id[i] + " " + (raw.title[i] || "") + " " + d).toLowerCase();
     }
+    if (!it.nser) { it.nser = new Array(n); for (var z = 0; z < n; z++) it.nser[z] = 0; }
+    var D = it.dict.doc, dc = it.docCode;
+    it.docOf = function (k) { return D[dc[k]] || ""; };
+    it.mkHay = function () {
+      var h = new Array(n);
+      for (var k = 0; k < n; k++) h[k] = (c.id[k] + " " + (c.title[k] || "") + " " + (D[dc[k]] || "")).toLowerCase();
+      return h;
+    };
     // Dokumente alphabetisch für die Auswahlliste
-    it.docOrder = docs.map(function (d, k) { return k; }).sort(function (a, b) {
-      return docs[a].localeCompare(docs[b]);
+    it.docOrder = D.map(function (x, k) { return k; }).sort(function (a, b) {
+      return String(D[a]).localeCompare(String(D[b]));
     });
     return it;
   }
+
+  // Braucht ein Schaubild-/Snippet-Index elements.json zum Dekodieren (v1: Module aus den Zielen)?
+  function itemsNeedElements(raw) { return !(raw && raw.cols); }
 
   function itemGroups(it, kind) {
     var g = [
@@ -350,7 +406,262 @@
   function catalogCollapsedOnLoad() { return false; }
 
   function filterItems(it, kind, sel) {
-    return facetFilter(it.n, itemGroups(it, kind), sel, textMatcher(it.hay, sel.q));
+    return facetFilter(it.n, itemGroups(it, kind), sel, String(sel.q || "").trim() ? textMatcher(haystack(it), sel.q) : null);
+  }
+
+  // ------------------------------------------------------------------ Gruppieren & Sortieren
+  // Bis zu ORDER_MAX Ebenen je Reiter, jede ein Paar aus Gruppierung (Feld, Richtung) und Sortierung (Feld,
+  // Richtung). Gruppen schachteln sich in Ebenenfolge (Ebene 1 außen); innerhalb der innersten Gruppe gilt die
+  // Sortierung in Ebenenfolge, danach die Indexreihenfolge (Kennung). Beides wirkt auf die gefilterte Trefferliste.
+  // URL: el g/s, fig fg/fs, snip sg/ss; Felder kommagetrennt, „-“ vorn = absteigend (z. B. g=mod,-kind&s=id).
+  var ORDER_MAX = 3;
+  var ORDER_PARAMS = { el: ["g", "s"], fig: ["fg", "fs"], snip: ["sg", "ss"] };
+  var STATUS_PRIO = [4, 1, 2, 8];          // primärer Status: entfallen vor neu vor geändert vor unverändert
+  var STATUS_RANK = { 1: 0, 2: 1, 4: 2, 8: 3 };
+  var MISSING = -1;                        // fehlender Wert: Gruppe „ohne Angabe“, beim Sortieren immer zuletzt
+
+  function lowerRank(strings) {
+    // Rang je Eintrag nach Kleinschreibung (schneller als localeCompare; stabil über die Indexreihenfolge)
+    var n = strings.length, idx = new Array(n), low = new Array(n), rank = new Float64Array(n);
+    for (var i = 0; i < n; i++) { idx[i] = i; low[i] = String(strings[i] || "").toLowerCase(); }
+    idx.sort(function (a, b) { return low[a] < low[b] ? -1 : low[a] > low[b] ? 1 : a - b; });
+    for (var k = 0; k < n; k++) rank[idx[k]] = strings[idx[k]] ? k : MISSING;
+    return rank;
+  }
+  function dictRank(values) {
+    // Code -> Rang nach Beschriftung (alphabetisch)
+    var r = lowerRank(values), out = {};
+    for (var k = 0; k < values.length; k++) out[k] = r[k];
+    return out;
+  }
+  function codeKeys(codes, rank) {
+    var n = codes.length, out = new Float64Array(n);
+    for (var i = 0; i < n; i++) { var c = codes[i]; out[i] = c == null || c < 0 || rank[c] === MISSING ? MISSING : rank[c]; }
+    return out;
+  }
+  function numKeys(n, get) {
+    var out = new Float64Array(n);
+    for (var i = 0; i < n; i++) { var v = get(i); out[i] = v == null || v < 0 ? MISSING : v; }
+    return out;
+  }
+  // Release-Menge (Text „R19-11 R20-11“) -> erstes/letztes Release als Rang über alle vorkommenden Releases
+  function relsetEnds(D) {
+    if (D._relEnds) return D._relEnds;
+    var sets = D.dict.relsets || [], all = [];
+    var parts = sets.map(function (s) { var p = String(s || "").split(/\s+/).filter(Boolean); all = all.concat(p); return p; });
+    var rels = sortReleases(all), ri = {};
+    rels.forEach(function (r, k) { ri[r] = k; });
+    var first = [], last = [];
+    parts.forEach(function (p) {
+      var ks = p.map(function (r) { return ri[r]; });
+      first.push(ks.length ? Math.min.apply(null, ks) : MISSING);
+      last.push(ks.length ? Math.max.apply(null, ks) : MISSING);
+    });
+    D._relEnds = { rels: rels, first: first, last: last };
+    return D._relEnds;
+  }
+  function confBucket(c) { return c == null || c < 0 ? MISSING : c >= 90 ? 3 : c >= 70 ? 2 : c >= 50 ? 1 : 0; }
+
+  // Felder je Reiter: g = gruppierbar, s = sortierbar; keys(D) -> Schlüssel je Eintrag (Zahl, MISSING = keiner)
+  // für die Gruppierung (gkeys, falls abweichend) und die Sortierung; label(D, key, tr) -> Gruppenkopf.
+  var ORDER_FIELDS = {
+    el: [
+      { f: "kind", g: 1, s: 1, keys: function (D) { return codeKeys(D.kind, dictRank(D.dict.kind)); },
+        label: function (D, k, tr) { return tr.kind(D.dict.kind[rankCode(D, "kind", k)]); } },
+      { f: "plat", g: 1, s: 1, keys: function (D) { return codeKeys(D.plat, dictRank(D.dict.plat)); },
+        label: function (D, k, tr) { return tr.plat(D.dict.plat[rankCode(D, "plat", k)]); } },
+      { f: "mod", g: 1, s: 1, keys: function (D) { return codeKeys(D.mod, dictRank(D.dict.mod)); },
+        label: function (D, k) { return D.dict.mod[rankCode(D, "mod", k)]; } },
+      { f: "cl", g: 1, s: 1, keys: function (D) { return codeKeys(D.cl, dictRank(D.dict.cl)); },
+        label: function (D, k) { return D.dict.cl[rankCode(D, "cl", k)]; } },
+      { f: "doc", g: 1, s: 1, keys: function (D) { return codeKeys(D.doc, dictRank(D.dict.doc)); },
+        label: function (D, k, tr) { var v = D.dict.doc[rankCode(D, "doc", k)]; return v === "other" ? tr.t("doc_other") : v; } },
+      { f: "st", g: 1, s: 1, keys: function (D) {
+          return numKeys(D.n, function (i) {
+            for (var p = 0; p < STATUS_PRIO.length; p++) if (D.st[i] & STATUS_PRIO[p]) return STATUS_RANK[STATUS_PRIO[p]];
+            return MISSING;
+          });
+        }, label: function (D, k, tr) { return tr.t("st_" + STATUS[k][0]); } },
+      { f: "first", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.first[i]; }); },
+        label: function (D, k) { return D.dict.rel[k]; } },
+      { f: "last", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.last[i]; }); },
+        label: function (D, k) { return D.dict.rel[k]; } },
+      { f: "fig", g: 1, s: 1, gkeys: function (D) { return numKeys(D.n, function (i) { return D.fig[i] > 0 ? 0 : 1; }); },
+        keys: function (D) { return numKeys(D.n, function (i) { return D.fig[i]; }); },
+        label: function (D, k, tr) { return tr.t(k === 0 ? "has_fig" : "grp_no_fig"); } },
+      { f: "snip", g: 1, s: 1, gkeys: function (D) { return numKeys(D.n, function (i) { return D.snip[i] > 0 ? 0 : 1; }); },
+        keys: function (D) { return numKeys(D.n, function (i) { return D.snip[i]; }); },
+        label: function (D, k, tr) { return tr.t(k === 0 ? "has_snip" : "grp_no_snip"); } },
+      { f: "ai", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.ai[i] ? 0 : 1; }); },
+        label: function (D, k, tr) { return tr.t(k === 0 ? "has_ai" : "grp_no_ai"); } },
+      { f: "nv", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.nv[i]; }); },
+        label: function (D, k, tr) { return tr.t("grp_versions", { n: k }); } },
+      { f: "name", s: 1, keys: function (D) { return lowerRank(D.names); } },
+      { f: "id", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return i; }); } }
+    ],
+    fig: [
+      { f: "doc", g: 1, s: 1, keys: itemDocKeys, label: itemDocLabel },
+      { f: "series", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.nser[i] > 1 ? 0 : 1; }); },
+        label: function (D, k, tr) { return tr.t(k === 0 ? "grp_series" : "grp_single"); } },
+      { f: "nver", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.nser[i]; }); },
+        label: function (D, k, tr) { return tr.t("series_n", { n: k }); } },
+      { f: "mod", g: 1, s: 1, keys: itemModKeys, label: itemModLabel },
+      { f: "plat", g: 1, s: 1, keys: itemPlatKeys, label: itemPlatLabel },
+      { f: "role", g: 1, s: 1, keys: itemRoleKeys, label: itemRoleLabel },
+      { f: "conf", g: 1, s: 1, gkeys: function (D) { return numKeys(D.n, function (i) { return confBucket(D.conf ? D.conf[i] : -1); }); },
+        keys: function (D) { return numKeys(D.n, function (i) { return D.conf ? D.conf[i] : -1; }); },
+        label: function (D, k, tr) { return tr.t("grp_conf_" + k); } },
+      { f: "page", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.page[i] || -1; }); } },
+      { f: "title", s: 1, keys: function (D) { return lowerRank(D.title); } },
+      { f: "id", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return i; }); } }
+    ],
+    snip: [
+      { f: "doc", g: 1, s: 1, keys: itemDocKeys, label: itemDocLabel },
+      { f: "plat", g: 1, s: 1, keys: itemPlatKeys, label: itemPlatLabel },
+      { f: "mod", g: 1, s: 1, keys: itemModKeys, label: itemModLabel },
+      { f: "role", g: 1, s: 1, keys: itemRoleKeys, label: itemRoleLabel },
+      { f: "nt", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.nt[i]; }); },
+        label: function (D, k, tr) { return tr.t("n_elements", { n: k }); } },
+      { f: "first", g: 1, s: 1, keys: function (D) { var e = relsetEnds(D); return codeKeys(D.relCode, e.first); },
+        label: function (D, k) { return relsetEnds(D).rels[k]; } },
+      { f: "last", g: 1, s: 1, keys: function (D) { var e = relsetEnds(D); return codeKeys(D.relCode, e.last); },
+        label: function (D, k) { return relsetEnds(D).rels[k]; } },
+      { f: "page", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.page[i] || -1; }); } },
+      { f: "title", s: 1, keys: function (D) { return lowerRank(D.title); } },
+      { f: "id", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return i; }); } }
+    ]
+  };
+  // Rang -> Code für Wörterbuchfelder (Beschriftung der Gruppe)
+  function rankCode(D, f, rank) {
+    D._rankCode = D._rankCode || {};
+    if (!D._rankCode[f]) {
+      var r = dictRank(D.dict[f] || []), inv = {};
+      Object.keys(r).forEach(function (c) { inv[r[c]] = +c; });
+      D._rankCode[f] = inv;
+    }
+    return D._rankCode[f][rank];
+  }
+  function itemDocKeys(D) { return codeKeys(D.docCode, dictRank(D.dict.doc)); }
+  function itemDocLabel(D, k) { return D.dict.doc[rankCode(D, "doc", k)]; }
+  function itemPlatKeys(D) { return codeKeys(D.platCode, dictRank(D.dict.plat)); }
+  function itemPlatLabel(D, k, tr) { return tr.plat(D.dict.plat[rankCode(D, "plat", k)]); }
+  // Module eines Eintrags: genau eines -> dieses, mehrere -> eigene Gruppe „mehrere Module“ (hinter allen)
+  function itemModKeys(D) {
+    var r = dictRank(D.dict.mod), many = D.dict.mod.length;
+    return numKeys(D.n, function (i) {
+      var ms = D.modBits[i] || [];
+      return !ms.length ? MISSING : ms.length > 1 ? many : r[ms[0]];
+    });
+  }
+  function itemModLabel(D, k, tr) { return k === D.dict.mod.length ? tr.t("grp_multi_mod") : D.dict.mod[rankCode(D, "mod", k)]; }
+  var ROLE_RANK = { 1: 0, 2: 1, 3: 2 };
+  function itemRoleKeys(D) { return numKeys(D.n, function (i) { var b = D.roleBits[i]; return b in ROLE_RANK ? ROLE_RANK[b] : MISSING; }); }
+  function itemRoleLabel(D, k, tr) {
+    return [tr.t("role_constitutive"), tr.t("role_heuristic"), tr.t("role_constitutive") + " + " + tr.t("role_heuristic")][k];
+  }
+
+  function orderField(tab, f) {
+    var list = ORDER_FIELDS[tab] || [];
+    for (var k = 0; k < list.length; k++) if (list[k].f === f) return list[k];
+    return null;
+  }
+  // "mod,-kind" -> [{f:"mod",d:1},{f:"kind",d:-1}] (nur bekannte Felder der Art, höchstens ORDER_MAX, ohne Doppelte)
+  function parseOrderList(tab, text, kind) {
+    var out = [], seen = {};
+    String(text || "").split(",").forEach(function (x) {
+      x = x.trim();
+      var d = 1;
+      if (x.charAt(0) === "-") { d = -1; x = x.slice(1); }
+      var fd = orderField(tab, x);
+      if (!fd || !fd[kind] || seen[x] || out.length >= ORDER_MAX) return;
+      seen[x] = 1;
+      out.push({ f: x, d: d });
+    });
+    return out;
+  }
+  function orderListText(list) {
+    return (list || []).map(function (o) { return (o.d < 0 ? "-" : "") + o.f; }).join(",");
+  }
+  function orderActive(s, tab) { return !!((s[tab].g && s[tab].g.length) || (s[tab].s && s[tab].s.length)); }
+
+  // Schlüssel je Feld einmal je Index berechnen
+  function fieldKeys(D, tab, f, forGroup) {
+    var fd = orderField(tab, f);
+    var name = (forGroup && fd.gkeys ? "g:" : "s:") + f;
+    D._okeys = D._okeys || {};
+    if (!D._okeys[name]) D._okeys[name] = (forGroup && fd.gkeys ? fd.gkeys : fd.keys)(D);
+    return D._okeys[name];
+  }
+
+  /**
+   * Treffer (Indizes) gruppieren und sortieren. Liefert { order: sortierte Indizes, groups: [{level, key, start,
+   * end, path, parent}] } (start/end in order; Gruppen in Ausgabereihenfolge, Eltern vor Kindern).
+   */
+  function orderRows(D, tab, matches, spec) {
+    var G = (spec.g || []).map(function (o) { return { k: fieldKeys(D, tab, o.f, true), d: o.d, f: o.f }; });
+    var S = (spec.s || []).map(function (o) { return { k: fieldKeys(D, tab, o.f, false), d: o.d }; });
+    var keys = G.concat(S), L = keys.length;
+    var order = matches.slice();
+    if (L) {
+      order.sort(function (a, b) {
+        for (var l = 0; l < L; l++) {
+          var K = keys[l].k, x = K[a], y = K[b];
+          if (x !== y) {
+            if (x === MISSING) return 1;          // ohne Angabe immer zuletzt
+            if (y === MISSING) return -1;
+            return (x - y) * keys[l].d;
+          }
+        }
+        return a - b;
+      });
+    }
+    var groups = [];
+    if (G.length) {
+      var open = [];                              // offene Gruppe je Ebene
+      for (var p = 0; p < order.length; p++) {
+        var i = order[p], changed = false;
+        for (var l = 0; l < G.length; l++) {
+          var key = G[l].k[i];
+          if (!changed && open[l] && open[l].key === key) continue;
+          changed = true;
+          if (open[l]) open[l].end = p;
+          var parent = l ? open[l - 1] : null;
+          var grp = { level: l, key: key, start: p, end: order.length, f: G[l].f,
+                      path: (parent ? parent.path + "|" : "") + G[l].f + "=" + key, parent: parent };
+          groups.push(grp);
+          open[l] = grp;
+        }
+      }
+    }
+    return { order: order, groups: groups };
+  }
+
+  // Sichtbare Einträge der Liste: Zeilen als Index (>= 0), Gruppenköpfe als -(Nummer + 1); eingeklappte Gruppen
+  // (Pfade in collapsed) ohne ihren Inhalt
+  function flattenOrder(ordered, collapsed) {
+    var order = ordered.order, groups = ordered.groups, out = [];
+    if (!groups.length) return order;
+    var g = 0, p = 0, n = order.length;
+    collapsed = collapsed || {};
+    while (p < n || g < groups.length) {
+      if (g < groups.length && groups[g].start === p) {
+        var grp = groups[g];
+        out.push(-(g + 1));
+        if (collapsed[grp.path]) {
+          // Gruppe samt Untergruppen überspringen
+          var end = grp.end;
+          g++;
+          while (g < groups.length && groups[g].start < end) g++;
+          p = end;
+          continue;
+        }
+        g++;
+        continue;
+      }
+      out.push(order[p]);
+      p++;
+    }
+    return out;
   }
 
   // ------------------------------------------------------------------ Revisions-Zeitachse
@@ -1137,7 +1448,11 @@
     STATUS: STATUS, HAS: HAS, PARAMS: PARAMS, emptyState: emptyState, parseState: parseState,
     serializeState: serializeState, activeCount: activeCount, decodeElements: decodeElements,
     decodeCatalog: decodeCatalog, elementGroups: elementGroups, facetFilter: facetFilter,
-    filterElements: filterElements, decodeItems: decodeItems, filterItems: filterItems,
+    filterElements: filterElements, decodeItems: decodeItems, filterItems: filterItems, haystack: haystack,
+    itemsNeedElements: itemsNeedElements,
+    ORDER_MAX: ORDER_MAX, ORDER_FIELDS: ORDER_FIELDS, ORDER_PARAMS: ORDER_PARAMS, orderField: orderField,
+    parseOrderList: parseOrderList, orderListText: orderListText, orderActive: orderActive, orderRows: orderRows,
+    flattenOrder: flattenOrder,
     figureHref: figureHref, itemFile: itemFile, recordFile: recordFile, caseMask: caseMask, safeStem: safeStem,
     markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
     snippetScreenshotUrl: snippetScreenshotUrl,
@@ -1200,6 +1515,10 @@
 
   var state = C.parseState(window.location.search);
   var data = { el: null, fig: null, snip: null, res: { el: null, fig: null, snip: null }, pdfCat: undefined };
+  // Kopf je Index (<name>.head.json): erste Zeilen und Facettenzähler, solange der volle Index lädt
+  var heads = { el: null, fig: null, snip: null };
+  // Was die Liste gerade zeigt: voller Index, sonst sein Kopf
+  function view(tab) { return data[tab] || heads[tab]; }
   var ui = {};
   var ROW_H = { el: 58, fig: 62, snip: 62 };
   var PAGE = { fig: 24, snip: 30 };
@@ -1243,10 +1562,13 @@
         esc(t("ph_" + tab)) + '" placeholder="' + esc(t("ph_" + tab)) + '"></div>' +
         '<button type="button" class="ve-btn ve-filter-toggle" data-role="ftoggle" aria-expanded="false" aria-controls="ve-facets-' +
         tab + '">' + esc(t("filters")) + ' <span class="ve-badge" data-role="fbadge"></span></button>' +
+        '<button type="button" class="ve-btn ve-order-toggle" data-role="otoggle" aria-expanded="false" aria-controls="ve-order-' +
+        tab + '"><span aria-hidden="true">⇅</span> ' + esc(t("order")) + ' <span class="ve-badge" data-role="obadge"></span></button>' +
         '<button type="button" class="ve-btn ve-reset" data-role="reset">' + esc(t("reset")) + "</button>" +
         '<button type="button" class="ve-btn ve-collapse" data-role="collapse" aria-pressed="false" aria-controls="ve-panel-' + tab + '">' +
         esc(t("cat_hide")) + "</button>" +
         "</div>" +
+        '<div class="ve-orderpanel" id="ve-order-' + tab + '" data-role="opanel" role="group" aria-label="' + esc(t("order")) + '" hidden></div>' +
         '<div class="ve-chiprow" data-role="chips"></div>' +
         '<div class="ve-notice" data-role="notice" hidden></div>' +
         '<div class="ve-md" data-role="md">' +
@@ -1314,6 +1636,23 @@
       if (!n) return;
       var page = Math.max(1, Math.floor(el.clientHeight / self.rowH) - 1);
       var k = self.active;
+      var cur = k >= 0 ? self.items[k] : null;
+      // Gruppenköpfe (Einträge < 0) sind Teil der Liste: ← klappt ein bzw. springt zum übergeordneten Kopf,
+      // → klappt aus, Enter schaltet um
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        if (cur == null) return;
+        e.preventDefault();
+        if (cur < 0) {
+          var collapsed = groupCollapsed(self.tab, cur);
+          if (e.key === "ArrowRight" && collapsed) toggleGroup(self.tab, k);
+          else if (e.key === "ArrowLeft" && !collapsed) toggleGroup(self.tab, k);
+          else if (e.key === "ArrowLeft") { var up = parentHeader(self.tab, k); if (up >= 0) self.setActive(up, true); }
+        } else if (e.key === "ArrowLeft") {
+          var hk = parentHeader(self.tab, k);
+          if (hk >= 0) self.setActive(hk, true);
+        }
+        return;
+      }
       if (e.key === "ArrowDown") k = Math.min(n - 1, k + 1);
       else if (e.key === "ArrowUp") k = Math.max(0, k - 1);
       else if (e.key === "PageDown") k = Math.min(n - 1, k + page);
@@ -1337,10 +1676,12 @@
     if (this.raf) return;
     this.raf = requestAnimationFrame(function () { self.raf = 0; self.render(); });
   };
-  VList.prototype.setItems = function (items, keyOf) {
+  // total: Höhe der Liste in Zeilen, wenn erst ein Teil geladen ist (Kopf); danach Platzhalter
+  VList.prototype.setItems = function (items, keyOf, total) {
     this.items = items; this.keyOf = keyOf;
+    this.total = Math.max(items.length, total || 0);
     this.version = (this.version || 0) + 1;
-    this.space.style.height = (items.length * this.rowH) + "px";
+    this.space.style.height = (this.total * this.rowH) + "px";
     if (this.active >= items.length) this.active = items.length - 1;
     if (this.openKey != null) {
       var k = this.indexOfKey(this.openKey);
@@ -1364,20 +1705,32 @@
     this.render();
   };
   VList.prototype.render = function () {
-    var el = this.el, n = this.items.length, h = this.rowH;
+    var el = this.el, n = this.items.length, h = this.rowH, total = Math.max(n, this.total || 0);
     var start = Math.max(0, Math.floor(el.scrollTop / h) - 8);
-    var end = Math.min(n, Math.ceil((el.scrollTop + (el.clientHeight || 600)) / h) + 8);
+    var end = Math.min(total, Math.ceil((el.scrollTop + (el.clientHeight || 600)) / h) + 8);
     // Zeilen nur neu aufbauen, wenn sich Fenster, Daten oder geöffnetes Element ändern; sonst
     // bleiben die Knoten erhalten (ein Klick, der den Fokus setzt, trifft weiter dieselbe Zeile)
     var key = start + ":" + end + ":" + this.version + ":" + this.openKey;
     if (key !== this.lastKey) {
       var out = [];
       for (var k = start; k < end; k++) {
+        if (k >= n) {
+          out.push('<div class="ve-row ve-row-ph" aria-hidden="true" style="top:' + (k * h) + "px;height:" + h + 'px"></div>');
+          continue;
+        }
         var it = this.items[k];
+        if (it < 0) {
+          var gc = groupCollapsed(this.tab, it);
+          out.push('<div class="ve-row ve-grow' + (gc ? " is-collapsed" : "") + '" role="option" id="ve-opt-' + this.tab + "-" + k +
+            '" data-k="' + k + '" aria-selected="false" aria-expanded="' + (gc ? "false" : "true") + '" aria-setsize="' + total +
+            '" aria-posinset="' + (k + 1) + '" style="top:' + (k * h) + "px;height:" + h + 'px">' + groupHtml(this.tab, it, gc) + "</div>");
+          continue;
+        }
         var open = this.keyOf(it) === this.openKey;
         out.push('<div class="ve-row' + (open ? " is-open" : "") + '" role="option" id="ve-opt-' + this.tab + "-" + k +
-          '" data-k="' + k + '" aria-selected="' + (open ? "true" : "false") + '" aria-setsize="' + n + '" aria-posinset="' + (k + 1) +
-          '" style="top:' + (k * h) + "px;height:" + h + 'px">' + rowHtml(this.tab, it) + "</div>");
+          '" data-k="' + k + '" aria-selected="' + (open ? "true" : "false") + '" aria-setsize="' + total + '" aria-posinset="' + (k + 1) +
+          '" style="top:' + (k * h) + "px;height:" + h + "px" + (this.depth ? ";padding-inline-start:" + (0.75 + this.depth * 0.9) + "rem" : "") +
+          '">' + rowHtml(this.tab, it) + "</div>");
       }
       this.space.innerHTML = out.join("");
       this.lastKey = key;
@@ -1391,9 +1744,181 @@
     } else el.removeAttribute("aria-activedescendant");
   };
 
+  // ------------------------------------------------------------------ Gruppen in der Liste
+  var TR = { t: t, kind: function (k) { return kindLabel(k); }, plat: function (p) { return platLabel(p); } };
+  function groupOf(tab, entry) {
+    var o = ui[tab].ordered;
+    return o ? o.groups[-entry - 1] : null;
+  }
+  function groupCollapsed(tab, entry) {
+    var g = groupOf(tab, entry);
+    return !!(g && ui[tab].collapsed[g.path]);
+  }
+  function groupLabel(tab, g) {
+    if (g.key === -1) return t("grp_none");
+    var fd = C.orderField(tab, g.f), v = fd && fd.label ? fd.label(view(tab), g.key, TR) : String(g.key);
+    return v == null || v === "" ? t("grp_none") : v;
+  }
+  function groupHtml(tab, entry, collapsed) {
+    var g = groupOf(tab, entry);
+    if (!g) return "";
+    var label = groupLabel(tab, g);
+    return '<div class="ve-ghead" style="padding-inline-start:' + (g.level * 0.9) + 'rem" title="' + esc(t("grp_toggle")) + '">' +
+      '<span class="ve-gcaret" aria-hidden="true">' + (collapsed ? "▸" : "▾") + "</span>" +
+      '<span class="ve-gfield">' + esc(t("of_" + g.f)) + ":</span> " +
+      '<span class="ve-glabel">' + esc(label) + "</span>" +
+      '<span class="ve-gcount">' + num(g.end - g.start) + "</span></div>";
+  }
+  // Nächster Kopf oberhalb von k mit kleinerer Ebene (bei einer Zeile: ihre innerste Gruppe)
+  function parentHeader(tab, k) {
+    var items = ui[tab].vlist.items, cur = items[k];
+    var lvl = cur < 0 ? groupOf(tab, cur).level : Infinity;
+    for (var j = k - 1; j >= 0; j--) {
+      if (items[j] < 0 && groupOf(tab, items[j]).level < lvl) return j;
+    }
+    return -1;
+  }
+  function toggleGroup(tab, k) {
+    var r = ui[tab], g = groupOf(tab, r.vlist.items[k]);
+    if (!g) return;
+    if (r.collapsed[g.path]) delete r.collapsed[g.path]; else r.collapsed[g.path] = 1;
+    relist(tab);
+    r.vlist.setActive(k, true);
+  }
+  function setAllGroups(tab, collapse) {
+    var r = ui[tab];
+    r.collapsed = {};
+    if (collapse && r.ordered) r.ordered.groups.forEach(function (g) { r.collapsed[g.path] = 1; });
+    relist(tab);
+  }
+  // Sichtbare Einträge neu aus der sortierten Ordnung (Ein-/Ausklappen ohne neues Filtern oder Sortieren)
+  function relist(tab) {
+    var r = ui[tab], D = view(tab);
+    if (!r.ordered) return;
+    r.vlist.depth = r.ordered.groups.length ? (state[tab].g || []).length : 0;
+    r.vlist.setItems(C.flattenOrder(r.ordered, r.collapsed), entryKey(D, r));
+  }
+  function entryKey(D, r) {
+    return function (e) { return e >= 0 ? D.ids[e] : "\u0001" + (r.ordered && r.ordered.groups[-e - 1] ? r.ordered.groups[-e - 1].path : e); };
+  }
+
+  // ------------------------------------------------------------------ Gruppieren & Sortieren: Bedienung, Speicher
+  var ORDER_STORE = "autodocs-ve-order";
+  function loadStoredOrder() {
+    try { return JSON.parse(window.localStorage.getItem(ORDER_STORE) || "{}") || {}; } catch (e) { return {}; }
+  }
+  function saveOrder(tab) {
+    try {
+      var all = loadStoredOrder();
+      var g = C.orderListText(state[tab].g), so = C.orderListText(state[tab].s);
+      if (g || so) all[tab] = { g: g, s: so }; else delete all[tab];
+      window.localStorage.setItem(ORDER_STORE, JSON.stringify(all));
+    } catch (e) { /* privater Modus u. ä.: nur die URL */ }
+  }
+  // Ohne Angabe in der URL gilt die gespeicherte Wahl dieses Browsers
+  function restoreOrder() {
+    var u = new URLSearchParams(window.location.search), stored = loadStoredOrder(), changed = false;
+    ["el", "fig", "snip"].forEach(function (tab) {
+      var P = C.ORDER_PARAMS[tab], st = stored[tab];
+      if (u.has(P[0]) || u.has(P[1]) || !st) return;
+      state[tab].g = C.parseOrderList(tab, st.g, "g");
+      state[tab].s = C.parseOrderList(tab, st.s, "s");
+      changed = changed || C.orderActive(state, tab);
+    });
+    return changed;
+  }
+  function orderOptions(tab, kind, cur, used) {
+    var html = '<option value="">' + esc(t("order_none")) + "</option>";
+    C.ORDER_FIELDS[tab].forEach(function (fd) {
+      if (!fd[kind] || (used[fd.f] && fd.f !== cur)) return;
+      html += '<option value="' + fd.f + '"' + (fd.f === cur ? " selected" : "") + ">" + esc(t("of_" + fd.f)) + "</option>";
+    });
+    return html;
+  }
+  function dirButton(kind, k, o) {
+    var d = o ? o.d : 1, lbl = t(d < 0 ? "order_desc" : "order_asc");
+    return '<button type="button" class="ve-btn ve-odir" data-odir="' + kind + '" data-k="' + k + '"' + (o ? "" : " disabled") +
+      ' aria-label="' + esc(lbl) + '" title="' + esc(lbl) + '">' + (d < 0 ? "↓" : "↑") + "</button>";
+  }
+  function renderOrderPanel(tab) {
+    var r = ui[tab], sel = state[tab], G = sel.g || [], S = sel.s || [];
+    var rows = Math.min(C.ORDER_MAX, Math.max(G.length, S.length) + 1);
+    var usedG = {}, usedS = {};
+    G.forEach(function (o) { usedG[o.f] = 1; });
+    S.forEach(function (o) { usedS[o.f] = 1; });
+    var html = '<p class="ve-ohint">' + esc(t("order_hint")) + "</p>";
+    for (var k = 0; k < rows; k++) {
+      var g = G[k], so = S[k];
+      html += '<div class="ve-orow"><span class="ve-olvl">' + esc(t("order_level", { n: k + 1 })) + "</span>" +
+        '<label class="ve-osel"><span>' + esc(t("order_group")) + '</span><select data-ogroup="' + k + '">' +
+        orderOptions(tab, "g", g && g.f, usedG) + "</select></label>" + dirButton("g", k, g) +
+        '<label class="ve-osel"><span>' + esc(t("order_sort")) + '</span><select data-osort="' + k + '">' +
+        orderOptions(tab, "s", so && so.f, usedS) + "</select></label>" + dirButton("s", k, so) + "</div>";
+    }
+    var grouped = G.length > 0;
+    html += '<div class="ve-oacts"><button type="button" class="ve-btn" data-oact="collapse"' + (grouped ? "" : " disabled") + ">" +
+      esc(t("order_collapse_all")) + '</button><button type="button" class="ve-btn" data-oact="expand"' + (grouped ? "" : " disabled") + ">" +
+      esc(t("order_expand_all")) + '</button><button type="button" class="ve-btn" data-oact="reset"' + (grouped || S.length ? "" : " disabled") +
+      ">" + esc(t("order_reset")) + "</button></div>";
+    r.opanel.innerHTML = html;
+    var n = G.length + S.length;
+    r.obadge.textContent = n ? String(n) : "";
+  }
+  function setOrderOpen(tab, open) {
+    var r = ui[tab];
+    r.opanel.hidden = !open;
+    r.otoggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) renderOrderPanel(tab);
+    layout();
+  }
+  // Auswahl im Panel -> Zustand (leere Ebenen rücken auf), Liste, URL und Speicher
+  function readOrderPanel(tab) {
+    var r = ui[tab], G = [], S = [], old = state[tab];
+    function dirOf(list, f) { for (var k = 0; k < list.length; k++) if (list[k].f === f) return list[k].d; return 1; }
+    r.opanel.querySelectorAll("select[data-ogroup]").forEach(function (sl) { if (sl.value) G.push({ f: sl.value, d: dirOf(old.g, sl.value) }); });
+    r.opanel.querySelectorAll("select[data-osort]").forEach(function (sl) { if (sl.value) S.push({ f: sl.value, d: dirOf(old.s, sl.value) }); });
+    return { g: G, s: S };
+  }
+  function applyOrder(tab, spec, focusSel) {
+    var r = ui[tab];
+    state[tab].g = C.parseOrderList(tab, C.orderListText(spec.g), "g");
+    state[tab].s = C.parseOrderList(tab, C.orderListText(spec.s), "s");
+    r.collapsed = {};
+    saveOrder(tab);
+    refresh(tab);
+    commit(true);
+    if (!r.opanel.hidden) {
+      renderOrderPanel(tab);
+      var f = focusSel ? r.opanel.querySelector(focusSel) : null;
+      if (f) f.focus();
+    } else renderOrderPanel(tab);
+  }
+  function wireOrder(tab, r) {
+    r.collapsed = {};
+    r.otoggle.addEventListener("click", function () { setOrderOpen(tab, r.opanel.hidden); });
+    r.opanel.addEventListener("change", function (e) {
+      var sl = e.target.closest("select[data-ogroup],select[data-osort]");
+      if (!sl) return;
+      var which = sl.hasAttribute("data-ogroup") ? "data-ogroup" : "data-osort";
+      applyOrder(tab, readOrderPanel(tab), "select[" + which + '="' + sl.getAttribute(which) + '"]');
+    });
+    r.opanel.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-odir],[data-oact]");
+      if (!b || b.disabled) return;
+      var act = b.getAttribute("data-oact");
+      if (act === "collapse" || act === "expand") { setAllGroups(tab, act === "collapse"); return; }
+      if (act === "reset") { applyOrder(tab, { g: [], s: [] }, "select[data-ogroup]"); return; }
+      var kind = b.getAttribute("data-odir"), k = +b.getAttribute("data-k");
+      var spec = { g: state[tab].g.slice(), s: state[tab].s.slice() };
+      var list = spec[kind];
+      if (list[k]) list[k] = { f: list[k].f, d: -list[k].d };
+      applyOrder(tab, spec, '[data-odir="' + kind + '"][data-k="' + k + '"]');
+    });
+  }
+
   function rowHtml(tab, i) {
     if (tab === "el") {
-      var E = data.el;
+      var E = view("el");
       if (i === -1) return "";
       var st = E.st[i];
       var badges = "";
@@ -1414,10 +1939,10 @@
         '<span class="ve-mini ve-plat-' + esc(plat) + '">' + esc(plat) + "</span></span></div>" +
         '<div class="ve-row-meta">' + meta.join('<span aria-hidden="true">·</span>') + "</div>";
     }
-    var D = data[tab];
+    var D = view(tab);
     var title = D.title[i] || D.ids[i];
-    var sub = [esc(D.doc[i] || ""), D.page[i] ? esc(t("page_n", { p: D.page[i] })) : "",
-               esc(t("n_elements", { n: (D.targets[i] || []).length }))];
+    var sub = [esc(D.docOf(i)), D.page[i] ? esc(t("page_n", { p: D.page[i] })) : "",
+               esc(t("n_elements", { n: D.nt[i] }))];
     if (tab === "fig" && D.nser[i] > 1) sub.push(esc(t("series_n", { n: D.nser[i] })));
     return '<div class="ve-row-top"><span class="ve-row-title">' + esc(title) + '</span></div>' +
       '<div class="ve-row-meta">' + sub.filter(Boolean).join('<span aria-hidden="true">·</span>') + "</div>";
@@ -1435,7 +1960,9 @@
       if (e.key === "ArrowDown") { e.preventDefault(); r.list.focus(); }
       if (e.key === "Enter") {
         e.preventDefault();
-        if (r.vlist.items.length) { r.vlist.setActive(0, true); openFromList(tab, 0, true); }
+        var first = -1;
+        for (var k = 0; k < r.vlist.items.length && first < 0; k++) if (r.vlist.items[k] >= 0) first = k;
+        if (first >= 0) { r.vlist.setActive(first, true); openFromList(tab, first, true); }
       }
     });
     r.ftoggle.addEventListener("click", function () { setFacetsOpen(tab, !r.panel.classList.contains("facets-open")); });
@@ -1444,12 +1971,14 @@
       var keep = tab === "el" ? null : state[tab].id;
       var fresh = C.emptyState()[tab];
       if (keep) fresh.id = keep;
+      fresh.g = state[tab].g; fresh.s = state[tab].s;   // Gruppierung/Sortierung ist kein Filter
       state[tab] = fresh;
       r.q.value = "";
       refresh(tab);
       commit(true);
     });
     r.back.addEventListener("click", function () { closeDetail(tab); });
+    wireOrder(tab, r);
     r.mmreset.addEventListener("click", function () { r.reset.click(); });
     r.mmclose.addEventListener("click", function () {
       if (tab === "el") state.id = ""; else state[tab].id = "";
@@ -1559,6 +2088,7 @@
   function applyState() {
     ["el", "fig", "snip"].forEach(function (tab) {
       if (ui[tab].q.value !== state[tab].q) ui[tab].q.value = state[tab].q || "";
+      renderOrderPanel(tab);
     });
     switchTab(state.tab, false);
     ["el", "fig", "snip"].forEach(function (tab) { if (data[tab]) refresh(tab); });
@@ -1579,17 +2109,38 @@
     });
     ["el", "fig", "snip"].forEach(function (x) { ui[x].panel.hidden = x !== tab; });
     if (push && changed) commit(true);
-    ensureLoaded(tab).then(function () {
+    return ensureLoaded(tab).then(function () {
       refresh(tab);
       syncViewer(tab);
       layout();
     });
   }
 
+  // Nach dem ersten Zeichnen: Facetten im nächsten Task (die ersten Zeilen erscheinen vorher), Nebenarbeit
+  // (übrige Indizes) erst im Leerlauf
+  function afterPaint(fn) {
+    var done = false;
+    function run() { if (!done) { done = true; fn(); } }
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(function () { setTimeout(run, 0); });
+    setTimeout(run, 100);   // verborgener Tab: kein requestAnimationFrame
+  }
+  function whenIdle(fn) {
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(function () { fn(); }, { timeout: 2000 });
+    else setTimeout(fn, 200);
+  }
+
   // ------------------------------------------------------------------ Laden
   var loading = {};
   // Abweichende Dateistämme aus dem geladenen Index (rec: versions/data, item: items/ und Belegseiten)
-  function stems(kind) { return (data.el && data.el.stems && data.el.stems[kind]) || null; }
+  function stems(kind) {
+    var E = view("el");
+    if (E && E.stems && E.stems[kind] && (data.el || kind !== "item")) return E.stems[kind];
+    if (kind !== "item") return null;
+    var m = {};
+    ["fig", "snip"].forEach(function (x) { var D = view(x); if (D && D.names) Object.assign(m, D.names); });
+    if (E && E.stems && E.stems.item) Object.assign(m, E.stems.item);
+    return m;
+  }
   // Abbruchsicher: überholte Ladevorgänge enden als AbortError (kein Fehlerhinweis), ein Netzfehler wird
   // einmal wiederholt (C.loadJson). Je Bereich gibt es höchstens einen laufenden Detail-Ladevorgang.
   function fetchJson(url, signal) {
@@ -1630,12 +2181,108 @@
     F.observe(container);
   }
 
+  // Startabruf: Das Inline-Skript der Seite (versions.json, vor allen übrigen Skripten) holt den Index des
+  // aktiven Reiters schon, während die Skripte laden (window.__veBoot = { url, p: Promise<Text> }). Er wird
+  // genau einmal übernommen; scheitert er, lädt der Explorer selbst (mit Wiederholung und Rückfall).
+  function takeBoot(url) {
+    var boot = window.__veBoot || {}, abs;
+    try { abs = new URL(url, window.location.href).href; } catch (e) { return null; }
+    var hit = null;
+    ["head", "full"].forEach(function (k) {
+      var b = boot[k];
+      if (b && !b.used && b.p && b.url === abs) { b.used = true; hit = b.p; }
+    });
+    return hit;
+  }
+  function mark(name) { try { performance.mark(name); } catch (e) { /* ignore */ } }
+  function measure(name, from) { try { performance.measure(name, from); } catch (e) { /* ignore */ } }
+  // Index laden und parsen; Zeiten als performance.measure("ve:…") (Messung: docs/design/versions-explorer-load.md)
+  function loadIndex(tab, url) {
+    var t0 = "ve:" + tab + ":start";
+    mark(t0);
+    var boot = takeBoot(url);
+    var text = boot ? boot.catch(function () { return null; }) : Promise.resolve(null);
+    return text.then(function (body) {
+      if (body == null) {
+        return C.loadJson(function (u, o) {
+          return fetch(u, o).then(function (r) {
+            // gleiche Fehlersemantik wie fetchJson, Parsen aber getrennt messbar (Text, wo es ihn gibt)
+            return { ok: r.ok, status: r.status, json: function () { return bodyOf(r); } };
+          });
+        }, url, {});
+      }
+      return body;
+    }).then(function (body) {
+      measure("ve:" + tab + ":fetch", t0);
+      return parseTimed(tab, body);
+    });
+  }
+  function bodyOf(r) { return typeof r.text === "function" ? r.text() : r.json(); }
+  function parseTimed(tab, body) {
+    if (typeof body !== "string") return body;
+    var p0 = "ve:" + tab + ":parse0";
+    mark(p0);
+    var raw = JSON.parse(body);
+    measure("ve:" + tab + ":parse", p0);
+    return raw;
+  }
+  function decodeTimed(tab, fn) {
+    var d0 = "ve:" + tab + ":decode0";
+    mark(d0);
+    var out = fn();
+    measure("ve:" + tab + ":decode", d0);
+    return out;
+  }
+
+  // Kopf nur, wenn die Liste ohne Auswahl startet: dann sind seine Zeilen die ersten der Liste und seine
+  // Zähler die der Facetten
+  function headUsable(tab) {
+    return !C.activeCount(state, tab) && !String(state[tab].q || "").trim() && !C.orderActive(state, tab);
+  }
+  var headLoading = {};
+  function loadHead(tab) {
+    if (headLoading[tab] || heads[tab] || data[tab] || !headUsable(tab)) return;
+    var name = { el: "elements", fig: "figures", snip: "snippets" }[tab];
+    var url = ROOT + "versions/explorer/" + name + ".head.json";
+    var boot = takeBoot(url);
+    headLoading[tab] = (boot || fetch(url).then(function (r) {
+      if (!r.ok) throw new Error(r.status + " " + url);
+      return bodyOf(r);
+    })).then(function (body) {
+      if (data[tab] || !headUsable(tab)) return;
+      var raw = typeof body === "string" ? JSON.parse(body) : body;
+      if (!raw || !raw.head || !raw.cols) return;
+      var D = tab === "el" ? C.decodeElements(raw) : C.decodeItems(raw, null);
+      D.head = raw.head;
+      heads[tab] = D;
+      updateTabCounts();
+      if (tab === state.tab) showHead(tab);
+    }).catch(function () { /* ohne Kopf: wie bisher auf den vollen Index warten */ });
+  }
+  function showHead(tab) {
+    var D = heads[tab], r = ui[tab];
+    if (!D || data[tab] || !headUsable(tab)) return;
+    var list = [];
+    for (var i = 0; i < D.n; i++) list.push(i);
+    data.res[tab] = { matches: list, counts: D.head.facets, head: true };
+    r.ordered = null;
+    r.vlist.depth = 0;
+    r.vlist.openKey = selectedKey(tab) || null;
+    r.vlist.setItems(list, function (k) { return D.ids[k]; }, D.head.n);
+    r.count.textContent = t("results", { n: num(D.head.n), total: num(D.head.n) });
+    refreshFacets(tab);
+    refreshChips(tab);
+    layout();
+    measure("ve:" + tab + ":head", "ve:" + tab + ":start");
+  }
+
   function ensureLoaded(tab) {
     if (data[tab]) return Promise.resolve();
     if (loading[tab]) return loading[tab];
+    if (tab === state.tab) loadHead(tab);
     if (tab === "el") {
-      loading.el = fetchJson(ROOT + "versions/explorer/elements.json")
-        .then(function (raw) { data.el = C.decodeElements(raw); })
+      loading.el = loadIndex("el", ROOT + "versions/explorer/elements.json")
+        .then(function (raw) { data.el = decodeTimed("el", function () { return C.decodeElements(raw); }); heads.el = null; })
         .catch(function () {
           return fetchJson(ROOT + "versions/catalog.json")
             .catch(function (err) {
@@ -1654,17 +2301,21 @@
         });
       return loading.el;
     }
-    loading[tab] = ensureLoaded("el").then(function () {
-      return fetchJson(ROOT + "versions/explorer/" + (tab === "fig" ? "figures" : "snippets") + ".json");
-    }).then(function (raw) {
-      data[tab] = C.decodeItems(raw, data.el);
-      updateTabCounts();
-    }).catch(function () {
-      data[tab] = null;
-      ui[tab].count.textContent = t("items_missing");
-      showNotice(tab, t("items_missing"));
-      loading[tab] = null;
-    });
+    // Eigener Index zuerst, nie hinter elements.json; nur ein v1-Index wartet danach auf den Elementindex
+    loading[tab] = loadIndex(tab, ROOT + "versions/explorer/" + (tab === "fig" ? "figures" : "snippets") + ".json")
+      .then(function (raw) {
+        var ready = C.itemsNeedElements(raw) ? ensureLoaded("el") : Promise.resolve();
+        return ready.then(function () {
+          data[tab] = decodeTimed(tab, function () { return C.decodeItems(raw, data.el); });
+          heads[tab] = null;
+          updateTabCounts();
+        });
+      }).catch(function () {
+        data[tab] = null;
+        ui[tab].count.textContent = t("items_missing");
+        showNotice(tab, t("items_missing"));
+        loading[tab] = null;
+      });
     return loading[tab];
   }
 
@@ -1675,8 +2326,14 @@
   }
 
   function updateTabCounts() {
-    var c = (data.el && data.el.counts) || {};
-    var vals = { el: data.el ? data.el.n : null, fig: data.fig ? data.fig.n : c.figures, snip: data.snip ? data.snip.n : c.snippets };
+    // Zähler aus dem ersten geladenen Index (alle drei tragen "counts"), sonst je Reiter sein eigener Umfang
+    var c = {};
+    ["el", "snip", "fig"].forEach(function (x) {
+      var D = view(x);
+      if (D && D.counts) Object.keys(D.counts).forEach(function (k) { if (c[k] == null) c[k] = D.counts[k]; });
+    });
+    function size(x, fallback) { return data[x] ? data[x].n : (heads[x] ? heads[x].head.n : fallback); }
+    var vals = { el: size("el", c.elements), fig: size("fig", c.figures), snip: size("snip", c.snippets) };
     app.querySelectorAll("[data-count]").forEach(function (s) {
       var v = vals[s.getAttribute("data-count")];
       s.textContent = v != null ? num(v) : "";
@@ -1708,7 +2365,23 @@
   function refresh(tab, keepFacetFocus) {
     var D = data[tab];
     var r = ui[tab];
-    if (!D) return;
+    if (!D) {
+      // Kopf sichtbar, voller Index lädt noch: Auswahl/Suche greifen, sobald er da ist (switchTab)
+      if (heads[tab]) {
+        if (headUsable(tab)) showHead(tab);
+        else {
+          data.res[tab] = null;
+          r.vlist.setItems([], function () { return ""; });
+          r.space.innerHTML = '<div class="ve-empty">' + esc(t("loading")) + "</div>";
+          r.count.textContent = t("loading");
+          refreshChips(tab);
+        }
+      }
+      return;
+    }
+    var first = !r.listShown;
+    r.listShown = true;
+    mark("ve:" + tab + ":list0");
     var sel = state[tab];
     var res = tab === "el" ? C.filterElements(D, sel) : C.filterItems(D, tab, sel);
     var list = res.matches;
@@ -1721,7 +2394,17 @@
     data.res[tab] = res;
     var openChanged = r.vlist.openKey !== (targetId || null);
     r.vlist.openKey = targetId || null;
-    r.vlist.setItems(list, function (i) { return D.ids[i]; });
+    if (C.orderActive(state, tab)) {
+      mark("ve:" + tab + ":order0");
+      r.ordered = C.orderRows(D, tab, list, { g: sel.g, s: sel.s });
+      r.vlist.depth = r.ordered.groups.length ? sel.g.length : 0;
+      r.vlist.setItems(C.flattenOrder(r.ordered, r.collapsed), entryKey(D, r));
+      measure("ve:" + tab + ":order", "ve:" + tab + ":order0");
+    } else {
+      r.ordered = null;
+      r.vlist.depth = 0;
+      r.vlist.setItems(list, function (i) { return D.ids[i]; });
+    }
     if (targetId && openChanged && !mismatch && r.vlist.active >= 0) r.vlist.ensureVisible(r.vlist.active);
     var total = D.n;
     r.count.textContent = t("results", { n: num(res.matches.length), total: num(total) });
@@ -1731,9 +2414,21 @@
     if (!list.length) {
       r.space.innerHTML = '<div class="ve-empty">' + esc(t("no_results")) + "</div>";
     }
+    measure("ve:" + tab + ":list", "ve:" + tab + ":list0");
+    if (tab === state.tab) layout();
+    if (first) {
+      // Erstes Zeichnen: Zeilen zuerst; Facetten und Chips im nächsten Task, damit die Liste sofort erscheint
+      afterPaint(function () {
+        if (data.res[tab] !== res) return;   // inzwischen neu gefiltert (dann schon vollständig gezeichnet)
+        mark("ve:" + tab + ":facets0");
+        refreshFacets(tab, keepFacetFocus);
+        refreshChips(tab);
+        measure("ve:" + tab + ":facets", "ve:" + tab + ":facets0");
+      });
+      return;
+    }
     refreshFacets(tab, keepFacetFocus);
     refreshChips(tab);
-    if (tab === state.tab) layout();
   }
 
   function setMismatch(tab, on) {
@@ -1779,7 +2474,7 @@
   }
 
   function releaseSelect(tab, key, label, counts) {
-    var D = data.el;
+    var D = view("el");
     var cur = state[tab][key];
     var html = '<label class="ve-fsel"><span>' + esc(label) + '</span><select data-fsel="' + key + '"><option value="">' +
       esc(t("any")) + "</option>";
@@ -1812,7 +2507,8 @@
     var expanded = r.fbody.classList.contains("show-all-mod");
     var filt = (r.modFilter || "").toLowerCase();
     var sel = state[tab].mod || [];
-    var uni = (data.el && data.el.dict.modUni) || [];
+    var D = view(tab);
+    var uni = (D && D.dict.modUni && D.dict.modUni.length ? D.dict.modUni : (data.el && data.el.dict.modUni)) || [];
     var showZero = expanded || !!filt;
     var html = "", hidden = 0, any = false;
     C.UNIVERSES.forEach(function (u) {
@@ -1847,7 +2543,7 @@
   }
 
   function refreshFacets(tab, keepFocus) {
-    var D = data[tab], res = data.res[tab], r = ui[tab];
+    var D = view(tab), res = data.res[tab], r = ui[tab];
     if (!D || !res) return;
     var active = document.activeElement;
     var focusSel = keepFocus && active && active.matches && active.matches("input[data-modfilter]");
@@ -1909,10 +2605,11 @@
 
   // ------------------------------------------------------------------ Öffnen / Detail
   function openFromList(tab, k, push) {
-    var D = data[tab];
+    var D = view(tab);
     var r = ui[tab];
     var i = r.vlist.items[k];
     if (i == null) return;
+    if (i < 0) { toggleGroup(tab, k); return; }
     openItem(tab, D.ids[i], push, { fromList: true });
   }
 
@@ -1981,7 +2678,7 @@
     }
     if (tab === "el" && shown.el === key + "|" + state.view) return;
     if (tab !== "el" && shown[tab] === key) return;
-    if (!data[tab] && tab !== "el") return;
+    if (!view(tab) && tab !== "el") return;
     if (tab === "el") loadElement(key, userAction);
     else loadItem(tab, key, userAction);
     if (userAction && narrowMQ.matches) {
@@ -2002,7 +2699,7 @@
     if (!EL.rec || EL.rec.id !== id) {
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     }
-    var D = data.el, di = D ? (D.byId.get(id) != null ? D.byId.get(id) : resolveId(D, id)) : -1;
+    var D = view("el"), di = D ? (D.byId.get(id) != null ? D.byId.get(id) : resolveId(D, id)) : -1;
     var isRef = !!(D && di >= 0 && D.ref && D.ref[di] === 1);
     function loadFromFile() {
       return fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
@@ -2441,7 +3138,10 @@
     var signal = newSignal(tab);
     shown[tab] = null;   // der Viewer zeigt jetzt „Lade …“, nicht mehr das vorige Element
     r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
+    var elReady = ensureLoaded("el");
     fetchJson(ROOT + "versions/explorer/items/" + encodeURIComponent(C.itemFile(id, stems("item"))), signal).then(function (info) {
+      return elReady.then(function () { return info; });
+    }).then(function (info) {
       if (my !== token[tab]) return;
       var pack = (typeof FrozenPack === "undefined") ? Promise.resolve(null)
         : FrozenPack.record(ROOT, id, signal).catch(function (err) {
@@ -2571,9 +3271,10 @@
 
   function figureSha(info) {
     if (info && info.sha && /^[0-9a-f]{64}$/i.test(info.sha)) return info.sha;
-    if (info && info.id && data.fig && data.fig.id) {
-      var idx = data.fig.id.indexOf(info.id);
-      if (idx >= 0 && data.fig.sha && data.fig.sha[idx]) return data.fig.sha[idx];
+    // Ältere Indizes (v1) trugen den Hash auch in figures.json
+    if (info && info.id && data.fig && data.fig.sha && data.fig.byId.has(info.id)) {
+      var hs = data.fig.sha[data.fig.byId.get(info.id)];
+      if (hs) return hs;
     }
     return (info && info.sha) || "";
   }
@@ -2696,13 +3397,24 @@
     }
   }
   build();
+  if (restoreOrder()) {
+    try { window.history.replaceState(window.history.state, "", window.location.pathname + C.serializeState(state) + window.location.hash); }
+    catch (e) { /* ignore */ }
+  }
+  ["el", "fig", "snip"].forEach(function (tab) { renderOrderPanel(tab); });
   // Katalog (Liste) und Filterliste starten in allen drei Reitern sichtbar, auch bei einem Deep-Link.
   ["el", "fig", "snip"].forEach(function (tab) {
     if (C.catalogCollapsedOnLoad(tab, state)) setCollapsed(tab, true);
   });
   try { window.scrollTo(0, 0); } catch (e) { /* ignore */ }
   ["el", "fig", "snip"].forEach(function (tab) { ui[tab].q.value = state[tab].q || ""; });
-  switchTab(state.tab, false);
-  if (state.tab !== "el") ensureLoaded("el").then(function () { refresh("el"); syncViewer("el"); });
+  var started = switchTab(state.tab, false);
+  // Elementindex erst nach dem ersten Zeichnen des aktiven Reiters (Ziele, Verweise und Zähler im Viewer);
+  // der dritte Index lädt beim Wechsel in seinen Reiter
+  if (state.tab !== "el") {
+    started.then(function () {
+      whenIdle(function () { ensureLoaded("el").then(function () { refresh("el"); syncViewer("el"); }); });
+    });
+  }
   layout();
 })();
