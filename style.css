@@ -35,8 +35,18 @@
   --faint: #8a9296;
   --primary: var(--color-teal-600);
   --primary-hover: var(--color-teal-700);
+  /* Stufen der Guides (Symbole der Gliederung): hell = Kurzfassung, mittel = Überblick, dunkel = ausführlich.
+     Die hellste Stufe bekommt eine Kontur (--ai-lv-edge), damit sie sich vom Grund abhebt. */
+  --ai-lv2: #8dbaf0;
+  --ai-lv3: #3a78d4;
+  --ai-lv4: #173f80;
+  --ai-lv-edge: #2f68bd;
 }
 [data-theme="dark"] {
+  --ai-lv2: #d3e5fc;
+  --ai-lv3: #86b7f4;
+  --ai-lv4: #4a86e0;
+  --ai-lv-edge: transparent;
   color-scheme: dark;
   --bg-canvas: #12171a;
   --bg-surface: #1c2328;
@@ -5291,6 +5301,25 @@ a.nsx-oi.sel .nsx-rv { background: #fff; color: var(--primary); }
 .nsx-oi .nsx-ai:hover, .nsx-oi .nsx-ai:focus-visible, .nsx-oi .nsx-ai[aria-pressed="true"] { background: #7A39BB; color: #fff; outline: none; }
 a.nsx-oi.sel { color: #fff; background: var(--primary); border-radius: 4px; }
 a.nsx-oi.sel .nsx-ai { color: #fff; }
+/* KI-Symbole je Ausführlichkeitsstufe (lib_nsindex._ai_icons): aufsteigend nach Umfang, von hell nach dunkel */
+.nsx-oi .nsx-ais { position: absolute; inset-inline-start: 0; top: 2px; display: flex; gap: 1px; }
+.nsx-oi .nsx-ais .nsx-ai { position: static; flex: none; }
+.nsx-oi .nsx-ais:not([data-n="1"]) .nsx-ai { width: 10px; }
+.nsx-oi .nsx-ais:not([data-n="1"]) .nsx-ai::before { width: 10px; -webkit-mask-size: 10px 10px; mask-size: 10px 10px; }
+.nsx-oi .nsx-ai-l2 { color: var(--ai-lv2); filter: drop-shadow(0 0 .6px var(--ai-lv-edge)); }
+.nsx-oi .nsx-ai-l3 { color: var(--ai-lv3); }
+.nsx-oi .nsx-ai-l4 { color: var(--ai-lv4); }
+.nsx-oi .nsx-ais .nsx-ai:hover, .nsx-oi .nsx-ais .nsx-ai:focus-visible, .nsx-oi .nsx-ais .nsx-ai[aria-pressed="true"] {
+  background: color-mix(in srgb, currentColor 22%, transparent); color: inherit; outline: 1px solid var(--ai-lv3); outline-offset: 0; }
+.nsx-oi .nsx-ais .nsx-ai-l2:hover, .nsx-oi .nsx-ais .nsx-ai-l2[aria-pressed="true"] { color: var(--ai-lv2); }
+.nsx-oi .nsx-ais .nsx-ai-l3:hover, .nsx-oi .nsx-ais .nsx-ai-l3[aria-pressed="true"] { color: var(--ai-lv3); }
+.nsx-oi .nsx-ais .nsx-ai-l4:hover, .nsx-oi .nsx-ais .nsx-ai-l4[aria-pressed="true"] { color: var(--ai-lv4); }
+a.nsx-oi.sel .nsx-ais .nsx-ai { color: #fff; filter: none; }
+a.nsx-oi.sel .nsx-ais .nsx-ai-l2 { opacity: .55; }
+a.nsx-oi.sel .nsx-ais .nsx-ai-l3 { opacity: .8; }
+.nsx-ol:not([data-by="since"]):has(.nsx-ais[data-n="2"]) a.nsx-oi { padding-inline-start: 24px; }
+.nsx-ol:not([data-by="since"]):has(.nsx-ais[data-n="3"]) a.nsx-oi { padding-inline-start: 35px; }
+@media (forced-colors: active) { .nsx-oi .nsx-ai-l2 { filter: none; } }
 .nsx a.nsx-chip.pin { outline: 2px solid var(--primary); outline-offset: 1px; }
 .nsx-folds > details.nsx-fold { margin: 0 0 var(--space-3); }
 .nsx-folds > details.nsx-fold > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-height: 30px;
@@ -5423,6 +5452,8 @@ details.nsx-fold.nsx-pop.nsx-pop-shift::after, section.nsx.nsx-pop.nsx-pop-shift
 /* Im Panel keine zweite Titelzeile: nur der Knopf zurück in die Mitte, oben in der Ecke */
 details.nsx-fold.nsx-pop > summary { position: absolute !important; top: 6px !important; inset-inline-end: 8px !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; border: 0 !important;
   background: none !important; pointer-events: none !important; }
+/* Der Knopf zum Lösen liegt über dem Inhalt des Panels (die Karten der Themenkarte reichen bis in die Ecke) */
+details.nsx-fold.nsx-pop > summary { z-index: 2; }
 details.nsx-fold.nsx-pop > summary > :not(.nsx-backbtn) { display: none !important; }
 details.nsx-fold.nsx-pop > summary > .nsx-backbtn { display: inline-grid !important; pointer-events: auto !important; margin: 0 !important; }
 .nsx-tab[aria-expanded="true"] { position: relative; z-index: 1; border-color: var(--primary); border-bottom-color: transparent;
@@ -5930,6 +5961,16 @@ html:not([data-density="compact"]) section.nsx-mod, html:not([data-density="comp
 .crumb-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .crumb-toggle[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
 .crumb-toggle .ico-sun, [data-theme="dark"] .crumb-toggle .ico-moon { display: none; }
+/* Standardansicht wiederherstellen (ns-index.js): ohne Abweichung von der Vorgabe ausgegraut */
+.crumb-toggle.nsx-resetbtn.is-off { opacity: .45; cursor: default; }
+.crumb-toggle.nsx-resetbtn.is-off:hover { color: var(--muted); border-color: var(--border); }
+.nsx-undo { position: fixed; z-index: 1200; display: flex; align-items: center; gap: 10px; padding: 7px 10px 7px 12px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18); font-size: 13px; }
+.nsx-undo[hidden] { display: none; }
+.nsx-undo-b { font: inherit; font-weight: 600; padding: 3px 10px; border: 1px solid var(--primary); border-radius: 999px;
+  background: transparent; color: var(--primary); cursor: pointer; }
+.nsx-undo-b:hover, .nsx-undo-b:focus-visible { background: var(--primary); color: #fff; outline: none; }
 [data-theme="dark"] .crumb-toggle .ico-sun { display: block; }
 /* Dichteschalter: Symbol der aktuellen Ansicht (Zeilen weit mit Pfeilen nach außen / eng mit Pfeilen nach innen) */
 .crumb-toggle .ico-dens-compact, [data-density="compact"] .crumb-toggle .ico-dens-comfortable { display: none; }
@@ -6111,6 +6152,15 @@ details.fold .ai[data-ai-levels] > .ai-level[data-ai-level="1"],
 .ai-level-step:hover { background: var(--primary); color: #fff; }
 .ai-level-nav:focus-visible, .ai-level-step:focus-visible { outline: 2px solid var(--color-focus, var(--primary)); outline-offset: 2px; }
 .ai-level-more-inline { margin: 10px 0 0; font-size: 12.5px; }
+/* Kompaktansicht: „mehr ›“ als schlichter Textlink am Ende des Texts (fold.js hängt ihn an den letzten
+   Absatz der Stufe), ohne eigene Zeile und ohne Knopfrahmen */
+[data-density="compact"] .ai-level-step.ai-level-more { display: inline; margin: 0; padding: 0; border: 0; border-radius: 0;
+  background: none; font: inherit; font-weight: inherit; color: var(--primary); text-decoration: underline;
+  text-underline-offset: 2px; cursor: pointer; white-space: nowrap; }
+[data-density="compact"] .ai-level-step.ai-level-more:hover { background: none; color: var(--primary-hover); }
+[data-density="compact"] .ai-level-more-inline { margin: 0; font-size: inherit; }
+/* Letztes Wort und „mehr ›“ brechen nur gemeinsam um (fold.js inlineMoreLinks) */
+[data-density="compact"] .ai-more-tail { white-space: nowrap; }
 /* Einzeiler im Kopf eines Guide-Folds bzw. Reiters (auch eingeklappt) */
 summary .ai-oneliner { display: block; margin: 2px 0 0 1.35em; font-size: 13px; font-weight: 400; color: var(--muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: none; letter-spacing: normal; }
@@ -6617,7 +6667,7 @@ section.nsx.nsx-pop .nsx-aside { height: calc(var(--nsx-pop-h, 100vh) - 2 * var(
 [data-theme="dark"] .nsx { --nsx-h-add: #4cc985; --nsx-h-chg: #e3b341; --nsx-h-del: #f07070; }
 @media (min-width: 1201px) { .nsx.nsx-live.nsx-hist { grid-template-columns: 330px minmax(0, 1fr) var(--nsx-aside-w, 300px); } }
 @media (min-width: 761px) and (max-width: 1200px) { .nsx.nsx-live.nsx-hist { grid-template-columns: 300px minmax(0, 1fr); } }
-.nsx-ol[data-by="since"] .nsx-ai, .nsx-ol[data-by="since"] .nsx-hb { display: none !important; }
+.nsx-ol[data-by="since"] .nsx-ai, .nsx-ol[data-by="since"] .nsx-ais, .nsx-ol[data-by="since"] .nsx-hb { display: none !important; }
 .nsx-ol[data-by="since"] a.nsx-oi-h { padding-inline-start: 4px; gap: 6px; }
 .nsx-hcells { flex: none; display: inline-flex; gap: 2px; margin-inline-start: auto; }
 .nsx-hhead { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-end; gap: 6px; padding: 2px 0 4px 4px;

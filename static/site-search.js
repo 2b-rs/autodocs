@@ -4,7 +4,7 @@
  * Statischer Index unter search/ (_src/tools/export_search.py): Termschnitte t/<kk>.json werden
  * je Suchwort nachgeladen, Dokumentschnitte d/<n>.json nur für angezeigte Treffer, l/<lang>.json
  * bringt Oberflächentexte und übersetzte Seitentitel. Durchsucht werden Spezifikations-Records
- * (Kennung, Name, Text), Seiten (Titel, Überschriften) und KI-Kommentare (Guides, Element-Notizen).
+ * (Kennung, Name, Text), Seiten (Titel, Überschriften) und KI-Kommentare (Guides, Anforderungs-Notizen).
  *
  * Tokenisierung wie export_search.tokens(): NFKD ohne Zeichen der Kategorie M, klein, ß→ss,
  * Wörter aus Buchstaben/Ziffern/_, zusätzlich Teile an _ und (rein lateinisch) an Binnenmajuskeln. Jedes Suchwort
@@ -192,13 +192,13 @@
   // ------------------------------------------------------------------ Browser
 
   var UI_DEFAULT = {
-    all: "Alle", type_page: "Seite", type_ai: "KI-Kommentar", type_rec: "Spezifikation",
-    tab_page: "Seiten", tab_ai: "KI-Kommentare", tab_rec: "Spezifikation",
+    all: "Alle", type_page: "Seite", type_ai: "KI-Kommentar", type_rec: "Anforderung",
+    tab_page: "Seiten", tab_ai: "KI-Kommentare", tab_rec: "Anforderungen",
     results: "{n} Treffer", none: "Keine Treffer für „{q}“", partial: "Nicht alle Suchwörter gefunden – Treffer für einzelne Wörter",
     loading: "Suchindex wird geladen…", more: "Weitere Treffer", error: "Der Suchindex ist nicht verfügbar.",
     hint: "↑↓ wählen · Enter öffnen · Esc schließen", label: "Suchergebnisse", min: "Mindestens zwei Zeichen eingeben",
     ai_modules: "Modul-Guide", ai_clusters: "Cluster-Guide", ai_classes: "Klassen-Guide", ai_namespaces: "Namespace-Guide",
-    ai_services: "Service-Guide", ai_elements: "Element-Kommentar"
+    ai_services: "Service-Guide", ai_elements: "Anforderungs-Kommentar"
   };
 
   function boot() {

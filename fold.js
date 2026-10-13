@@ -1391,6 +1391,34 @@
   // Die Wahl gilt je Guide-Art (data-ai-level-kind: element, module, cluster …)
   // und liegt im Browser-Speicher; neue Seiten öffnen die Guides dieser Art in der gemerkten Stufe.
   // Der Einzeiler des sichtbaren Guides steht im Kopf des Folds (.ai-oneliner), auch eingeklappt.
+  // Kompaktansicht: „mehr ›“ am Ende einer Stufe als schlichter Textlink im letzten Absatz (bzw. letzten
+  // Listenpunkt) des Texts statt in einer eigenen Zeile; die Komfortansicht behält den Knopf darunter.
+  // Ein Dichtewechsel lädt die Seite neu (ns-index.js), die Verschiebung gilt also nur für diese Dichte.
+  function inlineMoreLinks(scope) {
+    if (document.documentElement.getAttribute("data-density") !== "compact") return;
+    (scope || document).querySelectorAll(".ai-level-more-inline").forEach(function (p) {
+      var btn = p.querySelector(".ai-level-more");
+      var prev = p.previousElementSibling;
+      if (prev && (prev.tagName === "UL" || prev.tagName === "OL")) prev = prev.lastElementChild;
+      if (!btn || !prev || (prev.tagName !== "P" && prev.tagName !== "LI") || prev.classList.contains("ai-note")) return;
+      // Letztes Wort (bzw. letzter Verweis) und Link bilden eine untrennbare Einheit: bricht die Zeile um,
+      // wandern beide gemeinsam, der Link steht nie allein in einer eigenen Zeile
+      var tail = document.createElement("span");
+      tail.className = "ai-more-tail";
+      var last = prev.lastChild;
+      while (last && last.nodeType === 3 && !last.nodeValue.trim()) { var w = last; last = last.previousSibling; w.remove(); }
+      if (last && last.nodeType === 3) {
+        var m = /\S+\s*$/.exec(last.nodeValue);
+        tail.appendChild(m && m.index > 0 ? last.splitText(m.index) : last);
+      } else if (last && last.nodeType === 1 && last.tagName !== "UL" && last.tagName !== "OL") {
+        tail.appendChild(last);
+      }
+      tail.appendChild(document.createTextNode(tail.firstChild ? " " : ""));
+      tail.appendChild(btn);
+      prev.appendChild(tail);
+      p.remove();
+    });
+  }
   var GUIDE_LEVEL_KEY = "autodocs-guide-level:";
   var GUIDE_LEVEL_MIN = 2, GUIDE_LEVEL_MAX = 4, GUIDE_LEVEL_START = 2;
   function guideLevelStored(kind) {
@@ -1446,6 +1474,7 @@
   function bindGuideLevels() {
     if (bindGuideLevels.done) return;
     bindGuideLevels.done = true;
+    inlineMoreLinks();
     document.querySelectorAll(".ai[data-ai-levels]").forEach(function (ai) {
       var lv = guideLevels(ai);
       var n = guideLevelStored(ai.getAttribute("data-ai-level-kind") || "guide");
@@ -1482,6 +1511,7 @@
   }
   window.autodocsGuideLevels = {
     set: setGuideLevel,
+    inlineMore: inlineMoreLinks,
     syncOneLiners: syncOneLiners,
     showLevelOf: function (levelEl) {
       var ai = levelEl.closest(".ai[data-ai-levels]");

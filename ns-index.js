@@ -260,7 +260,8 @@
       cluCards.classList.add("nsx-clucards");
     }
 
-    // ---- Content Area (Gliederung, Inspektor, Elementansicht) als andockbares Element
+    // ---- Content Area „Anforderungen“ (Gliederung, Inspektor, Elementansicht) als andockbares Element;
+    // Beschriftung aus dem UI-Katalog (Schlüssel „elements“, Admin 2026-10-13: „Anforderungen“ statt „Elemente“)
     root.setAttribute("data-fold", "elements");
     var elHead = root.querySelector(".nsx-elements-head");
     if (!elHead) {
@@ -273,7 +274,7 @@
       elHead.appendChild(elGr);
       var elH2 = document.createElement("h2");
       elH2.className = "sect";
-      elH2.textContent = labels.elements || "Elemente";
+      elH2.textContent = labels.elements || "Anforderungen";
       elHead.appendChild(elH2);
       root.insertBefore(elHead, root.firstChild);
     }
@@ -285,7 +286,7 @@
       elChev.className = "nsx-elchev";
       elChev.setAttribute("role", "button");
       elChev.setAttribute("tabindex", "0");
-      elChev.setAttribute("aria-label", labels.elements || "Elemente");
+      elChev.setAttribute("aria-label", labels.elements || "Anforderungen");
       var elH = elHead.querySelector("h2");
       elHead.insertBefore(elChev, elH || null);
     }
@@ -487,19 +488,8 @@
       });
       return list;
     }
-    function applyOrder() {
-      var order = (load(ORDER_KEY) || "").split(",").filter(Boolean);
-      if (!order.length) return;
-      var fl = Array.prototype.filter.call(folds.children, function (x) { return x.matches("details[data-fold]"); });
-      fl.slice().sort(function (a, b) {
-        var ia = order.indexOf(a.getAttribute("data-fold")), ib = order.indexOf(b.getAttribute("data-fold"));
-        if (ia < 0) ia = 99 + fl.indexOf(a);
-        if (ib < 0) ib = 99 + fl.indexOf(b);
-        return ia - ib;
-      }).forEach(function (f) { folds.appendChild(f); });
-    }
-    function saveOrder() { save(ORDER_KEY, foldList().map(function (f) { return f.getAttribute("data-fold"); }).join(",")); }
-    applyOrder();
+    // Reihenfolge der mittleren Spalte gehört zum gemerkten Layout (saveAllDocks)
+    function saveOrder() { saveAllDocks(); }
     var dragging = null;
     var gripActive = false;
     var draggingJustNow = false;
@@ -1033,15 +1023,17 @@
       if (ev.target.closest(".nsx-grip, button, a")) return;
       if (root.classList.contains("nsx-tdocked")) return;
       setElementsOpen(!elementsOpen());
+      saveAllDocks();
     });
     elHead.addEventListener("keydown", function (ev) {
       if ((ev.key !== "Enter" && ev.key !== " ") || !ev.target.matches(".nsx-elchev")) return;
       ev.preventDefault();
       setElementsOpen(!elementsOpen());
+      saveAllDocks();
     });
     function foldLabel(f) {
       if (!f) return "";
-      if (f === root || f.getAttribute("data-fold") === "elements") return labels.elements || "Elemente";
+      if (f === root || f.getAttribute("data-fold") === "elements") return labels.elements || "Anforderungen";
       var h = f.querySelector("summary > h2, .nsx-elements-head > h2");
       if (!h) return f.getAttribute("data-fold") || "";
       var c = h.cloneNode(true);
@@ -1053,46 +1045,97 @@
       tdock.className = "nsx-tdock";
       title.appendChild(tdock);
     }
-    var isCls = root.classList.contains("nsx-cls");
-    var tdockKey = TDOCK_KEY + (isCls ? "-cls" : "");
-    var topDockKey = TOPDOCK_KEY + (isCls ? "-cls" : "");
-    var pageDockKey = "nsx-docks:" + location.pathname;
-    // Angedockte Elemente überstehen ein Neuladen derselben Seite (Sitzung des Tabs); beim Öffnen
-    // in einer neuen Sitzung stehen sie wie vorgesehen gelöst und ausgeklappt auf der Fläche.
+    var isCls = root.classList.contains("nsx-cls"), isSvc = root.classList.contains("nsx-svc");
+    // ---- Layout der Kompaktansicht (Admin, 2026-10-13): Vorgabe beim ersten Besuch und nach dem
+    // Zurücksetzen: gelöst und ausgeklappt Definition, Kurzfassung des Guides und Anforderungen (die
+    // Box „elements“, bis 2026-10-13 „Elemente“; Schlüssel und IDs unverändert) (in dieser
+    // Reihenfolge), alles Übrige als eingeklappter Reiter in der Titelleiste. Gemerkt wird je Seitenart
+    // (Cluster, Modul, Klasse, Namespace, Service) nur, was der Nutzer selbst ändert und von der Vorgabe
+    // abweicht: Andockplätze, Reihenfolge, Ein-/Ausgeklappt. Die angedockten Elemente gelten nur für die
+    // Die angedockten Anforderungen gehören dazu (Reiter „elements“ in der Titelleiste, seit 2026-10-13
+    // nicht mehr nur für die Sitzung des Tabs); die Stufe der Guides merkt fold.js je Guide-Art.
+    var pageKind = isSvc ? "service" : isCls ? "class" : isClu ? "cluster" : isMod ? "module" : "namespace";
+    var layoutKey = "nsx-layout:" + pageKind;
+    // Frühere Speicherorte (bis 2026-10-13 bei jedem Besuch geschrieben): nicht mehr gelesen, beim
+    // Zurücksetzen entfernt
+    var LEGACY_KEYS = [ORDER_KEY, TDOCK_KEY, TDOCK_KEY + "-cls", TOPDOCK_KEY, TOPDOCK_KEY + "-cls", "nsx-docks:" + location.pathname];
+    var GUIDE_LEVEL_KEY = "autodocs-guide-level:";       // wie in fold.js (Stufe je Guide-Art)
+    // Früherer Sitzungsschlüssel der angedockten Anforderungen: nicht mehr gelesen, beim Zurücksetzen entfernt
     var elDockKey = "nsx-el-docked:" + location.pathname;
-    function sessionLoad(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
     function sessionSave(k, v) { try { if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* ohne Speicher */ } }
+    var layoutApplying = false;
 
-    function saveTitleDock() {
-      var keys = tdock ? Array.prototype.filter.call(tdock.children, function (b) { return !b.hidden; })
-        .map(function (b) { return b.getAttribute("data-fold"); }) : [];
-      save(tdockKey, keys.join(","));
+    function keysIn(el) {
+      // angedockte Folds warten verborgen in der Mitte bzw. auf der Fläche: sie zählen zur Titelleiste
+      return el ? Array.prototype.filter.call(el.querySelectorAll(":scope > details[data-fold]"), function (f) {
+        return !f.classList.contains("nsx-tdocked");
+      }).map(function (f) { return f.getAttribute("data-fold"); }).filter(Boolean) : [];
     }
-    function saveTopDock() {
-      if (!dockPre) return;
-      var keys = Array.prototype.map.call(dockPre.querySelectorAll(":scope > details[data-fold]"), function (f) {
-        return f.getAttribute("data-fold");
-      }).filter(Boolean);
-      save(topDockKey, keys.join(","));
-    }
-    function saveAllDocks() {
-      var state = {
-        title: tdock ? Array.prototype.filter.call(tdock.children, function (b) { return !b.hidden; })
+    function currentLayout() {
+      var closed = [];
+      foldList().forEach(function (f) {
+        var k = f.getAttribute("data-fold");
+        if (k && f !== detFold && !f.classList.contains("nsx-tdocked") && !f.open) closed.push(k);
+      });
+      if (!root.classList.contains("nsx-tdocked") && !elementsOpen()) closed.push("elements");
+      return {
+        title: tdock ? Array.prototype.filter.call(tdock.querySelectorAll(":scope > .nsx-tab"), function (b) { return !b.hidden; })
           .map(function (b) { return b.getAttribute("data-fold"); }).filter(Boolean) : [],
-        lead: dockLead ? Array.prototype.map.call(dockLead.querySelectorAll(":scope > details[data-fold]"), function (f) {
-          return f.getAttribute("data-fold");
-        }).filter(Boolean) : [],
-        pre: dockPre ? Array.prototype.map.call(dockPre.querySelectorAll(":scope > details[data-fold]"), function (f) {
-          return f.getAttribute("data-fold");
-        }).filter(Boolean) : [],
-        post: dockPost ? Array.prototype.map.call(dockPost.querySelectorAll(":scope > details[data-fold]"), function (f) {
-          return f.getAttribute("data-fold");
-        }).filter(Boolean) : []
+        lead: keysIn(dockLead), pre: keysIn(dockPre), post: keysIn(dockPost), center: keysIn(folds),
+        closed: closed.sort()
       };
-      save(pageDockKey, JSON.stringify(state));
-      saveTitleDock();
-      saveTopDock();
     }
+    function defaultLayout() {
+      var lay = { title: [], lead: [], pre: [], post: [], center: [], closed: [] }, rest = [];
+      var ov = foldByKey("overview");
+      if (ov && ov !== root) lay.lead.push("overview");
+      if (guideFold) lay.pre.push(guideFold.getAttribute("data-fold"));
+      function add(k) {
+        if (k && k !== "detail" && k !== "elements" && rest.indexOf(k) < 0 && lay.lead.indexOf(k) < 0 && lay.pre.indexOf(k) < 0) rest.push(k);
+      }
+      candidateGuides.slice().reverse().forEach(function (g) { add(g.getAttribute("data-fold")); });
+      ["map", "cards", "uml"].forEach(function (k) { var f = foldByKey(k); if (f && f !== root) add(k); });
+      foldList().forEach(function (f) { add(f.getAttribute("data-fold")); });
+      rest.forEach(function (k) {
+        var f = foldByKey(k);
+        if (f && canTitleDock(f)) lay.title.push(k);
+        else if (f && canTopDock(f)) lay.pre.push(k);
+      });
+      if (detFold) lay.center.push("detail");
+      return lay;
+    }
+    function sameLayout(a, b) {
+      function norm(l) {
+        return JSON.stringify(["title", "lead", "pre", "post", "center", "closed"].map(function (z) {
+          var v = (l && l[z]) || [];
+          return z === "closed" ? v.slice().sort() : v;
+        }));
+      }
+      return norm(a) === norm(b);
+    }
+    function loadLayout() {
+      try {
+        var l = JSON.parse(load(layoutKey) || "null");
+        return l && typeof l === "object" && !Array.isArray(l) ? l : null;
+      } catch (e) { return null; }
+    }
+    // Gemerkt wird nur eine Abweichung von der Vorgabe; während applyLayout nichts
+    function saveAllDocks() {
+      if (layoutApplying || !document.contains(root)) return;    // Seitenwechsel: alte Ansicht schreibt nichts
+      var cur = currentLayout();
+      if (sameLayout(cur, defaultLayout())) { save(layoutKey, null); updateResetBtn(); return; }
+      // Folds anderer Seiten derselben Art (z. B. „Klassendiagramm“, das hier fehlt) behalten ihren
+      // gemerkten Platz; diese Seite überschreibt nur, was sie selbst zeigt
+      var old = loadLayout();
+      if (old) ["title", "lead", "pre", "post", "center", "closed"].forEach(function (z) {
+        (old[z] || []).forEach(function (k) {
+          if (k !== "elements" && !foldByKey(k) && cur[z].indexOf(k) < 0) cur[z].push(k);
+        });
+      });
+      save(layoutKey, JSON.stringify(cur));
+      updateResetBtn();
+    }
+    function saveTitleDock() { saveAllDocks(); }
 
     // Das Panel hängt bündig unter seinem Reiter; der Reiter ist sein Titel
     function placePop() {
@@ -1279,7 +1322,6 @@
       if (f === root) {
         // Angedockt verlassen die Elemente die Fläche: der Reiter besitzt sie, zunächst eingeklappt
         setElementsOpen(false);
-        sessionSave(elDockKey, "1");
       }
       saveAllDocks();
       updateEmpty();
@@ -1292,7 +1334,6 @@
       if (f === root) {
         // Zurück auf die Fläche: Lösen stellt Gliederung, Mitte und Inspektor ausgeklappt wieder her
         markElementsOpen(true);
-        sessionSave(elDockKey, null);
       }
       var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
       if (b) { if (preview) b.hidden = true; else b.remove(); }
@@ -1375,48 +1416,194 @@
       dockTo(f, "center");
     }
 
-    function applyAllDocks() {
-      var raw = load(pageDockKey);
-      var saved = null;
-      if (raw) {
-        try { saved = JSON.parse(raw); } catch (e) { saved = null; }
+    // Layout herstellen (Beim Öffnen, Zurücksetzen und Rückgängig): jeder Fold an seinen Platz in der
+    // gemerkten Reihenfolge; Folds ohne gemerkten Platz wie in der Vorgabe.
+    function applyLayout(lay) {
+      layoutApplying = true;
+      var elDocked = !!(lay && lay.title && lay.title.indexOf("elements") >= 0);
+      setPop(null);
+      if (root.classList.contains("nsx-tdocked")) undockTitle(root);
+      var def = defaultLayout(), placed = {};
+      function place(k, zone) {
+        if (!k || placed[k] || k === "elements") return;
+        var f = foldByKey(k);
+        if (!f || f === root) return;
+        if (f === detFold) {
+          if (zone === "center") { folds.appendChild(f); placed[k] = 1; }
+          return;
+        }
+        if (zone === "title") {
+          if (!canTitleDock(f)) return;
+          dockTitle(f);
+          var b = tdock.querySelector('.nsx-tab[data-fold="' + k + '"]');
+          if (b) tdock.appendChild(b);
+        } else if (zone === "center") {
+          if (!canCenter(f)) return;
+          dockTo(f, "center");
+          folds.appendChild(f);
+        } else {
+          if (!canTopDock(f)) return;
+          dockTo(f, zone);
+          var z = zone === "lead" ? dockLead : zone === "post" ? dockPost : dockPre;
+          if (z) z.appendChild(f);
+        }
+        placed[k] = 1;
       }
-      var savedTitle = (saved && saved.title) || (load(tdockKey) || "").split(",").filter(Boolean);
-      // Beim Öffnen stehen die Elemente gelöst und ausgeklappt auf der Fläche; nur ein Neuladen in
-      // derselben Sitzung behält sie angedockt (eingeklappt im Reiter, ohne Doppel auf der Fläche)
-      var elDocked = sessionLoad(elDockKey) === "1" && canTitleDock(root);
-      var td = savedTitle.filter(function (k) { return k === "elements" ? elDocked : !!foldByKey(k); });
-      if (elDocked && td.indexOf("elements") < 0) td.push("elements");
-      // Beim Öffnen immer angedockt (Aufnahme 12:02; Clusterseiten: „Module im Cluster“ angedockt
-      // und eingeklappt, Wunsch des Admins vom 2026-10-13), auch wenn eine frühere Sitzung sie auf
-      // der Fläche abgelegt hatte
-      var tdDefault = isCls ? ["map", "guide", "uml"] : isClu ? ["guide", "map", "cards"] : ["guide", "map"];
-      tdDefault.forEach(function (k) { if (td.indexOf(k) < 0 && foldByKey(k)) td.push(k); });
-      td.forEach(function (k) { var f = foldByKey(k); if (f && canTitleDock(f)) dockTitle(f); });
-      function keepSaved(k) { return tdDefault.indexOf(k) < 0; }
-
-      if (saved) {
-        if (saved.lead) saved.lead.filter(keepSaved).forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "lead"); });
-        if (saved.pre) saved.pre.filter(keepSaved).forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "pre"); });
-        if (saved.post) saved.post.filter(keepSaved).forEach(function (k) { var f = foldByKey(k); if (f && canTopDock(f)) dockTo(f, "post"); });
-      } else {
-        var fl = foldList();
-        fl.forEach(function (f) {
-          if (f && f._initTop && canTopDock(f) && !f.classList.contains("nsx-tdocked") && !f.classList.contains("nsx-topdocked")) {
-            dockTo(f, f._initDock || "pre");
-          }
-        });
-      }
-      // Guides ohne gemerkten Platz: auf die Fläche vor der Gliederung, nie in die Elemente
-      candidateGuides.forEach(function (g) {
-        if (!g.classList.contains("nsx-tdocked") && !g.classList.contains("nsx-topdocked")) dockTo(g, "pre");
+      ["title", "lead", "pre", "post", "center"].forEach(function (z) {
+        ((lay && lay[z]) || []).forEach(function (k) { place(k, z); });
       });
+      ["title", "lead", "pre", "post", "center"].forEach(function (z) {
+        def[z].forEach(function (k) { place(k, z); });
+      });
+      var closed = (lay && lay.closed) || [];
+      foldList().forEach(function (f) {
+        var k = f.getAttribute("data-fold");
+        if (k && f !== detFold && !f.classList.contains("nsx-tdocked")) f.open = closed.indexOf(k) < 0;
+        f._layoutOpen = f.open;          // toggle dieses Setzens ist keine Änderung des Nutzers
+      });
+      if (elDocked && canTitleDock(root)) dockTitle(root);           // eingeklappt im Reiter
+      else setElementsOpen(closed.indexOf("elements") < 0);
+      // Reiter in der gemerkten Reihenfolge (auch der Reiter der Anforderungen), danach Reiter ohne
+      // gemerkten Platz in der Reihenfolge der Vorgabe
+      if (tdock) ((lay && lay.title) || []).concat(def.title).forEach(function (k) {
+        var b = tdock.querySelector(':scope > .nsx-tab[data-fold="' + k + '"]');
+        if (b && !b._ordered) { b._ordered = true; tdock.appendChild(b); }
+      });
+      if (tdock) Array.prototype.forEach.call(tdock.children, function (b) { b._ordered = false; });
       foldList().forEach(decorateFoldButtons);
       decorateFoldButtons(root);
-      if (root.classList.contains("nsx-tdocked")) markElementsOpen(false);
-      else setElementsOpen(true);
+      layoutApplying = false;
       updateEmpty();
+      if (selected) drawArrows(selected);
+      updateResetBtn();
     }
+    function applyAllDocks() {
+      applyLayout(loadLayout() || defaultLayout());
+    }
+
+    // ---- Standardansicht wiederherstellen (Knopf neben dem Dichteschalter): löscht das gemerkte
+    // Layout dieser Seitenart samt angedockten Elementen, Breite des Inspektors und gemerkter Stufe der
+    // Guides dieser Seite und stellt die Vorgabe sofort her. Keine Rückfrage; stattdessen bietet ein
+    // Hinweis einige Sekunden lang „Rückgängig“ an. Aktiv nur, wenn etwas von der Vorgabe abweicht
+    // (gemerkt wird ohnehin nur eine Abweichung, die Prüfung kostet nur einige Speicherzugriffe).
+    var ICON_RESET = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 3.5v4.6h4.6"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>';
+    var UNDO_MS = 8000;
+    var resetBtn = null, undoBox = null, undoTimer = 0;
+    function pageGuides() {
+      return Array.prototype.filter.call(document.querySelectorAll(".ai[data-ai-levels][data-ai-level-kind]"), function (a) {
+        return !(detBody && detBody.contains(a));
+      });
+    }
+    function firstLevel(a) { return parseInt((a.getAttribute("data-ai-levels-shown") || "2").split(/\s+/)[0], 10) || 2; }
+    function setLevel(a, n) {
+      if (window.autodocsGuideLevels && n) window.autodocsGuideLevels.set(a, n, false);
+      else if (n) a.setAttribute("data-ai-level-cur", String(n));
+    }
+    function levelKinds() {
+      var ks = {};
+      pageGuides().forEach(function (a) { var k = a.getAttribute("data-ai-level-kind"); if (!(k in ks)) ks[k] = firstLevel(a); });
+      return ks;
+    }
+    function layoutCustomized() {
+      if (load(layoutKey) !== null || load(W_KEY) !== null) return true;
+      var ks = levelKinds();
+      return Object.keys(ks).some(function (k) { var v = load(GUIDE_LEVEL_KEY + k); return v !== null && parseInt(v, 10) !== ks[k]; });
+    }
+    function updateResetBtn() {
+      if (!resetBtn) return;
+      var on = layoutCustomized();
+      resetBtn.setAttribute("aria-disabled", String(!on));
+      resetBtn.classList.toggle("is-off", !on);
+    }
+    function layoutSnapshot() {
+      var lv = {};
+      Object.keys(levelKinds()).forEach(function (k) { lv[k] = load(GUIDE_LEVEL_KEY + k); });
+      return { layout: currentLayout(), raw: load(layoutKey), w: load(W_KEY),
+               wStyle: root.style.getPropertyValue("--nsx-aside-w"), lv: lv,
+               cur: pageGuides().map(function (a) { return [a, parseInt(a.getAttribute("data-ai-level-cur"), 10) || 0]; }),
+               legacy: LEGACY_KEYS.map(function (k) { return [k, load(k)]; }) };
+    }
+    function restoreLayout(snap) {
+      save(layoutKey, snap.raw);
+      save(W_KEY, snap.w);
+      Object.keys(snap.lv).forEach(function (k) { save(GUIDE_LEVEL_KEY + k, snap.lv[k]); });
+      snap.legacy.forEach(function (kv) { save(kv[0], kv[1]); });
+      if (snap.wStyle) root.style.setProperty("--nsx-aside-w", snap.wStyle); else root.style.removeProperty("--nsx-aside-w");
+      applyLayout(snap.layout);
+      snap.cur.forEach(function (p) { setLevel(p[0], p[1]); });
+      updateResetBtn();
+    }
+    function hideUndo() {
+      clearTimeout(undoTimer);
+      if (undoBox) undoBox.hidden = true;
+    }
+    function showUndo(snap) {
+      if (!undoBox) {
+        undoBox = document.createElement("div");
+        undoBox.className = "nsx-undo";
+        undoBox.setAttribute("role", "status");
+        undoBox.innerHTML = '<span class="nsx-undo-t"></span><button type="button" class="nsx-undo-b"></button>';
+        document.body.appendChild(undoBox);
+      }
+      undoBox.querySelector(".nsx-undo-t").textContent = labels.resetdone || "Standardansicht wiederhergestellt";
+      var ub = undoBox.querySelector(".nsx-undo-b");
+      ub.textContent = labels.undo || "Rückgängig";
+      ub.onclick = function () { hideUndo(); restoreLayout(snap); };
+      if (resetBtn) {
+        var r = resetBtn.getBoundingClientRect();
+        undoBox.style.top = Math.round(r.bottom + 8) + "px";
+        undoBox.style.insetInlineEnd = Math.max(12, Math.round(getComputedStyle(root).direction === "rtl" ? r.left : innerWidth - r.right)) + "px";
+      }
+      undoBox.hidden = false;
+      clearTimeout(undoTimer);
+      undoTimer = setTimeout(hideUndo, UNDO_MS);
+    }
+    function resetLayout() {
+      var snap = layoutSnapshot();
+      save(layoutKey, null);
+      sessionSave(elDockKey, null);
+      save(W_KEY, null);
+      LEGACY_KEYS.forEach(function (k) { save(k, null); });
+      Object.keys(levelKinds()).forEach(function (k) { save(GUIDE_LEVEL_KEY + k, null); });
+      root.style.removeProperty("--nsx-aside-w");
+      applyLayout(defaultLayout());
+      pageGuides().forEach(function (a) { setLevel(a, firstLevel(a)); });
+      updateResetBtn();
+      showUndo(snap);
+    }
+    (function () {
+      var tools = document.querySelector(".crumb-tools");
+      if (!tools && !title) return;
+      resetBtn = document.createElement("button");
+      resetBtn.type = "button";
+      resetBtn.className = "crumb-toggle nsx-resetbtn";
+      resetBtn.innerHTML = ICON_RESET;
+      resetBtn.title = labels.reset || "Standardansicht wiederherstellen";
+      resetBtn.setAttribute("aria-label", labels.reset || "Standardansicht wiederherstellen");
+      resetBtn.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        if (resetBtn.getAttribute("aria-disabled") === "true") return;
+        resetLayout();
+      });
+      var dens = tools && tools.querySelector("[data-density-toggle]");
+      if (dens) dens.parentNode.insertBefore(resetBtn, dens.nextSibling);
+      else if (tools) tools.appendChild(resetBtn);
+      else title.appendChild(resetBtn);
+    })();
+    // Ein- und Ausklappen gelöster Folds gehört zum Layout (toggle bubbelt nicht: Capture)
+    document.addEventListener("toggle", function (ev) {
+      var f = ev.target;
+      if (!document.contains(root)) return;
+      if (!f.matches || !f.matches("details.nsx-fold[data-fold]") || f === detFold) return;
+      if (f.classList.contains("nsx-tdocked") || f.classList.contains("nsx-pop")) return;
+      if (f._layoutOpen === f.open) return;               // von applyLayout gesetzt
+      f._layoutOpen = f.open;
+      saveAllDocks();
+    }, true);
+    // Stufenwahl im Guide (fold.js) ändert, ob die Ansicht von der Vorgabe abweicht
+    document.addEventListener("click", function (ev) {
+      if (document.contains(root) && ev.target.closest && ev.target.closest("[data-ai-level-cycle], [data-ai-level-step]")) setTimeout(function () { updateResetBtn(); markAi(); }, 0);
+    });
 
     function applyTopDock() {
       applyAllDocks();
@@ -1652,6 +1839,7 @@
           split.removeEventListener("pointerup", up);
           root.classList.remove("nsx-resizing");
           save(W_KEY, String(aside.getBoundingClientRect().width | 0));
+          updateResetBtn();
           if (selected) { drawArrows(selected); showRelations(selected); }
         }
         split.addEventListener("pointermove", move);
@@ -1662,8 +1850,9 @@
         if (!d) return;
         ev.preventDefault();
         save(W_KEY, String(setW(aside.getBoundingClientRect().width + (rtl ? -d : d))));
+        updateResetBtn();
       });
-      split.addEventListener("dblclick", function () { root.style.removeProperty("--nsx-aside-w"); save(W_KEY, null); });
+      split.addEventListener("dblclick", function () { root.style.removeProperty("--nsx-aside-w"); save(W_KEY, null); updateResetBtn(); });
     }
 
     // ---- Pfeile über der Karte
@@ -2350,10 +2539,29 @@
     }
     function aiOpen() { return !!(dTab && dTab.getAttribute("aria-expanded") === "true"); }
     // Zustand der Sterne: gedrückt beim ausgewählten Eintrag mit offenem KI-Text
+    // Ein Symbol je gezeigter Stufe (lib_nsindex._ai_icons): gedrückt ist das der sichtbaren Stufe
     function markAi() {
+      var open = aiOpen(), lv = open ? detailAiLevel() : 0;
       root.querySelectorAll(".nsx-ai").forEach(function (s) {
-        s.setAttribute("aria-pressed", String(!!selected && s.getAttribute("data-ai") === selected && aiOpen()));
+        var mine = !!selected && s.getAttribute("data-ai") === selected && open;
+        var sl = parseInt(s.getAttribute("data-lv"), 10) || 0;
+        s.setAttribute("aria-pressed", String(mine && (!sl || sl === lv)));
       });
+    }
+    function detailGuides() {
+      return dPanel ? Array.prototype.filter.call(dPanel.querySelectorAll(".ai[data-ai-levels]"), function (a) {
+        var v = a.closest(".ai-guide-release-variant");
+        return !v || v.style.display !== "none";
+      }) : [];
+    }
+    function detailAiLevel() {
+      var a = detailGuides()[0];
+      return a ? parseInt(a.getAttribute("data-ai-level-cur"), 10) || 4 : 4;
+    }
+    function setDetailAiLevel(lv) {
+      if (!lv) return;
+      detailGuides().forEach(function (a) { if (window.autodocsGuideLevels) window.autodocsGuideLevels.set(a, lv, false); });
+      markAi();
     }
     function setDetailAi(open) {
       if (!dTab || !dPanel) return;
@@ -2427,12 +2635,13 @@
           if (usage && usage.textContent.trim()) dockDetailAi(usage, ulab, gtabs ? gtabs.querySelector(".guide-panel") : null);
         }
         linkOwnNames(detBody);
+        if (window.autodocsGuideLevels && window.autodocsGuideLevels.inlineMore) window.autodocsGuideLevels.inlineMore(detBody);
         detBody.style.minHeight = "";
         histDetail(name);
       }
       function done() {
         if (my !== token) return;
-        if (opts.ai && dPanel) { setDetailAi(true); toDetail(); return; }
+        if (opts.ai && dPanel) { setDetailAi(true); setDetailAiLevel(opts.level); toDetail(); return; }
         var target = opts.ai ? detBody.querySelector(".ai") : (opts.anchor && inDetail(opts.anchor));
         if (target && detBody.contains(target)) openTo(target);
         else if (opts.ai || opts.anchor) toDetail();
@@ -2597,12 +2806,14 @@
       if (ai) {
         // Stern: öffnet den KI-Text des Eintrags; beim ausgewählten Eintrag schaltet er ihn um
         ev.preventDefault();
-        var an = ai.getAttribute("data-ai");
+        // Symbol einer Stufe: öffnet den Guide genau in dieser Stufe; dasselbe Symbol bei offenem
+        // Guide in dieser Stufe schließt ihn wieder, ein anderes wechselt die Stufe
+        var an = ai.getAttribute("data-ai"), alv = parseInt(ai.getAttribute("data-lv"), 10) || 0;
         if (an === selected && dTab) {
-          var op = !aiOpen();
+          var op = !(aiOpen() && (!alv || detailAiLevel() === alv));
           setDetailAi(op);
-          if (op) toDetail();
-        } else select(an, { ai: true });
+          if (op) { setDetailAiLevel(alv); toDetail(); }
+        } else select(an, { ai: true, level: alv });
         return;
       }
       var dt = t.closest(".nsx-dtab");
@@ -2683,7 +2894,11 @@
         ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
       }
     });
-    root.querySelectorAll(".nsx-ai").forEach(function (s) { s.setAttribute("title", labels.ai || ""); s.setAttribute("aria-label", labels.ai || ""); });
+    root.querySelectorAll(".nsx-ai").forEach(function (s) {
+      var l = labels["ailv" + (s.getAttribute("data-lv") || "")] || labels.ai || "";
+      s.setAttribute("title", l);
+      s.setAttribute("aria-label", l);
+    });
     root.querySelectorAll(".nsx-rv").forEach(function (s) { s.setAttribute("title", labels.rv || ""); s.setAttribute("role", "img"); s.setAttribute("aria-label", labels.rv || ""); });
 
     // ---- Review-Bedarf: Die Hinweisleiste der Seite verweist auf die Review-Panels der Records
@@ -2780,10 +2995,8 @@
       detFold.hidden = true;
     }
     updateEmpty();
+    // Beim Öffnen: gemerktes Layout der Seitenart, sonst die Vorgabe (Guide gelöst in der Kurzfassung)
     applyAllDocks();
-    // Beim Öffnen: der angedockte Guide ist ausgeklappt (Panel bis an den Rand der Gliederung),
-    // außer ein Anker wählt ein Element aus, dessen Detailansicht sonst verdeckt wäre
-    if (guideFold && guideFold.classList.contains("nsx-tdocked") && !hashParts().target) setPop(guideFold);
 
     // Klick auf eine leere Fläche löst die Auswahl; der Inspektor folgt dann wieder
     // dem Mauszeiger. Lesebereiche (Detailansicht, Guide-Text, Inspektor) und

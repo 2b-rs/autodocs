@@ -6,8 +6,8 @@
  * Snippets ergänzt um den Wortlaut je Release aus dem Pack (static/frozen-pack.js, Felder rv/rt/rk).
  *   Snippet:   „Versionen & Provenienz“ (Zeitachse über die Releases mit Vergleich zweier Fassungen,
  *              VersionsExplorerCore.revisionKit().mountSnippet – derselbe Code wie im Explorer) und
- *              „Zugeordnete Elemente (n)“.
- *   Schaubild: „Zugeordnete Elemente (n)“ (Fassungen und Vergleich zeigt die Seite schon über
+ *              „Zugeordnete Anforderungen (n)“.
+ *   Schaubild: „Zugeordnete Anforderungen (n)“ (Fassungen und Vergleich zeigt die Seite schon über
  *              series-explorer.js).
  * Voraussetzungen auf der Seite: static/versions-explorer-i18n.js, static/versions-explorer.js (nur der Kern;
  * ohne #ve-app startet die Explorer-Oberfläche nicht), static/text-diff.js, static/frozen-pack.js.
@@ -87,7 +87,7 @@
       host.innerHTML = html;
       var rev = host.querySelector(".ev-rev");
       // Zeitachse und Vergleich wie im Explorer-Viewer (geteilter Baukasten C.revisionKit)
-      if (rev && TD && C.revisionKit) C.revisionKit({ t: t, esc: esc, TD: TD, root: ROOT }).mountSnippet(rev, info, { mode: "side" });
+      if (rev && TD && C.revisionKit) C.revisionKit({ t: t, esc: esc, TD: TD, root: ROOT }).mountSnippet(rev, info, { mode: "side", viewer: "snip-page" });
     });
   }
 

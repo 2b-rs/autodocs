@@ -1172,7 +1172,9 @@
         right_drop: t("ep_right_drop"), swap: t("swap"), swap_title: t("swap_title"), base_side: t("base"), target_side: t("target"),
         mode_side: t("mode_side"), mode_unified: t("mode_unified"), mode_raw: t("mode_raw"), identical: t("identical"),
         no_data: t("no_data"), loading: t("td_loading"), stats: t("td_stats"), err: t("err_diff"), same: t("td_same"),
-        single: t("tl_single")
+        single: t("tl_single"), mode_integrated: t("mode_integrated"), int_style: t("int_style"), int_style_a: t("int_style_a"),
+        int_style_b: t("int_style_b"), int_legend_a: t("int_legend_a"), int_legend_b: t("int_legend_b"), int_removed: t("int_removed"),
+        int_replaced: t("int_replaced")
       };
     }
     function spanText(rels) { rels = rels || []; return rels.length > 1 ? rels[0] + " → " + rels[rels.length - 1] : (rels[0] || "–"); }
@@ -1387,7 +1389,7 @@
     function mountElement(container, rec, m) {
       m = m || {};
       return TD.revisions(container, {
-        segments: elementSegments(rec), from: m.from, to: m.to,
+        segments: elementSegments(rec), from: m.from, to: m.to, viewer: m.viewer || "el",
         diff: function (a, b) { return elementDiff(rec, a, b); },
         onChange: m.onChange, onRender: m.onRender
       }, { labels: revLabels(), mode: m.mode || "side", onMode: m.onMode });
@@ -1422,7 +1424,7 @@
                  html: "<pre>" + esc(isDrop(k) ? t("snip_dropped") : textOf(k)) + "</pre>" };
       }
       return TD.revisions(box, {
-        segments: gsegs, from: from, to: to, hint: perRel ? null : t("snip_rev_hint"),
+        segments: gsegs, from: from, to: to, hint: perRel ? null : t("snip_rev_hint"), viewer: m.viewer || "snip",
         emptyText: t("snip_notext"), singleText: !contents.length ? (info.text ? t("snip_rev_single") : t("snip_notext")) : (perRel ? t("tl_single") : t("snip_rev_single")),
         diff: function (a, b) {
           var al = TD.align(isDrop(a) ? [] : linesOf(a), isDrop(b) ? [] : linesOf(b));
@@ -1557,24 +1559,29 @@
       var tab = x[0];
       html += '<section class="ve-panel" id="ve-panel-' + tab + '" role="tabpanel" aria-labelledby="ve-tab-' + tab + '" hidden>' +
         '<div class="ve-toolbar">' +
-        '<div class="ve-search"><span class="ve-search-icon" aria-hidden="true">⌕</span>' +
-        '<input type="search" class="ve-input" autocomplete="off" spellcheck="false" data-role="q" aria-label="' +
-        esc(t("ph_" + tab)) + '" placeholder="' + esc(t("ph_" + tab)) + '"></div>' +
         '<button type="button" class="ve-btn ve-filter-toggle" data-role="ftoggle" aria-expanded="false" aria-controls="ve-facets-' +
-        tab + '">' + esc(t("filters")) + ' <span class="ve-badge" data-role="fbadge"></span></button>' +
-        '<button type="button" class="ve-btn ve-order-toggle" data-role="otoggle" aria-expanded="false" aria-controls="ve-order-' +
-        tab + '"><span aria-hidden="true">⇅</span> ' + esc(t("order")) + ' <span class="ve-badge" data-role="obadge"></span></button>' +
+        tab + '">' + esc(t("filters_search")) + ' <span class="ve-badge" data-role="fbadge"></span></button>' +
         '<button type="button" class="ve-btn ve-reset" data-role="reset">' + esc(t("reset")) + "</button>" +
         '<button type="button" class="ve-btn ve-collapse" data-role="collapse" aria-pressed="false" aria-controls="ve-panel-' + tab + '">' +
         esc(t("cat_hide")) + "</button>" +
         "</div>" +
-        '<div class="ve-orderpanel" id="ve-order-' + tab + '" data-role="opanel" role="group" aria-label="' + esc(t("order")) + '" hidden></div>' +
         '<div class="ve-chiprow" data-role="chips"></div>' +
         '<div class="ve-notice" data-role="notice" hidden></div>' +
         '<div class="ve-md" data-role="md">' +
         '<aside class="ve-facets" id="ve-facets-' + tab + '" data-role="facets" aria-label="' + esc(t("filters")) + '">' +
-        '<div class="ve-facets-head"><strong>' + esc(t("filters")) + '</strong><button type="button" class="ve-btn ve-facets-close" data-role="fclose">' +
-        esc(t("close")) + '</button></div><div class="ve-facets-body" data-role="fbody"></div></aside>' +
+        '<div class="ve-facets-head"><strong>' + esc(t("filters_search")) + '</strong><button type="button" class="ve-btn ve-facets-close" data-role="fclose">' +
+        esc(t("close")) + '</button></div>' +
+        // Suche oben in der Filterleiste, darunter Gruppieren & Sortieren als eingerückte Karte, dann die Facetten
+        '<div class="ve-search"><span class="ve-search-icon" aria-hidden="true">⌕</span>' +
+        '<input type="search" class="ve-input" autocomplete="off" spellcheck="false" data-role="q" aria-label="' +
+        esc(t("ph_" + tab)) + '" placeholder="' + esc(t("ph_" + tab)) + '"></div>' +
+        '<section class="ve-ocard" data-role="ocard">' +
+        '<button type="button" class="ve-ohead" data-role="otoggle" aria-expanded="false" aria-controls="ve-order-' + tab + '" title="' +
+        esc(t("order_hint")) + '"><span class="ve-ocaret" aria-hidden="true">▸</span><span class="ve-otitle">' + esc(t("order")) +
+        '</span><span class="ve-badge" data-role="obadge"></span></button>' +
+        '<div class="ve-obody" id="ve-order-' + tab + '" data-role="opanel" role="group" aria-label="' + esc(t("order")) + '" hidden></div>' +
+        '</section>' +
+        '<div class="ve-facets-body" data-role="fbody"></div></aside>' +
         '<div class="ve-listpane" data-role="listpane"><div class="ve-listhead"><span data-role="count">' +
         esc(t("loading")) + '</span><span class="ve-kbd-hint">' + esc(t("kbd_hint")) + '</span></div>' +
         '<div class="ve-vlist" role="listbox" tabindex="0" data-role="list" aria-label="' + esc(t("list_" + tab)) +
@@ -1827,8 +1834,9 @@
     });
     return changed;
   }
-  function orderOptions(tab, kind, cur, used) {
-    var html = '<option value="">' + esc(t("order_none")) + "</option>";
+  function orderOptions(tab, kind, cur, used, empty) {
+    // Leere Wahl nennt die Aufgabe (im kompakten Modus ohne Beschriftung über dem Feld)
+    var html = '<option value="">' + esc(empty ? empty + " " + t("order_none") : t("order_none")) + "</option>";
     C.ORDER_FIELDS[tab].forEach(function (fd) {
       if (!fd[kind] || (used[fd.f] && fd.f !== cur)) return;
       html += '<option value="' + fd.f + '"' + (fd.f === cur ? " selected" : "") + ">" + esc(t("of_" + fd.f)) + "</option>";
@@ -1840,26 +1848,35 @@
     return '<button type="button" class="ve-btn ve-odir" data-odir="' + kind + '" data-k="' + k + '"' + (o ? "" : " disabled") +
       ' aria-label="' + esc(lbl) + '" title="' + esc(lbl) + '">' + (d < 0 ? "↓" : "↑") + "</button>";
   }
+  // Karte „Gruppieren & Sortieren“ in der Filterleiste: drei Ebenen nebeneinander, je Ebene Gruppieren über
+  // Sortieren; zwischen den Spalten „alle einklappen“ (nach Ebene 1) und „alle ausklappen“ (nach Ebene 2),
+  // ganz rechts „zurücksetzen“. Zu schmal für drei Spalten: je Ebene eine Zeile mit ihrem Knopf daneben
+  // (Containerabfrage im Stil, Spalten bleiben ausgerichtet).
+  function iconButton(act, label, glyph, enabled) {
+    return '<button type="button" class="ve-btn ve-oicon" data-oact="' + act + '"' + (enabled ? "" : " disabled") + ' aria-label="' +
+      esc(label) + '" title="' + esc(label) + '"><span aria-hidden="true">' + glyph + "</span></button>";
+  }
   function renderOrderPanel(tab) {
     var r = ui[tab], sel = state[tab], G = sel.g || [], S = sel.s || [];
-    var rows = Math.min(C.ORDER_MAX, Math.max(G.length, S.length) + 1);
     var usedG = {}, usedS = {};
     G.forEach(function (o) { usedG[o.f] = 1; });
     S.forEach(function (o) { usedS[o.f] = 1; });
-    var html = '<p class="ve-ohint">' + esc(t("order_hint")) + "</p>";
-    for (var k = 0; k < rows; k++) {
-      var g = G[k], so = S[k];
-      html += '<div class="ve-orow"><span class="ve-olvl">' + esc(t("order_level", { n: k + 1 })) + "</span>" +
-        '<label class="ve-osel"><span>' + esc(t("order_group")) + '</span><select data-ogroup="' + k + '">' +
-        orderOptions(tab, "g", g && g.f, usedG) + "</select></label>" + dirButton("g", k, g) +
-        '<label class="ve-osel"><span>' + esc(t("order_sort")) + '</span><select data-osort="' + k + '">' +
-        orderOptions(tab, "s", so && so.f, usedS) + "</select></label>" + dirButton("s", k, so) + "</div>";
-    }
     var grouped = G.length > 0;
-    html += '<div class="ve-oacts"><button type="button" class="ve-btn" data-oact="collapse"' + (grouped ? "" : " disabled") + ">" +
-      esc(t("order_collapse_all")) + '</button><button type="button" class="ve-btn" data-oact="expand"' + (grouped ? "" : " disabled") + ">" +
-      esc(t("order_expand_all")) + '</button><button type="button" class="ve-btn" data-oact="reset"' + (grouped || S.length ? "" : " disabled") +
-      ">" + esc(t("order_reset")) + "</button></div>";
+    var gaps = [iconButton("collapse", t("order_collapse_all"), "⊟", grouped), iconButton("expand", t("order_expand_all"), "⊞", grouped),
+                iconButton("reset", t("order_reset"), "↺", grouped || S.length > 0)];
+    var html = '<p class="ve-ohint">' + esc(t("order_hint")) + '</p><div class="ve-ogrid">';
+    for (var k = 0; k < C.ORDER_MAX; k++) {
+      var g = G[k], so = S[k], lvl = t("order_level", { n: k + 1 });
+      html += '<div class="ve-ocol" data-level="' + k + '"><div class="ve-olvl">' + esc(lvl) + "</div>" +
+        '<div class="ve-osel"><span class="ve-ocap">' + esc(t("order_group")) + '</span><span class="ve-oline"><select data-ogroup="' + k +
+        '" aria-label="' + esc(lvl + " · " + t("order_group")) + '">' + orderOptions(tab, "g", g && g.f, usedG, t("order_group")) +
+        "</select>" + dirButton("g", k, g) + "</span></div>" +
+        '<div class="ve-osel"><span class="ve-ocap">' + esc(t("order_sort")) + '</span><span class="ve-oline"><select data-osort="' + k +
+        '" aria-label="' + esc(lvl + " · " + t("order_sort")) + '">' + orderOptions(tab, "s", so && so.f, usedS, t("order_sort")) +
+        "</select>" + dirButton("s", k, so) + "</span></div></div>" +
+        '<div class="ve-ogap" data-gap="' + k + '">' + gaps[k] + "</div>";
+    }
+    html += "</div>";
     r.opanel.innerHTML = html;
     var n = G.length + S.length;
     r.obadge.textContent = n ? String(n) : "";
@@ -1868,6 +1885,7 @@
     var r = ui[tab];
     r.opanel.hidden = !open;
     r.otoggle.setAttribute("aria-expanded", open ? "true" : "false");
+    r.ocard.classList.toggle("is-open", open);
     if (open) renderOrderPanel(tab);
     layout();
   }
@@ -2040,7 +2058,7 @@
     r.panel.classList.toggle("facets-open", open);
     r.ftoggle.setAttribute("aria-expanded", open ? "true" : "false");
     if (open) {
-      var first = r.fbody.querySelector("button, input, select");
+      var first = r.facets.querySelector("input[data-role=q]") || r.fbody.querySelector("button, input, select");
       if (first && !wideMQ.matches) first.focus();
     }
   }
@@ -3176,7 +3194,8 @@
   }
 
   // Fassungen einer Bildreihe als Revisions-Zeitachse (Vorschaubild je Fassung) mit wortgenauem Vergleich der
-  // KI-Beschreibungen (versions/explorer/series/<Reihe>.json, je Reihe bei Bedarf geladen) und „Delta laut KI“.
+  // KI-Beschreibungen (versions/explorer/series/<Reihe>.json, je Reihe bei Bedarf geladen). „Delta laut KI“ steht
+  // als Tooltip am Änderungsklassen-Chip und gesammelt in der Ansicht „KI-Deltas“, nicht neben dem Vergleich.
   // Standard: beschriebene Fassung gegen ihre Vorgängerin.
   var FR = { ctl: null }, SR = { ctl: null };
   function resetCompare(tab) {
@@ -3188,7 +3207,8 @@
     L.identical = t("td_identical"); L.base = t("td_base"); L.new_version = t("td_new"); L.current = t("td_current");
     L.delta = t("td_delta"); L.delta_none = t("td_delta_none"); L.delta_note = t("td_delta_note"); L.nodesc = t("td_nodesc");
     L.nodiff = t("td_nodiff"); L.open_page = t("page_fig"); L.summary = t("ai_short"); L.raw_head = t("td_raw_head");
-    L.model = t("td_model");
+    L.model = t("td_model"); L.mode_deltas = t("td_mode_deltas"); L.deltas_run = t("td_deltas_run");
+    L.deltas_each = t("td_deltas_each"); L.deltas_intro = t("td_deltas_intro"); L.deltas_empty = t("td_deltas_empty");
     L.change = { normativ: t("td_ch_normativ"), redaktionell: t("td_ch_redaktionell"), keine: t("td_ch_keine"), offen: t("td_ch_offen") };
     return L;
   }
@@ -3401,7 +3421,10 @@
     try { window.history.replaceState(window.history.state, "", window.location.pathname + C.serializeState(state) + window.location.hash); }
     catch (e) { /* ignore */ }
   }
-  ["el", "fig", "snip"].forEach(function (tab) { renderOrderPanel(tab); });
+  ["el", "fig", "snip"].forEach(function (tab) {
+    renderOrderPanel(tab);
+    if (C.orderActive(state, tab)) setOrderOpen(tab, true);
+  });
   // Katalog (Liste) und Filterliste starten in allen drei Reitern sichtbar, auch bei einem Deep-Link.
   ["el", "fig", "snip"].forEach(function (tab) {
     if (C.catalogCollapsedOnLoad(tab, state)) setCollapsed(tab, true);
