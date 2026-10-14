@@ -1,9 +1,10 @@
 /*
  * versions-explorer.js — Versions- & Provenienz-Explorer (<lang>/versions.html)
  *
- * Elemente, Schaubilder und Snippets als Master-Detail-Ansicht mit kombinierbaren
- * Facetten. Daten: versions/explorer/{elements,figures,snippets}.json und
- * versions/explorer/items/<id>.json (export_explorer.py), Versionsdaten aus
+ * Elemente, Schaubilder, Snippets und Fragen & Diskussionen als Master-Detail-Ansicht mit
+ * kombinierbaren Facetten. Daten: versions/explorer/{elements,figures,snippets}.json und
+ * versions/explorer/items/<id>.json (export_explorer.py), versions/explorer/questions.json und
+ * versions/explorer/questions/<Q-…>.json (export_questions.py, Fragen-Speicher), Versionsdaten aus
  * versions/data/<id>.json. Fehlt der Explorer-Index, dient versions/catalog.json
  * als Rückfall (nur Suche und Grundfilter).
  *
@@ -44,16 +45,20 @@
     fig: [["q", "fq"], ["plat", "fplat", 1], ["mod", "fmod", 1], ["doc", "fdoc"], ["multi", "fmulti"],
           ["role", "frole", 1], ["id", "fid"]],
     snip: [["q", "sq"], ["plat", "splat", 1], ["mod", "smod", 1], ["doc", "sdoc"], ["role", "srole", 1],
-           ["id", "sid"]]
+           ["id", "sid"]],
+    // Fragen & Diskussionen (Fragen-Speicher): Art, Status, Plattform, Modul, Gegenstand (qsub, z. B.
+    // element:adaptive:SWS_CM_00093). Deep-Link versions.html?tab=q&id=Q-… (id gehört dann der Frage).
+    q: [["q", "qq"], ["kind", "qkind", 1], ["st", "qst", 1], ["plat", "qplat", 1], ["mod", "qmod", 1],
+        ["sub", "qsub", 1], ["id", "qid"]]
   };
-  var TABS = ["el", "fig", "snip"];
+  var TABS = ["el", "fig", "snip", "q"];
   var VIEWS = ["ver", "fig", "snip", "cit"];
   var UNIVERSES = ["CP", "AP", "FO", "other"];
 
   function emptyState() {
     // from/to: Vergleich im Element-Viewer (Releases); ffrom/fto bzw. sfrom/sto: Schaubild-Reihe (Fassungen)
     // bzw. Snippet (Releases). Sie gehören zur Auswahl, nicht zu den Filtern (zählen nicht in activeCount).
-    var s = { tab: "el", id: "", view: "ver", from: "", to: "", ffrom: "", fto: "", sfrom: "", sto: "", el: {}, fig: {}, snip: {} };
+    var s = { tab: "el", id: "", view: "ver", from: "", to: "", ffrom: "", fto: "", sfrom: "", sto: "", el: {}, fig: {}, snip: {}, q: {} };
     TABS.forEach(function (t) {
       PARAMS[t].forEach(function (p) { s[t][p[0]] = p[2] ? [] : ""; });
       s[t].g = []; s[t].s = [];   // Gruppierung/Sortierung (Ebenen), kein Filter
@@ -82,6 +87,8 @@
       s[t].g = parseOrderList(t, u.get(ORDER_PARAMS[t][0]), "g");
       s[t].s = parseOrderList(t, u.get(ORDER_PARAMS[t][1]), "s");
     });
+    // Deep-Link einer Frage: versions.html?tab=q&id=Q-… (die Diskussionsverweise der Guides)
+    if (s.tab === "q" && !s.q.id && /^Q-[0-9a-f]{16}$/.test(s.id)) { s.q.id = s.id; s.id = ""; }
     return s;
   }
 
@@ -97,12 +104,14 @@
       if (s[t].g && s[t].g.length) u.set(ORDER_PARAMS[t][0], orderListText(s[t].g));
       if (s[t].s && s[t].s.length) u.set(ORDER_PARAMS[t][1], orderListText(s[t].s));
     });
+    // Frage im eigenen Reiter: kanonisch als id (versions.html?tab=q&id=Q-…), solange kein Element offen ist
+    if (s.tab === "q" && s.q.id && !s.id) { u.delete("qid"); u.set("id", s.q.id); }
     if (s.id) u.set("id", s.id);
     if (s.id && s.view && s.view !== "ver") u.set("view", s.view);
     if (s.id && s.from && s.to) { u.set("from", s.from); u.set("to", s.to); }
     if (s.fig.id && s.ffrom && s.fto) { u.set("ffrom", s.ffrom); u.set("fto", s.fto); }
     if (s.snip.id && s.sfrom && s.sto) { u.set("sfrom", s.sfrom); u.set("sto", s.sto); }
-    var out = u.toString().replace(/%2C/g, ",");
+    var out = u.toString().replace(/%2C/g, ",").replace(/%3A/g, ":");
     return out ? "?" + out : "";
   }
 
@@ -409,13 +418,54 @@
     return facetFilter(it.n, itemGroups(it, kind), sel, String(sel.q || "").trim() ? textMatcher(haystack(it), sel.q) : null);
   }
 
+  // ------------------------------------------------------------------ Fragen & Diskussionen
+
+  // Index der Fragen (export_questions.py, versions-explorer-questions@1): Wörterbücher für Art, Status, Plattform,
+  // Modul, Ausgang und Gegenstände; Suchtext = Kennung, Frage und "x" (Annahme, Begründung, englische Form,
+  // Verlauf, Gegenstände).
+  function decodeQuestions(raw) {
+    var c = raw.cols, n = c.id.length;
+    var D = { n: n, ids: c.id, title: c.title, kind: c.kind, st: c.st, plat: c.plat, modBits: c.mod, sub: c.sub,
+              oc: c.oc, na: c.na, ne: c.ne || [], at: c.at || [], x: c.x || [], asr: c.asr || [], byId: new Map(),
+              hay: null, counts: raw.counts || null, names: {},
+              dict: { kind: raw.kinds || [], st: raw.statuses || [], plat: raw.platforms || [], mod: raw.modules || [],
+                      modUni: raw.module_universe || [], oc: raw.outcomes || [], sub: raw.subjects || [] } };
+    for (var i = 0; i < n; i++) D.byId.set(c.id[i], i);
+    D.mkHay = function () {
+      var h = new Array(n);
+      for (var k = 0; k < n; k++) h[k] = (c.id[k] + " " + (c.title[k] || "") + " " + ((c.x && c.x[k]) || "")).toLowerCase();
+      return h;
+    };
+    return D;
+  }
+
+  function questionGroups(D) {
+    return [
+      { key: "kind", type: "one", get: function (i) { return D.kind[i]; }, values: D.dict.kind },
+      { key: "st", type: "one", get: function (i) { return D.st[i]; }, values: D.dict.st },
+      { key: "plat", type: "one", get: function (i) { return D.plat[i]; }, values: D.dict.plat },
+      { key: "mod", type: "many", get: function (i) { return D.modBits[i] || []; }, values: D.dict.mod },
+      { key: "sub", type: "many", get: function (i) { return D.sub[i] || []; }, values: D.dict.sub }
+    ];
+  }
+
+  function filterQuestions(D, sel) {
+    return facetFilter(D.n, questionGroups(D), sel, String(sel.q || "").trim() ? textMatcher(haystack(D), sel.q) : null);
+  }
+
+  // Gegenstand einer Frage (subject_key "art:plattform:name") -> {type, platform, name}
+  function parseSubject(key) {
+    var m = /^([a-z]+):([a-z]*):(.+)$/.exec(String(key || ""));
+    return m ? { type: m[1], platform: m[2], name: m[3] } : { type: "", platform: "", name: String(key || "") };
+  }
+
   // ------------------------------------------------------------------ Gruppieren & Sortieren
   // Bis zu ORDER_MAX Ebenen je Reiter, jede ein Paar aus Gruppierung (Feld, Richtung) und Sortierung (Feld,
   // Richtung). Gruppen schachteln sich in Ebenenfolge (Ebene 1 außen); innerhalb der innersten Gruppe gilt die
   // Sortierung in Ebenenfolge, danach die Indexreihenfolge (Kennung). Beides wirkt auf die gefilterte Trefferliste.
   // URL: el g/s, fig fg/fs, snip sg/ss; Felder kommagetrennt, „-“ vorn = absteigend (z. B. g=mod,-kind&s=id).
   var ORDER_MAX = 3;
-  var ORDER_PARAMS = { el: ["g", "s"], fig: ["fg", "fs"], snip: ["sg", "ss"] };
+  var ORDER_PARAMS = { el: ["g", "s"], fig: ["fg", "fs"], snip: ["sg", "ss"], q: ["qg", "qs"] };
   var STATUS_PRIO = [4, 1, 2, 8];          // primärer Status: entfallen vor neu vor geändert vor unverändert
   var STATUS_RANK = { 1: 0, 2: 1, 4: 2, 8: 3 };
   var MISSING = -1;                        // fehlender Wert: Gruppe „ohne Angabe“, beim Sortieren immer zuletzt
@@ -527,6 +577,26 @@
       { f: "last", g: 1, s: 1, keys: function (D) { var e = relsetEnds(D); return codeKeys(D.relCode, e.last); },
         label: function (D, k) { return relsetEnds(D).rels[k]; } },
       { f: "page", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.page[i] || -1; }); } },
+      { f: "title", s: 1, keys: function (D) { return lowerRank(D.title); } },
+      { f: "id", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return i; }); } }
+    ],
+    q: [
+      { f: "qst", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.st[i]; }); },
+        label: function (D, k, tr) { return tr.t("qs_" + D.dict.st[k]); } },
+      { f: "qkind", g: 1, s: 1, keys: function (D) { return codeKeys(D.kind, dictRank(D.dict.kind)); },
+        label: function (D, k, tr) { return tr.t("qk_" + D.dict.kind[rankCode(D, "kind", k)]); } },
+      { f: "plat", g: 1, s: 1, keys: function (D) { return codeKeys(D.plat, dictRank(D.dict.plat)); },
+        label: function (D, k, tr) { return tr.plat(D.dict.plat[rankCode(D, "plat", k)]); } },
+      { f: "mod", g: 1, s: 1, keys: itemModKeys, label: itemModLabel },
+      { f: "qsub", g: 1, s: 1, keys: function (D) {
+          var r = dictRank(D.dict.sub), many = D.dict.sub.length;
+          return numKeys(D.n, function (i) { var ss = D.sub[i] || []; return !ss.length ? MISSING : ss.length > 1 ? many : r[ss[0]]; });
+        }, label: function (D, k, tr) { return k === D.dict.sub.length ? tr.t("grp_multi_sub") : tr.sub(D.dict.sub[rankCode(D, "sub", k)]); } },
+      { f: "qoc", g: 1, s: 1, keys: function (D) { return codeKeys(D.oc, dictRank(D.dict.oc)); },
+        label: function (D, k, tr) { return tr.t("qo_" + D.dict.oc[rankCode(D, "oc", k)]); } },
+      { f: "qna", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.na[i]; }); },
+        label: function (D, k, tr) { return tr.t("q_anchors_n", { n: k }); } },
+      { f: "qat", s: 1, keys: function (D) { return lowerRank(D.at); } },
       { f: "title", s: 1, keys: function (D) { return lowerRank(D.title); } },
       { f: "id", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return i; }); } }
     ]
@@ -1451,6 +1521,8 @@
     serializeState: serializeState, activeCount: activeCount, decodeElements: decodeElements,
     decodeCatalog: decodeCatalog, elementGroups: elementGroups, facetFilter: facetFilter,
     filterElements: filterElements, decodeItems: decodeItems, filterItems: filterItems, haystack: haystack,
+    decodeQuestions: decodeQuestions, questionGroups: questionGroups, filterQuestions: filterQuestions,
+    parseSubject: parseSubject, TABS: TABS,
     itemsNeedElements: itemsNeedElements,
     ORDER_MAX: ORDER_MAX, ORDER_FIELDS: ORDER_FIELDS, ORDER_PARAMS: ORDER_PARAMS, orderField: orderField,
     parseOrderList: parseOrderList, orderListText: orderListText, orderActive: orderActive, orderRows: orderRows,
@@ -1516,19 +1588,33 @@
   var wideMQ = window.matchMedia ? window.matchMedia("(min-width: 1180px)") : { matches: true };
 
   var state = C.parseState(window.location.search);
-  var data = { el: null, fig: null, snip: null, res: { el: null, fig: null, snip: null }, pdfCat: undefined };
+  var TABS = C.TABS;
+  var data = { el: null, fig: null, snip: null, q: null, res: { el: null, fig: null, snip: null, q: null }, pdfCat: undefined };
   // Kopf je Index (<name>.head.json): erste Zeilen und Facettenzähler, solange der volle Index lädt
-  var heads = { el: null, fig: null, snip: null };
+  var heads = { el: null, fig: null, snip: null, q: null };
   // Was die Liste gerade zeigt: voller Index, sonst sein Kopf
   function view(tab) { return data[tab] || heads[tab]; }
   var ui = {};
-  var ROW_H = { el: 58, fig: 62, snip: 62 };
+  var ROW_H = { el: 58, fig: 62, snip: 62, q: 62 };
   var PAGE = { fig: 24, snip: 30 };
 
   // ------------------------------------------------------------------ Gerüst
   function kindLabel(k) { return t("k_" + String(k).replace(/ /g, "_")); }
   function platLabel(p) { return t("plat_" + p); }
+  // Gegenstand einer Frage für Chips und Gruppenköpfe: Kennung bzw. „Modul com“, „Cluster can“ …
+  function subjectLabel(key) {
+    var sj = C.parseSubject(key);
+    if (sj.type === "element" || !sj.type) return sj.name;
+    return t("qsub_" + sj.type, { name: sj.name });
+  }
   function valueLabel(tab, key, v) {
+    if (tab === "q") {
+      if (key === "kind") return t("qk_" + v);
+      if (key === "st") return t("qs_" + v);
+      if (key === "plat") return platLabel(v);
+      if (key === "sub") return subjectLabel(v);
+      return v;
+    }
     if (key === "kind") return kindLabel(v);
     if (key === "plat") return platLabel(v);
     if (key === "st") return t("st_" + v);
@@ -1541,13 +1627,14 @@
     if (key === "chg") return t("rel_chg") + " " + v;
     return v;
   }
-  function facetTitle(key) {
+  function facetTitle(key, tab) {
+    if (tab === "q" && ({ kind: 1, st: 1, sub: 1 })[key]) return t({ kind: "f_qkind", st: "f_qstatus", sub: "f_qsub" }[key]);
     return t({ kind: "f_kind", plat: "f_plat", st: "f_status", has: "f_has", doc: "f_doc", mod: "f_mod",
                cl: "f_cl", first: "f_rel", last: "f_rel", chg: "f_rel", role: "f_role", multi: "f_has" }[key] || key);
   }
 
   function build() {
-    var tabs = [["el", t("tab_el")], ["fig", t("tab_fig")], ["snip", t("tab_snip")]];
+    var tabs = [["el", t("tab_el")], ["fig", t("tab_fig")], ["snip", t("tab_snip")], ["q", t("tab_q")]];
     var html = '<div class="ve-tabs" role="tablist" aria-label="' + esc(t("tabs_label")) + '">';
     tabs.forEach(function (x) {
       html += '<button type="button" role="tab" class="ve-tab" id="ve-tab-' + x[0] + '" data-tab="' + x[0] +
@@ -1614,10 +1701,10 @@
     app.querySelectorAll(".ve-tab").forEach(function (b) {
       b.addEventListener("click", function () { switchTab(b.getAttribute("data-tab"), true); });
       b.addEventListener("keydown", function (e) {
-        var order = ["el", "fig", "snip"], k = order.indexOf(b.getAttribute("data-tab"));
+        var order = TABS, k = order.indexOf(b.getAttribute("data-tab"));
         if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
           e.preventDefault();
-          var n = order[(k + (e.key === "ArrowRight" ? 1 : 2)) % 3];
+          var n = order[(k + (e.key === "ArrowRight" ? 1 : order.length - 1)) % order.length];
           switchTab(n, true);
           document.getElementById("ve-tab-" + n).focus();
         }
@@ -1752,7 +1839,8 @@
   };
 
   // ------------------------------------------------------------------ Gruppen in der Liste
-  var TR = { t: t, kind: function (k) { return kindLabel(k); }, plat: function (p) { return platLabel(p); } };
+  var TR = { t: t, kind: function (k) { return kindLabel(k); }, plat: function (p) { return platLabel(p); },
+             sub: function (x) { return subjectLabel(x); } };
   function groupOf(tab, entry) {
     var o = ui[tab].ordered;
     return o ? o.groups[-entry - 1] : null;
@@ -1825,7 +1913,7 @@
   // Ohne Angabe in der URL gilt die gespeicherte Wahl dieses Browsers
   function restoreOrder() {
     var u = new URLSearchParams(window.location.search), stored = loadStoredOrder(), changed = false;
-    ["el", "fig", "snip"].forEach(function (tab) {
+    TABS.forEach(function (tab) {
       var P = C.ORDER_PARAMS[tab], st = stored[tab];
       if (u.has(P[0]) || u.has(P[1]) || !st) return;
       state[tab].g = C.parseOrderList(tab, st.g, "g");
@@ -1958,12 +2046,30 @@
         '<div class="ve-row-meta">' + meta.join('<span aria-hidden="true">·</span>') + "</div>";
     }
     var D = view(tab);
+    if (tab === "q") return questionRowHtml(D, i);
     var title = D.title[i] || D.ids[i];
     var sub = [esc(D.docOf(i)), D.page[i] ? esc(t("page_n", { p: D.page[i] })) : "",
                esc(t("n_elements", { n: D.nt[i] }))];
     if (tab === "fig" && D.nser[i] > 1) sub.push(esc(t("series_n", { n: D.nser[i] })));
     return '<div class="ve-row-top"><span class="ve-row-title">' + esc(title) + '</span></div>' +
       '<div class="ve-row-meta">' + sub.filter(Boolean).join('<span aria-hidden="true">·</span>') + "</div>";
+  }
+
+  function questionRowHtml(D, i) {
+    var st = D.dict.st[D.st[i]] || "", kind = D.dict.kind[D.kind[i]] || "";
+    var subs = (D.sub[i] || []).map(function (c) { return D.dict.sub[c]; });
+    var meta = [];
+    if (subs.length) meta.push('<span class="ve-row-name">' + esc(subjectLabel(subs[0])) + "</span>" +
+      (subs.length > 1 ? " " + esc(t("q_more_n", { n: subs.length - 1 })) : ""));
+    var mods = (D.modBits[i] || []).map(function (c) { return D.dict.mod[c]; });
+    if (mods.length) meta.push(esc(mods.join(", ")));
+    if (D.oc[i] >= 0) meta.push(esc(t("qo_" + D.dict.oc[D.oc[i]])));
+    if (D.ne[i]) meta.push('<span title="' + esc(t("q_events")) + '">💬 ' + num(D.ne[i]) + "</span>");
+    if (D.at[i]) meta.push(esc(D.at[i]));
+    return '<div class="ve-row-top"><span class="ve-row-title">' + esc(D.title[i] || D.ids[i]) + '</span><span class="ve-row-badges">' +
+      '<span class="ve-mini ve-qk ve-qk-' + esc(kind) + '">' + esc(t("qk_" + kind)) + "</span>" +
+      '<span class="ve-mini ve-qst ve-qst-' + esc(st) + '">' + esc(t("qs_" + st)) + "</span></span></div>" +
+      '<div class="ve-row-meta">' + meta.join('<span aria-hidden="true">·</span>') + "</div>";
   }
 
   // ------------------------------------------------------------------ Panel-Verdrahtung
@@ -2104,19 +2210,19 @@
   });
 
   function applyState() {
-    ["el", "fig", "snip"].forEach(function (tab) {
+    TABS.forEach(function (tab) {
       if (ui[tab].q.value !== state[tab].q) ui[tab].q.value = state[tab].q || "";
       renderOrderPanel(tab);
     });
     switchTab(state.tab, false);
-    ["el", "fig", "snip"].forEach(function (tab) { if (data[tab]) refresh(tab); });
+    TABS.forEach(function (tab) { if (data[tab]) refresh(tab); });
     syncViewer(state.tab);
   }
 
   function selectedKey(tab) { return tab === "el" ? state.id : state[tab].id; }
 
   function switchTab(tab, push) {
-    if (["el", "fig", "snip"].indexOf(tab) < 0) tab = "el";
+    if (TABS.indexOf(tab) < 0) tab = "el";
     var changed = state.tab !== tab;
     state.tab = tab;
     app.querySelectorAll(".ve-tab").forEach(function (b) {
@@ -2125,7 +2231,7 @@
       b.tabIndex = on ? 0 : -1;
       b.classList.toggle("is-active", on);
     });
-    ["el", "fig", "snip"].forEach(function (x) { ui[x].panel.hidden = x !== tab; });
+    TABS.forEach(function (x) { ui[x].panel.hidden = x !== tab; });
     if (push && changed) commit(true);
     return ensureLoaded(tab).then(function () {
       refresh(tab);
@@ -2164,7 +2270,7 @@
   function fetchJson(url, signal) {
     return C.loadJson(function (u, o) { return fetch(u, o); }, url, { signal: signal });
   }
-  var ctrl = { el: null, fig: null, snip: null };
+  var ctrl = { el: null, fig: null, snip: null, q: null };
   function newSignal(tab) {
     if (ctrl[tab]) { try { ctrl[tab].abort(); } catch (e) { /* ignore */ } }
     ctrl[tab] = typeof AbortController === "function" ? new AbortController() : null;
@@ -2178,8 +2284,8 @@
     pageHidden = false;
     if (!e.persisted) return;
     // Index beim Verlassen abgebrochen (Liste leer, Zähler ohne Fehler): Bereich neu laden
-    if (!data[state.tab] || (state.tab !== "el" && !data.el)) { switchTab(state.tab, false); return; }
-    ["el", "fig", "snip"].forEach(function (tab) {
+    if (!data[state.tab] || (state.tab !== "el" && state.tab !== "q" && !data.el)) { switchTab(state.tab, false); return; }
+    TABS.forEach(function (tab) {
       var key = selectedKey(tab);
       if (!key || (tab !== "el" && !data[tab])) return;
       var done = tab === "el" ? shown.el === key + "|" + state.view : shown[tab] === key;
@@ -2260,7 +2366,7 @@
   var headLoading = {};
   function loadHead(tab) {
     if (headLoading[tab] || heads[tab] || data[tab] || !headUsable(tab)) return;
-    var name = { el: "elements", fig: "figures", snip: "snippets" }[tab];
+    var name = { el: "elements", fig: "figures", snip: "snippets", q: "questions" }[tab];
     var url = ROOT + "versions/explorer/" + name + ".head.json";
     var boot = takeBoot(url);
     headLoading[tab] = (boot || fetch(url).then(function (r) {
@@ -2270,7 +2376,7 @@
       if (data[tab] || !headUsable(tab)) return;
       var raw = typeof body === "string" ? JSON.parse(body) : body;
       if (!raw || !raw.head || !raw.cols) return;
-      var D = tab === "el" ? C.decodeElements(raw) : C.decodeItems(raw, null);
+      var D = tab === "el" ? C.decodeElements(raw) : tab === "q" ? C.decodeQuestions(raw) : C.decodeItems(raw, null);
       D.head = raw.head;
       heads[tab] = D;
       updateTabCounts();
@@ -2319,6 +2425,21 @@
         });
       return loading.el;
     }
+    if (tab === "q") {
+      // Fragen & Diskussionen: eigener Index, unabhängig von elements.json
+      loading.q = loadIndex("q", ROOT + "versions/explorer/questions.json")
+        .then(function (raw) {
+          data.q = decodeTimed("q", function () { return C.decodeQuestions(raw); });
+          heads.q = null;
+          updateTabCounts();
+        }).catch(function () {
+          data.q = null;
+          ui.q.count.textContent = t("q_missing");
+          showNotice("q", t("q_missing"));
+          loading.q = null;
+        });
+      return loading.q;
+    }
     // Eigener Index zuerst, nie hinter elements.json; nur ein v1-Index wartet danach auf den Elementindex
     loading[tab] = loadIndex(tab, ROOT + "versions/explorer/" + (tab === "fig" ? "figures" : "snippets") + ".json")
       .then(function (raw) {
@@ -2346,12 +2467,13 @@
   function updateTabCounts() {
     // Zähler aus dem ersten geladenen Index (alle drei tragen "counts"), sonst je Reiter sein eigener Umfang
     var c = {};
-    ["el", "snip", "fig"].forEach(function (x) {
+    ["el", "snip", "fig", "q"].forEach(function (x) {
       var D = view(x);
       if (D && D.counts) Object.keys(D.counts).forEach(function (k) { if (c[k] == null) c[k] = D.counts[k]; });
     });
     function size(x, fallback) { return data[x] ? data[x].n : (heads[x] ? heads[x].head.n : fallback); }
-    var vals = { el: size("el", c.elements), fig: size("fig", c.figures), snip: size("snip", c.snippets) };
+    var vals = { el: size("el", c.elements), fig: size("fig", c.figures), snip: size("snip", c.snippets),
+                 q: size("q", c.questions) };
     app.querySelectorAll("[data-count]").forEach(function (s) {
       var v = vals[s.getAttribute("data-count")];
       s.textContent = v != null ? num(v) : "";
@@ -2401,7 +2523,7 @@
     r.listShown = true;
     mark("ve:" + tab + ":list0");
     var sel = state[tab];
-    var res = tab === "el" ? C.filterElements(D, sel) : C.filterItems(D, tab, sel);
+    var res = tab === "el" ? C.filterElements(D, sel) : tab === "q" ? C.filterQuestions(D, sel) : C.filterItems(D, tab, sel);
     var list = res.matches;
     // Die Liste enthält nur Treffer. Passt das geöffnete Element nicht (mehr) zu den Filtern,
     // bleibt der Viewer offen und sagt das (targetId wird nie als Listenzeile eingeschoben).
@@ -2584,6 +2706,19 @@
       html += group(t("f_rel"), releaseSelect(tab, "first", t("rel_first"), c.first) +
         releaseSelect(tab, "last", t("rel_last"), c.last) +
         (D.full ? releaseSelect(tab, "chg", t("rel_chg"), c.chg) : ""), "ve-fgroup-rel");
+    } else if (tab === "q") {
+      html += group(t("f_qstatus"), facetChips(tab, "st", D.dict.st, c.st, { hideEmpty: true }));
+      html += group(t("f_qkind"), facetChips(tab, "kind", D.dict.kind, c.kind, { hideEmpty: true }));
+      html += group(t("f_plat"), facetChips(tab, "plat", D.dict.plat, c.plat, { hideEmpty: true }));
+      // Gegenstand (qsub): nur gewählte, z. B. aus dem Link „Offene Fragen (n)“ einer Element- oder Modulseite
+      var subSel = state.q.sub || [];
+      if (subSel.length) {
+        html += group(t("f_qsub"), subSel.map(function (v) {
+          var k = D.dict.sub.indexOf(v);
+          return chipButton("sub", v, subjectLabel(v), k >= 0 ? (c.sub || {})[k] || 0 : 0, true);
+        }).join(""));
+      }
+      if (D.dict.mod.length) html += modGroup(tab, D.dict.mod, c.mod);
     } else {
       html += group(t("f_plat"), facetChips(tab, "plat", D.dict.plat, c.plat, { hideEmpty: true }));
       html += group(t("f_role"), facetChips(tab, "role", D.dict.role, c.role));
@@ -2612,7 +2747,7 @@
       var v = sel[key];
       (Array.isArray(v) ? v : (v ? [v] : [])).forEach(function (val) {
         html += '<button type="button" class="ve-chip-on" data-chip="' + key + '" data-val="' + esc(val) + '" title="' +
-          esc(t("remove_filter")) + '"><span class="ve-chip-k">' + esc(facetTitle(key)) + ":</span> " +
+          esc(t("remove_filter")) + '"><span class="ve-chip-k">' + esc(facetTitle(key, tab)) + ":</span> " +
           esc(valueLabel(tab, key, val)) + ' <span aria-hidden="true">✕</span></button>';
       });
     });
@@ -2662,7 +2797,7 @@
     syncViewer(tab);
   }
 
-  var listScroll = { el: 0, fig: 0, snip: 0 };
+  var listScroll = { el: 0, fig: 0, snip: 0, q: 0 };
   function setDetailMode(tab, on) {
     var r = ui[tab];
     var was = r.panel.classList.contains("is-detail");
@@ -2679,8 +2814,8 @@
     }
   }
 
-  var shown = { el: null, fig: null, snip: null };
-  var token = { el: 0, fig: 0, snip: 0 };
+  var shown = { el: null, fig: null, snip: null, q: null };
+  var token = { el: 0, fig: 0, snip: 0, q: 0 };
 
   function syncViewer(tab, userAction) {
     var key = selectedKey(tab);
@@ -2698,6 +2833,7 @@
     if (tab !== "el" && shown[tab] === key) return;
     if (!view(tab) && tab !== "el") return;
     if (tab === "el") loadElement(key, userAction);
+    else if (tab === "q") loadQuestion(key, userAction);
     else loadItem(tab, key, userAction);
     if (userAction && narrowMQ.matches) {
       r.back.focus({ preventScroll: true });
@@ -3385,6 +3521,163 @@
     return h;
   }
 
+  // ------------------------------------------------------------------ Fragen-Viewer
+  // Detail je Frage (versions/explorer/questions/<Q-…>.json, export_questions.py): Wortlaut in der Quellsprache,
+  // englische Normalform als Zweitzeile, Art, Status, Ausgang, Anker mit Seiten-Links (Release bleibt), Verlauf aus
+  // Erzeugung (Lauf, Prompt-Hash), abgeleiteten Ereignissen (Aufräumen) und Live-Ereignissen (Issues, Diskussionen).
+  function loadQuestion(id, userAction) {
+    var r = ui.q;
+    var my = ++token.q;
+    var signal = newSignal("q");
+    shown.q = null;
+    r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
+    if (!/^Q-[0-9a-f]{16}$/.test(id)) { r.vbody.innerHTML = errorHtml(new Error(t("not_found", { id: id }))); return; }
+    fetchJson(ROOT + "versions/explorer/questions/" + encodeURIComponent(id) + ".json", signal).then(function (info) {
+      if (my !== token.q) return;
+      if (!info || !info.ok) throw new Error(t("not_found", { id: id }));
+      shown.q = id;
+      r.vbody.innerHTML = questionHtml(info);
+      r.vbody.parentNode.scrollTop = 0;
+      if (userAction && !narrowMQ.matches) r.list.focus({ preventScroll: true });
+    }).catch(function (err) {
+      if (my !== token.q || C.isAbortError(err) || pageHidden) return;
+      shown.q = null;
+      r.vbody.innerHTML = err && err.status === 404 ? '<div class="ve-error" role="alert"><p>' + esc(t("not_found", { id: id })) + "</p></div>"
+        : errorHtml(err);
+    });
+  }
+
+  function shortHash(h) { return String(h || "").slice(0, 12); }
+  function srcLink(src) {
+    if (!src || !src.url || !/^https:\/\//.test(src.url)) return src && src.type ? esc(t("qsrc_" + src.type)) : "";
+    var m = /github\.com\/[^/]+\/[^/]+\/(issues|discussions|pull)\/(\d+)/.exec(src.url);
+    var label = m ? (m[1] === "discussions" ? t("q_discussion_n", { n: m[2] }) : t("q_issue_n", { n: m[2] })) : t("qsrc_" + (src.type || "manual"));
+    return '<a href="' + esc(src.url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + "</a>";
+  }
+  function evidenceLinks(list) {
+    list = (list || []).filter(function (e) { return e && /^https:\/\//.test(e.url || ""); });
+    if (!list.length) return "";
+    return '<ul class="ve-q-evidence">' + list.map(function (e) {
+      return '<li><a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer">' + esc(e.label || e.url) + "</a></li>";
+    }).join("") + "</ul>";
+  }
+  function historyHtml(info) {
+    var hist = info.history || [];
+    if (!hist.length) return '<p class="ve-muted">' + esc(t("q_hist_none")) + "</p>";
+    return '<ol class="ve-q-hist">' + hist.map(function (h) {
+      var by = h.by || {}, op = h.op || "", body = [];
+      if (op === "generated") {
+        body.push(esc(t("qh_generated_text", { model: by.name || "–", run: by.run ? String(by.run).slice(0, 8) : "–" })));
+        body.push('<span class="ve-muted">' + esc(t("q_prompt")) + " <code>" + esc(shortHash(h.prompt_hash)) + "</code>" +
+          (h.recipe ? " · " + esc(h.recipe) : "") + "</span>");
+      } else if (h.origin === "derived") {
+        if (op === "resolve") {
+          body.push(esc(t("qh_unused_text")));
+          (h.last_seen || []).forEach(function (ls, k) {
+            var rb = (h.replaced_by || [])[k] || {};
+            body.push('<span class="ve-muted">' + esc(t("qh_unused_prompts", { from: shortHash(ls.prompt_hash) || "–",
+              to: rb.prompt_hash ? shortHash(rb.prompt_hash) : t("qh_fragment_gone") })) + "</span>");
+          });
+        } else if (op === "reappear") body.push(esc(t("qh_reappear_text")));
+        if (h.harvest) body.push('<span class="ve-muted">' + esc(t("qh_harvest", { id: h.harvest })) + "</span>");
+      } else {
+        if (h.outcome) body.push("<strong>" + esc(t("qo_" + h.outcome)) + "</strong>");
+        if (h.explanation) body.push(esc(h.explanation));
+        if (h.text) body.push(esc(h.text));
+        if (h.reason) body.push('<span class="ve-muted">' + esc(t("q_reason", { r: h.reason })) + "</span>");
+        if (h.evidence && h.evidence.length) body.push(evidenceLinks(h.evidence));
+      }
+      var who = op === "generated" ? t("qby_guide") : h.origin === "derived" ? t("qby_harvest")
+        : (by.name ? by.name + " (" + t("qby_" + (by.kind || "curator")) + ")" : t("qby_" + (by.kind || "curator")));
+      var src = h.source ? srcLink(h.source) : "";
+      return '<li class="ve-q-ev ve-q-ev-' + esc(op) + '"><div class="ve-q-evhead"><span class="ve-q-evop">' + esc(t("qh_" + op)) +
+        "</span>" + (h.at ? ' <time datetime="' + esc(h.at) + '">' + esc(fmtDate(h.at)) + "</time>" : "") +
+        ' <span class="ve-muted">' + esc(who) + "</span>" + (src ? " · " + src : "") + "</div>" +
+        (body.length ? '<div class="ve-q-evbody">' + body.join("<br>") + "</div>" : "") + "</li>";
+    }).join("") + "</ol>";
+  }
+  function anchorHtml(a) {
+    var label, kind;
+    if (a.type === "fragment") {
+      kind = t("qa_" + (a.subject_type || "fragment"));
+      label = a.subject_type === "element" ? a.subject : t("qsub_" + a.subject_type, { name: a.subject });
+    } else if (a.type === "element" || a.type === "pair") {
+      kind = t("qa_element"); label = a.element_id || a.target_element;
+    } else if (a.type === "snippet") {
+      kind = t("qa_snippet"); label = a.snippet_id;
+    } else { kind = t("qa_" + a.type); label = a.cluster || a.fragment || ""; }
+    var links = [];
+    if (a.page) links.push('<a class="ve-linkbtn ve-linkbtn-primary" href="' + esc(a.page) + '">' + esc(t("q_open_page")) + "</a>");
+    var eid = a.type === "fragment" && a.subject_type === "element" ? a.subject : (a.element_id || a.target_element);
+    if (eid) links.push('<button type="button" class="ve-linkbtn" data-open-el="' + esc(eid) + '">' + esc(t("q_in_el_browser")) + "</button>");
+    var sid = a.snippet_id;
+    if (sid) links.push('<a class="ve-linkbtn" href="' + esc(C.figureHref(ROOT, sid, stems("item"))) + '">' +
+      esc(t(/^FIG-/.test(sid) ? "page_fig" : "page_snip")) + "</a>");
+    var meta = [];
+    if (a.platform) meta.push(esc(platLabel(a.platform)));
+    if (a.module) meta.push(esc(a.module));
+    if (a.releases && a.releases.length) meta.push(esc(a.releases.join(", ")));
+    if (a.guide_kind) meta.push(esc(t("qgk_" + a.guide_kind)));
+    if (a.recipe) meta.push(esc(a.recipe));
+    if (a.prompt_hash) meta.push(esc(t("q_prompt")) + " <code>" + esc(shortHash(a.prompt_hash)) + "</code>");
+    return '<li class="ve-q-anchor"><div><span class="ve-mini">' + esc(kind) + "</span> <strong>" + esc(label) + "</strong>" +
+      (a.name ? ' <span class="ve-muted">' + esc(a.name) + "</span>" : "") + "</div>" +
+      (meta.length ? '<div class="ve-cardmeta">' + meta.join('<span aria-hidden="true"> · </span>') + "</div>" : "") +
+      (a.fragment ? '<div class="ve-cardmeta"><code>' + esc(a.fragment.replace(/^content\/ai\//, "")) + "</code></div>" : "") +
+      (links.length ? '<div class="ve-cardlinks">' + links.join("") + "</div>" : "") + "</li>";
+  }
+  // Vorschlag für eine Antwort als GitHub-Issue (Kurationseingang, curation_ingest.py übernimmt den JSON-Block)
+  function proposeHref(info) {
+    var m = document.querySelector('meta[name="review-github-repo"]');
+    var repo = (m && m.content) || "2b-rs/autodocs";
+    var tmpl = { schema: "question-event@1", op: "answer", qid: info.id, outcome: "confirmed | refuted | partially_confirmed",
+                 explanation: "", evidence: [{ url: "https://…" }] };
+    var body = t("q_propose_body", { q: info.text }) + "\n\n```json\n" + JSON.stringify(tmpl, null, 1) + "\n```\n";
+    return "https://github.com/" + repo + "/issues/new?title=" + encodeURIComponent(t("q_propose_title", { id: info.id })) +
+      "&body=" + encodeURIComponent(body);
+  }
+  function questionHtml(info) {
+    var st = info.status || "", reason = info.status_reason;
+    var chips = '<span class="ve-mini ve-qk ve-qk-' + esc(info.kind) + '">' + esc(t("qk_" + info.kind)) + "</span>" +
+      '<span class="ve-qstat ve-qst-' + esc(st) + '">' + esc(t("qs_" + st)) + "</span>" +
+      (info.outcome ? '<span class="ve-mini ve-qoc">' + esc(t("qo_" + info.outcome)) + "</span>" : "") +
+      (reason ? '<span class="ve-mini ve-qreason">' + esc(t("qr_" + reason) !== "qr_" + reason ? t("qr_" + reason) : reason) + "</span>" : "");
+    var en = info.lang !== "en" ? (info.text_en
+      ? '<p class="ve-q-en" lang="en"><span class="ve-muted">EN:</span> ' + esc(info.text_en) + "</p>"
+      : '<p class="ve-q-en ve-muted">' + esc(t("q_en_none")) + "</p>") : "";
+    var meta = [[t("lbl_q_id"), info.id], [t("f_qkind"), t("qk_" + info.kind)], [t("f_qstatus"), t("qs_" + st)]];
+    if (info.platform) meta.push([t("lbl_plat"), platLabel(info.platform)]);
+    if ((info.modules || []).length) meta.push([t("lbl_module"), info.modules.join(", ")]);
+    meta.push([t("lbl_q_lang"), info.lang || "–"]);
+    if (info.kind === "assumption") meta.push([t("lbl_q_asserted"), t(info.asserted ? "q_asserted_yes" : "q_asserted_no")]);
+    var h = '<div class="ve-vh"><div class="ve-vh-top"><h2 class="ve-vh-id ve-vh-title ve-q-title" lang="' + esc(info.lang || "") + '">' +
+      esc(info.text) + '</h2></div><div class="ve-vh-name ve-q-chips">' + chips + "</div>" + en +
+      '<dl class="ve-meta">' + meta.map(function (m) { return "<div><dt>" + esc(m[0]) + "</dt><dd>" + esc(m[1]) + "</dd></div>"; }).join("") + "</dl>" +
+      '<div class="ve-links"><button type="button" class="ve-linkbtn" data-act="copy">' + esc(t("copy_link")) + "</button>" +
+      '<a class="ve-linkbtn" target="_blank" rel="noopener noreferrer" href="' + esc(proposeHref(info)) + '">' + esc(t("q_propose")) + "</a></div></div>";
+    if (info.kind === "assumption") {
+      h += '<section class="ve-sect ve-q-assumption"><h3>' + esc(t("q_assumption_head")) + '</h3><p lang="' + esc(info.lang || "") + '">' +
+        esc(info.assumption || "") + "</p>" + (info.rationale ? '<p class="ve-q-why" lang="' + esc(info.lang || "") + '"><span>' +
+        esc(t("q_rationale")) + ":</span> " + esc(info.rationale) + "</p>" : "") +
+        '<p class="ve-muted ve-q-motto">' + esc(t("q_motto")) + "</p></section>";
+    }
+    var resolvedBy = info.resolved_by;
+    if (info.outcome || info.explanation || (info.evidence || []).length || reason) {
+      h += '<section class="ve-sect ve-q-result"><h3>' + esc(t("q_result_head")) + "</h3>" +
+        (info.outcome ? "<p><strong>" + esc(t("qo_" + info.outcome)) + "</strong></p>" : "") +
+        (info.explanation ? "<p>" + esc(info.explanation) + "</p>" : "") +
+        (reason === "assumption_no_longer_used" ? '<p class="ve-muted">' + esc(t("q_unused_note")) +
+          (resolvedBy && resolvedBy.at ? " " + esc(t("q_since", { d: fmtDate(resolvedBy.at) })) : "") + "</p>" : "") +
+        evidenceLinks(info.evidence) +
+        (info.status === "answered" || info.status === "resolved" ? '<p class="ve-q-normnote">' + esc(t("q_not_normative")) + "</p>" : "") +
+        "</section>";
+    }
+    h += '<section class="ve-sect"><h3>' + esc(t("q_anchors_head", { n: num((info.anchors || []).length) })) + '</h3><ul class="ve-q-anchors">' +
+      (info.anchors || []).map(anchorHtml).join("") + "</ul></section>";
+    h += '<section class="ve-sect ve-q-history"><h3>' + esc(t("q_history_head")) + "</h3>" + historyHtml(info) + "</section>";
+    return h;
+  }
+
   // ------------------------------------------------------------------ Layout
   function layout() {
     var tab = state.tab, r = ui[tab];
@@ -3398,7 +3691,7 @@
   window.addEventListener("resize", function () {
     layout();
     [EL.rev, FR.ctl, SR.ctl].forEach(function (c) { if (c) c.redraw(); });
-    ["el", "fig", "snip"].forEach(function (tab) { if (ui[tab]) setDetailMode(tab, !!selectedKey(tab) && narrowMQ.matches); });
+    TABS.forEach(function (tab) { if (ui[tab]) setDetailMode(tab, !!selectedKey(tab) && narrowMQ.matches); });
   });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
@@ -3421,16 +3714,16 @@
     try { window.history.replaceState(window.history.state, "", window.location.pathname + C.serializeState(state) + window.location.hash); }
     catch (e) { /* ignore */ }
   }
-  ["el", "fig", "snip"].forEach(function (tab) {
+  TABS.forEach(function (tab) {
     renderOrderPanel(tab);
     if (C.orderActive(state, tab)) setOrderOpen(tab, true);
   });
   // Katalog (Liste) und Filterliste starten in allen drei Reitern sichtbar, auch bei einem Deep-Link.
-  ["el", "fig", "snip"].forEach(function (tab) {
+  TABS.forEach(function (tab) {
     if (C.catalogCollapsedOnLoad(tab, state)) setCollapsed(tab, true);
   });
   try { window.scrollTo(0, 0); } catch (e) { /* ignore */ }
-  ["el", "fig", "snip"].forEach(function (tab) { ui[tab].q.value = state[tab].q || ""; });
+  TABS.forEach(function (tab) { ui[tab].q.value = state[tab].q || ""; });
   var started = switchTab(state.tab, false);
   // Elementindex erst nach dem ersten Zeichnen des aktiven Reiters (Ziele, Verweise und Zähler im Viewer);
   // der dritte Index lädt beim Wechsel in seinen Reiter
