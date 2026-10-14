@@ -37,10 +37,10 @@
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
 <p>结构 <code>ara::core::nullopt_t</code> 是 AUTOSAR Adaptive Platform 模块 <code>core</code> 内的核心辅助类型。规范将此类型定义为可选值语义环境中标准类型 <code>std::nullopt_t</code> 的实现。其主要职责在于用作唯一标签类型（指示符类型），以显式且类型安全地表示可选容器（如 <code>ara::core::Optional</code>）中值的缺失。在现代 C++ 架构中，该方法避免了使用易出错的哨兵值或幻数，并实现了未初始化或空状态与常规数据值之间的明确语义分离。</p>
-<p><code>ara::core::nullopt_t</code> 的交互对象主要是用于表示可选状态的泛型数据结构，以及处理具有不完整或条件值的数据流的应用代码和中间件组件。Interpretation：该类推测与一个全局或静态常量紧密配合，该常量指示具体的空状态，并允许在 <code>ara::core::Optional</code> 的接口处进行赋值和比较。通过遵循 <code>std::nullopt_t</code>，该类型无缝融入 AUTOSAR Adaptive Platform 所要求的地道 C++17 编程中。</p>
+<p><code>ara::core::nullopt_t</code> 的交互对象主要是用于表示可选状态的泛型数据结构，以及处理具有不完整或条件值的数据流的应用代码和中间件组件。Interpretation：该类推测与一个全局或静态常量紧密配合，该常量指示具体的空状态，并允许在 <code>ara::core::Optional</code> 的接口处进行赋值和比较。 <a class="interp-q interp-q-open" data-q="Q-798eeee0efd5b621" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-798eeee0efd5b621" title="问题 Q-798eeee0efd5b621 (未决): ara::core::nullopt_t fungiert als leerer Tag-Typ zur Kennzeichnung des disengaged-Zustands in ara::core::Optional.">问题 Q-798eeee0efd5b621 (未决)</a>通过遵循 <code>std::nullopt_t</code>，该类型无缝融入 AUTOSAR Adaptive Platform 所要求的地道 C++17 编程中。</p>
 
 <h4>生命周期</h4>
-<p>作为空标签类型，<code>ara::core::nullopt_t</code> 具有极其简单且非关键的生命周期。Interpretation：该类型推测可平凡构造、拷贝和销毁，并且不管理任何动态系统资源或堆内存。因此，实例可以在没有明显运行时开销的情况下在栈上实例化，或直接作为临时值传递给函数和构造函数。由于该结构是无状态的并且仅通过其类型系统发挥作用，因此不会产生经典意义上的所有权关系。</p>
+<p>作为空标签类型，<code>ara::core::nullopt_t</code> 具有极其简单且非关键的生命周期。Interpretation：该类型推测可平凡构造、拷贝和销毁，并且不管理任何动态系统资源或堆内存。 <a class="interp-q interp-q-open" data-q="Q-769d37ed1687e229" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-769d37ed1687e229" title="问题 Q-769d37ed1687e229 (未决): Der Typ ist zustandslos, trivial kopierbar und verwaltet keine Ressourcen.">问题 Q-769d37ed1687e229 (未决)</a>因此，实例可以在没有明显运行时开销的情况下在栈上实例化，或直接作为临时值传递给函数和构造函数。由于该结构是无状态的并且仅通过其类型系统发挥作用，因此不会产生经典意义上的所有权关系。</p>
 <p>在并发系统中，由于其无状态性，<code>ara::core::nullopt_t</code> 天生具备线程安全性。多个执行线程可以相互独立地创建、传递该类型的实例或用于检查，而无需互斥锁或原子操作等同步机制。不存在需要在实例生命周期中经历的内部状态转换。</p>
 
 <h4>使用路径</h4>
@@ -50,7 +50,7 @@
 <li><strong>重置：</strong>通过赋值标签类型或其关联常量，将先前包含值的现有对象重置为未占用状态。</li>
 <li><strong>求值与条件分支：</strong>在控制结构中，将标签类型用作实参或比较对象，以区分存在的有效负载数据与空状态。</li>
 </ul>
-<p>解释：在实践中，通常极少直接实例化类型名称 <code>ara::core::nullopt_t</code>，而是可能将关联的实例常量（类似于 <code>std::nullopt</code>）传递给函数调用和运算符。这确保了应用程序源代码中语法的紧凑性与表达力。</p>
+<p>解释：在实践中，通常极少直接实例化类型名称 <code>ara::core::nullopt_t</code>，而是可能将关联的实例常量（类似于 <code>std::nullopt</code>）传递给函数调用和运算符。 <a class="interp-q interp-q-open" data-q="Q-a7afa4c24b2c60de" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-a7afa4c24b2c60de" title="问题 Q-a7afa4c24b2c60de (未决): Die Verwendung erfolgt typischerweise über eine zugehörige Konstante oder direkte Übergabe zur Signalisation des Leerzustands.">问题 Q-a7afa4c24b2c60de (未决)</a>这确保了应用程序源代码中语法的紧凑性与表达力。</p>
 
 <h4>错误场景</h4>
 <p>由于 <code>ara::core::nullopt_t</code> 不执行复杂的算法，不分配系统资源，也不提供带有先决条件的方法，因此该类型不存在特定的错误代码或异常条件。错误场景通常仅限于编译时的语法或语义类型冲突，例如错误地尝试从标签类型中解引用有效负载数据，或将其传递给强制要求具体有效负载值的接口。</p>

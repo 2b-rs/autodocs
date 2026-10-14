@@ -27,7 +27,7 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">允许服务骨架触发已定义的触发器，以通知已连接的服务客户端。</p>
 <div class="ai-level" data-ai-level="2">
-<p>命名空间 <code>&lt;SI-Namespace&gt;::skeleton::triggers</code> 为 AUTOSAR Adaptive Platform 通信模块 <code>com</code> 中的服务骨架提供特定类，以便在服务端调用 <code>ServiceInterface</code> 中定义的触发器。针对角色 <code>trigger</code> 中声明的每个触发器，均提供类 <code>&lt;Trigger&gt;</code> 的一个实例，服务提供者可以通过该实例向已连接的客户端触发事件信号。推测这些触发器类的生命周期与上级骨架对象紧密绑定，因此使用它们的前提是预先初始化并提供相应的服务。此外，服务提供者必须考虑到，来自多个线程的并发触发器调用推测需要应用程序端进行同步。</p>
+<p>命名空间 <code>&lt;SI-Namespace&gt;::skeleton::triggers</code> 为 AUTOSAR Adaptive Platform 通信模块 <code>com</code> 中的服务骨架提供特定类，以便在服务端调用 <code>ServiceInterface</code> 中定义的触发器。针对角色 <code>trigger</code> 中声明的每个触发器，均提供类 <code>&lt;Trigger&gt;</code> 的一个实例，服务提供者可以通过该实例向已连接的客户端触发事件信号。推测这些触发器类的生命周期与上级骨架对象紧密绑定，因此使用它们的前提是预先初始化并提供相应的服务。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=namespace:adaptive:ns_com__SI_Namespace_skeleton_triggers_9545e4&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>此外，服务提供者必须考虑到，来自多个线程的并发触发器调用推测需要应用程序端进行同步。</p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
@@ -36,14 +36,14 @@
 <p>这些类的核心作用是为服务端应用程序提供专用抽象，用于发出控制脉冲或通知脉冲的信号。与主要用于连续或事件驱动型数据传输的传统事件不同，触发器通常发出已定义事件发生或状态改变的信号。触发器类的核心交互伙伴包括提供服务的应用程序逻辑、起聚合作用的服务骨架以及 <code>com</code> 的通信中间件，该中间件负责通过相应的传输绑定转发信号。</p>
 
 <h4>生命周期</h4>
-<p>命名空间 <code>&lt;SI-Namespace&gt;::skeleton::triggers</code> 中触发器类的生命周期与上级服务骨架直接耦合。推测在创建服务骨架时，会针对 <code>ServiceInterface</code> 中定义的每个触发器精确实例化一个类 <code>&lt;Trigger&gt;</code> 的实例，并由其进行管理。服务应用程序通常不会进行单独的创建或销毁。</p>
-<p>在运行阶段，其使用分为三个典型阶段：初始化阶段、活动发送阶段和终止阶段。在初始化期间，通信层为触发器设置所需的绑定和资源。一旦服务提供者通过骨架在系统中正式提供服务，触发器就会转换到就绪状态。在此阶段，应用程序逻辑可以重复发起触发过程。当服务提供结束或骨架被释放时，关联的触发器资源也会被清理。关于并发性，如果底层通信框架不能保证并发触发器调用的固有线程安全性，那么从多个线程并发操作触发器时推测需要应用程序端进行同步。</p>
+<p>命名空间 <code>&lt;SI-Namespace&gt;::skeleton::triggers</code> 中触发器类的生命周期与上级服务骨架直接耦合。推测在创建服务骨架时，会针对 <code>ServiceInterface</code> 中定义的每个触发器精确实例化一个类 <code>&lt;Trigger&gt;</code> 的实例，并由其进行管理。 <a class="interp-q interp-q-open" data-q="Q-a0d69b49748aa8c4" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-a0d69b49748aa8c4" title="问题 Q-a0d69b49748aa8c4 (未决): Vermutlich wird eine Instanz von &lt;Trigger&gt; pro deklariertem Trigger als Member des Service-Skeleton instantiiert und teilt dessen Lebenszyklus.">问题 Q-a0d69b49748aa8c4 (未决)</a>服务应用程序通常不会进行单独的创建或销毁。</p>
+<p>在运行阶段，其使用分为三个典型阶段：初始化阶段、活动发送阶段和终止阶段。在初始化期间，通信层为触发器设置所需的绑定和资源。一旦服务提供者通过骨架在系统中正式提供服务，触发器就会转换到就绪状态。在此阶段，应用程序逻辑可以重复发起触发过程。当服务提供结束或骨架被释放时，关联的触发器资源也会被清理。关于并发性，如果底层通信框架不能保证并发触发器调用的固有线程安全性，那么从多个线程并发操作触发器时推测需要应用程序端进行同步。 <a class="interp-q interp-q-open" data-q="Q-eb23aad9119e9a8f" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-eb23aad9119e9a8f" title="问题 Q-eb23aad9119e9a8f (未决): Hinsichtlich der Nebenläufigkeit dürfte bei gleichzeitiger Betätigung aus mehreren Threads eine Synchronisation erforderlich sein.">问题 Q-eb23aad9119e9a8f (未决)</a></p>
 
 <h4>使用路径</h4>
 <p>来自 <code>&lt;SI-Namespace&gt;::skeleton::triggers</code> 的类的典型使用路径涵盖了从接口定义到停用服务的完整过程：</p>
 <ul>
 <li><strong>接口设计与代码生成：</strong>在软件模型中定义一个 <code>ServiceInterface</code>，其中至少包含一个角色为 <code>trigger</code> 的触发器。平台代码生成器据此生成命名空间 <code>&lt;SI-Namespace&gt;::skeleton::triggers</code> 和关联的类 <code>&lt;Trigger&gt;</code>。</li>
-<li><strong>实例化骨架：</strong>服务端应用程序实例化服务骨架的具体实现。解释：对 <code>&lt;Trigger&gt;</code> 实例的访问通过骨架的成员接口向服务提供者公开。</li>
+<li><strong>实例化骨架：</strong>服务端应用程序实例化服务骨架的具体实现。解释：对 <code>&lt;Trigger&gt;</code> 实例的访问通过骨架的成员接口向服务提供者公开。 <a class="interp-q interp-q-open" data-q="Q-f287180a040cea33" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f287180a040cea33" title="问题 Q-f287180a040cea33 (未决): Interpretation: Der Zugriff auf die Trigger-Instanz erfolgt über die Member-Schnittstelle des Skeletons, um Benachrichtigungen an Konsumenten auszulösen.">问题 Q-f287180a040cea33 (未决)</a></li>
 <li><strong>服务提供：</strong>服务骨架在网络上启动服务提供，以便客户端代理能够找到该服务并注册触发器通知。</li>
 <li><strong>触发器触发：</strong>一旦应用程序逻辑中的触发条件得到满足，服务端软件就会调用 <code>&lt;Trigger&gt;</code> 对象上的触发方法。平台将信号传输给所有已注册的消费者。</li>
 <li><strong>停用退役：</strong>服务端应用程序撤回服务提供并销毁骨架实例，从而确定性地释放触发器对象。</li>

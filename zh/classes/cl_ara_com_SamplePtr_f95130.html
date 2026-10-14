@@ -203,7 +203,7 @@
 <h4>用法与语义</h4>
 <p>函数 <code>Get</code> 是来自头文件 <code>ara/com/service/sample_ptr.h</code> <a class="spec-record-ref" data-req="SWS_CM_11546" href="../spec/record.html?id=SWS_CM_11546">[SWS_CM_11546]</a> 的类 <code>ara::com::SamplePtr</code> 的无参数成员函数。它同步返回类型为 <code>T*</code> 的裸指针，指向该实例管理的对象 <a class="spec-record-ref" data-req="SWS_CM_11546" href="../spec/record.html?id=SWS_CM_11546">[SWS_CM_11546]</a>。与提供 <code>ara::core::Future</code> <a class="spec-record-ref" data-req="SWS_CM_00112" href="../spec/record.html?id=SWS_CM_00112">[SWS_CM_00112]</a> 的服务字段异步查询不同，此访问直接在调用线程中发生。</p>
 <h4>错误处理与边界条件</h4>
-<p>该方法被声明为 <code>noexcept</code> 并被指定为异常安全（<em>exception safe</em>）<a class="spec-record-ref" data-req="SWS_CM_11546" href="../spec/record.html?id=SWS_CM_11546">[SWS_CM_11546]</a>；不会通过 C++ 异常出现错误状态。如果该实例当前未管理任何对象，则返回的指针推测可能是 <code>nullptr</code>。在进一步处理所引用的数据之前，必须确保 E2E 监督处于状态 <code>ara::com::e2e::SMState::kValid</code> 且配置文件的状态检查未产生错误 <a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422">[SWS_CM_90422]</a>。</p>
+<p>该方法被声明为 <code>noexcept</code> 并被指定为异常安全（<em>exception safe</em>）<a class="spec-record-ref" data-req="SWS_CM_11546" href="../spec/record.html?id=SWS_CM_11546">[SWS_CM_11546]</a>；不会通过 C++ 异常出现错误状态。如果该实例当前未管理任何对象，则返回的指针推测可能是 <code>nullptr</code>。 <a class="interp-q interp-q-open" data-q="Q-d850bd8ee144369a" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d850bd8ee144369a" title="问题 Q-d850bd8ee144369a (未决): Wenn SamplePtr kein Objekt hält, dürfte Get() vermutlich nullptr zurückgeben">问题 Q-d850bd8ee144369a (未决)</a>在进一步处理所引用的数据之前，必须确保 E2E 监督处于状态 <code>ara::com::e2e::SMState::kValid</code> 且配置文件的状态检查未产生错误 <a class="spec-record-ref" data-req="SWS_CM_90422" href="../spec/record.html?id=SWS_CM_90422">[SWS_CM_90422]</a>。</p>
 <h4>相互协作与区分</h4>
 <p>在通信管理中，<code>Get</code> 用于对接收到的值（样本）进行直接数据访问，正如在样本管理框架中提供的那样 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_EXP_ARAComAPI&amp;page=10">AUTOSAR_AP_EXP_ARAComAPI §10 “GetNewSamples”</a>。该函数与其他 <code>Get</code> 操作有着明确的区别：</p>
 <ul>
@@ -388,7 +388,7 @@
     <li><a class="spec-record-ref" data-req="SWS_CM_00085" href="../spec/record.html?id=SWS_CM_00085">[SWS_CM_00085]</a> 在取消订阅事件或字段（<em>Unsubscription</em>）之前规定了类似的义务。</li>
   </ul>
   
-  <p>解释：在应用场景中，当指针未自动离开其作用域时，显式调用 <code>Reset(nullptr)</code> 可能是确定性放弃事件样本所有权以进行此类生命周期转换的直接手段。</p>
+  <p>解释：在应用场景中，当指针未自动离开其作用域时，显式调用 <code>Reset(nullptr)</code> 可能是确定性放弃事件样本所有权以进行此类生命周期转换的直接手段。 <a class="interp-q interp-q-open" data-q="Q-a615fa4078ab03ce" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-a615fa4078ab03ce" title="问题 Q-a615fa4078ab03ce (未决): Die Übergabe von nullptr via Reset() dient in der Praxis der Erfüllung der Freigabe-Vorbedingungen vor Proxy-Zerstörung oder Unsubscribe">问题 Q-a615fa4078ab03ce (未决)</a></p>
   <!-- annahmen: 1) Die Übergabe von nullptr via Reset() dient in der Praxis der Erfüllung der Freigabe-Vorbedingungen vor Proxy-Zerstörung oder Unsubscribe – Begründung: SWS_CM_11545 spezifiziert Reset(std::nullptr_t) zum Ersetzen/Freigeben des Objekts, während SWS_CM_00087 und SWS_CM_00085 die Freigabe aller SamplePtr verlangen. -->
 </div>
 <p class="ai-note">本使用说明基于 AUTOSAR 规范 R25-11 自动创建。</p>
@@ -792,7 +792,7 @@
 
 <h4>并发性与限制</h4>
 <p>
-由于 <code>Swap</code> 同时修改了两个对象（<code>*this</code> 和 <code>other</code>）的状态，因此在未经外部同步的情况下，在所涉及的至少一个实例上进行并行调用推测可能不是线程安全的。
+由于 <code>Swap</code> 同时修改了两个对象（<code>*this</code> 和 <code>other</code>）的状态，因此在未经外部同步的情况下，在所涉及的至少一个实例上进行并行调用推测可能不是线程安全的。 <a class="interp-q interp-q-open" data-q="Q-d906e8c05aefbd15" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d906e8c05aefbd15" title="问题 Q-d906e8c05aefbd15 (未决): Gleichzeitige Zugriffe auf dieselben Instanzen erfordern externe Synchronisation">问题 Q-d906e8c05aefbd15 (未决)</a>
 </p>
 
 <h4>相互作用</h4>

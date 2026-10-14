@@ -37,7 +37,7 @@
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
 <p>类模板 <code>ara::core::in_place_index_t</code> 是 AUTOSAR Adaptive Platform 模块 <code>core</code> 中的辅助结构体，并通过头文件 <code>ara/core/utility.h</code> 提供 <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>。其功能作用是充当通过数值索引进行区分的就地操作的唯一标签类型。该类型的一个实例被传递给 <code>ara::core::Variant</code> 的特定构造函数，以指示包含类型的构造应直接就地（“in-place”）执行，而不执行复制或移动操作的意图。</p>
-<p>在调用者与和类型（sum type）<code>ara::core::Variant</code> 之间的协作中，<code>ara::core::in_place_index_t</code> 承担标签分发（tag dispatching）的功能。解读：基于索引的区分可能特别适用于包含相同类型的多个备选项的 Variant 实例；在这种情况下，仅通过数据类型进行选择会产生歧义，因此通过模板参数 <code>Index</code> 进行寻址决定了类型包中的精确类型备选项。</p>
+<p>在调用者与和类型（sum type）<code>ara::core::Variant</code> 之间的协作中，<code>ara::core::in_place_index_t</code> 承担标签分发（tag dispatching）的功能。解读：基于索引的区分可能特别适用于包含相同类型的多个备选项的 Variant 实例；在这种情况下，仅通过数据类型进行选择会产生歧义，因此通过模板参数 <code>Index</code> 进行寻址决定了类型包中的精确类型备选项。 <a class="interp-q interp-q-open" data-q="Q-fc429a7c9e7e9362" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-fc429a7c9e7e9362" title="问题 Q-fc429a7c9e7e9362 (未决): Die indexbasierte Unterscheidung dürfte insbesondere für Variant-Instanzen mit mehrfach identischen Typen relevant sein">问题 Q-fc429a7c9e7e9362 (未决)</a></p>
 
 <h4>生命周期</h4>
 <p><code>ara::core::in_place_index_t</code> 的生命周期非常基础，且不存在复杂的状态转换。创建通过默认构造函数 <code>explicit in_place_index_t() noexcept = default;</code> <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a> 进行。通过标记为 <code>explicit</code> 阻止了隐式类型转换，从而强制进行显式且类型严格的实例化 <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>。</p>
@@ -47,7 +47,7 @@
 <p>使用 <code>ara::core::in_place_index_t</code> 的典型流程分为以下步骤：</p>
 <ul>
   <li><strong>索引确定：</strong>调用者确定表示 <code>ara::core::Variant</code> 内所需备选项的数值模板参数 <code>Index</code>。</li>
-  <li><strong>标签实例化：</strong>通过默认构造函数创建 <code>ara::core::in_place_index_t&lt;Index&gt;</code> 的实例 <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>。解读：在实践中，创建可能优选作为临时参数直接在调用中进行。</li>
+  <li><strong>标签实例化：</strong>通过默认构造函数创建 <code>ara::core::in_place_index_t&lt;Index&gt;</code> 的实例 <a class="spec-record-ref" data-req="SWS_CORE_04032" href="../spec/record.html?id=SWS_CORE_04032">[SWS_CORE_04032]</a>。解读：在实践中，创建可能优选作为临时参数直接在调用中进行。 <a class="interp-q interp-q-open" data-q="Q-7c6292c2e97347b0" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-7c6292c2e97347b0" title="问题 Q-7c6292c2e97347b0 (未决): Die Instanziierung dürfte vorzugsweise als temporäres Argument direkt im Aufruf erfolgen">问题 Q-7c6292c2e97347b0 (未决)</a></li>
   <li><strong>构造函数传递：</strong>将标签实例作为第一个参数传递给 <code>ara::core::Variant</code> 的构造函数，后跟针对在该位置管理的目标类型的构造函数参数。</li>
   <li><strong>直接初始化：</strong><code>ara::core::Variant</code> 直接在提供的存储区中构造目标对象，无需事先创建临时副本。</li>
 </ul>

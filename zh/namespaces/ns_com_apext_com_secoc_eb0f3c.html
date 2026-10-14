@@ -38,7 +38,7 @@
 命名空间 <code>apext::com::secoc</code> 在 AUTOSAR Adaptive Platform（<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=536">SWS Communication Management §C.1 “Header: apext/com/secoc/fvm.h”</a>）的功能集群 Communication Management（<code>ara::com</code>）内定义了平台扩展规范接口（Platform Extension Interfaces）。这些扩展接口的目的是使 OEM 和协议栈厂商能够提供定制的 Freshness Value Manager（FVM），该管理器生成、管理和验证用于抵御重放攻击的 Secure Onboard Communication（SecOC）所需的新鲜度值。
 </p>
 <p>
-该命名空间主要与三个角色交互：通信管理（<code>ara::com</code>）、标准化接口定义（<code>FVM</code>）及其数据载体如 <code>FVContainer</code>（<a class="spec-record-ref" data-req="SWS_CM_11286" href="../spec/record.html?id=SWS_CM_11286">[SWS_CM_11286]</a>、<a class="spec-record-ref" data-req="SWS_CM_11344" href="../spec/record.html?id=SWS_CM_11344">[SWS_CM_11344]</a>），以及整车厂或协议栈供应商的具体 FVM 实现。理解：假定厂商特定的 FVM 库在系统集成过程中作为静态或动态库进行链接，因为规范定义了功能接口，但具体的集成形式由协议栈特定决定。
+该命名空间主要与三个角色交互：通信管理（<code>ara::com</code>）、标准化接口定义（<code>FVM</code>）及其数据载体如 <code>FVContainer</code>（<a class="spec-record-ref" data-req="SWS_CM_11286" href="../spec/record.html?id=SWS_CM_11286">[SWS_CM_11286]</a>、<a class="spec-record-ref" data-req="SWS_CM_11344" href="../spec/record.html?id=SWS_CM_11344">[SWS_CM_11344]</a>），以及整车厂或协议栈供应商的具体 FVM 实现。理解：假定厂商特定的 FVM 库在系统集成过程中作为静态或动态库进行链接，因为规范定义了功能接口，但具体的集成形式由协议栈特定决定。 <a class="interp-q interp-q-open" data-q="Q-256aef3d6698cc3f" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-256aef3d6698cc3f" title="问题 Q-256aef3d6698cc3f (未决): Bereitstellungsform der FVM-Implementierung – Es wird interpretiert, dass die FVM-Implementierung herstellerspezifisch als dynamische oder statische Bibliothek eingebunden wird, da die Spezifikation dies als Platform Extension deklariert, die genaue Bindung jedoch stackspezifisch offenlässt.">问题 Q-256aef3d6698cc3f (未决)</a>
 </p>
 <div class="diagram" id="diag-secoc-kontext"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 453.80 148.70" style="max-width:605px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 134.3)">
@@ -311,10 +311,10 @@ FVM 接口内的错误情况通过类型安全的错误域 <code>ComSecOcFvmErro
 <p>该函数声明为 <code>noexcept</code>，并被指定为完全异常安全 (exception safe) <a class="spec-record-ref" data-req="SWS_CM_12521" href="../spec/record.html?id=SWS_CM_12521">[SWS_CM_12521]</a>。调用时不会发生运行时错误，既不抛出异常也不生成错误码。返回的错误域更多是为开发者提供一个引用，以便在 SecOC 的错误处理中明确比对 FVM 特定的错误码。</p>
 
 <h4>并发性与限制</h4>
-<p>作为一个无副作用且无状态的 <code>constexpr</code> 函数，其调用大概率完全支持并发和可重入。根据规范，不存在关于调用上下文的顺序条件或限制 <a class="spec-record-ref" data-req="SWS_CM_12521" href="../spec/record.html?id=SWS_CM_12521">[SWS_CM_12521]</a>。</p>
+<p>作为一个无副作用且无状态的 <code>constexpr</code> 函数，其调用大概率完全支持并发和可重入。 <a class="interp-q interp-q-open" data-q="Q-16d96e7f64bca93f" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-16d96e7f64bca93f" title="问题 Q-16d96e7f64bca93f (未决): Reentranz und Thread-Sicherheit">问题 Q-16d96e7f64bca93f (未决)</a>根据规范，不存在关于调用上下文的顺序条件或限制 <a class="spec-record-ref" data-req="SWS_CM_12521" href="../spec/record.html?id=SWS_CM_12521">[SWS_CM_12521]</a>。</p>
 
 <h4>相互作用</h4>
-<p>该定义基于需求 RS_AP_00120 以及 RS_AP_00130 <a class="spec-record-ref" data-req="SWS_CM_12521" href="../spec/record.html?id=SWS_CM_12521">[SWS_CM_12521]</a>。虽然规范主要规定了命名空间 <code>apext::com::secoc</code>，但在其他地方也能找到 <code>ara::com::secoc::GetComSecOcFvmErrorDomain</code>（<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=598">AUTOSAR_AP_SWS_CommunicationManagement 第598页</a>）的表述；这可能是 Adaptive 扩展背景下的编辑性变体。</p>
+<p>该定义基于需求 RS_AP_00120 以及 RS_AP_00130 <a class="spec-record-ref" data-req="SWS_CM_12521" href="../spec/record.html?id=SWS_CM_12521">[SWS_CM_12521]</a>。虽然规范主要规定了命名空间 <code>apext::com::secoc</code>，但在其他地方也能找到 <code>ara::com::secoc::GetComSecOcFvmErrorDomain</code>（<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_CommunicationManagement&amp;page=598">AUTOSAR_AP_SWS_CommunicationManagement 第598页</a>）的表述；这可能是 Adaptive 扩展背景下的编辑性变体。 <a class="interp-q interp-q-open" data-q="Q-b49307e7cc69a94b" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-b49307e7cc69a94b" title="问题 Q-b49307e7cc69a94b (未决): Namensraum-Variante ara::com::secoc">问题 Q-b49307e7cc69a94b (未决)</a></p>
 <!-- annahmen: 1) Reentranz und Thread-Sicherheit – Begründung: Die Spezifikation deklariert die Funktion als constexpr und noexcept, schweigt jedoch zu expliziten Nebenläufigkeitsgarantien. 2) Namensraum-Variante ara::com::secoc – Begründung: Auf Seite 598 wird ara::com::secoc genannt, während die formale Definition in SWS_CM_12521 apext::com::secoc festlegt. -->
 </div>
 <p class="ai-note">本使用说明由 AI 生成，基于 AUTOSAR Adaptive R25-11 规范状态。</p>
@@ -418,7 +418,7 @@ FVM 接口内的错误情况通过类型安全的错误域 <code>ComSecOcFvmErro
 
 <h4>错误处理与并发</h4>
 <p>
-该函数被指定为 <code>noexcept</code> 和 <code>exception safe</code>，因此保证调用不会引发异常 <a class="spec-record-ref" data-req="SWS_CM_12522" href="../spec/record.html?id=SWS_CM_12522">[SWS_CM_12522]</a>。未为此构造函数定义特定运行时错误消息（如 DET 或 DEM）<a class="spec-record-ref" data-req="SWS_CM_12522" href="../spec/record.html?id=SWS_CM_12522">[SWS_CM_12522]</a>。由于具有 <code>constexpr</code> 限定，在传递常量表达式时，错误代码的创建可能在编译时即可完成。
+该函数被指定为 <code>noexcept</code> 和 <code>exception safe</code>，因此保证调用不会引发异常 <a class="spec-record-ref" data-req="SWS_CM_12522" href="../spec/record.html?id=SWS_CM_12522">[SWS_CM_12522]</a>。未为此构造函数定义特定运行时错误消息（如 DET 或 DEM）<a class="spec-record-ref" data-req="SWS_CM_12522" href="../spec/record.html?id=SWS_CM_12522">[SWS_CM_12522]</a>。由于具有 <code>constexpr</code> 限定，在传递常量表达式时，错误代码的创建可能在编译时即可完成。 <a class="interp-q interp-q-open" data-q="Q-a96337508ba6ecdd" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-a96337508ba6ecdd" title="问题 Q-a96337508ba6ecdd (未决): Compile-Time-Auswertbarkeit: Durch die Deklaration als constexpr dürfte die Objekterzeugung bei konstanten Parametern bereits zur Übersetzungszeit stattfinden">问题 Q-a96337508ba6ecdd (未决)</a>
 </p>
 
 <h4>相互作用</h4>

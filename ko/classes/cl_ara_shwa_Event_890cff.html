@@ -31,7 +31,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>컨텍스트</h4>
-<p><code>ara::shwa::Event</code> 클래스는 <code>shwa</code> 모듈 내에서 하드웨어 가속기 태스크를 위한 중앙 동기화 요소로 기능합니다. 주된 역할은 연관되거나 종속된 태스크의 완료에 맞추어 동기화하는 것입니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00604" href="../spec/record.html?id=AP_SWS_SHWA_00604">[AP_SWS_SHWA_00604]</a>. 상호작용 대상은 비동기 가속기 작업을 조정하는 호출자 측 스레드 및 애플리케이션 컴포넌트입니다. 해석: 인터페이스가 태스크 완료를 동기화하므로, 단일 <code>Event</code> 객체는 특정 하드웨어 실행의 실행 및 동기화 신호를 캡슐화할 것으로 보입니다.</p>
+<p><code>ara::shwa::Event</code> 클래스는 <code>shwa</code> 모듈 내에서 하드웨어 가속기 태스크를 위한 중앙 동기화 요소로 기능합니다. 주된 역할은 연관되거나 종속된 태스크의 완료에 맞추어 동기화하는 것입니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00604" href="../spec/record.html?id=AP_SWS_SHWA_00604">[AP_SWS_SHWA_00604]</a>. 상호작용 대상은 비동기 가속기 작업을 조정하는 호출자 측 스레드 및 애플리케이션 컴포넌트입니다. 해석: 인터페이스가 태스크 완료를 동기화하므로, 단일 <code>Event</code> 객체는 특정 하드웨어 실행의 실행 및 동기화 신호를 캡슐화할 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-b4aa1debd356c45c" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-b4aa1debd356c45c" title="질문 Q-b4aa1debd356c45c (열림): Da die Schnittstelle Aufgabenabschlüsse synchronisiert, dürfte ein einzelnes Event-Objekt die Ausführungs- und Synchronisationssignale einer spezifischen Hardware-Ausführung kapseln.">질문 Q-b4aa1debd356c45c (열림)</a></p>
 
 <h4>수명 주기</h4>
 <p><code>ara::shwa::Event</code>의 인스턴스는 <code>ara::core::Result&lt;Event&gt;</code>을(를) 반환하는 정적 팩토리 메서드 <code>Create()</code>을(를) 통해 생성됩니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00602" href="../spec/record.html?id=AP_SWS_SHWA_00602">[AP_SWS_SHWA_00602]</a>. 이 생성 경로는 스레드 안전(thread-safe)하며 예외를 발생시키지 않습니다(<code>noexcept</code>, exception safe) <a class="spec-record-ref" data-req="AP_SWS_SHWA_00602" href="../spec/record.html?id=AP_SWS_SHWA_00602">[AP_SWS_SHWA_00602]</a>. 생성 후 객체는 활성 운영 상태에 있게 되며 종속성 쿼리 및 동기화 작업을 허용합니다.</p>
@@ -41,7 +41,7 @@
 <p>동기화를 위한 정규 절차는 객체 생성, 종속성에 대한 선택적 검사, 그리고 실행에 대한 실제 대기로 구성됩니다:</p>
 <ol>
 <li><strong>인스턴스화:</strong> 호출자가 <code>Create()</code>을(를) 호출하고 수신된 <code>ara::core::Result</code>의 성공 여부를 검사합니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00602" href="../spec/record.html?id=AP_SWS_SHWA_00602">[AP_SWS_SHWA_00602]</a>.</li>
-<li><strong>종속성 쿼리:</strong> <code>GetWaitList()</code>을(를) 통해 종속 Event 목록을 <code>ara::core::Vector&lt;Event&gt;</code>(으)로 읽어올 수 있습니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00603" href="../spec/record.html?id=AP_SWS_SHWA_00603">[AP_SWS_SHWA_00603]</a>. <code>GetWaitList()</code>은(는) Event가 내부적으로 완료 여부에 의존하는 선행 태스크를 검사하는 역할을 할 것으로 추정됩니다.</li>
+<li><strong>종속성 쿼리:</strong> <code>GetWaitList()</code>을(를) 통해 종속 Event 목록을 <code>ara::core::Vector&lt;Event&gt;</code>(으)로 읽어올 수 있습니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00603" href="../spec/record.html?id=AP_SWS_SHWA_00603">[AP_SWS_SHWA_00603]</a>. <code>GetWaitList()</code>은(는) Event가 내부적으로 완료 여부에 의존하는 선행 태스크를 검사하는 역할을 할 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-ed01dc595c23ce28" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-ed01dc595c23ce28" title="질문 Q-ed01dc595c23ce28 (열림): Vermutlich fungiert GetWaitList() als Inspektion vorgelagerter Aufgaben, auf deren Fertigstellung das Event intern angewiesen ist.">질문 Q-ed01dc595c23ce28 (열림)</a></li>
 <li><strong>동기화 수행:</strong> 동기화에는 세 가지 변형을 사용할 수 있습니다:
 <ul>
 <li><code>Wait()</code>을(를) 통한 인스턴스 기반 대기는 Event에 연관된 태스크의 완료까지 블로킹됩니다 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00604" href="../spec/record.html?id=AP_SWS_SHWA_00604">[AP_SWS_SHWA_00604]</a>.</li>

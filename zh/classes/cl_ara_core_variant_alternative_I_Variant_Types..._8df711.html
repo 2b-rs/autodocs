@@ -30,15 +30,15 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">在编译时确定 Variant 数据类型中特定备选项的类型。</p>
 <div class="ai-level" data-ai-level="2">
-<p>AUTOSAR Adaptive Platform（版本 R25-11）模块 <code>core</code> 中的模板特化 <code>ara::core::variant_alternative&lt;I, Variant&lt;Types...&gt;&gt;</code> 用于根据 [variant] 在编译时确定索引位置 <code>I</code> 处的备选项类型。解释：它推测为泛型算法提供成员类型 <code>type</code>，而无需在此过程中创建运行时对象或动态状态。最重要的约束条件是索引值的静态有效性，因为超出 <code>Types...</code> 边界的索引推测会导致编译中止。</p>
+<p>AUTOSAR Adaptive Platform（版本 R25-11）模块 <code>core</code> 中的模板特化 <code>ara::core::variant_alternative&lt;I, Variant&lt;Types...&gt;&gt;</code> 用于根据 [variant] 在编译时确定索引位置 <code>I</code> 处的备选项类型。解释：它推测为泛型算法提供成员类型 <code>type</code>，而无需在此过程中创建运行时对象或动态状态。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_variant_alternative_I_Variant_Types..._8df711&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>最重要的约束条件是索引值的静态有效性，因为超出 <code>Types...</code> 边界的索引推测会导致编译中止。</p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
-<p>结构 <code>ara::core::variant_alternative&lt;I, Variant&lt;Types...&gt;&gt;</code> 是 AUTOSAR Adaptive Platform（版本 R25-11）模块 <code>core</code> 中的模板特化。其任务是在编译时从变体类型 <code>ara::core::Variant&lt;Types...&gt;</code> 中确定特定备选项的类型。根据有效负载中的描述，其用法参考变体的规范（“As per corresponding usage in [variant]”）。在 Adaptive Platform 的泛型软件架构中，此类型萃取（Type Trait）用作元编程的辅助工具，以在无运行时开销的情况下实现类型检查、泛型算法和静态分发。此时的交互伙伴主要是 C++ 编译器、Variant 数据类型本身以及必须访问各个备选项类型的泛型处理组件。解释：该特化可能提供名为 <code>type</code> 的类型别名作为主要接口，它代表由从零开始的索引 <code>I</code> 从形参包 <code>Types...</code> 中指定的类型。</p>
+<p>结构 <code>ara::core::variant_alternative&lt;I, Variant&lt;Types...&gt;&gt;</code> 是 AUTOSAR Adaptive Platform（版本 R25-11）模块 <code>core</code> 中的模板特化。其任务是在编译时从变体类型 <code>ara::core::Variant&lt;Types...&gt;</code> 中确定特定备选项的类型。根据有效负载中的描述，其用法参考变体的规范（“As per corresponding usage in [variant]”）。在 Adaptive Platform 的泛型软件架构中，此类型萃取（Type Trait）用作元编程的辅助工具，以在无运行时开销的情况下实现类型检查、泛型算法和静态分发。此时的交互伙伴主要是 C++ 编译器、Variant 数据类型本身以及必须访问各个备选项类型的泛型处理组件。解释：该特化可能提供名为 <code>type</code> 的类型别名作为主要接口，它代表由从零开始的索引 <code>I</code> 从形参包 <code>Types...</code> 中指定的类型。 <a class="interp-q interp-q-open" data-q="Q-b18818ea7878979c" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-b18818ea7878979c" title="问题 Q-b18818ea7878979c (未决): Die Spezialisierung dürfte einen Typalias &#x27;type&#x27; für den I-ten Alternativtypen bereitstellen">问题 Q-b18818ea7878979c (未决)</a></p>
 
 <h4>生命周期</h4>
-<p>作为纯粹的元编程构造，<code>ara::core::variant_alternative</code> 在程序运行时不具有传统的生命周期。其创建仅在编译过程中当编译器实例化模板代码时发生。内存中既没有对象的实例化，也没有资源管理，也不与动态所有权关系绑定。相应地，既不存在在运行时消耗 CPU 周期或经历状态转换的构造函数，也不存在析构函数。解释：在运行时内存中推测不存在实例，因为所有求值完全由编译器的类型系统处理。从缺乏运行时数据和可变内部状态还可以得出，在并发编译和程序执行步骤中具有不受限的安全性。多个编译单元或泛型模板可以并行引用该类型萃取，而无需任何同步要求。</p>
+<p>作为纯粹的元编程构造，<code>ara::core::variant_alternative</code> 在程序运行时不具有传统的生命周期。其创建仅在编译过程中当编译器实例化模板代码时发生。内存中既没有对象的实例化，也没有资源管理，也不与动态所有权关系绑定。相应地，既不存在在运行时消耗 CPU 周期或经历状态转换的构造函数，也不存在析构函数。解释：在运行时内存中推测不存在实例，因为所有求值完全由编译器的类型系统处理。 <a class="interp-q interp-q-open" data-q="Q-6d8d85f1c14eba14" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-6d8d85f1c14eba14" title="问题 Q-6d8d85f1c14eba14 (未决): Zur Laufzeit existiert vermutlich keine Instanz im Hauptspeicher">问题 Q-6d8d85f1c14eba14 (未决)</a>从缺乏运行时数据和可变内部状态还可以得出，在并发编译和程序执行步骤中具有不受限的安全性。多个编译单元或泛型模板可以并行引用该类型萃取，而无需任何同步要求。</p>
 
 <h4>使用路径</h4>
 <p>此模板特化的典型应用场景发生在与 <code>ara::core::Variant</code> 配合使用的泛型函数、类型萃取或访问者模式（Visitor Pattern）中。示例流程分为以下编译时步骤：</p>
@@ -50,7 +50,7 @@
 <p>当必须在静态断言（编译时断言）中或在实现类型驱动的处理例程时静态查询特定索引位置处备选项的确切类型，开发人员会使用此功能。这使得 AUTOSAR Adaptive 环境中的库和应用程序开发人员能够基于变体创建类型安全抽象，而无需借助不安全的类型转换或运行时查询。</p>
 
 <h4>错误场景</h4>
-<p>由于 <code>ara::core::variant_alternative</code> 在编译时运行，因此不会通过 <code>ara::core::ErrorCode</code> 的运行时错误机制或异常引发错误。核心错误场景在于模板实例化时违反了静态先决条件。解释：传递大于或等于 <code>Types...</code> 中定义的备选项数量的索引值 <code>I</code>，推测会直接导致编译错误。在这种情况发生时，编译器无法在指定位置对形参包进行索引，从而中止编译过程。因此，无误使用的先决条件始终是遵守满足 <code>I &lt; sizeof...(Types)</code> 的静态有效范围。</p>
+<p>由于 <code>ara::core::variant_alternative</code> 在编译时运行，因此不会通过 <code>ara::core::ErrorCode</code> 的运行时错误机制或异常引发错误。核心错误场景在于模板实例化时违反了静态先决条件。解释：传递大于或等于 <code>Types...</code> 中定义的备选项数量的索引值 <code>I</code>，推测会直接导致编译错误。 <a class="interp-q interp-q-open" data-q="Q-60a95d04cfafcc4d" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-60a95d04cfafcc4d" title="问题 Q-60a95d04cfafcc4d (未决): Ein Index I außerhalb des Bereichs dürfte zu einem Übersetzungsfehler führen">问题 Q-60a95d04cfafcc4d (未决)</a>在这种情况发生时，编译器无法在指定位置对形参包进行索引，从而中止编译过程。因此，无误使用的先决条件始终是遵守满足 <code>I &lt; sizeof...(Types)</code> 的静态有效范围。</p>
 <!-- annahmen: 1) Die Spezialisierung dürfte einen Typalias 'type' für den I-ten Alternativtypen bereitstellen – Begründung: Anlehnung an das Verhalten in [variant]. 2) Zur Laufzeit existiert vermutlich keine Instanz im Hauptspeicher – Begründung: Typische Eigenschaft von C++-Typtraits. 3) Ein Index I außerhalb des Bereichs dürfte zu einem Übersetzungsfehler führen – Begründung: Regeln für Parameter-Packs in C++. -->
 </div>
 <p class="ai-note">本指南仅基于 AUTOSAR Adaptive Platform Release R25-11 的规范数据。</p>

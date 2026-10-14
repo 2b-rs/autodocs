@@ -33,14 +33,14 @@
 <div class="ai-level" data-ai-level="2">
 <p>
 模板特化 <code>ara::core::variant_alternative&lt;I, const volatile T&gt;</code> 在 AUTOSAR Adaptive Platform 的模块 <code>core</code> 中用于根据其索引 <code>I</code> 静态确定备选项类型。解释：基于 <code>[variant]</code>，该结构将限定符 <code>const</code> 和 <code>volatile</code> 一致地传递给所得的备选项类型。推测该结果在编译时通过嵌套的类型别名进行提供。作为关键约束条件，该结构纯粹在编译时工作，因此无效索引或不合适的类型会直接导致编译错误。
-</p>
+ <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_variant_alternative_I_const_volatile_T_34d81f&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
 <p>
 模板结构 <code>ara::core::variant_alternative&lt;I, const volatile T&gt;</code> 属于 AUTOSAR Adaptive Platform 规范版本 R25-11 中的模块 <code>core</code>。根据描述，其功能参考 <code>[variant]</code> 中的相应用法。解释：此引用指向类模板 <code>ara::core::variant</code> 或 ISO C++ 标准中已知的 <code>std::variant</code> 模型。在此环境中，该构造充当编译时类型萃取，用于确定 Variant 类型内特定索引位置处备选项的底层类型。
-</p>
+ <a class="interp-q interp-q-open" data-q="Q-ce6f4575c90ebab1" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-ce6f4575c90ebab1" title="问题 Q-ce6f4575c90ebab1 (未决): Der Verweis auf [variant] in der Beschreibung bezieht sich auf das Template ara::core::variant analog zu std::variant.">问题 Q-ce6f4575c90ebab1 (未决)</a></p>
 <p>
 当前的偏特化专门针对同时带有类型限定符 <code>const</code> 和 <code>volatile</code> 的类型。<code>variant_alternative</code> 的主模板定义确定索引 <code>I</code> 的非限定备选项类型，而该特化则确保在通过双重限定的类型 <code>const volatile T</code> 进行查询时，限定符一致地传递给所得成员类型。通过这种方式，该结构直接与 AUTOSAR Adaptive 的元编程生态系统交互，并确保在存在 <code>const volatile</code> 对象或类型的情况下，泛型源代码无需显式手动类型调整即可工作。
 </p>
@@ -53,7 +53,7 @@
 <code>ara::core::variant_alternative&lt;I, const volatile T&gt;</code> 的使用完全在编译时在静态类型检查和模板元编程的框架内进行。通常，该模板不会被实例化为独立的运行时对象，而是用作查询类型信息的辅助构造。开发人员或泛型库函数传递类型为 <code>std::size_t</code> 的从零开始的索引 <code>I</code> 以及限定的变体类型 <code>const volatile T</code> 作为模板实参。
 </p>
 <p>
-该特化推测提供一个嵌套类型别名 <code>type</code>，它代表类型查询的结果。该类型对应于非限定类型 <code>T</code> 的第 <code>I</code> 个备选项的类型，并增加了限定符 <code>const volatile</code>。在典型流程中，元编程例程通过别名模板绑定此类型，或直接查询元素类型，以便在对变体主体进行相应数据访问之前匹配辅助结构、函数签名或返回类型。
+该特化推测提供一个嵌套类型别名 <code>type</code>，它代表类型查询的结果。 <a class="interp-q interp-q-open" data-q="Q-d3b8206dce63fb19" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d3b8206dce63fb19" title="问题 Q-d3b8206dce63fb19 (未决): Die Spezialisierung stellt den Member-Typ type bereit, welcher dem I-ten Alternativentyp mit const-volatile-Qualifizierung entspricht.">问题 Q-d3b8206dce63fb19 (未决)</a>该类型对应于非限定类型 <code>T</code> 的第 <code>I</code> 个备选项的类型，并增加了限定符 <code>const volatile</code>。在典型流程中，元编程例程通过别名模板绑定此类型，或直接查询元素类型，以便在对变体主体进行相应数据访问之前匹配辅助结构、函数签名或返回类型。
 </p>
 
 <h4>错误场景</h4>
@@ -61,7 +61,7 @@
 由于 <code>ara::core::variant_alternative&lt;I, const volatile T&gt;</code> 是纯粹的元编程构造，因此错误不会以动态异常或诸如 <code>ara::core::ErrorCode</code> 之类的运行时错误代码的形式出现，而是仅在编译过程中体现。
 </p>
 <p>
-当传递的索引值 <code>I</code> 超出有效范围时，会发生主要错误场景。推测指定大于或等于类型 <code>T</code> 中声明的备选项数量的索引 <code>I</code> 会导致静态编译错误（例如由失败的 <code>static_assert</code> 或不完整的模板实例化触发）。另一种场景发生在当作为类型实参传递的 <code>T</code> 本身不是为其存在 <code>variant_alternative</code> 的基本特化的有效变体类型时。在这种情况下，编译器无法解析递归或对非限定变体的访问，这同样会导致编译立即中止。
+当传递的索引值 <code>I</code> 超出有效范围时，会发生主要错误场景。推测指定大于或等于类型 <code>T</code> 中声明的备选项数量的索引 <code>I</code> 会导致静态编译错误（例如由失败的 <code>static_assert</code> 或不完整的模板实例化触发）。 <a class="interp-q interp-q-open" data-q="Q-057a765e7746df3f" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-057a765e7746df3f" title="问题 Q-057a765e7746df3f (未决): Ein Index I außerhalb des Wertebereichs oder ein nicht-unterstützter Typ T führt zu einem Übersetzungsfehler.">问题 Q-057a765e7746df3f (未决)</a>另一种场景发生在当作为类型实参传递的 <code>T</code> 本身不是为其存在 <code>variant_alternative</code> 的基本特化的有效变体类型时。在这种情况下，编译器无法解析递归或对非限定变体的访问，这同样会导致编译立即中止。
 </p>
 <!-- annahmen: 1) Der Verweis auf [variant] in der Beschreibung bezieht sich auf das Template ara::core::variant analog zu std::variant. – Begründung: Der Payload enthält lediglich die Kurzbeschreibung "As per corresponding usage in [variant]". 2) Die Spezialisierung stellt den Member-Typ type bereit, welcher dem I-ten Alternativentyp mit const-volatile-Qualifizierung entspricht. – Begründung: Dies entspricht dem normativen C++-Verhalten von std::variant_alternative für cv-qualifizierte Typen. 3) Ein Index I außerhalb des Wertebereichs oder ein nicht-unterstützter Typ T führt zu einem Übersetzungsfehler. – Begründung: Type-Traits für Varianten-Alternativen validieren Indizes zur Compile-Zeit. -->
 </div>

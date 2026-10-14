@@ -1652,23 +1652,25 @@
         '<button type="button" class="ve-btn ve-collapse" data-role="collapse" aria-pressed="false" aria-controls="ve-panel-' + tab + '">' +
         esc(t("cat_hide")) + "</button>" +
         "</div>" +
-        '<div class="ve-chiprow" data-role="chips"></div>' +
         '<div class="ve-notice" data-role="notice" hidden></div>' +
         '<div class="ve-md" data-role="md">' +
         '<aside class="ve-facets" id="ve-facets-' + tab + '" data-role="facets" aria-label="' + esc(t("filters")) + '">' +
         '<div class="ve-facets-head"><strong>' + esc(t("filters_search")) + '</strong><button type="button" class="ve-btn ve-facets-close" data-role="fclose">' +
         esc(t("close")) + '</button></div>' +
-        // Suche oben in der Filterleiste, darunter Gruppieren & Sortieren als eingerückte Karte, dann die Facetten
         '<div class="ve-search"><span class="ve-search-icon" aria-hidden="true">⌕</span>' +
         '<input type="search" class="ve-input" autocomplete="off" spellcheck="false" data-role="q" aria-label="' +
         esc(t("ph_" + tab)) + '" placeholder="' + esc(t("ph_" + tab)) + '"></div>' +
+        '<div class="ve-facets-body" data-role="fbody"></div></aside>' +
+        '<div class="ve-chiprow" data-role="chiprow">' +
+        '<div class="ve-chips" data-role="chips"></div>' +
+        '<span class="ve-busy" data-role="busy" role="status" hidden><span class="ve-busy-spin" aria-hidden="true"></span><span data-role="busytext"></span></span>' +
         '<section class="ve-ocard" data-role="ocard">' +
-        '<button type="button" class="ve-ohead" data-role="otoggle" aria-expanded="false" aria-controls="ve-order-' + tab + '" title="' +
+        '<button type="button" class="ve-ohead" data-role="otoggle" aria-expanded="false" aria-controls="ve-order-' + tab + '" aria-haspopup="dialog" title="' +
         esc(t("order_hint")) + '"><span class="ve-ocaret" aria-hidden="true">▸</span><span class="ve-otitle">' + esc(t("order")) +
         '</span><span class="ve-badge" data-role="obadge"></span></button>' +
-        '<div class="ve-obody" id="ve-order-' + tab + '" data-role="opanel" role="group" aria-label="' + esc(t("order")) + '" hidden></div>' +
+        '<div class="ve-obody" id="ve-order-' + tab + '" data-role="opanel" role="dialog" aria-modal="false" aria-label="' + esc(t("order")) + '" hidden></div>' +
         '</section>' +
-        '<div class="ve-facets-body" data-role="fbody"></div></aside>' +
+        '</div>' +
         '<div class="ve-listpane" data-role="listpane"><div class="ve-listhead"><span data-role="count">' +
         esc(t("loading")) + '</span><span class="ve-kbd-hint">' + esc(t("kbd_hint")) + '</span></div>' +
         '<div class="ve-vlist" role="listbox" tabindex="0" data-role="list" aria-label="' + esc(t("list_" + tab)) +
@@ -1690,6 +1692,7 @@
       var r = { panel: panel };
       panel.querySelectorAll("[data-role]").forEach(function (el) { r[el.getAttribute("data-role")] = el; });
       r.vlist = new VList(tab, r.list, r.space, ROW_H[tab]);
+      r.list.setAttribute("aria-busy", "false");
       ui[tab] = r;
       // Rad am Listen- oder Filterrand bleibt im Bereich und zieht nicht die Seite mit.
       r.list.style.overscrollBehavior = "contain";
@@ -1717,7 +1720,7 @@
     this.tab = tab; this.el = el; this.space = space; this.rowH = rowH;
     this.items = []; this.active = -1; this.openKey = null; this.raf = 0; this.version = 0; this.lastKey = "";
     var self = this;
-    el.addEventListener("scroll", function () { self.schedule(); }, { passive: true });
+    el.addEventListener("scroll", function () { self.updateSticky(); self.schedule(); }, { passive: true });
     el.addEventListener("click", function (e) {
       var row = e.target.closest("[data-k]");
       if (!row) return;
@@ -1790,7 +1793,8 @@
   };
   VList.prototype.ensureVisible = function (k) {
     var top = k * this.rowH, el = this.el;
-    if (top < el.scrollTop) el.scrollTop = top;
+    var stickyOffset = (this.depth || 0) * this.rowH;
+    if (top < el.scrollTop + stickyOffset) el.scrollTop = Math.max(0, top - stickyOffset);
     else if (top + this.rowH > el.scrollTop + el.clientHeight) el.scrollTop = top + this.rowH - el.clientHeight;
   };
   VList.prototype.setActive = function (k, scroll) {
@@ -1798,37 +1802,159 @@
     if (scroll) this.ensureVisible(k);
     this.render();
   };
+  VList.prototype.findActiveHeaders = function () {
+    if (!this.depth || !this.items.length) return [];
+    var el = this.el, h = this.rowH, n = this.items.length;
+    var topRow = Math.min(n - 1, Math.max(0, Math.floor(el.scrollTop / h)));
+    var active = [];
+    for (var l = 0; l < this.depth; l++) active[l] = -1;
+    // Ancestor chain of the row at the scroll position. After a header of
+    // level L is chosen, a deeper header further up belongs to the previous
+    // sibling and must not stay sticky under the new parent.
+    var open = this.depth;
+    for (var j = topRow; j >= 0 && open > 0; j--) {
+      var it = this.items[j];
+      if (!(it < 0)) continue;
+      var g = groupOf(this.tab, it);
+      if (!g || g.level >= open || g.level >= this.depth) continue;
+      active[g.level] = j;
+      open = g.level;
+    }
+    // A child header one or two rows below the top row can already have
+    // crossed its sticky slot while the top row is still its parent.
+    var sTop = el.scrollTop;
+    var limit = Math.min(n - 1, topRow + this.depth);
+    for (var j2 = topRow + 1; j2 <= limit; j2++) {
+      var it2 = this.items[j2];
+      if (!(it2 < 0)) continue;
+      var g2 = groupOf(this.tab, it2);
+      if (!g2 || g2.level >= this.depth) continue;
+      if (active[g2.level] !== -1) break;
+      var nested = true;
+      for (var p = 0; p < g2.level; p++) if (active[p] < 0) nested = false;
+      if (!nested) break;
+      if (j2 * h > sTop + g2.level * h) break;
+      active[g2.level] = j2;
+    }
+    return active;
+  };
+  VList.prototype.updateSticky = function (active) {
+    if (!this.depth || !this.items.length) return;
+    active = active || this.findActiveHeaders();
+    var el = this.el, h = this.rowH, n = this.items.length, sTop = el.scrollTop;
+    var activeMap = {};
+    var top = [];
+    var natural = [];
+    var maxTop = [];
+    for (var l = 0; l < active.length; l++) {
+      var k = active[l];
+      top[l] = null;
+      natural[l] = null;
+      maxTop[l] = null;
+      if (k < 0) continue;
+      activeMap[k] = l;
+      natural[l] = k * h;
+      var nextK = n;
+      for (var m = k + 1; m < n; m++) {
+        if (this.items[m] < 0) {
+          var mg = groupOf(this.tab, this.items[m]);
+          if (mg && mg.level <= l) { nextK = m; break; }
+        }
+      }
+      // Stop this header at the next header that closes its level. Deeper
+      // levels reserve their own row; reserving the whole remaining stack
+      // here pulls a child up through its parent.
+      maxTop[l] = nextK * h - h;
+      var slot = sTop + l * h;
+      top[l] = Math.max(natural[l], Math.min(slot, maxTop[l]));
+    }
+    // A header the next section has pushed above its parent leaves upward.
+    // If its natural place is already clear of the live stack, use that;
+    // otherwise park it just above the stack so the boxes do not overlap.
+    var floor = sTop;
+    var above = sTop;
+    for (var i = 0; i < active.length; i++) {
+      if (top[i] == null) continue;
+      if (top[i] < floor) {
+        var parked = natural[i];
+        if (parked + h > sTop) {
+          above -= h;
+          parked = Math.min(above, maxTop[i]);
+        }
+        top[i] = parked < natural[i] ? natural[i] : parked;
+      } else {
+        floor = top[i] + h;
+      }
+    }
+    for (var l2 = 0; l2 < active.length; l2++) {
+      var k2 = active[l2];
+      if (k2 < 0 || top[l2] == null) continue;
+      var rowEl = this.space.querySelector('.ve-row[data-k="' + k2 + '"]');
+      if (!rowEl) continue;
+      rowEl.style.top = top[l2] + "px";
+      if (top[l2] > natural[l2] + 0.5) {
+        rowEl.classList.add("is-sticky");
+        rowEl.style.zIndex = String(10 + (this.depth - l2));
+      } else {
+        rowEl.classList.remove("is-sticky");
+        rowEl.style.zIndex = "";
+      }
+    }
+    var allSticky = this.space.querySelectorAll(".ve-grow.is-sticky");
+    for (var i = 0; i < allSticky.length; i++) {
+      var sk = +allSticky[i].getAttribute("data-k");
+      if (activeMap[sk] == null) {
+        allSticky[i].classList.remove("is-sticky");
+        allSticky[i].style.zIndex = "";
+        allSticky[i].style.top = (sk * h) + "px";
+      }
+    }
+  };
   VList.prototype.render = function () {
     var el = this.el, n = this.items.length, h = this.rowH, total = Math.max(n, this.total || 0);
     var start = Math.max(0, Math.floor(el.scrollTop / h) - 8);
     var end = Math.min(total, Math.ceil((el.scrollTop + (el.clientHeight || 600)) / h) + 8);
-    // Zeilen nur neu aufbauen, wenn sich Fenster, Daten oder geöffnetes Element ändern; sonst
-    // bleiben die Knoten erhalten (ein Klick, der den Fokus setzt, trifft weiter dieselbe Zeile)
-    var key = start + ":" + end + ":" + this.version + ":" + this.openKey;
+    var active = this.findActiveHeaders();
+    var extraK = [];
+    for (var a = 0; a < active.length; a++) {
+      var ak = active[a];
+      if (ak >= 0 && ak < start) extraK.push(ak);
+    }
+    extraK.sort(function (x, y) { return x - y; });
+    var key = start + ":" + end + ":" + this.version + ":" + this.openKey + ":" + extraK.join(",");
+    var self = this;
     if (key !== this.lastKey) {
       var out = [];
-      for (var k = start; k < end; k++) {
+      var renderRow = function (k) {
         if (k >= n) {
           out.push('<div class="ve-row ve-row-ph" aria-hidden="true" style="top:' + (k * h) + "px;height:" + h + 'px"></div>');
-          continue;
+          return;
         }
-        var it = this.items[k];
+        var it = self.items[k];
         if (it < 0) {
-          var gc = groupCollapsed(this.tab, it);
-          out.push('<div class="ve-row ve-grow' + (gc ? " is-collapsed" : "") + '" role="option" id="ve-opt-' + this.tab + "-" + k +
-            '" data-k="' + k + '" aria-selected="false" aria-expanded="' + (gc ? "false" : "true") + '" aria-setsize="' + total +
-            '" aria-posinset="' + (k + 1) + '" style="top:' + (k * h) + "px;height:" + h + 'px">' + groupHtml(this.tab, it, gc) + "</div>");
-          continue;
+          var gc = groupCollapsed(self.tab, it);
+          var g = groupOf(self.tab, it);
+          var lvl = g ? (g.level + 1) : 1;
+          out.push('<div class="ve-row ve-grow ve-grow-lvl-' + lvl + (gc ? " is-collapsed" : "") + '" role="option" id="ve-opt-' + self.tab + "-" + k +
+            '" data-k="' + k + '" data-level="' + lvl + '" aria-selected="false" aria-expanded="' + (gc ? "false" : "true") + '" aria-setsize="' + total +
+            '" aria-posinset="' + (k + 1) + '" style="top:' + (k * h) + "px;height:" + h + 'px">' + groupHtml(self.tab, it, gc) + "</div>");
+          return;
         }
-        var open = this.keyOf(it) === this.openKey;
-        out.push('<div class="ve-row' + (open ? " is-open" : "") + '" role="option" id="ve-opt-' + this.tab + "-" + k +
+        var open = self.keyOf(it) === self.openKey;
+        out.push('<div class="ve-row' + (open ? " is-open" : "") + '" role="option" id="ve-opt-' + self.tab + "-" + k +
           '" data-k="' + k + '" aria-selected="' + (open ? "true" : "false") + '" aria-setsize="' + total + '" aria-posinset="' + (k + 1) +
-          '" style="top:' + (k * h) + "px;height:" + h + "px" + (this.depth ? ";padding-inline-start:" + (0.75 + this.depth * 0.9) + "rem" : "") +
-          '">' + rowHtml(this.tab, it) + "</div>");
+          '" style="top:' + (k * h) + "px;height:" + h + "px" + (self.depth ? ";padding-inline-start:" + (0.75 + self.depth * 0.9) + "rem" : "") +
+          '">' + rowHtml(self.tab, it) + "</div>");
+      };
+      for (var e = 0; e < extraK.length; e++) renderRow(extraK[e]);
+      for (var k = start; k < end; k++) {
+        if (extraK.indexOf(k) >= 0) continue;
+        renderRow(k);
       }
       this.space.innerHTML = out.join("");
       this.lastKey = key;
     }
+    this.updateSticky(active);
     var prev = this.space.querySelector(".ve-row.is-active");
     if (prev && +prev.getAttribute("data-k") !== this.active) prev.classList.remove("is-active");
     var cur = this.active >= 0 ? this.space.querySelector('[data-k="' + this.active + '"]') : null;
@@ -1858,7 +1984,11 @@
     var g = groupOf(tab, entry);
     if (!g) return "";
     var label = groupLabel(tab, g);
-    return '<div class="ve-ghead" style="padding-inline-start:' + (g.level * 0.9) + 'rem" title="' + esc(t("grp_toggle")) + '">' +
+    var lvl = (g.level || 0) + 1;
+    // Box offset stays on .ve-grow[data-level] (0 / 12 / 24 px). Header padding
+    // is 0 so the two indents do not stack.
+    var pad = "0rem";
+    return '<div class="ve-ghead ve-ghead-lvl-' + lvl + '" data-level="' + lvl + '" style="padding-inline-start:' + pad + '" title="' + esc(t("grp_toggle")) + '">' +
       '<span class="ve-gcaret" aria-hidden="true">' + (collapsed ? "▸" : "▾") + "</span>" +
       '<span class="ve-gfield">' + esc(t("of_" + g.f)) + ":</span> " +
       '<span class="ve-glabel">' + esc(label) + "</span>" +
@@ -1922,49 +2052,84 @@
     });
     return changed;
   }
-  function orderOptions(tab, kind, cur, used, empty) {
-    // Leere Wahl nennt die Aufgabe (im kompakten Modus ohne Beschriftung über dem Feld)
-    var html = '<option value="">' + esc(empty ? empty + " " + t("order_none") : t("order_none")) + "</option>";
-    C.ORDER_FIELDS[tab].forEach(function (fd) {
-      if (!fd[kind] || (used[fd.f] && fd.f !== cur)) return;
-      html += '<option value="' + fd.f + '"' + (fd.f === cur ? " selected" : "") + ">" + esc(t("of_" + fd.f)) + "</option>";
-    });
-    return html;
-  }
-  function dirButton(kind, k, o) {
-    var d = o ? o.d : 1, lbl = t(d < 0 ? "order_desc" : "order_asc");
-    return '<button type="button" class="ve-btn ve-odir" data-odir="' + kind + '" data-k="' + k + '"' + (o ? "" : " disabled") +
-      ' aria-label="' + esc(lbl) + '" title="' + esc(lbl) + '">' + (d < 0 ? "↓" : "↑") + "</button>";
-  }
-  // Karte „Gruppieren & Sortieren“ in der Filterleiste: drei Ebenen nebeneinander, je Ebene Gruppieren über
-  // Sortieren; zwischen den Spalten „alle einklappen“ (nach Ebene 1) und „alle ausklappen“ (nach Ebene 2),
-  // ganz rechts „zurücksetzen“. Zu schmal für drei Spalten: je Ebene eine Zeile mit ihrem Knopf daneben
-  // (Containerabfrage im Stil, Spalten bleiben ausgerichtet).
-  function iconButton(act, label, glyph, enabled) {
-    return '<button type="button" class="ve-btn ve-oicon" data-oact="' + act + '"' + (enabled ? "" : " disabled") + ' aria-label="' +
-      esc(label) + '" title="' + esc(label) + '"><span aria-hidden="true">' + glyph + "</span></button>";
-  }
+  // Group & sort overlay: an action bar (collapse, expand, reset), then one row of
+  // grouping badges and one row of sort badges. Selected levels are filled badges;
+  // the next level shows the remaining choices. Sort badges toggle direction;
+  // a selected grouping badge removes that level.
   function renderOrderPanel(tab) {
     var r = ui[tab], sel = state[tab], G = sel.g || [], S = sel.s || [];
     var usedG = {}, usedS = {};
     G.forEach(function (o) { usedG[o.f] = 1; });
     S.forEach(function (o) { usedS[o.f] = 1; });
     var grouped = G.length > 0;
-    var gaps = [iconButton("collapse", t("order_collapse_all"), "⊟", grouped), iconButton("expand", t("order_expand_all"), "⊞", grouped),
-                iconButton("reset", t("order_reset"), "↺", grouped || S.length > 0)];
-    var html = '<p class="ve-ohint">' + esc(t("order_hint")) + '</p><div class="ve-ogrid">';
-    for (var k = 0; k < C.ORDER_MAX; k++) {
-      var g = G[k], so = S[k], lvl = t("order_level", { n: k + 1 });
-      html += '<div class="ve-ocol" data-level="' + k + '"><div class="ve-olvl">' + esc(lvl) + "</div>" +
-        '<div class="ve-osel"><span class="ve-ocap">' + esc(t("order_group")) + '</span><span class="ve-oline"><select data-ogroup="' + k +
-        '" aria-label="' + esc(lvl + " · " + t("order_group")) + '">' + orderOptions(tab, "g", g && g.f, usedG, t("order_group")) +
-        "</select>" + dirButton("g", k, g) + "</span></div>" +
-        '<div class="ve-osel"><span class="ve-ocap">' + esc(t("order_sort")) + '</span><span class="ve-oline"><select data-osort="' + k +
-        '" aria-label="' + esc(lvl + " · " + t("order_sort")) + '">' + orderOptions(tab, "s", so && so.f, usedS, t("order_sort")) +
-        "</select>" + dirButton("s", k, so) + "</span></div></div>" +
-        '<div class="ve-ogap" data-gap="' + k + '">' + gaps[k] + "</div>";
+    var sorted = S.length > 0;
+
+    var html = '<div class="ve-oactions ve-oacts">' +
+      '<button type="button" class="ve-btn ve-oicon" data-oact="collapse"' + (grouped ? "" : " disabled") +
+      ' aria-label="' + esc(t("order_collapse_all")) + '" title="' + esc(t("order_collapse_all")) + '"><span aria-hidden="true">⊟</span></button>' +
+      '<button type="button" class="ve-btn ve-oicon" data-oact="expand"' + (grouped ? "" : " disabled") +
+      ' aria-label="' + esc(t("order_expand_all")) + '" title="' + esc(t("order_expand_all")) + '"><span aria-hidden="true">⊞</span></button>' +
+      '<button type="button" class="ve-btn ve-oreset" data-oact="reset"' + (grouped || sorted ? "" : " disabled") +
+      ' aria-label="' + esc(t("order_reset")) + '" title="' + esc(t("order_reset")) + '"><span aria-hidden="true">↺</span> <span>' +
+      esc(t("reset")) + "</span></button>" +
+      "</div>";
+
+    function renderSection(kind) {
+      var isG = kind === "g";
+      var list = isG ? G : S;
+      var used = isG ? usedG : usedS;
+      var fields = (C.ORDER_FIELDS[tab] || []).filter(function (fd) { return fd[kind]; });
+
+      var rowHtml = '<div class="ve-orow ve-orow-' + kind + '" data-orow="' + kind + '" data-kind="' + kind + '">';
+      rowHtml += '<div class="ve-ovlabel" aria-hidden="true">' + esc(t(isG ? "order_group_label" : "order_sort_label")) + "</div>";
+      rowHtml += '<div class="ve-orow-content">';
+
+      // 1. Bereits definierte Ebenen
+      for (var lvl = 0; lvl < list.length; lvl++) {
+        var item = list[lvl];
+        var fld = item.f;
+        var dirStr = item.d < 0 ? "↓" : "↑";
+        var dirTitle = t(item.d < 0 ? "order_desc" : "order_asc");
+        rowHtml += '<div class="ve-olevel ve-olvl ve-olevel-selected" data-level="' + lvl + '">';
+        rowHtml += '<span class="ve-olvl-tag">' + (lvl + 1) + "</span>";
+        rowHtml += '<button type="button" class="ve-obadge is-selected" data-kind="' + kind + '" data-field="' + esc(fld) + '" data-level="' + lvl + '"';
+        if (!isG) {
+          rowHtml += ' title="' + esc(t("order_toggle_dir") + " (" + dirTitle + ") · " + t("order_remove")) + '"';
+        } else {
+          rowHtml += ' title="' + esc(t("order_remove")) + '"';
+        }
+        rowHtml += ">";
+        if (!isG) {
+          rowHtml += '<span class="ve-obadge-dir" aria-hidden="true">' + dirStr + "</span> ";
+        }
+        rowHtml += '<span class="ve-obadge-l">' + esc(t("of_" + fld)) + "</span>";
+        rowHtml += '<span class="ve-obadge-x" data-remove="' + kind + '" data-level="' + lvl + '" aria-label="' + esc(t("order_remove")) + '">✕</span>';
+        rowHtml += "</button></div>";
+      }
+
+      // 2. Progressive Ebenen: Nächste undefinierte Ebene anzeigen, darüber liegende verbergen
+      if (list.length < C.ORDER_MAX) {
+        var nextLvl = list.length;
+        rowHtml += '<div class="ve-olevel ve-olvl ve-olevel-choices" data-level="' + nextLvl + '">';
+        if (list.length > 0) {
+          rowHtml += '<span class="ve-olvl-tag">' + (nextLvl + 1) + "</span>";
+        }
+        fields.forEach(function (fd) {
+          if (used[fd.f]) return;
+          rowHtml += '<button type="button" class="ve-obadge" data-kind="' + kind + '" data-field="' + esc(fd.f) + '" data-level="' + nextLvl + '"' +
+            ' aria-label="' + esc(t("order_level", { n: nextLvl + 1 }) + " · " + t(isG ? "order_group" : "order_sort") + ": " + t("of_" + fd.f)) + '">' +
+            esc(t("of_" + fd.f)) + "</button>";
+        });
+        rowHtml += "</div>";
+      }
+
+      rowHtml += "</div></div>";
+      return rowHtml;
     }
-    html += "</div>";
+
+    html += renderSection("g");
+    html += renderSection("s");
+
     r.opanel.innerHTML = html;
     var n = G.length + S.length;
     r.obadge.textContent = n ? String(n) : "";
@@ -1975,15 +2140,11 @@
     r.otoggle.setAttribute("aria-expanded", open ? "true" : "false");
     r.ocard.classList.toggle("is-open", open);
     if (open) renderOrderPanel(tab);
-    layout();
   }
-  // Auswahl im Panel -> Zustand (leere Ebenen rücken auf), Liste, URL und Speicher
-  function readOrderPanel(tab) {
-    var r = ui[tab], G = [], S = [], old = state[tab];
-    function dirOf(list, f) { for (var k = 0; k < list.length; k++) if (list[k].f === f) return list[k].d; return 1; }
-    r.opanel.querySelectorAll("select[data-ogroup]").forEach(function (sl) { if (sl.value) G.push({ f: sl.value, d: dirOf(old.g, sl.value) }); });
-    r.opanel.querySelectorAll("select[data-osort]").forEach(function (sl) { if (sl.value) S.push({ f: sl.value, d: dirOf(old.s, sl.value) }); });
-    return { g: G, s: S };
+  // After add/remove, focus the badge now sitting at this level (the shifted
+  // selection, or the first choice when the level opened up).
+  function orderLevelFocus(kind, lvl) {
+    return '.ve-orow-' + kind + ' .ve-olevel[data-level="' + lvl + '"] .ve-obadge';
   }
   function applyOrder(tab, spec, focusSel) {
     var r = ui[tab];
@@ -1991,34 +2152,111 @@
     state[tab].s = C.parseOrderList(tab, C.orderListText(spec.s), "s");
     r.collapsed = {};
     saveOrder(tab);
-    refresh(tab);
+    refreshInteractive(tab, false, "busy_group");
     commit(true);
-    if (!r.opanel.hidden) {
-      renderOrderPanel(tab);
-      var f = focusSel ? r.opanel.querySelector(focusSel) : null;
+    renderOrderPanel(tab);
+    if (!r.opanel.hidden && focusSel) {
+      var f = r.opanel.querySelector(focusSel);
       if (f) f.focus();
-    } else renderOrderPanel(tab);
+    }
   }
   function wireOrder(tab, r) {
     r.collapsed = {};
-    r.otoggle.addEventListener("click", function () { setOrderOpen(tab, r.opanel.hidden); });
-    r.opanel.addEventListener("change", function (e) {
-      var sl = e.target.closest("select[data-ogroup],select[data-osort]");
-      if (!sl) return;
-      var which = sl.hasAttribute("data-ogroup") ? "data-ogroup" : "data-osort";
-      applyOrder(tab, readOrderPanel(tab), "select[" + which + '="' + sl.getAttribute(which) + '"]');
+    r.otoggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setOrderOpen(tab, r.opanel.hidden);
     });
     r.opanel.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-odir],[data-oact]");
-      if (!b || b.disabled) return;
-      var act = b.getAttribute("data-oact");
-      if (act === "collapse" || act === "expand") { setAllGroups(tab, act === "collapse"); return; }
-      if (act === "reset") { applyOrder(tab, { g: [], s: [] }, "select[data-ogroup]"); return; }
-      var kind = b.getAttribute("data-odir"), k = +b.getAttribute("data-k");
-      var spec = { g: state[tab].g.slice(), s: state[tab].s.slice() };
-      var list = spec[kind];
-      if (list[k]) list[k] = { f: list[k].f, d: -list[k].d };
-      applyOrder(tab, spec, '[data-odir="' + kind + '"][data-k="' + k + '"]');
+      e.stopPropagation();
+      var actBtn = e.target.closest("[data-oact]");
+      if (actBtn && !actBtn.disabled) {
+        var act = actBtn.getAttribute("data-oact");
+        if (act === "collapse" || act === "expand") {
+          setAllGroups(tab, act === "collapse");
+          return;
+        }
+        if (act === "reset") {
+          applyOrder(tab, { g: [], s: [] }, ".ve-orow-g .ve-obadge");
+          return;
+        }
+      }
+      var rm = e.target.closest("[data-remove]");
+      if (rm) {
+        e.stopPropagation();
+        var rmKind = rm.getAttribute("data-remove");
+        var rmLvl = +rm.getAttribute("data-level");
+        var spec = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
+        if (spec[rmKind] && spec[rmKind][rmLvl] != null) {
+          spec[rmKind].splice(rmLvl, 1);
+          applyOrder(tab, spec, orderLevelFocus(rmKind, rmLvl));
+        }
+        return;
+      }
+      var badge = e.target.closest(".ve-obadge");
+      if (!badge || badge.disabled) return;
+      var kind = badge.getAttribute("data-kind");
+      var fld = badge.getAttribute("data-field");
+      var lvl = +badge.getAttribute("data-level");
+      if (badge.classList.contains("is-selected")) {
+        if (kind === "s") {
+          var specS = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
+          if (specS.s[lvl]) {
+            specS.s[lvl] = { f: specS.s[lvl].f, d: -specS.s[lvl].d };
+            applyOrder(tab, specS, orderLevelFocus("s", lvl));
+          }
+        } else if (kind === "g") {
+          var specG = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
+          if (specG.g[lvl] != null) {
+            specG.g.splice(lvl, 1);
+            applyOrder(tab, specG, orderLevelFocus("g", lvl));
+          }
+        }
+        return;
+      }
+      var specAdd = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
+      if (kind === "g" && specAdd.g.length < C.ORDER_MAX) {
+        specAdd.g.push({ f: fld, d: 1 });
+        applyOrder(tab, specAdd, orderLevelFocus("g", specAdd.g.length - 1));
+      } else if (kind === "s" && specAdd.s.length < C.ORDER_MAX) {
+        specAdd.s.push({ f: fld, d: 1 });
+        applyOrder(tab, specAdd, orderLevelFocus("s", specAdd.s.length - 1));
+      }
+    });
+    r.opanel.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOrderOpen(tab, false);
+        r.otoggle.focus();
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        var row = document.activeElement.closest(".ve-orow, .ve-oactions");
+        if (!row) return;
+        var buttons = Array.from(row.querySelectorAll("button:not([disabled])"));
+        var idx = buttons.indexOf(document.activeElement);
+        if (idx < 0) return;
+        var isRtl = document.documentElement.getAttribute("dir") === "rtl";
+        var nextIdx;
+        if (e.key === "ArrowRight") {
+          nextIdx = isRtl ? (idx - 1 + buttons.length) % buttons.length : (idx + 1) % buttons.length;
+        } else {
+          nextIdx = isRtl ? (idx + 1) % buttons.length : (idx - 1 + buttons.length) % buttons.length;
+        }
+        buttons[nextIdx].focus();
+        e.preventDefault();
+      }
+    });
+    document.addEventListener("click", function (e) {
+      if (r.ocard && r.ocard.classList.contains("is-open") && !r.ocard.contains(e.target)) {
+        setOrderOpen(tab, false);
+        r.otoggle.focus();
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && r.ocard && r.ocard.classList.contains("is-open")) {
+        setOrderOpen(tab, false);
+        r.otoggle.focus();
+      }
     });
   }
 
@@ -2078,7 +2316,7 @@
     r.q.addEventListener("input", function () {
       state[tab].q = r.q.value;
       clearTimeout(timer);
-      timer = setTimeout(function () { refresh(tab); commit(false); }, 120);
+      timer = setTimeout(function () { refreshInteractive(tab, false, "busy_filter"); commit(false); }, 120);
     });
     r.q.addEventListener("keydown", function (e) {
       if (e.key === "ArrowDown") { e.preventDefault(); r.list.focus(); }
@@ -2098,7 +2336,7 @@
       fresh.g = state[tab].g; fresh.s = state[tab].s;   // Gruppierung/Sortierung ist kein Filter
       state[tab] = fresh;
       r.q.value = "";
-      refresh(tab);
+      refreshInteractive(tab, false, "busy_filter");
       commit(true);
     });
     r.back.addEventListener("click", function () { closeDetail(tab); });
@@ -2129,7 +2367,7 @@
       var s = e.target.closest("select[data-fsel]");
       if (!s) return;
       state[tab][s.getAttribute("data-fsel")] = s.value;
-      refresh(tab);
+      refreshInteractive(tab, false, "busy_filter");
       commit(true);
     });
     r.fbody.addEventListener("input", function (e) {
@@ -2149,7 +2387,7 @@
       if (key === "q") {
         state[tab].q = "";
         r.q.value = "";
-        refresh(tab);
+        refreshInteractive(tab, false, "busy_filter");
         commit(true);
         r.q.focus();
         return;
@@ -2188,7 +2426,7 @@
     } else {
       state[tab][key] = cur === val ? "" : val;
     }
-    refresh(tab);
+    refreshInteractive(tab, false, "busy_filter");
     commit(true);
   }
 
@@ -2502,7 +2740,54 @@
   }
 
   // ------------------------------------------------------------------ Filtern & Darstellen
-  function refresh(tab, keepFacetFocus) {
+  // Shown only after regroup/filter/sort has already run for this long, so fast
+  // updates never flash. The list update itself stays synchronous; facets and
+  // chips yield once the threshold is crossed so the indicator can paint.
+  var LIST_BUSY_MS = 150;
+  function setListBusy(tab, on, key) {
+    var r = ui[tab];
+    if (!r || !r.list) return;
+    if (on) {
+      if (r.busytext) r.busytext.textContent = key === "busy_filter" ? t("busy_filter") : t("busy_group");
+      if (r.busy) r.busy.hidden = false;
+      r.list.setAttribute("aria-busy", "true");
+    } else {
+      r.list.setAttribute("aria-busy", "false");
+      if (r.busy) r.busy.hidden = true;
+    }
+  }
+  function refreshInteractive(tab, keepFacetFocus, busyKey) {
+    var r = ui[tab];
+    if (!r) return;
+    var job = (r._ijob = (r._ijob || 0) + 1);
+    var now = function () { return (window.performance && performance.now) ? performance.now() : Date.now(); };
+    var t0 = now();
+    refresh(tab, keepFacetFocus, { skipTail: true });
+    if (r._ijob !== job) return;
+    function tail() {
+      if (r._ijob !== job) return;
+      refreshFacets(tab, keepFacetFocus);
+      refreshChips(tab);
+      if (!r._busyOn) return;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (r._ijob !== job) return;
+          setListBusy(tab, false);
+          r._busyOn = false;
+        });
+      });
+    }
+    if (now() - t0 >= LIST_BUSY_MS) {
+      setListBusy(tab, true, busyKey);
+      r._busyOn = true;
+      setTimeout(tail, 0);
+      return;
+    }
+    if (r._busyOn) { setListBusy(tab, false); r._busyOn = false; }
+    tail();
+  }
+
+  function refresh(tab, keepFacetFocus, opts) {
     var D = data[tab];
     var r = ui[tab];
     if (!D) {
@@ -2556,6 +2841,7 @@
     }
     measure("ve:" + tab + ":list", "ve:" + tab + ":list0");
     if (tab === state.tab) layout();
+    if (opts && opts.skipTail) return;
     if (first) {
       // Erstes Zeichnen: Zeilen zuerst; Facetten und Chips im nächsten Task, damit die Liste sofort erscheint
       afterPaint(function () {
@@ -3728,7 +4014,6 @@
   }
   TABS.forEach(function (tab) {
     renderOrderPanel(tab);
-    if (C.orderActive(state, tab)) setOrderOpen(tab, true);
   });
   // Katalog (Liste) und Filterliste starten in allen drei Reitern sichtbar, auch bei einem Deep-Link.
   TABS.forEach(function (tab) {

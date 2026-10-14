@@ -39,7 +39,7 @@
 <p><code>ara::per::WriteAccessor</code>은 AUTOSAR Adaptive Platform 지속성 모듈(<code>per</code>)의 최종(final) 클래스이며 <code>FileAccessor</code>에서 가상으로 상속받습니다. 이 클래스는 파일 콘텐츠에 대한 쓰기 작업을 제공합니다. <code>ara::core::Result</code>을 통한 오류 처리와 함께 비포맷 제어 쓰기를 위한 메서드 및 포맷된 쓰기를 위한 오버로드된 스트림 연산자를 제공합니다. 상호작용 주체로는 호출 애플리케이션, 운영체제의 내부 파일 버퍼 및 물리적 스토리지 매체가 있습니다.</p>
 
 <h4>수명 주기</h4>
-<p><code>WriteAccessor</code>의 기본 생성자는 명시적으로 삭제되었으며 사용할 수 없습니다 <a class="spec-record-ref" data-req="SWS_PER_00596" href="../spec/record.html?id=SWS_PER_00596">[SWS_PER_00596]</a>. (해석: <code>WriteAccessor</code>의 인스턴스는 파일 스토리지와 같은 상위 지속성 관리 유닛의 팩토리 메서드를 통해 생성 및 제공될 것으로 보입니다.)</p>
+<p><code>WriteAccessor</code>의 기본 생성자는 명시적으로 삭제되었으며 사용할 수 없습니다 <a class="spec-record-ref" data-req="SWS_PER_00596" href="../spec/record.html?id=SWS_PER_00596">[SWS_PER_00596]</a>. (해석: <code>WriteAccessor</code>의 인스턴스는 파일 스토리지와 같은 상위 지속성 관리 유닛의 팩토리 메서드를 통해 생성 및 제공될 것으로 보입니다.) <a class="interp-q interp-q-open" data-q="Q-af92be8494274611" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-af92be8494274611" title="질문 Q-af92be8494274611 (열림): Instanziierung erfolgt über übergeordnete Persistenz-Mechanismen">질문 Q-af92be8494274611 (열림)</a></p>
 <p>소멸은 가상 소멸자 <code>~WriteAccessor()</code>을 통해 수행됩니다 <a class="spec-record-ref" data-req="SWS_PER_00597" href="../spec/record.html?id=SWS_PER_00597">[SWS_PER_00597]</a>. 클래스 및 해당 메서드는 예외 안전(“exception safe”)으로 명시되어 있으며 <code>noexcept</code>(으)로 선언되어 있습니다. 동시성과 관련하여 <code>WriteAccessor</code>은 스레드 안전하지 않습니다(“not thread-safe”) <a class="spec-record-ref" data-req="SWS_PER_00597" href="../spec/record.html?id=SWS_PER_00597">[SWS_PER_00597]</a>. 동일 인스턴스에 대한 병렬 접근은 애플리케이션에서 외부적으로 보호해야 합니다.</p>
 
 <h4>사용 경로</h4>
@@ -236,7 +236,7 @@
 <li><code>PerErrc::kAuthenticationFailed</code>: 데이터에 대한 MAC 계산이 실패할 때(롤백 시맨틱 적용) <a class="spec-record-ref" data-req="SWS_PER_00122" href="../spec/record.html?id=SWS_PER_00122">[SWS_PER_00122]</a>.</li>
 </ul>
 
-<p>실행 안전성과 관련하여 이 메서드는 <code>noexcept</code>(으)로 선언되어 있으며 <code>exception safe</code>(으)로 명시되어 있습니다 <a class="spec-record-ref" data-req="SWS_PER_00122" href="../spec/record.html?id=SWS_PER_00122">[SWS_PER_00122]</a>. 그러나 명시적으로 <code>not thread-safe</code>(으)로 분류되어 있으므로 동일한 <code>WriteAccessor</code> 인스턴스에 대한 동시 호출은 호출자에 의해 동기화되어야 할 것으로 보입니다 <a class="spec-record-ref" data-req="SWS_PER_00122" href="../spec/record.html?id=SWS_PER_00122">[SWS_PER_00122]</a>.</p>
+<p>실행 안전성과 관련하여 이 메서드는 <code>noexcept</code>(으)로 선언되어 있으며 <code>exception safe</code>(으)로 명시되어 있습니다 <a class="spec-record-ref" data-req="SWS_PER_00122" href="../spec/record.html?id=SWS_PER_00122">[SWS_PER_00122]</a>. 그러나 명시적으로 <code>not thread-safe</code>(으)로 분류되어 있으므로 동일한 <code>WriteAccessor</code> 인스턴스에 대한 동시 호출은 호출자에 의해 동기화되어야 할 것으로 보입니다 <a class="spec-record-ref" data-req="SWS_PER_00122" href="../spec/record.html?id=SWS_PER_00122">[SWS_PER_00122]</a>. <a class="interp-q interp-q-open" data-q="Q-e4b139f136cdcd31" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-e4b139f136cdcd31" title="질문 Q-e4b139f136cdcd31 (열림): Parallele Aufrufe auf derselben Instanz erfordern anwendungsseitige Synchronisation">질문 Q-e4b139f136cdcd31 (열림)</a></p>
 <!-- annahmen: 1) Parallele Aufrufe auf derselben Instanz erfordern anwendungsseitige Synchronisation – Begründung: Die Spezifikation deklariert die Methode als 'not thread-safe', spezifiziert aber keine internen Synchronisationsmechanismen. -->
 </div>
 <p class="ai-note">이 사용 지침은 AUTOSAR R25-11 사양을 바탕으로 자동 생성되었습니다.</p>
@@ -521,7 +521,7 @@
 </ul>
 
 <h4>동시성 및 제약사항</h4>
-<p>이 작업은 스레드 안전하지 않음(<code>not thread-safe</code>)(으)로 분류되어 있습니다 <a class="spec-record-ref" data-req="SWS_PER_00166" href="../spec/record.html?id=SWS_PER_00166">[SWS_PER_00166]</a>. 동일한 <code>WriteAccessor</code> 인스턴스에 병렬로 접근할 때 호출자는 호출을 독립적으로 동기화해야 할 것으로 보입니다.</p>
+<p>이 작업은 스레드 안전하지 않음(<code>not thread-safe</code>)(으)로 분류되어 있습니다 <a class="spec-record-ref" data-req="SWS_PER_00166" href="../spec/record.html?id=SWS_PER_00166">[SWS_PER_00166]</a>. 동일한 <code>WriteAccessor</code> 인스턴스에 병렬로 접근할 때 호출자는 호출을 독립적으로 동기화해야 할 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-73a6dbdb7d3df643" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-73a6dbdb7d3df643" title="질문 Q-73a6dbdb7d3df643 (열림): Parallele Aufrufe auf derselben Instanz erfordern anwendungsseitige Synchronisation">질문 Q-73a6dbdb7d3df643 (열림)</a></p>
 <!-- annahmen: 1) Parallele Aufrufe auf derselben Instanz erfordern anwendungsseitige Synchronisation – Begründung: WriteText ist laut Spezifikation not thread-safe und implementiert keine internen Sperren. -->
 </div>
 <p class="ai-note">이 사용 지침은 AUTOSAR Adaptive Platform R25-11 사양을 기반으로 합니다.</p>

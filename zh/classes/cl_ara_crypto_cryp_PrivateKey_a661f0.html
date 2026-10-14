@@ -31,7 +31,7 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">封装非对称私钥并提供对应的公钥。</p>
 <div class="ai-level" data-ai-level="2">
-<p>接口 <code>ara::crypto::cryp::PrivateKey</code> 定义了 AUTOSAR Adaptive 中非对称私钥的通用接口，主要通过共享指针别名 <code>PrivateKey::Sptr</code> 进行管理 <a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501">[SWS_CRYPT_22501]</a>。其核心函数 <code>GetPublicKey()</code> 允许将关联的公钥作为 <code>PublicKey::Sptr</code> 获取，以便为加密对接操作提供该公钥 <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。此获取操作被指定为线程安全且异常安全，没有标准化错误码，其中潜在错误可能以实现特定的方式通过返回类型 <code>ara::core::Result</code> 指示（解释）。</p>
+<p>接口 <code>ara::crypto::cryp::PrivateKey</code> 定义了 AUTOSAR Adaptive 中非对称私钥的通用接口，主要通过共享指针别名 <code>PrivateKey::Sptr</code> 进行管理 <a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501">[SWS_CRYPT_22501]</a>。其核心函数 <code>GetPublicKey()</code> 允许将关联的公钥作为 <code>PublicKey::Sptr</code> 获取，以便为加密对接操作提供该公钥 <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。此获取操作被指定为线程安全且异常安全，没有标准化错误码，其中潜在错误可能以实现特定的方式通过返回类型 <code>ara::core::Result</code> 指示（解释）。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_crypto_cryp_PrivateKey_a661f0&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
@@ -99,7 +99,7 @@
 
 <h4>生命周期</h4>
 <p>接口 <code>PrivateKey</code> 的实例通过类型化智能指针 <code>PrivateKey::Sptr</code> 进行管理和传递，该智能指针被定义为 <code>std::shared_ptr&lt;PrivateKey&gt;</code> 的类型别名 <a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501">[SWS_CRYPT_22501]</a>。该共享指针确保了共享所有权并通过引用计数实现自动资源管理，从而在最后一个引用失效时立即释放受保护的密钥材料。</p>
-<p>由于 <code>PrivateKey</code> 是包含如 <code>GetPublicKey()</code> 等纯虚方法的抽象接口 <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>，应用程序无法直接实例化该类。<code>PrivateKey::Sptr</code> 具体实例的创建和提供大概率通过 Adaptive 系统的专用工厂、密钥管理组件或加密提供程序进行（解释）。该接口本身没有定义离散的内部状态或状态转换。</p>
+<p>由于 <code>PrivateKey</code> 是包含如 <code>GetPublicKey()</code> 等纯虚方法的抽象接口 <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>，应用程序无法直接实例化该类。<code>PrivateKey::Sptr</code> 具体实例的创建和提供大概率通过 Adaptive 系统的专用工厂、密钥管理组件或加密提供程序进行（解释）。 <a class="interp-q interp-q-open" data-q="Q-f0f9fe2258fac168" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f0f9fe2258fac168" title="问题 Q-f0f9fe2258fac168 (未决): Die Erzeugung konkreter Instanzen von PrivateKey dürfte über Krypto-Provider oder spezialisierte Fabriken erfolgen.">问题 Q-f0f9fe2258fac168 (未决)</a>该接口本身没有定义离散的内部状态或状态转换。</p>
 <p>在并发方面，接口为其核心成员函数 <code>GetPublicKey()</code> 显式指定了线程安全性（<code>thread-safe</code>）<a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。这允许多个执行流并发、免同步地读取访问同一密钥实例以获取对应的公钥。</p>
 
 <h4>使用路径</h4>
@@ -108,14 +108,14 @@
 <li><strong>获取密钥：</strong>消费软件组件以 <code>PrivateKey::Sptr</code> 形式接收非对称私钥的有效实例 <a class="spec-record-ref" data-req="SWS_CRYPT_22501" href="../spec/record.html?id=SWS_CRYPT_22501">[SWS_CRYPT_22501]</a>。</li>
 <li><strong>检索配对密钥：</strong>如果下游工作流需要对应的公钥，则组件在该实例上调用成员函数 <code>GetPublicKey()</code> <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。</li>
 <li><strong>处理结果：</strong>该调用返回 <code>ara::core::Result&lt;PublicKey::Sptr&gt;</code> <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。应用程序检查结果对象是否成功，并在成功执行时解包指针 <code>PublicKey::Sptr</code>。</li>
-<li><strong>后续使用：</strong>获取的公钥随后可以传输给外部通信伙伴或传递给本地验证例程。据推测，公钥的派生在内部可能直接根据私钥的数学密钥参数进行（解释）。</li>
+<li><strong>后续使用：</strong>获取的公钥随后可以传输给外部通信伙伴或传递给本地验证例程。据推测，公钥的派生在内部可能直接根据私钥的数学密钥参数进行（解释）。 <a class="interp-q interp-q-open" data-q="Q-464000dc5d638649" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-464000dc5d638649" title="问题 Q-464000dc5d638649 (未决): Der öffentliche Schlüssel dürfte bei GetPublicKey() intern aus den mathematischen Parametern des privaten Schlüssels abgeleitet werden.">问题 Q-464000dc5d638649 (未决)</a></li>
 </ol>
 
 <h4>错误场景</h4>
 <p>对于无误的集成，<code>GetPublicKey()</code> 的错误特性和边界条件具有决定性意义：</p>
 <ul>
 <li><strong>标准化错误：</strong>根据规范，函数 <code>GetPublicKey()</code> 未定义标准化错误码 <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。</li>
-<li><strong>错误通道：</strong>尽管未指定标准化错误，返回类型 <code>ara::core::Result</code> 仍会传递潜在的失败。如果在内部密钥派生或对象创建期间发生错误，结果对象大概率可能包含底层加密驱动程序的实现特定错误码（解释）。</li>
+<li><strong>错误通道：</strong>尽管未指定标准化错误，返回类型 <code>ara::core::Result</code> 仍会传递潜在的失败。如果在内部密钥派生或对象创建期间发生错误，结果对象大概率可能包含底层加密驱动程序的实现特定错误码（解释）。 <a class="interp-q interp-q-open" data-q="Q-4af6390594d9c5e1" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-4af6390594d9c5e1" title="问题 Q-4af6390594d9c5e1 (未决): Der Rückgabetyp ara::core::Result dürfte für implementationsspezifische Fehler der zugrunde liegenden Treiber vorgesehen sein.">问题 Q-4af6390594d9c5e1 (未决)</a></li>
 <li><strong>异常安全性：</strong>该函数被显式归类为异常安全（<code>exception safe</code>），并带有标识符 <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。因此，调用方无需捕获 C++ 异常。</li>
 <li><strong>前置与后置条件：</strong>成功调用的前置条件是有效且未释放的 <code>PrivateKey</code> 实例。在成功的情况下，接口保证返回在数学上与私钥完全对应的 <code>PublicKey::Sptr</code> 作为后置条件 <a class="spec-record-ref" data-req="SWS_CRYPT_22511" href="../spec/record.html?id=SWS_CRYPT_22511">[SWS_CRYPT_22511]</a>。</li>
 </ul>

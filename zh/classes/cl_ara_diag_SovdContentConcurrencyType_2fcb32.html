@@ -86,19 +86,19 @@
 
 <h4>生命周期</h4>
 <p>作为纯数据传输和配置结构体，<code>SovdContentConcurrencyType</code> 具有简单的生命周期，不涉及动态资源管理或复杂的内部状态控制 <a class="spec-record-ref" data-req="SWS_DM_02182" href="../spec/record.html?id=SWS_DM_02182">[SWS_DM_02182]</a>。</p>
-<p>实例化通常发生在 Adaptive Application 的配置和初始化阶段，可能位于栈上，或者在诊断通信开始前作为上层端口管理类的一部分。在创建对象时，所有成员变量默认都进行防御性初始化：</p>
+<p>实例化通常发生在 Adaptive Application 的配置和初始化阶段，可能位于栈上，或者在诊断通信开始前作为上层端口管理类的一部分。 <a class="interp-q interp-q-open" data-q="Q-f78487eff58a4775" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f78487eff58a4775" title="问题 Q-f78487eff58a4775 (未决): Die Instanziierung erfolgt typischerweise im Zuge der Port-Initialisierung durch die Adaptive Application vor Beginn der Diagnosekommunikation">问题 Q-f78487eff58a4775 (未决)</a>在创建对象时，所有成员变量默认都进行防御性初始化：</p>
 <ul>
 <li><code>read</code> 默认预设为 <code>ConcurrencyType::kNotConcurrent</code> <a class="spec-record-ref" data-req="SWS_DM_02183" href="../spec/record.html?id=SWS_DM_02183">[SWS_DM_02183]</a>。</li>
 <li><code>write</code> 默认预设为 <code>ConcurrencyType::kNotConcurrent</code> <a class="spec-record-ref" data-req="SWS_DM_02184" href="../spec/record.html?id=SWS_DM_02184">[SWS_DM_02184]</a>。</li>
 <li><code>readWrite</code> 默认预设为 <code>ConcurrencyType::kNotConcurrent</code> <a class="spec-record-ref" data-req="SWS_DM_02185" href="../spec/record.html?id=SWS_DM_02185">[SWS_DM_02185]</a>。</li>
 </ul>
-<p>关于并发性和线程处理：结构体本身是一个被动配置对象，不包含自己的同步机制。因此，在将该结构传递给 Diagnostic Management 或由多个线程读取之前，应对字段的修改全部完成。在端口上注册后，该配置在相应诊断端口的整个生命周期内保持不变（解释：规范未预见在诊断通信运行时的动态修改）。结构体实例的清理在超出其作用域后根据常规 C++ 语义进行，无需额外的清理操作。</p>
+<p>关于并发性和线程处理：结构体本身是一个被动配置对象，不包含自己的同步机制。因此，在将该结构传递给 Diagnostic Management 或由多个线程读取之前，应对字段的修改全部完成。在端口上注册后，该配置在相应诊断端口的整个生命周期内保持不变（解释：规范未预见在诊断通信运行时的动态修改）。 <a class="interp-q interp-q-open" data-q="Q-71f96ed7cd3a6f61" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-71f96ed7cd3a6f61" title="问题 Q-71f96ed7cd3a6f61 (未决): Eine dynamische Modifikation zur Laufzeit der Diagnosekommunikation ist nicht vorgesehen">问题 Q-71f96ed7cd3a6f61 (未决)</a>结构体实例的清理在超出其作用域后根据常规 C++ 语义进行，无需额外的清理操作。</p>
 
 <h4>使用路径</h4>
 <p>典型的使用路径包括应用程序定义端口能力、运行时提供以及由 Diagnostic Management 进行评估：</p>
 <ol>
 <li><strong>能力配置：</strong>Adaptive Application 实例化一个 <code>SovdContentConcurrencyType</code> 类型的对象。如果端口方法的实现设计为线程安全，则有针对性地将相应属性设置为 <code>ConcurrencyType::kConcurrent</code>。将 <code>readWrite</code> 设置为 <code>kConcurrent</code> 明确向 Diagnostic Management 发出信号，表明允许同时调用读和写 API <a class="spec-record-ref" data-req="SWS_DM_02185" href="../spec/record.html?id=SWS_DM_02185">[SWS_DM_02185]</a>。</li>
-<li><strong>保持默认行为：</strong>如果端口实现不是可重入的或内部未同步，开发人员应将这些值保留为 <code>kNotConcurrent</code> <a class="spec-record-ref" data-req="SWS_DM_02183" href="../spec/record.html?id=SWS_DM_02183">[SWS_DM_02183]</a>, <a class="spec-record-ref" data-req="SWS_DM_02184" href="../spec/record.html?id=SWS_DM_02184">[SWS_DM_02184]</a>。解释：在此情况下，Diagnostic Management 确保该端口的待处理请求按序执行，以防止数据冲突。</li>
+<li><strong>保持默认行为：</strong>如果端口实现不是可重入的或内部未同步，开发人员应将这些值保留为 <code>kNotConcurrent</code> <a class="spec-record-ref" data-req="SWS_DM_02183" href="../spec/record.html?id=SWS_DM_02183">[SWS_DM_02183]</a>, <a class="spec-record-ref" data-req="SWS_DM_02184" href="../spec/record.html?id=SWS_DM_02184">[SWS_DM_02184]</a>。解释：在此情况下，Diagnostic Management 确保该端口的待处理请求按序执行，以防止数据冲突。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_diag_SovdContentConcurrencyType_2fcb32&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></li>
 <li><strong>DM 进行流程控制：</strong>在运行期间，Diagnostic Management 接收外部 SOVD 请求。根据保存的配置，DM 确定是否可以将针对读和写例程的并行方法调用转发到端口，或者串行化是否必不可少 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=352">SWS Diagnostics §8.8.3.1.2 “readWrite”</a>。</li>
 </ol>
 <!-- annahmen: 1) Die Instanziierung erfolgt typischerweise im Zuge der Port-Initialisierung durch die Adaptive Application vor Beginn der Diagnosekommunikation – Begründung: Der Payload belegt Standardinitialisierungen, schweigt jedoch zum genauen Übergabemechanismus an das DM. 2) Bei Belassen des Standardwerts kNotConcurrent serialisiert das DM Aufrufe – Begründung: SWS_DM_02185 nennt kConcurrent als Bedingung für nebenläufige Aufrufe durch das DM, beschreibt aber kNotConcurrent nicht explizit. 3) Eine dynamische Modifikation zur Laufzeit der Diagnosekommunikation ist nicht vorgesehen – Begründung: Der Payload dokumentiert ein reines Konfigurations-Struct ohne Update-Schnittstellen oder Änderungsbenachrichtigungen. -->

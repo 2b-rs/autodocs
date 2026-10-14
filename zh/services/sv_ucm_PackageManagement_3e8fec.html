@@ -163,7 +163,7 @@
 </ul>
 
 <h4>协同交互与并发性</h4>
-<p>该方法与包处理密切相关：处理过程通常通过针对已分配 <code>TransferIdType id</code> 的 <code>ProcessSwPackage</code> 来启动 <a class="spec-record-ref" data-req="SWS_UCM_00349" href="../spec/record.html?id=SWS_UCM_00349">[SWS_UCM_00349]</a>。Interpretation：<code>Cancel</code> 可能主要设计用于中止通过 <code>ProcessSwPackage</code> 正在进行的包处理 <a class="spec-record-ref" data-req="SWS_UCM_00349" href="../spec/record.html?id=SWS_UCM_00349">[SWS_UCM_00349]</a>，<a class="spec-record-ref" data-req="SWS_UCM_00351" href="../spec/record.html?id=SWS_UCM_00351">[SWS_UCM_00351]</a>。调用方必须确保 Transfer-ID 存在且软件包处于允许中止的状态，以避免错误 <code>kOperationNotPermitted</code> <a class="spec-record-ref" data-req="SWS_UCM_00351" href="../spec/record.html?id=SWS_UCM_00351">[SWS_UCM_00351]</a>。</p>
+<p>该方法与包处理密切相关：处理过程通常通过针对已分配 <code>TransferIdType id</code> 的 <code>ProcessSwPackage</code> 来启动 <a class="spec-record-ref" data-req="SWS_UCM_00349" href="../spec/record.html?id=SWS_UCM_00349">[SWS_UCM_00349]</a>。Interpretation：<code>Cancel</code> 可能主要设计用于中止通过 <code>ProcessSwPackage</code> 正在进行的包处理 <a class="spec-record-ref" data-req="SWS_UCM_00349" href="../spec/record.html?id=SWS_UCM_00349">[SWS_UCM_00349]</a>，<a class="spec-record-ref" data-req="SWS_UCM_00351" href="../spec/record.html?id=SWS_UCM_00351">[SWS_UCM_00351]</a>。 <a class="interp-q interp-q-open" data-q="Q-a220345676f7046c" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-a220345676f7046c" title="问题 Q-a220345676f7046c (未决): Cancel bricht primär Verarbeitungen ab, die via ProcessSwPackage initiiert wurden">问题 Q-a220345676f7046c (未决)</a>调用方必须确保 Transfer-ID 存在且软件包处于允许中止的状态，以避免错误 <code>kOperationNotPermitted</code> <a class="spec-record-ref" data-req="SWS_UCM_00351" href="../spec/record.html?id=SWS_UCM_00351">[SWS_UCM_00351]</a>。</p>
 <!-- annahmen: 1) Cancel bricht primär Verarbeitungen ab, die via ProcessSwPackage initiiert wurden – Begründung: Beide Methoden gehören zur Schnittstelle PackageManagement und teilen sich die TransferIdType-Kennung für Paketoperationen. -->
 </div>
 <p class="ai-note">该文本由 AI 生成，用作参考指引。</p>
@@ -1058,7 +1058,7 @@
 <p>该服务的 <em>Fire &amp; Forget</em> 属性被设置为 <code>false</code> <a class="spec-record-ref" data-req="SWS_UCM_00344" href="../spec/record.html?id=SWS_UCM_00344">[SWS_UCM_00344]</a>。因此调用方会收到关于方法执行结果的直接确认。如果传入的 URI 在语法上无效或指向不允许的目标，则执行失败并返回特定的应用错误 <code>kInvalidUri</code> <a class="spec-record-ref" data-req="SWS_UCM_00344" href="../spec/record.html?id=SWS_UCM_00344">[SWS_UCM_00344]</a>。</p>
 
 <h4>交互与限制</h4>
-<p>该方法调用通常构成包管理流程中的初始步骤。作为 Interpretation，返回的 <code>transferId</code> 可能在包管理的后续步骤中用于唯一定位传输或安装过程。由于未指定并发保证，调用方应等待结果返回后再启动涉及相关标识符的后续操作。</p>
+<p>该方法调用通常构成包管理流程中的初始步骤。作为 Interpretation，返回的 <code>transferId</code> 可能在包管理的后续步骤中用于唯一定位传输或安装过程。 <a class="interp-q interp-q-open" data-q="Q-fc2bc07c914858a2" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-fc2bc07c914858a2" title="问题 Q-fc2bc07c914858a2 (未决): Die zurückgegebene transferId dürfte in nachfolgenden Schritten des Paketmanagements als Referenz für Transfer- und Installationsprozesse dienen">问题 Q-fc2bc07c914858a2 (未决)</a>由于未指定并发保证，调用方应等待结果返回后再启动涉及相关标识符的后续操作。</p>
 <!-- annahmen: 1) Die zurückgegebene transferId dürfte in nachfolgenden Schritten des Paketmanagements als Referenz für Transfer- und Installationsprozesse dienen – Begründung: Der Parameter ist als Transfer-Identifier definiert, Folgeoperationen sind im Payload jedoch nicht aufgeführt. -->
 </div>
 <p class="ai-note">本使用说明由 AI 基于 AUTOSAR Adaptive R25-11 规范生成。</p>
@@ -1453,7 +1453,7 @@
     <li><code>blockCounter</code>（<code>uint64_t</code>）：当前数据块的连续计数器。</li>
   </ul>
 
-  <p>关于顺序和协同交互，该方法以前面对 <code>TransferStart</code> 的调用为前提（<a class="spec-record-ref" data-req="SWS_UCM_00345" href="../spec/record.html?id=SWS_UCM_00345">[SWS_UCM_00345]</a>）。通过 <code>TransferStart</code>，调用方除了获得有效的 Transfer-ID 之外，还会获得要求的块大小 <code>blockSize</code> 以及指定软件包总大小的义务。数据传输必须严格遵守这些规范；Interpretation：<code>blockCounter</code> 可能必须由调用方单调且连续无间断地递增，因为重复接收同一块编号会触发错误 <code>kBlockIncorrect</code>（<a class="spec-record-ref" data-req="SWS_UCM_00346" href="../spec/record.html?id=SWS_UCM_00346">[SWS_UCM_00346]</a>）。</p>
+  <p>关于顺序和协同交互，该方法以前面对 <code>TransferStart</code> 的调用为前提（<a class="spec-record-ref" data-req="SWS_UCM_00345" href="../spec/record.html?id=SWS_UCM_00345">[SWS_UCM_00345]</a>）。通过 <code>TransferStart</code>，调用方除了获得有效的 Transfer-ID 之外，还会获得要求的块大小 <code>blockSize</code> 以及指定软件包总大小的义务。数据传输必须严格遵守这些规范；Interpretation：<code>blockCounter</code> 可能必须由调用方单调且连续无间断地递增，因为重复接收同一块编号会触发错误 <code>kBlockIncorrect</code>（<a class="spec-record-ref" data-req="SWS_UCM_00346" href="../spec/record.html?id=SWS_UCM_00346">[SWS_UCM_00346]</a>）。 <a class="interp-q interp-q-open" data-q="Q-61272c50c151f4db" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-61272c50c151f4db" title="问题 Q-61272c50c151f4db (未决): Der blockCounter muss monoton und lückenlos inkrementiert werden">问题 Q-61272c50c151f4db (未决)</a></p>
 
   <p>错误处理区分结构性传输错误、一致性问题和包验证错误（<a class="spec-record-ref" data-req="SWS_UCM_00346" href="../spec/record.html?id=SWS_UCM_00346">[SWS_UCM_00346]</a>）：</p>
   <ul>

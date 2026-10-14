@@ -40,7 +40,7 @@
 
 <h4>生命周期</h4>
 <p>验证上下文的实例在应用程序内部通常通过智能指针类型别名 <code>ara::crypto::cryp::VerifierPublicCtx::Sptr</code> 进行管理，该别名定义为 <code>std::shared_ptr&lt;VerifierPublicCtx&gt;</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_24101" href="../spec/record.html?id=SWS_CRYPT_24101">[SWS_CRYPT_24101]</a>）。所有接口方法均被声明为异常安全（exception safe）和线程安全。</p>
-<p>上下文经历明确划分的操作阶段。在其实例化之后，上下文处于未初始化状态，在此状态下，验证调用会被 <code>ara::crypto::CryptoErrc::kUninitializedContext</code> 拒绝（<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>、<a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>）。只有通过使用 <code>SetKey()</code> 分配匹配的密钥，上下文才会转入就绪状态（<a class="spec-record-ref" data-req="SWS_CRYPT_24115" href="../spec/record.html?id=SWS_CRYPT_24115">[SWS_CRYPT_24115]</a>、<a class="spec-record-ref" data-req="SWS_CRYPT_50018" href="../spec/record.html?id=SWS_CRYPT_50018">[SWS_CRYPT_50018]</a>）。在此状态下，既可以执行原子检查，也可以启动流式会话。在结束（<a class="spec-record-ref" data-req="SWS_CRYPT_50022" href="../spec/record.html?id=SWS_CRYPT_50022">[SWS_CRYPT_50022]</a>）或中止（<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>）流式过程后，上下文应该再次可用于新的检查。</p>
+<p>上下文经历明确划分的操作阶段。在其实例化之后，上下文处于未初始化状态，在此状态下，验证调用会被 <code>ara::crypto::CryptoErrc::kUninitializedContext</code> 拒绝（<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>、<a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>）。只有通过使用 <code>SetKey()</code> 分配匹配的密钥，上下文才会转入就绪状态（<a class="spec-record-ref" data-req="SWS_CRYPT_24115" href="../spec/record.html?id=SWS_CRYPT_24115">[SWS_CRYPT_24115]</a>、<a class="spec-record-ref" data-req="SWS_CRYPT_50018" href="../spec/record.html?id=SWS_CRYPT_50018">[SWS_CRYPT_50018]</a>）。在此状态下，既可以执行原子检查，也可以启动流式会话。在结束（<a class="spec-record-ref" data-req="SWS_CRYPT_50022" href="../spec/record.html?id=SWS_CRYPT_50022">[SWS_CRYPT_50022]</a>）或中止（<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>）流式过程后，上下文应该再次可用于新的检查。 <a class="interp-q interp-q-open" data-q="Q-04655e144a821dbd" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-04655e144a821dbd" title="问题 Q-04655e144a821dbd (未决): Nach Beendigung via Finish() oder Cancel() kehrt der Kontext in den Zustand betriebsbereit zurück und kann mit demselben Schlüssel wiederverwendet werden">问题 Q-04655e144a821dbd (未决)</a></p>
 <div class="diagram" id="diag-verifier-states"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 258.05 232.80" style="max-width:344px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)">
 <title>verifier_states</title>
@@ -208,7 +208,7 @@
   <p>如果数据处理尚未通过调用方法 <code>Start()</code> 启动，则中止操作失败。在这种情况下，该函数在保证回滚语义的同时返回带有错误代码 <code>ara::crypto::CryptoErrc::kProcessingNotStarted</code> 的错误结果 <a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>。</p>
 
   <h4>并发性与限制</h4>
-  <p>该规范将该方法标明为线程安全（thread-safe）和带有标识 <code>noexcept</code> 的异常安全（exception safe）<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>。理解：成功中止后，上下文应该恢复到处理开始之前的初始状态，以便可以启动新的流式处理过程。</p>
+  <p>该规范将该方法标明为线程安全（thread-safe）和带有标识 <code>noexcept</code> 的异常安全（exception safe）<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>。理解：成功中止后，上下文应该恢复到处理开始之前的初始状态，以便可以启动新的流式处理过程。 <a class="interp-q interp-q-open" data-q="Q-d80d09c8a8311bbc" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d80d09c8a8311bbc" title="问题 Q-d80d09c8a8311bbc (未决): Rückkehr in uninitialisierten Zustand nach erfolgreichem Abbruch">问题 Q-d80d09c8a8311bbc (未决)</a></p>
 
   <h4>crypt 模块内的协同工作</h4>
   <p>这种具有相同签名和错误处理的统一中止模式一致适用于模块 <code>crypt</code> 的所有流式上下文：</p>
@@ -714,7 +714,7 @@
 
 <h4>并发性与交互</h4>
 <p>
-尽管规范将该方法标明为线程安全（<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>），但在正在进行验证期间对同一上下文实例进行并行调用，很可能会重置现有操作或由于资源被占用而失败。
+尽管规范将该方法标明为线程安全（<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>），但在正在进行验证期间对同一上下文实例进行并行调用，很可能会重置现有操作或由于资源被占用而失败。 <a class="interp-q interp-q-open" data-q="Q-af5e08ff9d905a29" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-af5e08ff9d905a29" title="问题 Q-af5e08ff9d905a29 (未决): Trotz Einstufung als thread-safe dürfte ein nebenläufiger Start()-Aufruf auf derselben Instanz die aktive Prüfung abbrechen oder mit kBusyResource fehlschlagen.">问题 Q-af5e08ff9d905a29 (未决)</a>
 </p>
 <p>
 成功初始化后，消息部分通过 <code>Update()</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>）按顺序传递。如有需要，可使用 <code>Cancel()</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>）提前中止正在进行的流式操作。若算法强制要求上下文值，则必须改为调用重载函数 <code>Start(ReadOnlyMemRegion context)</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50020" href="../spec/record.html?id=SWS_CRYPT_50020">[SWS_CRYPT_50020]</a>）。
@@ -814,7 +814,7 @@
 <div class="ai-level" data-ai-level="4">
 <h4>使用</h4>
 <p>
-函数 <code>Start</code> 根据 <a class="spec-record-ref" data-req="SWS_CRYPT_50020" href="../spec/record.html?id=SWS_CRYPT_50020">[SWS_CRYPT_50020]</a> 初始化类 <code>ara::crypto::cryp::VerifierPublicCtx</code> 的验证上下文，以用于新的签名校验。它接收类型为 <code>ReadOnlyMemRegion</code> 的 <code>context</code> 作为输入参数，该参数提供应用程序特定的上下文值。作为无上下文数据的替代方案，存在重载 <a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>。返回值为 <code>ara::core::Result&lt;void&gt;</code>；解释：由于既未定义回调也未定义 Future 对象，该调用大概率以纯同步方式处理。
+函数 <code>Start</code> 根据 <a class="spec-record-ref" data-req="SWS_CRYPT_50020" href="../spec/record.html?id=SWS_CRYPT_50020">[SWS_CRYPT_50020]</a> 初始化类 <code>ara::crypto::cryp::VerifierPublicCtx</code> 的验证上下文，以用于新的签名校验。它接收类型为 <code>ReadOnlyMemRegion</code> 的 <code>context</code> 作为输入参数，该参数提供应用程序特定的上下文值。作为无上下文数据的替代方案，存在重载 <a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>。返回值为 <code>ara::core::Result&lt;void&gt;</code>；解释：由于既未定义回调也未定义 Future 对象，该调用大概率以纯同步方式处理。 <a class="interp-q interp-q-open" data-q="Q-4e10cdb1a4343a3a" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-4e10cdb1a4343a3a" title="问题 Q-4e10cdb1a4343a3a (未决): Die Ausführung erfolgt synchron">问题 Q-4e10cdb1a4343a3a (未决)</a>
 </p>
 
 <h4>错误处理</h4>
@@ -935,7 +935,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>使用</h4>
-<p>方法 <code>Update()</code> 用于通过输入消息的下一部分逐步更新签名校验上下文 <a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>。作为参数传入类型为 <code>ReadOnlyMemRegion</code> 的存储区 <code>data</code>。该函数返回一个 <code>ara::core::Result&lt;void&gt;</code>；解释：由于该返回类型，处理大概率以同步方式进行。</p>
+<p>方法 <code>Update()</code> 用于通过输入消息的下一部分逐步更新签名校验上下文 <a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>。作为参数传入类型为 <code>ReadOnlyMemRegion</code> 的存储区 <code>data</code>。该函数返回一个 <code>ara::core::Result&lt;void&gt;</code>；解释：由于该返回类型，处理大概率以同步方式进行。 <a class="interp-q interp-q-open" data-q="Q-f98391030b3b4684" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f98391030b3b4684" title="问题 Q-f98391030b3b4684 (未决): Synchrone Verarbeitung">问题 Q-f98391030b3b4684 (未决)</a></p>
 
 <h4>错误处理</h4>
 <p>出错时，将返回具有回滚语义的相应错误码 <a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>：</p>
@@ -1042,7 +1042,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>使用</h4>
-  <p>上下文 <code>ara::crypto::cryp::VerifierPublicCtx</code> 的方法 <code>Verify</code> 用于在单次调用中验证所提供消息的签名 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。消息缓冲区 <code>message</code>、签名 <code>signature</code> 以及格式 <code>signatureFormat</code> 作为参数传递 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。返回值 <code>ara::core::Result&lt;bool&gt;</code> 在校验成功时包含 <code>true</code>，在不匹配时包含 <code>false</code>，或者包含错误代码 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。解读：鉴于同步结果类型，校验过程很可能会在调用线程中阻塞运行。</p>
+  <p>上下文 <code>ara::crypto::cryp::VerifierPublicCtx</code> 的方法 <code>Verify</code> 用于在单次调用中验证所提供消息的签名 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。消息缓冲区 <code>message</code>、签名 <code>signature</code> 以及格式 <code>signatureFormat</code> 作为参数传递 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。返回值 <code>ara::core::Result&lt;bool&gt;</code> 在校验成功时包含 <code>true</code>，在不匹配时包含 <code>false</code>，或者包含错误代码 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。解读：鉴于同步结果类型，校验过程很可能会在调用线程中阻塞运行。 <a class="interp-q interp-q-open" data-q="Q-671054c6e2b581c6" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-671054c6e2b581c6" title="问题 Q-671054c6e2b581c6 (未决): Synchrone Semantik – Aufgrund der direkten Rückgabe von ara::core::Result&lt;bool&gt; ohne asynchrone Primitiven dürfte die Verifikation synchron im aufrufenden Thread ausgeführt werden.">问题 Q-671054c6e2b581c6 (未决)</a></p>
 
   <h4>错误处理与并发</h4>
   <p>该函数被指定为 <code>exception safe</code> 和 <code>thread-safe</code> <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。在出错时，错误代码适用回滚语义 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>。可能的错误原因包括：</p>

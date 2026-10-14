@@ -31,7 +31,7 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">在编译时确定 volatile 限定的 Variant 类型的备选数量。</p>
 <div class="ai-level" data-ai-level="2">
-<p>模板特化 <code>ara::core::variant_size&lt; volatile T &gt;</code> 在编译时提供 <code>volatile</code> 限定的 Variant 类型的备选数量，与 <code>[variant]</code> 中的用法相对应。解释：该确定推测是通过转发给未限定的 Variant 来实现的，以便泛型算法可以透明地处理限定类型。作为纯编译时结构，不存在动态生命周期，并且排除了运行时错误。最重要的约束条件是错误的类型实参会导致编译过程立即中止。</p>
+<p>模板特化 <code>ara::core::variant_size&lt; volatile T &gt;</code> 在编译时提供 <code>volatile</code> 限定的 Variant 类型的备选数量，与 <code>[variant]</code> 中的用法相对应。解释：该确定推测是通过转发给未限定的 Variant 来实现的，以便泛型算法可以透明地处理限定类型。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_variant_size_volatile_T_e7f22e&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>作为纯编译时结构，不存在动态生命周期，并且排除了运行时错误。最重要的约束条件是错误的类型实参会导致编译过程立即中止。</p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
@@ -41,15 +41,15 @@
 
 <h4>生命周期</h4>
 <p>由于 <code>ara::core::variant_size&lt; volatile T &gt;</code> 是一个纯编译时元编程构造，因此该结构在程序运行时不存在传统的动态生命周期。在程序执行期间，任何时候都不会在易失性存储器中分配、初始化或销毁实例。整个生命周期完全局限于 C++ 编译器进行语义分析、类型替换和模板实例化的阶段。</p>
-<p>解释：<code>ara::core::variant_size&lt; volatile T &gt;</code> 应该充当纯编译时类型元数据结构，并且在运行时不占用任何内存状态或实例生命周期。因此，关于并发性和并行性，没有任何同步要求。由于不存在可变全局或静态状态，编译时求值完全没有副作用，并且在所有执行上下文中均具有固有的线程安全性。</p>
+<p>解释：<code>ara::core::variant_size&lt; volatile T &gt;</code> 应该充当纯编译时类型元数据结构，并且在运行时不占用任何内存状态或实例生命周期。 <a class="interp-q interp-q-open" data-q="Q-1140d7d36a999fff" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-1140d7d36a999fff" title="问题 Q-1140d7d36a999fff (未决): Reine Compile-Time-Struktur ohne Laufzeitzustände">问题 Q-1140d7d36a999fff (未决)</a>因此，关于并发性和并行性，没有任何同步要求。由于不存在可变全局或静态状态，编译时求值完全没有副作用，并且在所有执行上下文中均具有固有的线程安全性。</p>
 
 <h4>使用路径</h4>
 <p>典型使用路径发生在基于 Variant 的模板函数、泛型库或编译时断言中。开发人员将可能限定的 Variant 类型传递给模板，以确定所包含备选方案的数量。获取的大小信息例如用于辅助数据结构的参数化、索引检查或通过 <code>if constexpr</code> 进行的静态分支。</p>
-<p>解释：该特化推测以递归方式或直接从 <code>ara::core::variant_size&lt;T&gt;</code> 派生其值（类似于底层标准 <code>[variant]</code> 中的行为），方法是移除 <code>volatile</code> 限定符并对未限定的 Variant 求值。此机制确保泛型库构件无需针对限定和未限定类型进行区分处理即可使用相同的统一访问路径，从而提高了平台代码的可重用性和稳健性。</p>
+<p>解释：该特化推测以递归方式或直接从 <code>ara::core::variant_size&lt;T&gt;</code> 派生其值（类似于底层标准 <code>[variant]</code> 中的行为），方法是移除 <code>volatile</code> 限定符并对未限定的 Variant 求值。 <a class="interp-q interp-q-open" data-q="Q-42d126973051bae7" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-42d126973051bae7" title="问题 Q-42d126973051bae7 (未决): Wertableitung durch Entfernung des volatile-Qualifizierers">问题 Q-42d126973051bae7 (未决)</a>此机制确保泛型库构件无需针对限定和未限定类型进行区分处理即可使用相同的统一访问路径，从而提高了平台代码的可重用性和稳健性。</p>
 
 <h4>错误场景</h4>
 <p>传统的运行时错误场景（例如抛出 C++ 异常 (<code>exceptions</code>) 或返回类型为 <code>ara::core::ErrorCode</code> 的错误对象）对于此模板特化是排除了的。所有可想象的错误原因均仅在编译时发生，并导致编译器中断编译过程。</p>
-<p>解释：对不表示 Variant 的类型使用推测会导致直接编译错误，因为对于不匹配的类型不提供有效的定义或值生成。典型的应用程序错误包括错误地传入非 Variant 类型、不完整类型或运行时值来代替类型标识符。在这种情况下，编译器的静态类型分析会起作用，并在系统交付前可靠地防止生成错误的机器代码。</p>
+<p>解释：对不表示 Variant 的类型使用推测会导致直接编译错误，因为对于不匹配的类型不提供有效的定义或值生成。 <a class="interp-q interp-q-open" data-q="Q-05dc7574570cfbb5" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-05dc7574570cfbb5" title="问题 Q-05dc7574570cfbb5 (未决): Übersetzungsfehler bei Nicht-Variant-Typen">问题 Q-05dc7574570cfbb5 (未决)</a>典型的应用程序错误包括错误地传入非 Variant 类型、不完整类型或运行时值来代替类型标识符。在这种情况下，编译器的静态类型分析会起作用，并在系统交付前可靠地防止生成错误的机器代码。</p>
 <!-- annahmen: 1) Reine Compile-Time-Struktur ohne Laufzeitzustände – Begründung: Der Payload spezifiziert ein C++-Template-Trait analog zu [variant], das üblicherweise rein statische Konstanten bereitstellt. 2) Wertableitung durch Entfernung des volatile-Qualifizierers – Begründung: Der Payload verweist auf [variant], worin volatile-Spezialisierungen standardmäßig an die unqualifizierte Implementierung delegieren. 3) Übersetzungsfehler bei Nicht-Variant-Typen – Begründung: Typ-Traits für Varianten definieren typischerweise keine Mitglieder für ungültige Typen, um SFINAE bzw. Compile-Time-Fehler zu ermöglichen. -->
 </div>
 <p class="ai-note">本指南基于 AUTOSAR Adaptive Release R25-11，并自动生成。</p>

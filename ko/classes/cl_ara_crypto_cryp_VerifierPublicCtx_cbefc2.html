@@ -40,7 +40,7 @@
 
 <h4>수명 주기</h4>
 <p>검증 컨텍스트의 인스턴스는 애플리케이션 내부에서 일반적으로 <code>std::shared_ptr&lt;VerifierPublicCtx&gt;</code>로 정의된 스마트 포인터 타입 에일리어스 <code>ara::crypto::cryp::VerifierPublicCtx::Sptr</code>을 통해 관리됩니다(<a class="spec-record-ref" data-req="SWS_CRYPT_24101" href="../spec/record.html?id=SWS_CRYPT_24101">[SWS_CRYPT_24101]</a>). 모든 인터페이스 메서드는 예외 안전(exception safe) 및 스레드 안전으로 선언되어 있습니다.</p>
-<p>컨텍스트는 명확히 구분된 작동 단계를 거칩니다. 인스턴스화 후 컨텍스트는 초기화되지 않은 상태에 있으며, 이 상태에서는 <code>ara::crypto::CryptoErrc::kUninitializedContext</code>을 사용한 검증 호출이 거부됩니다(<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>, <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>). <code>SetKey()</code>을 통해 적절한 키를 할당해야만 컨텍스트가 작동 준비 상태로 전환됩니다(<a class="spec-record-ref" data-req="SWS_CRYPT_24115" href="../spec/record.html?id=SWS_CRYPT_24115">[SWS_CRYPT_24115]</a>, <a class="spec-record-ref" data-req="SWS_CRYPT_50018" href="../spec/record.html?id=SWS_CRYPT_50018">[SWS_CRYPT_50018]</a>). 이 상태에서 원자적 검증을 수행하거나 스트리밍 세션을 시작할 수 있습니다. 스트리밍 작업을 완료(<a class="spec-record-ref" data-req="SWS_CRYPT_50022" href="../spec/record.html?id=SWS_CRYPT_50022">[SWS_CRYPT_50022]</a>)하거나 중단(<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>)한 후 컨텍스트는 다시 새로운 검증을 위해 준비 상태가 될 것으로 보입니다.</p>
+<p>컨텍스트는 명확히 구분된 작동 단계를 거칩니다. 인스턴스화 후 컨텍스트는 초기화되지 않은 상태에 있으며, 이 상태에서는 <code>ara::crypto::CryptoErrc::kUninitializedContext</code>을 사용한 검증 호출이 거부됩니다(<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>, <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>). <code>SetKey()</code>을 통해 적절한 키를 할당해야만 컨텍스트가 작동 준비 상태로 전환됩니다(<a class="spec-record-ref" data-req="SWS_CRYPT_24115" href="../spec/record.html?id=SWS_CRYPT_24115">[SWS_CRYPT_24115]</a>, <a class="spec-record-ref" data-req="SWS_CRYPT_50018" href="../spec/record.html?id=SWS_CRYPT_50018">[SWS_CRYPT_50018]</a>). 이 상태에서 원자적 검증을 수행하거나 스트리밍 세션을 시작할 수 있습니다. 스트리밍 작업을 완료(<a class="spec-record-ref" data-req="SWS_CRYPT_50022" href="../spec/record.html?id=SWS_CRYPT_50022">[SWS_CRYPT_50022]</a>)하거나 중단(<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>)한 후 컨텍스트는 다시 새로운 검증을 위해 준비 상태가 될 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-04655e144a821dbd" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-04655e144a821dbd" title="질문 Q-04655e144a821dbd (열림): Nach Beendigung via Finish() oder Cancel() kehrt der Kontext in den Zustand betriebsbereit zurück und kann mit demselben Schlüssel wiederverwendet werden">질문 Q-04655e144a821dbd (열림)</a></p>
 <div class="diagram" id="diag-verifier-states"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 258.05 232.80" style="max-width:344px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)">
 <title>verifier_states</title>
@@ -208,7 +208,7 @@
   <p><code>Start()</code> 메서드 호출을 통해 데이터 처리가 아직 시작되지 않은 경우 중단 작업이 실패합니다. 이 시나리오에서 함수는 롤백 시맨틱을 보장하면서 오류 코드 <code>ara::crypto::CryptoErrc::kProcessingNotStarted</code>을(를) 포함하는 오류 결과를 반환합니다 <a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>.</p>
 
   <h4>동시성 및 제약사항</h4>
-  <p>사양에서는 이 메서드를 <code>noexcept</code> 표시와 함께 스레드 안전(thread-safe) 및 예외 안전(exception safe)으로 지정합니다 <a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>. 해석: 성공적으로 중단된 후에는 컨텍스트가 처리 시작 전의 초기 상태로 되돌아가 새로운 스트리밍 작업을 시작할 수 있을 것으로 추정됩니다.</p>
+  <p>사양에서는 이 메서드를 <code>noexcept</code> 표시와 함께 스레드 안전(thread-safe) 및 예외 안전(exception safe)으로 지정합니다 <a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>. 해석: 성공적으로 중단된 후에는 컨텍스트가 처리 시작 전의 초기 상태로 되돌아가 새로운 스트리밍 작업을 시작할 수 있을 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-d80d09c8a8311bbc" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d80d09c8a8311bbc" title="질문 Q-d80d09c8a8311bbc (열림): Rückkehr in uninitialisierten Zustand nach erfolgreichem Abbruch">질문 Q-d80d09c8a8311bbc (열림)</a></p>
 
   <h4>crypt 모듈 내 상호 작용</h4>
   <p>동일한 시그니처와 오류 처리를 갖춘 이 통일된 중단 패턴은 <code>crypt</code> 모듈의 모든 스트리밍 컨텍스트에 일관되게 적용됩니다:</p>
@@ -714,7 +714,7 @@
 
 <h4>동시성 및 상호 작용</h4>
 <p>
-명세에서는 이 메서드를 스레드 안전(<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>)으로 명시하고 있지만, 검증이 진행 중인 동안 동일한 컨텍스트 인스턴스에서 병렬 호출이 발생하면 기존 작업이 초기화되거나 사용 중인 리소스로 인해 실패할 가능성이 높습니다.
+명세에서는 이 메서드를 스레드 안전(<a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>)으로 명시하고 있지만, 검증이 진행 중인 동안 동일한 컨텍스트 인스턴스에서 병렬 호출이 발생하면 기존 작업이 초기화되거나 사용 중인 리소스로 인해 실패할 가능성이 높습니다. <a class="interp-q interp-q-open" data-q="Q-af5e08ff9d905a29" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-af5e08ff9d905a29" title="질문 Q-af5e08ff9d905a29 (열림): Trotz Einstufung als thread-safe dürfte ein nebenläufiger Start()-Aufruf auf derselben Instanz die aktive Prüfung abbrechen oder mit kBusyResource fehlschlagen.">질문 Q-af5e08ff9d905a29 (열림)</a>
 </p>
 <p>
 초기화가 성공한 후에는 메시지 부분이 <code>Update()</code>(<a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>)을 통해 순차적으로 전달됩니다. 진행 중인 스트리밍 작업은 필요한 경우 <code>Cancel()</code>(<a class="spec-record-ref" data-req="SWS_CRYPT_50023" href="../spec/record.html?id=SWS_CRYPT_50023">[SWS_CRYPT_50023]</a>)를 통해 조기에 중단할 수 있습니다. 알고리즘에서 컨텍스트 값이 반드시 필요한 경우에는 오버로드된 함수 <code>Start(ReadOnlyMemRegion context)</code>(<a class="spec-record-ref" data-req="SWS_CRYPT_50020" href="../spec/record.html?id=SWS_CRYPT_50020">[SWS_CRYPT_50020]</a>)를 대신 호출해야 합니다.
@@ -815,7 +815,7 @@
 <h4>사용</h4>
 <p>
 <code>Start</code> 함수는 <a class="spec-record-ref" data-req="SWS_CRYPT_50020" href="../spec/record.html?id=SWS_CRYPT_50020">[SWS_CRYPT_50020]</a>에 따라 새로운 서명 검증을 위해 <code>ara::crypto::cryp::VerifierPublicCtx</code> 클래스의 검증 컨텍스트를 초기화합니다. 입력 매개변수로 애플리케이션별 컨텍스트 값을 제공하는 <code>ReadOnlyMemRegion</code> 유형의 <code>context</code>을(를) 받습니다. 컨텍스트 데이터가 없는 대안으로 오버로드 <a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>이(가) 존재합니다. 반환값은 <code>ara::core::Result&lt;void&gt;</code>입니다. 해석: 콜백이나 미래(future) 객체가 정의되어 있지 않으므로 호출은 순수하게 동기식으로 처리될 것으로 추정됩니다.
-</p>
+ <a class="interp-q interp-q-open" data-q="Q-4e10cdb1a4343a3a" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-4e10cdb1a4343a3a" title="질문 Q-4e10cdb1a4343a3a (열림): Die Ausführung erfolgt synchron">질문 Q-4e10cdb1a4343a3a (열림)</a></p>
 
 <h4>오류 처리</h4>
 <p>
@@ -935,7 +935,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>사용</h4>
-<p>메서드 <code>Update()</code>은(는) 서명 검증 컨텍스트를 입력 메시지의 추가 부분으로 점진적으로 업데이트하는 데 사용됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>. <code>ReadOnlyMemRegion</code> 타입의 메모리 영역 <code>data</code>이(가) 매개변수로 전달됩니다. 이 함수는 <code>ara::core::Result&lt;void&gt;</code>을(를) 반환합니다. Interpretation: 이 반환 타입으로 보아 처리가 동기식으로 수행될 것으로 추정됩니다.</p>
+<p>메서드 <code>Update()</code>은(는) 서명 검증 컨텍스트를 입력 메시지의 추가 부분으로 점진적으로 업데이트하는 데 사용됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>. <code>ReadOnlyMemRegion</code> 타입의 메모리 영역 <code>data</code>이(가) 매개변수로 전달됩니다. 이 함수는 <code>ara::core::Result&lt;void&gt;</code>을(를) 반환합니다. Interpretation: 이 반환 타입으로 보아 처리가 동기식으로 수행될 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-f98391030b3b4684" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f98391030b3b4684" title="질문 Q-f98391030b3b4684 (열림): Synchrone Verarbeitung">질문 Q-f98391030b3b4684 (열림)</a></p>
 
 <h4>오류 처리</h4>
 <p>오류 발생 시 롤백 시맨틱을 갖는 해당 오류 코드가 반환됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_50021" href="../spec/record.html?id=SWS_CRYPT_50021">[SWS_CRYPT_50021]</a>:</p>
@@ -1042,7 +1042,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>사용</h4>
-  <p>컨텍스트 <code>ara::crypto::cryp::VerifierPublicCtx</code>의 <code>Verify</code> 메서드는 한 번의 호출로 제공된 메시지의 서명을 검증하는 데 사용됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 매개변수로 메시지 버퍼 <code>message</code>, 서명 <code>signature</code> 및 형식 <code>signatureFormat</code>가 전달됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 반환값 <code>ara::core::Result&lt;bool&gt;</code>에는 성공적인 검증 시 <code>true</code>, 불일치 시 <code>false</code> 또는 오류 코드가 포함됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 해석: 동기 결과 타입으로 인해 검증 프로세스는 호출 스레드에서 블로킹 방식으로 실행될 것으로 추정됩니다.</p>
+  <p>컨텍스트 <code>ara::crypto::cryp::VerifierPublicCtx</code>의 <code>Verify</code> 메서드는 한 번의 호출로 제공된 메시지의 서명을 검증하는 데 사용됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 매개변수로 메시지 버퍼 <code>message</code>, 서명 <code>signature</code> 및 형식 <code>signatureFormat</code>가 전달됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 반환값 <code>ara::core::Result&lt;bool&gt;</code>에는 성공적인 검증 시 <code>true</code>, 불일치 시 <code>false</code> 또는 오류 코드가 포함됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 해석: 동기 결과 타입으로 인해 검증 프로세스는 호출 스레드에서 블로킹 방식으로 실행될 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-671054c6e2b581c6" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-671054c6e2b581c6" title="질문 Q-671054c6e2b581c6 (열림): Synchrone Semantik – Aufgrund der direkten Rückgabe von ara::core::Result&lt;bool&gt; ohne asynchrone Primitiven dürfte die Verifikation synchron im aufrufenden Thread ausgeführt werden.">질문 Q-671054c6e2b581c6 (열림)</a></p>
 
   <h4>오류 처리 및 동시성</h4>
   <p>이 함수는 <code>exception safe</code> 및 <code>thread-safe</code>로 명세되어 있습니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 오류 발생 시 오류 코드에 대해 롤백 시맨틱이 적용됩니다 <a class="spec-record-ref" data-req="SWS_CRYPT_24112" href="../spec/record.html?id=SWS_CRYPT_24112">[SWS_CRYPT_24112]</a>. 가능한 오류 원인은 다음과 같습니다:</p>

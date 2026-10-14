@@ -28,6 +28,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ wählen · Enter öffnet",
   "back": "← Zurück zur Liste",
   "loading": "Lade Katalog …",
+  "busy_group": "Wird gruppiert …",
+  "busy_filter": "Wird gefiltert …",
   "load_error": "Fehler beim Laden: {msg}",
   "no_results": "Keine Treffer für diese Filter.",
   "index_missing": "Der erweiterte Explorer-Index fehlt; verfügbar sind nur Suche, Plattform, Wegfall und Releases.",
@@ -445,7 +447,11 @@ window.VE_I18N = {
   "qh_normalise_text": "Übersetzt in die Sprache der Spezifikation (Modell {model}).",
   "qh_original": "Originalformulierung im Leitfaden ({lang})",
   "qh_continue": "fortgeführt",
-  "qh_continue_text": "Der neu erzeugte Guide trifft dieselbe Aussage auf Englisch."
+  "qh_continue_text": "Der neu erzeugte Guide trifft dieselbe Aussage auf Englisch.",
+  "order_group_label": "Gruppieren",
+  "order_sort_label": "Sortieren",
+  "order_remove": "Auswahl entfernen",
+  "order_toggle_dir": "Richtung umschalten"
  },
  "en": {
   "thumb_none": "no preview image in the catalog",
@@ -474,6 +480,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ select · Enter opens",
   "back": "← Back to list",
   "loading": "Loading catalog …",
+  "busy_group": "Grouping …",
+  "busy_filter": "Filtering …",
   "load_error": "Loading failed: {msg}",
   "no_results": "No matches for these filters.",
   "index_missing": "The extended explorer index is missing; only search, platform, removal and releases are available.",
@@ -891,7 +899,11 @@ window.VE_I18N = {
   "qh_normalise_text": "Translated into the specification language (model {model}).",
   "qh_original": "Original wording in the guide ({lang})",
   "qh_continue": "continued",
-  "qh_continue_text": "The regenerated guide makes the same statement in English."
+  "qh_continue_text": "The regenerated guide makes the same statement in English.",
+  "order_group_label": "Group",
+  "order_sort_label": "Sort",
+  "order_remove": "Remove selection",
+  "order_toggle_dir": "Toggle direction"
  },
  "es": {
   "thumb_none": "sin imagen de vista previa en el catálogo",
@@ -920,6 +932,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ seleccionar · Intro abre",
   "back": "← Volver a la lista",
   "loading": "Cargando catálogo …",
+  "busy_group": "Agrupando …",
+  "busy_filter": "Filtrando …",
   "load_error": "Error al cargar: {msg}",
   "no_results": "No hay resultados para estos filtros.",
   "index_missing": "Falta el índice ampliado del explorador; solo están disponibles búsqueda, plataforma, supresión y releases.",
@@ -1337,7 +1351,11 @@ window.VE_I18N = {
   "qh_normalise_text": "Traducido al idioma de la especificación (modelo {model}).",
   "qh_original": "Redacción original en la guía ({lang})",
   "qh_continue": "continuada",
-  "qh_continue_text": "La guía regenerada hace la misma afirmación en inglés."
+  "qh_continue_text": "La guía regenerada hace la misma afirmación en inglés.",
+  "order_group_label": "Agrupar",
+  "order_sort_label": "Ordenar",
+  "order_remove": "Eliminar selección",
+  "order_toggle_dir": "Cambiar dirección"
  },
  "pt": {
   "thumb_none": "sem imagem de pré-visualização no catálogo",
@@ -1366,6 +1384,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ selecionar · Enter abre",
   "back": "← Voltar à lista",
   "loading": "Carregando catálogo …",
+  "busy_group": "Agrupando …",
+  "busy_filter": "Filtrando …",
   "load_error": "Erro ao carregar: {msg}",
   "no_results": "Nenhum resultado para estes filtros.",
   "index_missing": "O índice ampliado do explorador não está disponível; só há busca, plataforma, descontinuação e releases.",
@@ -1783,7 +1803,11 @@ window.VE_I18N = {
   "qh_normalise_text": "Traduzido para o idioma da especificação (modelo {model}).",
   "qh_original": "Redação original no guia ({lang})",
   "qh_continue": "continuada",
-  "qh_continue_text": "O guia regenerado faz a mesma afirmação em inglês."
+  "qh_continue_text": "O guia regenerado faz a mesma afirmação em inglês.",
+  "order_group_label": "Agrupar",
+  "order_sort_label": "Ordenar",
+  "order_remove": "Remover seleção",
+  "order_toggle_dir": "Alternar direção"
  },
  "fr": {
   "thumb_none": "pas d’aperçu dans le catalogue",
@@ -1812,6 +1836,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ choisir · Entrée ouvre",
   "back": "← Retour à la liste",
   "loading": "Chargement du catalogue …",
+  "busy_group": "Regroupement …",
+  "busy_filter": "Filtrage …",
   "load_error": "Échec du chargement : {msg}",
   "no_results": "Aucun résultat pour ces filtres.",
   "index_missing": "L’index étendu de l’explorateur est absent ; seuls la recherche, la plateforme, la suppression et les releases sont disponibles.",
@@ -2229,7 +2255,11 @@ window.VE_I18N = {
   "qh_normalise_text": "Traduit dans la langue de la spécification (modèle {model}).",
   "qh_original": "Formulation d’origine dans le guide ({lang})",
   "qh_continue": "poursuivie",
-  "qh_continue_text": "Le guide régénéré fait la même affirmation en anglais."
+  "qh_continue_text": "Le guide régénéré fait la même affirmation en anglais.",
+  "order_group_label": "Grouper",
+  "order_sort_label": "Trier",
+  "order_remove": "Supprimer la sélection",
+  "order_toggle_dir": "Changer de direction"
  },
  "ru": {
   "thumb_none": "нет изображения в каталоге",
@@ -2258,6 +2288,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ выбор · Enter открывает",
   "back": "← Назад к списку",
   "loading": "Загрузка каталога …",
+  "busy_group": "Группировка …",
+  "busy_filter": "Фильтрация …",
   "load_error": "Ошибка загрузки: {msg}",
   "no_results": "Нет результатов для этих фильтров.",
   "index_missing": "Расширенный индекс обозревателя отсутствует; доступны только поиск, платформа, исключение и релизы.",
@@ -2675,7 +2707,11 @@ window.VE_I18N = {
   "qh_normalise_text": "Переведено на язык спецификации (модель {model}).",
   "qh_original": "Исходная формулировка в руководстве ({lang})",
   "qh_continue": "продолжено",
-  "qh_continue_text": "Заново созданное руководство делает то же утверждение на английском."
+  "qh_continue_text": "Заново созданное руководство делает то же утверждение на английском.",
+  "order_group_label": "Группировать",
+  "order_sort_label": "Сортировать",
+  "order_remove": "Удалить выбор",
+  "order_toggle_dir": "Изменить направление"
  },
  "ar": {
   "thumb_none": "لا توجد صورة معاينة في الفهرس",
@@ -2704,6 +2740,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ للاختيار · Enter للفتح",
   "back": "→ العودة إلى القائمة",
   "loading": "جارٍ تحميل الفهرس …",
+  "busy_group": "جارٍ التجميع …",
+  "busy_filter": "جارٍ التصفية …",
   "load_error": "تعذّر التحميل: {msg}",
   "no_results": "لا توجد نتائج لعوامل التصفية هذه.",
   "index_missing": "الفهرس الموسّع للمستكشف غير متوفر؛ المتاح فقط البحث والمنصة والإلغاء والإصدارات.",
@@ -3121,7 +3159,11 @@ window.VE_I18N = {
   "qh_normalise_text": "تُرجم إلى لغة المواصفة (النموذج {model}).",
   "qh_original": "الصياغة الأصلية في الدليل ({lang})",
   "qh_continue": "استمرار",
-  "qh_continue_text": "الدليل المُعاد توليده يقدّم العبارة نفسها بالإنجليزية."
+  "qh_continue_text": "الدليل المُعاد توليده يقدّم العبارة نفسها بالإنجليزية.",
+  "order_group_label": "تجميع",
+  "order_sort_label": "فرز",
+  "order_remove": "إزالة التحديد",
+  "order_toggle_dir": "تبديل الاتجاه"
  },
  "hi": {
   "thumb_none": "कैटलॉग में पूर्वावलोकन छवि नहीं",
@@ -3150,6 +3192,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ चुनें · Enter खोलता है",
   "back": "← सूची पर वापस",
   "loading": "कैटलॉग लोड हो रहा है …",
+  "busy_group": "समूह बनाया जा रहा है …",
+  "busy_filter": "फ़िल्टर हो रहा है …",
   "load_error": "लोड विफल: {msg}",
   "no_results": "इन फ़िल्टरों के लिए कोई परिणाम नहीं।",
   "index_missing": "विस्तृत एक्सप्लोरर इंडेक्स उपलब्ध नहीं है; केवल खोज, प्लेटफ़ॉर्म, हटाव और रिलीज़ उपलब्ध हैं।",
@@ -3567,7 +3611,11 @@ window.VE_I18N = {
   "qh_normalise_text": "विनिर्देश की भाषा में अनुवादित (मॉडल {model})।",
   "qh_original": "गाइड में मूल शब्दावली ({lang})",
   "qh_continue": "जारी",
-  "qh_continue_text": "नए सिरे से बनी गाइड अंग्रेज़ी में वही कथन करती है।"
+  "qh_continue_text": "नए सिरे से बनी गाइड अंग्रेज़ी में वही कथन करती है।",
+  "order_group_label": "समूहीकरण",
+  "order_sort_label": "क्रमबद्ध करें",
+  "order_remove": "चयन हटाएं",
+  "order_toggle_dir": "दिशा बदलें"
  },
  "ko": {
   "thumb_none": "카탈로그에 미리보기 이미지 없음",
@@ -3596,6 +3644,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ 선택 · Enter 열기",
   "back": "← 목록으로",
   "loading": "카탈로그 불러오는 중 …",
+  "busy_group": "그룹화 중 …",
+  "busy_filter": "필터링 중 …",
   "load_error": "불러오기 실패: {msg}",
   "no_results": "이 필터에 맞는 결과가 없습니다.",
   "index_missing": "확장 탐색기 색인이 없습니다. 검색, 플랫폼, 삭제, 릴리스만 사용할 수 있습니다.",
@@ -4013,7 +4063,11 @@ window.VE_I18N = {
   "qh_normalise_text": "사양 언어로 번역됨 (모델 {model}).",
   "qh_original": "가이드의 원래 문구 ({lang})",
   "qh_continue": "이어짐",
-  "qh_continue_text": "다시 생성된 가이드가 같은 내용을 영어로 서술합니다."
+  "qh_continue_text": "다시 생성된 가이드가 같은 내용을 영어로 서술합니다.",
+  "order_group_label": "그룹화",
+  "order_sort_label": "정렬",
+  "order_remove": "선택 제거",
+  "order_toggle_dir": "방향 전환"
  },
  "zh": {
   "thumb_none": "目录中无预览图",
@@ -4042,6 +4096,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ 选择 · Enter 打开",
   "back": "← 返回列表",
   "loading": "正在加载目录 …",
+  "busy_group": "正在分组 …",
+  "busy_filter": "正在筛选 …",
   "load_error": "加载失败：{msg}",
   "no_results": "没有符合这些筛选条件的结果。",
   "index_missing": "缺少扩展浏览器索引；仅可使用搜索、平台、移除和版本筛选。",
@@ -4459,7 +4515,11 @@ window.VE_I18N = {
   "qh_normalise_text": "已翻译为规范语言（模型 {model}）。",
   "qh_original": "指南中的原始表述（{lang}）",
   "qh_continue": "已延续",
-  "qh_continue_text": "重新生成的指南以英文做出相同的陈述。"
+  "qh_continue_text": "重新生成的指南以英文做出相同的陈述。",
+  "order_group_label": "分组",
+  "order_sort_label": "排序",
+  "order_remove": "移除选择",
+  "order_toggle_dir": "切换方向"
  },
  "nl": {
   "thumb_none": "geen voorbeeldafbeelding in de catalogus",
@@ -4488,6 +4548,8 @@ window.VE_I18N = {
   "kbd_hint": "↑↓ kiezen · Enter opent",
   "back": "← Terug naar de lijst",
   "loading": "Catalogus laden …",
+  "busy_group": "Bezig met groeperen …",
+  "busy_filter": "Bezig met filteren …",
   "load_error": "Laden mislukt: {msg}",
   "no_results": "Geen resultaten voor deze filters.",
   "index_missing": "De uitgebreide verkennerindex ontbreekt; alleen zoeken, platform, vervallen en releases zijn beschikbaar.",
@@ -4905,6 +4967,10 @@ window.VE_I18N = {
   "qh_normalise_text": "Vertaald naar de taal van de specificatie (model {model}).",
   "qh_original": "Oorspronkelijke formulering in de gids ({lang})",
   "qh_continue": "voortgezet",
-  "qh_continue_text": "De opnieuw gegenereerde gids doet dezelfde uitspraak in het Engels."
+  "qh_continue_text": "De opnieuw gegenereerde gids doet dezelfde uitspraak in het Engels.",
+  "order_group_label": "Groeperen",
+  "order_sort_label": "Sorteren",
+  "order_remove": "Selectie verwijderen",
+  "order_toggle_dir": "Richting wisselen"
  }
 };

@@ -39,13 +39,13 @@
 <p>C++ 类 <code>ara::crypto::cryp::EncryptorPublicCtx</code> 为 AUTOSAR Adaptive Platform 中的非对称数据加密提供了标准化接口。它供客户端应用程序使用非对称公钥加密明文数据。加密密钥的配置既可以直接通过密钥对象（<a class="spec-record-ref" data-req="SWS_CRYPT_50175" href="../spec/record.html?id=SWS_CRYPT_50175">[SWS_CRYPT_50175]</a>）进行，也可以通过对密钥存储位置的引用（<code>KeySlot</code>、<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>）进行。数据传递通过高效利用内存的缓冲区区域进行（<code>ReadOnlyMemRegion</code> 用于明文数据，<code>ReadWriteMemRegion</code> 用于密文输出）。</p>
 
 <h4>生命周期</h4>
-<p>上下文的实例通过类型别名 <code>Sptr</code> 中定义的共享指针 <code>std::shared_ptr&lt;EncryptorPublicCtx&gt;</code> 进行管理（<a class="spec-record-ref" data-req="SWS_CRYPT_50174" href="../spec/record.html?id=SWS_CRYPT_50174">[SWS_CRYPT_50174]</a>）。创建本身不属于此接口定义的一部分；推测通过加密架构的上层工厂组件进行实例化。该对象在其生命周期内经历明确定义的状态：</p>
+<p>上下文的实例通过类型别名 <code>Sptr</code> 中定义的共享指针 <code>std::shared_ptr&lt;EncryptorPublicCtx&gt;</code> 进行管理（<a class="spec-record-ref" data-req="SWS_CRYPT_50174" href="../spec/record.html?id=SWS_CRYPT_50174">[SWS_CRYPT_50174]</a>）。创建本身不属于此接口定义的一部分；推测通过加密架构的上层工厂组件进行实例化。 <a class="interp-q interp-q-open" data-q="Q-5b7490ba113bb861" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-5b7490ba113bb861" title="问题 Q-5b7490ba113bb861 (未决): Erzeugung der Kontext-Instanz">问题 Q-5b7490ba113bb861 (未决)</a>该对象在其生命周期内经历明确定义的状态：</p>
 <ul>
 <li><strong>未初始化：</strong>实例化后，上下文尚未拥有密钥。在此状态下不允许执行数据处理操作。</li>
 <li><strong>已配置（就绪）：</strong>通过使用 <code>PublicKey</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50175" href="../spec/record.html?id=SWS_CRYPT_50175">[SWS_CRYPT_50175]</a>）或 <code>KeySlot</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>）调用 <code>SetKey()</code>，上下文进入就绪状态。在此状态下，既可以执行单步加密，也可以启动流式会话。</li>
 <li><strong>流式处理活动：</strong>调用 <code>Start()</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50087" href="../spec/record.html?id=SWS_CRYPT_50087">[SWS_CRYPT_50087]</a>）将上下文置于流式状态。连续的数据块通过 <code>Update()</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50176" href="../spec/record.html?id=SWS_CRYPT_50176">[SWS_CRYPT_50176]</a>）进行处理。会话要么通过 <code>Finish()</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50088" href="../spec/record.html?id=SWS_CRYPT_50088">[SWS_CRYPT_50088]</a>）完成，要么通过 <code>Cancel()</code>（<a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>）中止，从而使上下文返回到<em>已配置</em>状态。</li>
 </ul>
-<p>该类的所有方法均被指定为异常安全（<em>exception safe</em>）和线程安全（<em>thread-safe</em>）。如果在流式操作尚未结束时销毁上下文，则底层实现可能会清理分配的缓冲区并隐式丢弃该会话。</p>
+<p>该类的所有方法均被指定为异常安全（<em>exception safe</em>）和线程安全（<em>thread-safe</em>）。如果在流式操作尚未结束时销毁上下文，则底层实现可能会清理分配的缓冲区并隐式丢弃该会话。 <a class="interp-q interp-q-open" data-q="Q-3eadc946a0bdbdfd" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-3eadc946a0bdbdfd" title="问题 Q-3eadc946a0bdbdfd (未决): Ressourcenbereinigung bei Objektzerstörung">问题 Q-3eadc946a0bdbdfd (未决)</a></p>
 
 <div class="diagram" id="diag-lebenszyklus"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 236.93 232.80" style="max-width:316px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 218.4)">
@@ -206,7 +206,7 @@
   <button type="button" class="btn-curate-link btn-trace-curate dossier-open-link" data-dossier-target="dossier-modal-SWS_CRYPT_50089" data-dossier-src="dossier-modal-SWS_CRYPT_50089.html" data-view-mode="editor" title="打开策展编辑器与审计档案" style="margin-left:auto; padding:2px 8px; font-size:11px;">🛠️ 策展</button>
 </div>
 <div class="ai-level" data-ai-level="4">
-<p>方法 <code>Cancel()</code> 中止上下文 <code>ara::crypto::cryp::EncryptorPublicCtx</code> 中活动的流式操作，该操作先前通过 <code>Start()</code> 启动且尚未结束 <a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>。它不接受任何传入参数，并返回一个在成功情况下为空的 <code>ara::core::Result&lt;void&gt;</code> <a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>。由于该签名直接提供 Result 而非 Future，因此中止可能是同步执行的。</p>
+<p>方法 <code>Cancel()</code> 中止上下文 <code>ara::crypto::cryp::EncryptorPublicCtx</code> 中活动的流式操作，该操作先前通过 <code>Start()</code> 启动且尚未结束 <a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>。它不接受任何传入参数，并返回一个在成功情况下为空的 <code>ara::core::Result&lt;void&gt;</code> <a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>。由于该签名直接提供 Result 而非 Future，因此中止可能是同步执行的。 <a class="interp-q interp-q-open" data-q="Q-cd18e56d693fe1a4" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-cd18e56d693fe1a4" title="问题 Q-cd18e56d693fe1a4 (未决): Synchroner Aufruf">问题 Q-cd18e56d693fe1a4 (未决)</a></p>
 <h4>错误处理与并发</h4>
 <p>如果数据处理未事先通过 <code>Start()</code> 启动，则该操作在遵循回滚语义的情况下失败，并带有错误代码 <code>ara::crypto::CryptoErrc::kProcessingNotStarted</code> <a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>。根据规范，该接口声明为 <code>noexcept</code>，具有异常安全性（exception safe），且针对并发访问被归类为线程安全（thread-safe）<a class="spec-record-ref" data-req="SWS_CRYPT_50089" href="../spec/record.html?id=SWS_CRYPT_50089">[SWS_CRYPT_50089]</a>。</p>
 <h4>加密栈中的相互作用</h4>
@@ -746,7 +746,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>用法与调用上下文</h4>
-  <p>接口 <code>ara::crypto::cryp::EncryptorPublicCtx</code>（头文件 <code>ara/crypto/cryp/encryptor_public_ctx.h</code>）的纯虚方法 <code>SetKey</code> 用于为非对称加密操作分配密钥<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>。类型为 <code>KeySlot::Sptr</code> 的智能指针 <code>keySlot</code> 作为参数传递，其中必须包含一个 <code>PublicKey</code><a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>。调用同步进行，并通过空的 <code>ara::core::Result&lt;void&gt;</code> 指示成功。对该语义至关重要的是，存储在槽中的密钥仅在加密启动的时间点才会被提取<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>。（解释：由于密钥解析仅在实际加密启动时才进行，因此在此启动时间点之前对槽内容的更新可能仍然有效。）</p>
+  <p>接口 <code>ara::crypto::cryp::EncryptorPublicCtx</code>（头文件 <code>ara/crypto/cryp/encryptor_public_ctx.h</code>）的纯虚方法 <code>SetKey</code> 用于为非对称加密操作分配密钥<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>。类型为 <code>KeySlot::Sptr</code> 的智能指针 <code>keySlot</code> 作为参数传递，其中必须包含一个 <code>PublicKey</code><a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>。调用同步进行，并通过空的 <code>ara::core::Result&lt;void&gt;</code> 指示成功。对该语义至关重要的是，存储在槽中的密钥仅在加密启动的时间点才会被提取<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>。（解释：由于密钥解析仅在实际加密启动时才进行，因此在此启动时间点之前对槽内容的更新可能仍然有效。） <a class="interp-q interp-q-open" data-q="Q-25c5d462aafde8a1" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-25c5d462aafde8a1" title="问题 Q-25c5d462aafde8a1 (未决): Aktualisierungen am Inhalt des KeySlot vor dem Verschlüsselungsstart dürften wirksam werden">问题 Q-25c5d462aafde8a1 (未决)</a></p>
 
   <h4>错误处理</h4>
   <p>如果配置失败，将在 Result 对象中返回具有回滚语义的错误码<a class="spec-record-ref" data-req="SWS_CRYPT_50086" href="../spec/record.html?id=SWS_CRYPT_50086">[SWS_CRYPT_50086]</a>：</p>
@@ -870,7 +870,7 @@
 
 <h4>并发性与限制</h4>
 <p>
-该接口定义为<code>noexcept</code>，并指定了既 <em>thread-safe</em> 又 <em>exception safe</em> 的行为<a class="spec-record-ref" data-req="SWS_CRYPT_50175" href="../spec/record.html?id=SWS_CRYPT_50175">[SWS_CRYPT_50175]</a>。\n得益于回滚语义，发生错误时上下文将保持在其先前状态。\nInterpretation：成功的调用应是后续加密操作的必要先决条件，因为上下文在没有分配密钥的情况下无法执行操作。
+该接口定义为<code>noexcept</code>，并指定了既 <em>thread-safe</em> 又 <em>exception safe</em> 的行为<a class="spec-record-ref" data-req="SWS_CRYPT_50175" href="../spec/record.html?id=SWS_CRYPT_50175">[SWS_CRYPT_50175]</a>。\n得益于回滚语义，发生错误时上下文将保持在其先前状态。\nInterpretation：成功的调用应是后续加密操作的必要先决条件，因为上下文在没有分配密钥的情况下无法执行操作。 <a class="interp-q interp-q-open" data-q="Q-ab4779cac18793fa" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-ab4779cac18793fa" title="问题 Q-ab4779cac18793fa (未决): Ein erfolgreicher Aufruf von SetKey ist Voraussetzung für spätere Verschlüsselungsschritte">问题 Q-ab4779cac18793fa (未决)</a>
 </p>
 
 <h4>相互作用</h4>
@@ -987,7 +987,7 @@
 </ul>
 
 <h4>并发性与交互</h4>
-<p>该方法被指定为 <code>thread-safe</code> 和 <code>exception safe</code> <a class="spec-record-ref" data-req="SWS_CRYPT_50087" href="../spec/record.html?id=SWS_CRYPT_50087">[SWS_CRYPT_50087]</a>。在上下文中提供合适的密钥是成功的必要先决条件。从概念上讲，该函数融入了加密上下文的标准化生命周期中，在这些生命周期中，操作通过无参数调用进行准备——可与签名校验 <a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>、签名生成 <a class="spec-record-ref" data-req="SWS_CRYPT_50037" href="../spec/record.html?id=SWS_CRYPT_50037">[SWS_CRYPT_50037]</a> 或 MAC 计算 <a class="spec-record-ref" data-req="SWS_CRYPT_22111" href="../spec/record.html?id=SWS_CRYPT_22111">[SWS_CRYPT_22111]</a> 相比。该调用可能是实际执行流加密之前强制性的起始点。</p>
+<p>该方法被指定为 <code>thread-safe</code> 和 <code>exception safe</code> <a class="spec-record-ref" data-req="SWS_CRYPT_50087" href="../spec/record.html?id=SWS_CRYPT_50087">[SWS_CRYPT_50087]</a>。在上下文中提供合适的密钥是成功的必要先决条件。从概念上讲，该函数融入了加密上下文的标准化生命周期中，在这些生命周期中，操作通过无参数调用进行准备——可与签名校验 <a class="spec-record-ref" data-req="SWS_CRYPT_50019" href="../spec/record.html?id=SWS_CRYPT_50019">[SWS_CRYPT_50019]</a>、签名生成 <a class="spec-record-ref" data-req="SWS_CRYPT_50037" href="../spec/record.html?id=SWS_CRYPT_50037">[SWS_CRYPT_50037]</a> 或 MAC 计算 <a class="spec-record-ref" data-req="SWS_CRYPT_22111" href="../spec/record.html?id=SWS_CRYPT_22111">[SWS_CRYPT_22111]</a> 相比。该调用可能是实际执行流加密之前强制性的起始点。 <a class="interp-q interp-q-open" data-q="Q-db262c3914e6b4cf" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-db262c3914e6b4cf" title="问题 Q-db262c3914e6b4cf (未决): Der Aufruf von Start() dürfte vor nachfolgenden Schritten einer Stream-Verschlüsselung obligatorisch sein.">问题 Q-db262c3914e6b4cf (未决)</a></p>
 <!-- annahmen: 1) Der Aufruf von Start() dürfte vor nachfolgenden Schritten einer Stream-Verschlüsselung obligatorisch sein. – Begründung: Der Kontext initialisiert den Zustand für eine neue Verschlüsselung und weist mit kUnsupported explizit auf Stream-Verarbeitung hin. -->
 </div>
 <p class="ai-note">本使用说明基于 AUTOSAR 规范 R25-11 自动生成。</p>
@@ -1095,7 +1095,7 @@
 <li><code>ara::crypto::CryptoErrc::kInvalidInputSize</code>：<code>in</code>的缓冲区大小无效<a class="spec-record-ref" data-req="SWS_CRYPT_50176" href="../spec/record.html?id=SWS_CRYPT_50176">[SWS_CRYPT_50176]</a>。</li>
 <li><code>ara::crypto::CryptoErrc::kUnsupported</code>：当前上下文不支持流处理<a class="spec-record-ref" data-req="SWS_CRYPT_50176" href="../spec/record.html?id=SWS_CRYPT_50176">[SWS_CRYPT_50176]</a>。</li>
 </ul>
-<p>该方法声明为异常安全且线程安全<a class="spec-record-ref" data-req="SWS_CRYPT_50176" href="../spec/record.html?id=SWS_CRYPT_50176">[SWS_CRYPT_50176]</a>。尽管如此，在同一上下文对象上并行调用多个操作大概需要外部同步，以确保加密数据片段的确定性顺序。</p>
+<p>该方法声明为异常安全且线程安全<a class="spec-record-ref" data-req="SWS_CRYPT_50176" href="../spec/record.html?id=SWS_CRYPT_50176">[SWS_CRYPT_50176]</a>。尽管如此，在同一上下文对象上并行调用多个操作大概需要外部同步，以确保加密数据片段的确定性顺序。 <a class="interp-q interp-q-open" data-q="Q-b22ffe505b583b25" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-b22ffe505b583b25" title="问题 Q-b22ffe505b583b25 (未决): Parallele Aufrufe auf demselben Kontextobjekt dürften eine externe Koordinierung erfordern">问题 Q-b22ffe505b583b25 (未决)</a></p>
 <!-- annahmen: 1) Parallele Aufrufe auf demselben Kontextobjekt dürften eine externe Koordinierung erfordern – Begründung: Die Spezifikation definiert Thread-Sicherheit, beschreibt jedoch keine Serialisierung zur Erhaltung der Datenstrom-Reihenfolge bei konkurrierenden Aufrufen. -->
 </div>
 <p class="ai-note">本段文字由 AI 生成，仅供参考。规范具约束力。</p>

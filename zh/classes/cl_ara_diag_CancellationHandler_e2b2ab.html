@@ -43,7 +43,7 @@
 <h4>生命周期</h4>
 <p><code>ara::diag::CancellationHandler</code> 的实例化受诊断框架的排他性控制：默认构造函数对应用程序显式删除（<code>delete</code>），因此实例只能由 DM Core 创建 <a class="spec-record-ref" data-req="SWS_DM_00609" href="../spec/record.html?id=SWS_DM_00609">[SWS_DM_00609]</a>。为了确保明确的状态归属，该类被指定为不可复制的单实例；复制构造函数 <a class="spec-record-ref" data-req="SWS_DM_00611" href="../spec/record.html?id=SWS_DM_00611">[SWS_DM_00611]</a> 和复制赋值运算符 <a class="spec-record-ref" data-req="SWS_DM_00613" href="../spec/record.html?id=SWS_DM_00613">[SWS_DM_00613]</a> 已删除。</p>
 
-<p>相反，该类支持移动语义：移动构造函数 <a class="spec-record-ref" data-req="SWS_DM_00610" href="../spec/record.html?id=SWS_DM_00610">[SWS_DM_00610]</a> 和移动赋值运算符 <a class="spec-record-ref" data-req="SWS_DM_00612" href="../spec/record.html?id=SWS_DM_00612">[SWS_DM_00612]</a> 作为默认实现声明为 <code>noexcept</code>。这大概允许框架将实例的所有权高效地转移到下游的执行上下文中。</p>
+<p>相反，该类支持移动语义：移动构造函数 <a class="spec-record-ref" data-req="SWS_DM_00610" href="../spec/record.html?id=SWS_DM_00610">[SWS_DM_00610]</a> 和移动赋值运算符 <a class="spec-record-ref" data-req="SWS_DM_00612" href="../spec/record.html?id=SWS_DM_00612">[SWS_DM_00612]</a> 作为默认实现声明为 <code>noexcept</code>。这大概允许框架将实例的所有权高效地转移到下游的执行上下文中。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_diag_CancellationHandler_e2b2ab&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
 
 <p>在状态方面，该实例表现出单调的行为。初始化后，<code>IsCanceled()</code> 立即发出值 <code>false</code> <a class="spec-record-ref" data-req="SWS_DM_00984" href="../spec/record.html?id=SWS_DM_00984">[SWS_DM_00984]</a>。一旦关联的诊断会话被取消，状态就会更改为 <code>true</code>。该中止状态将不可逆地保留，直到实例被销毁 <a class="spec-record-ref" data-req="SWS_DM_00984" href="../spec/record.html?id=SWS_DM_00984">[SWS_DM_00984]</a>。</p>
 
@@ -125,7 +125,7 @@
 
 <p>多次调用 <code>SetNotifier()</code> 不会导致错误：后续注册会完全覆盖先前设置的回调 <a class="spec-record-ref" data-req="SWS_DM_00615" href="../spec/record.html?id=SWS_DM_00615">[SWS_DM_00615]</a>、<a class="spec-record-ref" data-req="SWS_DM_01348" href="../spec/record.html?id=SWS_DM_01348">[SWS_DM_01348]</a>。</p>
 
-<p>需要特别注意线程安全性：所有成员函数（<code>IsCanceled</code>、<code>SetNotifier</code>）和回调类型均明确声明为非线程安全 <a class="spec-record-ref" data-req="SWS_DM_00614" href="../spec/record.html?id=SWS_DM_00614">[SWS_DM_00614]</a>、<a class="spec-record-ref" data-req="SWS_DM_00615" href="../spec/record.html?id=SWS_DM_00615">[SWS_DM_00615]</a>、<a class="spec-record-ref" data-req="SWS_DM_02075" href="../spec/record.html?id=SWS_DM_02075">[SWS_DM_02075]</a>。如果跨线程边界进行状态查询或通知程序注册，应用程序必须使用外部保护机制。此外，回调可能在 DM 的触发线程中同步调用，因此应用程序端通知函数应保持非阻塞。</p>
+<p>需要特别注意线程安全性：所有成员函数（<code>IsCanceled</code>、<code>SetNotifier</code>）和回调类型均明确声明为非线程安全 <a class="spec-record-ref" data-req="SWS_DM_00614" href="../spec/record.html?id=SWS_DM_00614">[SWS_DM_00614]</a>、<a class="spec-record-ref" data-req="SWS_DM_00615" href="../spec/record.html?id=SWS_DM_00615">[SWS_DM_00615]</a>、<a class="spec-record-ref" data-req="SWS_DM_02075" href="../spec/record.html?id=SWS_DM_02075">[SWS_DM_02075]</a>。如果跨线程边界进行状态查询或通知程序注册，应用程序必须使用外部保护机制。此外，回调可能在 DM 的触发线程中同步调用，因此应用程序端通知函数应保持非阻塞。 <a class="interp-q interp-q-open" data-q="Q-26c43c035d4f18a3" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-26c43c035d4f18a3" title="问题 Q-26c43c035d4f18a3 (未决): Der Notifier dürfte im Ausführungskontext des auslösenden DM-Threads ausgeführt werden.">问题 Q-26c43c035d4f18a3 (未决)</a></p>
 
 <!-- annahmen: 1) Die Bereitstellung von Move-Operationen bei gelöschten Kopierkonstruktoren dient vermutlich der effizienten Übergabe an asynchrone Bearbeitungskontexte. – Begründung: Kopieroperationen sind explizit gelöscht, während Move default noexcept ist. 2) Der Notifier dürfte im Ausführungskontext des auslösenden DM-Threads ausgeführt werden. – Begründung: Die Schnittstelle ist nicht threadsicher spezifiziert, sodass blockierende Operationen im Callback vermieden werden müssen. -->
 </div>
@@ -475,7 +475,7 @@
 
 <h4>并发性与限制</h4>
 <p>
-在线程安全性方面，该方法归类为 <em>not thread-safe</em> (<a class="spec-record-ref" data-req="SWS_DM_00615" href="../spec/record.html?id=SWS_DM_00615">[SWS_DM_00615]</a>)。因此，不得在未受保护的情况下并发修改 <code>CancellationHandler</code> 的实例。如果在同一实例上多次连续调用 <code>SetNotifier</code>，DM 将覆盖先前注册的通知程序 (<a class="spec-record-ref" data-req="SWS_DM_01348" href="../spec/record.html?id=SWS_DM_01348">[SWS_DM_01348]</a>, <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=193">SWS Diagnostics 第193页</a>)。此外，回调函数最好不要执行阻塞操作，以免延迟 DM 的内部中止处理。
+在线程安全性方面，该方法归类为 <em>not thread-safe</em> (<a class="spec-record-ref" data-req="SWS_DM_00615" href="../spec/record.html?id=SWS_DM_00615">[SWS_DM_00615]</a>)。因此，不得在未受保护的情况下并发修改 <code>CancellationHandler</code> 的实例。如果在同一实例上多次连续调用 <code>SetNotifier</code>，DM 将覆盖先前注册的通知程序 (<a class="spec-record-ref" data-req="SWS_DM_01348" href="../spec/record.html?id=SWS_DM_01348">[SWS_DM_01348]</a>, <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=193">SWS Diagnostics 第193页</a>)。此外，回调函数最好不要执行阻塞操作，以免延迟 DM 的内部中止处理。 <a class="interp-q interp-q-open" data-q="Q-94d2cb76c17c4fa4" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-94d2cb76c17c4fa4" title="问题 Q-94d2cb76c17c4fa4 (未决): Die registrierte Notifier-Funktion dürfte zügig und nicht-blockierend ausgeführt werden">问题 Q-94d2cb76c17c4fa4 (未决)</a>
 </p>
 
 <h4>相互作用</h4>

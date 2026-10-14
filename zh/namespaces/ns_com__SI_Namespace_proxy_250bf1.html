@@ -27,7 +27,7 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">提供用于在 AUTOSAR Adaptive 中访问服务实例的客户端接口和 Proxy 类。</p>
 <div class="ai-level" data-ai-level="2">
-<p>命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 在模块 <code>com</code> 内提供用于与 Service Interface 交互的客户端接口。其核心组件是 Proxy 类 <code>&lt;SI&gt;Proxy</code>，它对中间件通信进行抽象，并支持方法调用以及事件订阅。Proxy 的实例化通常可能需要来自服务发现的有效句柄。作为关键边界条件，调用应用程序必须稳健地处理远程调用时的连接中断和异步响应时间。</p>
+<p>命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 在模块 <code>com</code> 内提供用于与 Service Interface 交互的客户端接口。其核心组件是 Proxy 类 <code>&lt;SI&gt;Proxy</code>，它对中间件通信进行抽象，并支持方法调用以及事件订阅。Proxy 的实例化通常可能需要来自服务发现的有效句柄。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=namespace:adaptive:ns_com__SI_Namespace_proxy_250bf1&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>作为关键边界条件，调用应用程序必须稳健地处理远程调用时的连接中断和异步响应时间。</p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
@@ -41,10 +41,10 @@
 
 <h4>生命周期</h4>
 <p>
-命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 中对象的生命周期与相应服务实例的可用性紧密耦合。在创建 Proxy 实例之前，必须进行实例发现。Proxy <code>&lt;SI&gt;Proxy</code> 的实例化通常可能需要一个源自服务发现的句柄。成功实例化后，Proxy 对象表示与相应服务提供者的逻辑连接。
+命名空间 <code>&lt;SI-Namespace&gt;::proxy</code> 中对象的生命周期与相应服务实例的可用性紧密耦合。在创建 Proxy 实例之前，必须进行实例发现。Proxy <code>&lt;SI&gt;Proxy</code> 的实例化通常可能需要一个源自服务发现的句柄。 <a class="interp-q interp-q-open" data-q="Q-3dcfd734b218f865" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-3dcfd734b218f865" title="问题 Q-3dcfd734b218f865 (未决): Die Instanziierung des Proxys dürfte typischerweise ein Handle erfordern, das aus der Service-Suche resultiert.">问题 Q-3dcfd734b218f865 (未决)</a>成功实例化后，Proxy 对象表示与相应服务提供者的逻辑连接。
 </p>
 <p>
-在活动运行阶段，Proxy 实例管理与已订阅事件和待处理异步方法调用相关的状态。关于并发性，需要注意的是，如果多个线程使用同一个 Proxy 对象，则对 Proxy 的调用必须设计为线程安全的，或者必须由客户端进行相应同步。释放或销毁 Proxy 对象可能会终止与所找到服务实例的绑定并解除正在进行的订阅。
+在活动运行阶段，Proxy 实例管理与已订阅事件和待处理异步方法调用相关的状态。关于并发性，需要注意的是，如果多个线程使用同一个 Proxy 对象，则对 Proxy 的调用必须设计为线程安全的，或者必须由客户端进行相应同步。释放或销毁 Proxy 对象可能会终止与所找到服务实例的绑定并解除正在进行的订阅。 <a class="interp-q interp-q-open" data-q="Q-e9d55205ba1bf55b" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-e9d55205ba1bf55b" title="问题 Q-e9d55205ba1bf55b (未决): Die Freigabe oder Zerstörung des Proxy-Objekts dürfte die Bindung an die gefundene Service-Instanz beenden und laufende Abonnements auflösen.">问题 Q-e9d55205ba1bf55b (未决)</a>
 </p>
 
 <h4>使用路径</h4>
@@ -54,7 +54,7 @@
 <ul>
 <li><strong>查找服务实例：</strong>客户端通过模块 <code>com</code> 的平台机制发起对服务可用实例的搜索，并接收返回的相应句柄结构。</li>
 <li><strong>构造 Proxy：</strong>使用有效句柄实例化 <code>&lt;SI&gt;Proxy</code> 的实例，从而建立到服务器的通信通道。</li>
-<li><strong>与服务元素交互：</strong>通过该实例同步或异步调用方法、订阅事件并注册回调。异步通信模式大概可能会通过 Proxy 实例内的类型化事件和方法包装器进行映射。</li>
+<li><strong>与服务元素交互：</strong>通过该实例同步或异步调用方法、订阅事件并注册回调。异步通信模式大概可能会通过 Proxy 实例内的类型化事件和方法包装器进行映射。 <a class="interp-q interp-q-open" data-q="Q-2e6b91c7e5f88567" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2e6b91c7e5f88567" title="问题 Q-2e6b91c7e5f88567 (未决): Asynchrone Kommunikationsmuster dürften vermutlich über typisierte Ereignis- und Methoden-Wrapper innerhalb der Proxy-Instanz abgebildet werden.">问题 Q-2e6b91c7e5f88567 (未决)</a></li>
 <li><strong>终止与清理：</strong>通信结束后，取消订阅事件并按规范销毁 Proxy 实例，以释放所占用的资源。</li>
 </ul>
 

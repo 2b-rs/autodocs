@@ -27,7 +27,7 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">为服务骨架定义服务端字段类，以提供和更新接口字段。</p>
 <div class="ai-level" data-ai-level="2">
-<p>该命名空间封装了 com 模块骨架架构内针对 ServiceInterface 中声明的每个字段的服务端字段类。服务提供者使用这些生成的类来管理当前字段值，并在值发生更改时将其传输给已连接的客户端。字段对象的实例化和生命周期推测直接绑定到上级骨架实例。在更新和提供数据时，必须注意按照服务骨架的线程模型进行同步。</p>
+<p>该命名空间封装了 com 模块骨架架构内针对 ServiceInterface 中声明的每个字段的服务端字段类。服务提供者使用这些生成的类来管理当前字段值，并在值发生更改时将其传输给已连接的客户端。字段对象的实例化和生命周期推测直接绑定到上级骨架实例。 <a class="interp-q interp-q-open" data-q="Q-bd1d4d2cab97eada" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-bd1d4d2cab97eada" title="问题 Q-bd1d4d2cab97eada (未决): Die Instanziierung der Klassen in skeleton::fields dürfte als Member der übergeordneten Skeleton-Klasse erfolgen">问题 Q-bd1d4d2cab97eada (未决)</a>在更新和提供数据时，必须注意按照服务骨架的线程模型进行同步。</p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
@@ -36,9 +36,9 @@
 <p>在面向服务的架构中，字段表示服务的属性，通常可以由读取访问（Getter）、写入访问（Setter）和基于事件的通知（Notifier）的组合构成。当在客户端的代理命名空间中生成用于消费性访问的相应接口时，<code>skeleton::fields</code> 提供服务提供者（服务端）用来管理内部状态并向外部公开的类。命名空间 <code>&lt;SI-Namespace&gt;::skeleton::fields</code> 中的类在此封装了通信和协议特定的传输，从而使应用程序开发人员能够专注于服务的业务逻辑。</p>
 
 <h4>生命周期</h4>
-<p>在创建和所有权关系方面，命名空间 <code>skeleton::fields</code> 中字段类的生命周期推测直接绑定到服务接口的上级骨架类。在 Adaptive Platform 基于 C++ 的实现中，字段实例通常在生成的骨架内被实例化为直接成员对象。因此，字段对象的生命周期始于服务骨架的构造函数调用，并在其析构时自动结束。</p>
+<p>在创建和所有权关系方面，命名空间 <code>skeleton::fields</code> 中字段类的生命周期推测直接绑定到服务接口的上级骨架类。 <a class="interp-q interp-q-open" data-q="Q-375f07429819a937" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-375f07429819a937" title="问题 Q-375f07429819a937 (未决): Die Feld-Klasse dürfte Aktualisierungen des Feldwerts und Anfragen verwalten">问题 Q-375f07429819a937 (未决)</a>在 Adaptive Platform 基于 C++ 的实现中，字段实例通常在生成的骨架内被实例化为直接成员对象。因此，字段对象的生命周期始于服务骨架的构造函数调用，并在其析构时自动结束。</p>
 <p>在运行阶段，字段对象常驻在服务提供者的内存中。在网络上提供服务之前或期间（例如在服务注册之前或紧接着之后），字段实例使用有效的初始值进行初始化。由于骨架在其整个生命周期内均可用于查询和更新，因此字段实例也保持持久可用。</p>
-<p>关于并发和线程处理，字段访问的处理推测在很大程度上取决于所选的骨架处理模型。如果字段类为传入的写入或读取请求提供回调机制，或者提供用于更新字段值的方法，则必须通过使用该字段类的服务实现对并发访问进行同步，以防止并发处理时发生竞态条件。</p>
+<p>关于并发和线程处理，字段访问的处理推测在很大程度上取决于所选的骨架处理模型。 <a class="interp-q interp-q-open" data-q="Q-d3456f67c7a4ba8d" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d3456f67c7a4ba8d" title="问题 Q-d3456f67c7a4ba8d (未决): Aufrufe an die Feld-Instanzen dürften gemäß dem Threading-Modell des Service-Skeletons zu synchronisieren sein">问题 Q-d3456f67c7a4ba8d (未决)</a>如果字段类为传入的写入或读取请求提供回调机制，或者提供用于更新字段值的方法，则必须通过使用该字段类的服务实现对并发访问进行同步，以防止并发处理时发生竞态条件。</p>
 
 <h4>使用路径</h4>
 <p>来自 <code>&lt;SI-Namespace&gt;::skeleton::fields</code> 的类的典型使用路径始于服务提供者的初始化过程。在构建骨架实例时，会为每个配置的字段创建相应的字段对象。服务的实现通常最初为字段类分配一个有效的起始值，以便发出请求的客户端从一开始就能获取一致的数据。</p>

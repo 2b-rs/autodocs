@@ -41,15 +41,15 @@
 
 <h4>수명 주기</h4>
 <p>해시 특수화의 수명 주기는 매우 간결하며 C++ 표준 펑터의 규칙을 따릅니다. 이 클래스는 영구 상태 변수나 참조된 리소스를 보유하지 않습니다. 따라서 생성은 암시적 기본 생성자를 통해 일반적으로 스택의 사용 위치에서 직접 또는 컨테이너 작업 내의 임시 객체로서 단순하게 이루어집니다.</p>
-<p>특수화가 상태를 갖지 않으므로 해당 객체는 제약 없이 복사 및 이동이 가능할 것으로 추정됩니다. 소멸 시 명시적인 리소스 해제나 소멸자 로직이 필요하지 않습니다. 동시성과 관련하여 펑터 호출은 해시 처리할 <code>ara::core::Variant</code> 인스턴스가 다른 실행 스레드에 의해 동시에 수정되지 않는 한 스레드 안전합니다. 여러 스레드가 외부 동기화 없이도 동일한 해시 펑터 인스턴스 또는 병렬 인스턴스를 동시에 사용할 수 있습니다.</p>
+<p>특수화가 상태를 갖지 않으므로 해당 객체는 제약 없이 복사 및 이동이 가능할 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-2cffd290e7f00968" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2cffd290e7f00968" title="질문 Q-2cffd290e7f00968 (열림): Die Spezialisierung ist zustandslos und damit thread-sicher">질문 Q-2cffd290e7f00968 (열림)</a> 소멸 시 명시적인 리소스 해제나 소멸자 로직이 필요하지 않습니다. 동시성과 관련하여 펑터 호출은 해시 처리할 <code>ara::core::Variant</code> 인스턴스가 다른 실행 스레드에 의해 동시에 수정되지 않는 한 스레드 안전합니다. 여러 스레드가 외부 동기화 없이도 동일한 해시 펑터 인스턴스 또는 병렬 인스턴스를 동시에 사용할 수 있습니다.</p>
 
 <h4>사용 경로</h4>
 <p>전형적인 사용은 표준 라이브러리의 연관 컨테이너를 통해 간접적으로 수행되거나 호출 연산자 <code>operator()</code>의 명시적 실행을 통해 직접 수행됩니다. 사용 사례는 구체적인 대체 값을 보유하는 <code>ara::core::Variant</code>의 초기화된 인스턴스를 준비하는 것으로 시작됩니다.</p>
-<p>해시 함수를 호출할 때 variant의 현재 상태가 쿼리됩니다. 계산은 개념상 두 단계로 진행될 것으로 추정됩니다. 먼저 현재 보유 중인 타입의 판별자 또는 인덱스를 확인합니다. 이어서 variant에 포함된 구체적인 값을 해당 타입의 적절한 <code>std::hash</code> 특수화로 전달합니다. 마지막으로 타입 인덱스와 값 해시를 결합하여 <code>std::size_t</code> 타입의 결과 해시값을 생성합니다. 이를 통해 대체 값은 동일하지만 타입 식별성이 서로 다른 variant들이 확실하게 서로 다른 해시값을 얻도록 보장합니다.</p>
+<p>해시 함수를 호출할 때 variant의 현재 상태가 쿼리됩니다. 계산은 개념상 두 단계로 진행될 것으로 추정됩니다. 먼저 현재 보유 중인 타입의 판별자 또는 인덱스를 확인합니다. 이어서 variant에 포함된 구체적인 값을 해당 타입의 적절한 <code>std::hash</code> 특수화로 전달합니다. 마지막으로 타입 인덱스와 값 해시를 결합하여 <code>std::size_t</code> 타입의 결과 해시값을 생성합니다. 이를 통해 대체 값은 동일하지만 타입 식별성이 서로 다른 variant들이 확실하게 서로 다른 해시값을 얻도록 보장합니다. <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_std_hash_ara_core_Variant_22cf88&amp;qst=open" title="이 텍스트의 가정과 질문 (버전 및 출처 탐색기)">질문 (열림)</a></p>
 
 <h4>오류 시나리오</h4>
 <p>해시 계산의 견고성은 템플릿 매개변수와 전달된 variant의 상태에 크게 좌우됩니다. 기본적인 전제 조건은 매개변수 팩 <code>Types...</code>에 선언된 모든 타입에 대해 제대로 작동하는 <code>std::hash</code> 특수화가 존재해야 한다는 것입니다. 단 하나의 타입이라도 이러한 정의가 누락되면 해시 펑터가 인스턴스화되는 즉시 컴파일이 실패합니다.</p>
-<p>런타임 시 메서드는 전달된 variant가 유효하지 않은 상태가 아님을 전제합니다. 이전에 실패한 할당으로 인해 기본 variant 객체가 예외로 인한 빈 상태(valueless by exception)가 된 경우, 해시 계산 동작은 정의되지 않았거나 런타임 예외를 초래할 것으로 추정됩니다. 또한 표준 해시 함수의 요구사항을 충족하기 위해 개별 대체 타입의 해시 계산은 예외를 던지지 않을 것으로 기대됩니다.</p>
+<p>런타임 시 메서드는 전달된 variant가 유효하지 않은 상태가 아님을 전제합니다. 이전에 실패한 할당으로 인해 기본 variant 객체가 예외로 인한 빈 상태(valueless by exception)가 된 경우, 해시 계산 동작은 정의되지 않았거나 런타임 예외를 초래할 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-d1e0b4858aa9dc16" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d1e0b4858aa9dc16" title="질문 Q-d1e0b4858aa9dc16 (열림): Die Hash-Berechnung kombiniert den Typindex mit dem Hash des Werts">질문 Q-d1e0b4858aa9dc16 (열림)</a> 또한 표준 해시 함수의 요구사항을 충족하기 위해 개별 대체 타입의 해시 계산은 예외를 던지지 않을 것으로 기대됩니다.</p>
 <!-- annahmen: 1) Die Hash-Berechnung kombiniert den Typindex mit dem Hash des Werts – Begründung: Zur Vermeidung von Hash-Kollisionen bei typverschiedenen Alternativen. | 2) Die Spezialisierung ist zustandslos und damit thread-sicher – Begründung: Entspricht der üblichen Semantik von std::hash-Spezialisierungen. | 3) Alle Typen in Types... müssen selbst über std::hash verfügen – Begründung: Notwendig für die generische Delegierung der Hash-Berechnung. -->
 </div>
 <p class="ai-note">이 텍스트는 AUTOSAR 사양 R25-11을 기반으로 AI에 의해 생성되었습니다.</p>

@@ -67,8 +67,8 @@
 <ul>
 <li><strong>端口映射配置错误：</strong>通过 <code>TimeSyncPortPrototypeToTimeBaseMapping</code> 引用的 <code>PortPrototype</code> 必须强制通过 <code>SynchronizedTimeBaseConsumerInterface</code> 进行类型化；否则存在 <code>PortInterfaceMappingViolation</code>（<a class="spec-record-ref" data-req="SWS_TS_01001" href="../spec/record.html?id=SWS_TS_01001">[SWS_TS_01001]</a>）。</li>
 <li><strong>覆盖现有回调：</strong>如果再次调用注册方法，新的通知器将覆盖先前存储的回调，而不会发出单独的错误消息（<a class="spec-record-ref" data-req="SWS_TS_01010" href="../spec/record.html?id=SWS_TS_01010">[SWS_TS_01010]</a>、<a class="spec-record-ref" data-req="SWS_TS_01012" href="../spec/record.html?id=SWS_TS_01012">[SWS_TS_01012]</a>、<a class="spec-record-ref" data-req="SWS_TS_01014" href="../spec/record.html?id=SWS_TS_01014">[SWS_TS_01014]</a>、<a class="spec-record-ref" data-req="SWS_TS_01016" href="../spec/record.html?id=SWS_TS_01016">[SWS_TS_01016]</a>、<a class="spec-record-ref" data-req="SWS_TS_01018" href="../spec/record.html?id=SWS_TS_01018">[SWS_TS_01018]</a>）。</li>
-<li><strong>精度测量缺少队列处理：</strong>Tsync 子系统不对时间精度的测量数据执行中间缓冲（队列处理）（<a class="spec-record-ref" data-req="SWS_TS_01018" href="../spec/record.html?id=SWS_TS_01018">[SWS_TS_01018]</a>）。如果通知器无法及时处理数据，且应用程序在通知器中未提供自己的缓冲，则后续测量大概率会丢失。</li>
-<li><strong>通知器方法存在数据竞争风险：</strong>由于通知器的注册和注销被标明为非线程安全，因此在没有外部保护机制的情况下从不同执行上下文并发调用大概率会导致状态不一致（解释）。</li>
+<li><strong>精度测量缺少队列处理：</strong>Tsync 子系统不对时间精度的测量数据执行中间缓冲（队列处理）（<a class="spec-record-ref" data-req="SWS_TS_01018" href="../spec/record.html?id=SWS_TS_01018">[SWS_TS_01018]</a>）。如果通知器无法及时处理数据，且应用程序在通知器中未提供自己的缓冲，则后续测量大概率会丢失。 <a class="interp-q interp-q-open" data-q="Q-dd82872d44124973" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-dd82872d44124973" title="问题 Q-dd82872d44124973 (未决): Fehlendes Queuing in Tsync führt bei langsamer Notifier-Abarbeitung vermutlich zum Verlust von Präzisionsdaten">问题 Q-dd82872d44124973 (未决)</a></li>
+<li><strong>通知器方法存在数据竞争风险：</strong>由于通知器的注册和注销被标明为非线程安全，因此在没有外部保护机制的情况下从不同执行上下文并发调用大概率会导致状态不一致（解释）。 <a class="interp-q interp-q-open" data-q="Q-626c00c2b1849655" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-626c00c2b1849655" title="问题 Q-626c00c2b1849655 (未决): Nebenläufige Notifier-Aufrufe dürften ohne anwendungsseitige Synchronisation zu Datenrennen führen">问题 Q-626c00c2b1849655 (未决)</a></li>
 </ul>
 <!-- annahmen: 1) Fehlendes Queuing in Tsync führt bei langsamer Notifier-Abarbeitung vermutlich zum Verlust von Präzisionsdaten – Begründung: SWS_TS_01018 schließt internes Queuing aus und weist darauf hin, dass eine Pufferung im Notifier erfolgen muss. 2) Nebenläufige Notifier-Aufrufe dürften ohne anwendungsseitige Synchronisation zu Datenrennen führen – Begründung: Methoden in SWS_TS_01010 bis SWS_TS_01019 sind explizit als non_threadsafe deklariert. -->
 </div>
@@ -392,7 +392,7 @@
 <li><strong>并发性：</strong>该操作被归类为非线程安全（<code>non_threadsafe</code>）<a class="spec-record-ref" data-req="SWS_TS_01012" href="../spec/record.html?id=SWS_TS_01012">[SWS_TS_01012]</a>。调用方必须同步对 <code>SynchronizedTimeBaseConsumer</code> 的同一实例的并行调用。</li>
 </ul>
 
-<p>解释：规范表中为 <code>notifier</code> 给出的参数描述“The function to unregister”大概是规范的一处笔误，因为 <code>RegisterSynchronizationStateChangeNotifier</code> 的名称和描述都明确定义了回调的注册和替换 <a class="spec-record-ref" data-req="SWS_TS_01012" href="../spec/record.html?id=SWS_TS_01012">[SWS_TS_01012]</a>。</p>
+<p>解释：规范表中为 <code>notifier</code> 给出的参数描述“The function to unregister”大概是规范的一处笔误，因为 <code>RegisterSynchronizationStateChangeNotifier</code> 的名称和描述都明确定义了回调的注册和替换 <a class="spec-record-ref" data-req="SWS_TS_01012" href="../spec/record.html?id=SWS_TS_01012">[SWS_TS_01012]</a>。 <a class="interp-q interp-q-open" data-q="Q-65eac6c0d06d6c4f" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-65eac6c0d06d6c4f" title="问题 Q-65eac6c0d06d6c4f (未决): Die Parameterbeschreibung „The function to unregister“ in SWS_TS_01012 dürfte ein redaktioneller Fehler sein">问题 Q-65eac6c0d06d6c4f (未决)</a></p>
 <!-- annahmen: 1) Die Parameterbeschreibung „The function to unregister“ in SWS_TS_01012 dürfte ein redaktioneller Fehler sein – Begründung: Signatur, Funktionsname und Beschreibungstext fordern explizit das Registrieren und Überschreiben einer Notifier-Funktion. -->
 </div>
 <p class="ai-note">基于 AUTOSAR Adaptive R25-11 规范自动生成的使用说明。</p>
@@ -605,7 +605,7 @@
     <li><strong>返回值与异常处理：</strong>该函数不返回返回值（<code>void</code>），并带有 <code>noexcept</code> 被指定为异常安全（<em>exception safe</em>）<a class="spec-record-ref" data-req="SWS_TS_01018" href="../spec/record.html?id=SWS_TS_01018">[SWS_TS_01018]</a>。</li>
   </ul>
 
-  <p>关于并发性，该函数被指定为 <em>non_threadsafe</em> <a class="spec-record-ref" data-req="SWS_TS_01018" href="../spec/record.html?id=SWS_TS_01018">[SWS_TS_01018]</a>。这意味着当从多个线程访问时，必须对 <code>RegisterTimePrecisionMeasurementNotifier</code> 的调用进行外部同步，以防止数据争用。据推测，注册最好在实例的确定性初始化阶段进行。</p>
+  <p>关于并发性，该函数被指定为 <em>non_threadsafe</em> <a class="spec-record-ref" data-req="SWS_TS_01018" href="../spec/record.html?id=SWS_TS_01018">[SWS_TS_01018]</a>。这意味着当从多个线程访问时，必须对 <code>RegisterTimePrecisionMeasurementNotifier</code> 的调用进行外部同步，以防止数据争用。据推测，注册最好在实例的确定性初始化阶段进行。 <a class="interp-q interp-q-open" data-q="Q-acd77cb313138b63" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-acd77cb313138b63" title="问题 Q-acd77cb313138b63 (未决): Registrierung sollte bevorzugt in einer deterministischen Initialisierungsphase erfolgen">问题 Q-acd77cb313138b63 (未决)</a></p>
 <!-- annahmen: 1) Registrierung sollte bevorzugt in einer deterministischen Initialisierungsphase erfolgen – Begründung: Die Spezifikation kennzeichnet die Methode explizit als non_threadsafe, schweigt jedoch zu spezifischen Lifecycle-Phasen. -->
 </div>
 <p class="ai-note">本使用说明是基于 AUTOSAR R25-11 规范版本自动创建的。</p>
@@ -1032,7 +1032,7 @@
   <h4>使用与签名</h4>
   <p>该函数的签名为 <code>void UnregisterStatusChangeNotifier () noexcept;</code>，不接收任何参数且不返回返回值 <a class="spec-record-ref" data-req="SWS_TS_01011" href="../spec/record.html?id=SWS_TS_01011">[SWS_TS_01011]</a>。成功注销后，调用方将不再接收有关相应时间基准状态更改的进一步通知。</p>
   <h4>错误处理与异常行为</h4>
-  <p>该函数声明为 <code>exception safe</code> 和 <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_TS_01011" href="../spec/record.html?id=SWS_TS_01011">[SWS_TS_01011]</a>。它在出错时不引发 C++ 异常，也不返回错误代码。如果在调用时未注册任何通知器函数，根据规范该调用大概不会产生任何效果。</p>
+  <p>该函数声明为 <code>exception safe</code> 和 <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_TS_01011" href="../spec/record.html?id=SWS_TS_01011">[SWS_TS_01011]</a>。它在出错时不引发 C++ 异常，也不返回错误代码。如果在调用时未注册任何通知器函数，根据规范该调用大概不会产生任何效果。 <a class="interp-q interp-q-open" data-q="Q-6c7ff4cfdcf4dba8" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-6c7ff4cfdcf4dba8" title="问题 Q-6c7ff4cfdcf4dba8 (未决): Es wird interpretiert, dass der Aufruf ohne zuvor registrierten Notifier wirkungslos bleibt">问题 Q-6c7ff4cfdcf4dba8 (未决)</a></p>
   <h4>并发性与限制</h4>
   <p>关于调用上下文，<code>UnregisterStatusChangeNotifier</code> 被分类为 <code>non_threadsafe</code> <a class="spec-record-ref" data-req="SWS_TS_01011" href="../spec/record.html?id=SWS_TS_01011">[SWS_TS_01011]</a>。因此，必须通过外部同步机制保护对 <code>ara::tsync::SynchronizedTimeBaseConsumer</code> 的同一实例的并行调用，以避免竞态条件。</p>
 <!-- annahmen: 1) Es wird interpretiert, dass der Aufruf ohne zuvor registrierten Notifier wirkungslos bleibt – Begründung: SWS_TS_01011 spezifiziert void als Rückgabewert und keine Fehlerrückgabe oder Ausnahmebehandlung bei fehlender Registrierung. -->
@@ -1136,7 +1136,7 @@
 <h4>错误处理与异常安全性</h4>
 <p>该函数带有说明符<code>noexcept</code>，并被声明为异常安全（<em>exception safe</em>）<a class="spec-record-ref" data-req="SWS_TS_01013" href="../spec/record.html?id=SWS_TS_01013">[SWS_TS_01013]</a>。因此它不抛出异常，并且由于返回类型为<code>void</code>，也不会返回任何错误码<a class="spec-record-ref" data-req="SWS_TS_01013" href="../spec/record.html?id=SWS_TS_01013">[SWS_TS_01013]</a>。</p>
 <h4>并发性与限制</h4>
-<p>为该方法定义了属性<code>non_threadsafe</code><a class="spec-record-ref" data-req="SWS_TS_01013" href="../spec/record.html?id=SWS_TS_01013">[SWS_TS_01013]</a>。因此，在<code>SynchronizedTimeBaseConsumer</code>的同一实例上的并行调用必须通过应用程序的外部同步机制进行协调。注销操作可能同步进行；在函数完成之后，可能立即不再向已注销的通知器发送进一步的状态变更信号（解释）。</p>
+<p>为该方法定义了属性<code>non_threadsafe</code><a class="spec-record-ref" data-req="SWS_TS_01013" href="../spec/record.html?id=SWS_TS_01013">[SWS_TS_01013]</a>。因此，在<code>SynchronizedTimeBaseConsumer</code>的同一实例上的并行调用必须通过应用程序的外部同步机制进行协调。注销操作可能同步进行；在函数完成之后，可能立即不再向已注销的通知器发送进一步的状态变更信号（解释）。 <a class="interp-q interp-q-open" data-q="Q-cc4b55c56144f0f0" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-cc4b55c56144f0f0" title="问题 Q-cc4b55c56144f0f0 (未决): Nach der Deregistrierung werden keine weiteren Statusbenachrichtigungen an den Notifier übermittelt">问题 Q-cc4b55c56144f0f0 (未决)</a></p>
 <!-- annahmen: 1) Nach der Deregistrierung werden keine weiteren Statusbenachrichtigungen an den Notifier übermittelt – Begründung: SWS_TS_01013 spezifiziert das Entfernen der Notifier-Funktion, lässt jedoch das genaue Timing bezüglich eventuell bereits laufender Callbacks unerwähnt. -->
 </div>
 <p class="ai-note">本使用说明基于 AUTOSAR Adaptive R25-11 规范。</p>
@@ -1237,7 +1237,7 @@
   <p>对于调用和接口语义，适用以下属性：</p>
   <ul>
     <li><strong>调用上下文与参数：</strong>该函数无参数且无返回值（<code>void</code>）<a class="spec-record-ref" data-req="SWS_TS_01015" href="../spec/record.html?id=SWS_TS_01015">[SWS_TS_01015]</a>。调用在 <code>SynchronizedTimeBaseConsumer</code> 的现有实例上同步进行。</li>
-    <li><strong>错误处理：</strong>该操作被声明为 <code>noexcept</code>，并指定为异常安全（<em>exception safe</em>）<a class="spec-record-ref" data-req="SWS_TS_01015" href="../spec/record.html?id=SWS_TS_01015">[SWS_TS_01015]</a>。由于未规定错误代码或异常，从接口角度来看执行不会失败。解释：在缺少先前注册的 Notifier 的情况下进行调用，由于缺乏错误通道，推测可能静默且不产生任何效果。</li>
+    <li><strong>错误处理：</strong>该操作被声明为 <code>noexcept</code>，并指定为异常安全（<em>exception safe</em>）<a class="spec-record-ref" data-req="SWS_TS_01015" href="../spec/record.html?id=SWS_TS_01015">[SWS_TS_01015]</a>。由于未规定错误代码或异常，从接口角度来看执行不会失败。解释：在缺少先前注册的 Notifier 的情况下进行调用，由于缺乏错误通道，推测可能静默且不产生任何效果。 <a class="interp-q interp-q-open" data-q="Q-431f60b308590f3c" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-431f60b308590f3c" title="问题 Q-431f60b308590f3c (未决): Ein Aufruf ohne zuvor registrierten Notifier dürfte ohne Wirkung bleiben">问题 Q-431f60b308590f3c (未决)</a></li>
     <li><strong>并发性：</strong>该方法被归类为非线程安全（<em>non_threadsafe</em>）<a class="spec-record-ref" data-req="SWS_TS_01015" href="../spec/record.html?id=SWS_TS_01015">[SWS_TS_01015]</a>。如果从多个线程并发访问同一个 Consumer 实例，应用程序必须采用外部同步机制，以避免数据竞争。</li>
   </ul>
   <p>在 Time Synchronization 模块（<code>ts</code>）内的相互协作中，取消注册可确保 Consumer 实例不再将同步时间基准的后续时间跳变转发给先前设置的回调函数 <a class="spec-record-ref" data-req="SWS_TS_01015" href="../spec/record.html?id=SWS_TS_01015">[SWS_TS_01015]</a>。</p>
@@ -1343,7 +1343,7 @@
   <p>该方法在头文件 <code>ara/tsync/synchronized_time_base_consumer.h</code> 中被声明为类 <code>ara::tsync::SynchronizedTimeBaseConsumer</code> 的成员函数（<a class="spec-record-ref" data-req="SWS_TS_01019" href="../spec/record.html?id=SWS_TS_01019">[SWS_TS_01019]</a>）。调用为无参数进行，签名如 <code>void UnregisterTimePrecisionMeasurementNotifier() noexcept</code>，不提供返回值且不抛出异常（根据 <a class="spec-record-ref" data-req="SWS_TS_01019" href="../spec/record.html?id=SWS_TS_01019">[SWS_TS_01019]</a> 为 <em>exception safe</em>）。</p>
 
   <h4>并发性与限制</h4>
-  <p>关于线程安全性，该函数被明确指定为 <code>non_threadsafe</code>（<a class="spec-record-ref" data-req="SWS_TS_01019" href="../spec/record.html?id=SWS_TS_01019">[SWS_TS_01019]</a>）。因此，调用方必须确保对 <code>SynchronizedTimeBaseConsumer</code> 的同一实例的调用免受并行访问的影响。该调用大概是同步进行的，因此在函数返回后，不应再通过先前注册的通知器触发快照的进一步通知。</p>
+  <p>关于线程安全性，该函数被明确指定为 <code>non_threadsafe</code>（<a class="spec-record-ref" data-req="SWS_TS_01019" href="../spec/record.html?id=SWS_TS_01019">[SWS_TS_01019]</a>）。因此，调用方必须确保对 <code>SynchronizedTimeBaseConsumer</code> 的同一实例的调用免受并行访问的影响。该调用大概是同步进行的，因此在函数返回后，不应再通过先前注册的通知器触发快照的进一步通知。 <a class="interp-q interp-q-open" data-q="Q-f6eb9ea26348b348" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f6eb9ea26348b348" title="问题 Q-f6eb9ea26348b348 (未决): Der Aufruf von UnregisterTimePrecisionMeasurementNotifier dürfte synchron erfolgen und nach Rückkehr keine weiteren Callbacks auslösen">问题 Q-f6eb9ea26348b348 (未决)</a></p>
 <!-- annahmen: 1) Der Aufruf von UnregisterTimePrecisionMeasurementNotifier dürfte synchron erfolgen und nach Rückkehr keine weiteren Callbacks auslösen – Begründung: Der Payload spezifiziert void und noexcept ohne asynchrone Handler oder Future-Rückgaben, schweigt jedoch über den exakten Zeitpunkt der Deregistrierungswirksamkeit. -->
 </div>
 <p class="ai-note">本文本由 AI 基于 AUTOSAR 规范创建。</p>
@@ -1441,7 +1441,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>使用与签名</h4>
-  <p>方法 <code>UnregisterTimeValidationNotification</code> 是类 <code>ara::tsync::SynchronizedTimeBaseConsumer</code> 的一部分，并通过头文件 <code>ara/tsync/synchronized_time_base_consumer.h</code> 引入 <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。其签名为 <code>void UnregisterTimeValidationNotification () noexcept;</code> <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。它不接收任何参数且没有返回值。根据规范，它用于时间同步参数上下文中的消费者应用程序 <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。解释：根据标识符，该调用大概用于注销先前注册的时间有效性验证通知。</p>
+  <p>方法 <code>UnregisterTimeValidationNotification</code> 是类 <code>ara::tsync::SynchronizedTimeBaseConsumer</code> 的一部分，并通过头文件 <code>ara/tsync/synchronized_time_base_consumer.h</code> 引入 <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。其签名为 <code>void UnregisterTimeValidationNotification () noexcept;</code> <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。它不接收任何参数且没有返回值。根据规范，它用于时间同步参数上下文中的消费者应用程序 <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。解释：根据标识符，该调用大概用于注销先前注册的时间有效性验证通知。 <a class="interp-q interp-q-open" data-q="Q-0b75b8b0d60da378" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-0b75b8b0d60da378" title="问题 Q-0b75b8b0d60da378 (未决): Dem Bezeichner nach dient der Aufruf vermutlich der Deregistrierung von Validierungsbenachrichtigungen, obwohl die Spezifikation allgemein vom Empfang von Zeitsynchronisationsparametern spricht.">问题 Q-0b75b8b0d60da378 (未决)</a></p>
 
   <h4>错误处理与异常安全性</h4>
   <p>该操作被指定为 <code>exception safe</code> 并声明为 <code>noexcept</code> <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。它不抛出异常，也不返回特定的错误代码 <a class="spec-record-ref" data-req="SWS_TS_01017" href="../spec/record.html?id=SWS_TS_01017">[SWS_TS_01017]</a>。</p>

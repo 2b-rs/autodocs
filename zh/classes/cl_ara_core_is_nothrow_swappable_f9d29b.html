@@ -37,11 +37,11 @@
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
 <p>模板结构 <code>ara::core::is_nothrow_swappable</code> 在 AUTOSAR Adaptive Platform（Release R25-11）模块 <code>core</code> 中提供用于静态类型检查的元函数实用工具。其语义定义直接引用符合 ISO C++17 标准 ISO/IEC 14882:2017（章节 [meta.unary.prop]）的 <code>std::is_nothrow_swappable</code>。作为 Trait，它帮助泛型组件开发人员在编译期即可查询具体数据类型 <code>T</code> 的两个左值是否可以在不抛出异常的情况下互相交换。</p>
-<p>在架构上下文中，该 Trait 主要与 AUTOSAR Core 模块的泛型算法、容器和实用函数以及应用程序特定的实现进行交互。该检查推测通常用于模块的泛型库函数或数据结构中，以通过 SFINAE、<code>static_assert</code> 或条件 <code>noexcept</code> 规范确保异常安全的交换操作。通过这种检查，可以确保交换缓冲区内容或状态等操作满足 Adaptive 生态系统中对于健壮和确定性流程的要求。</p>
+<p>在架构上下文中，该 Trait 主要与 AUTOSAR Core 模块的泛型算法、容器和实用函数以及应用程序特定的实现进行交互。该检查推测通常用于模块的泛型库函数或数据结构中，以通过 SFINAE、<code>static_assert</code> 或条件 <code>noexcept</code> 规范确保异常安全的交换操作。 <a class="interp-q interp-q-open" data-q="Q-2d97f825685fd7df" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2d97f825685fd7df" title="问题 Q-2d97f825685fd7df (未决): Typische Nutzung zur Absicherung generischer Funktionen via SFINAE oder static_assert">问题 Q-2d97f825685fd7df (未决)</a>通过这种检查，可以确保交换缓冲区内容或状态等操作满足 Adaptive 生态系统中对于健壮和确定性流程的要求。</p>
 
 <h4>生命周期</h4>
 <p>由于 <code>ara::core::is_nothrow_swappable</code> 是纯模板元编程结构，因此它在运行时不具备传统的生命周期。在执行的应用程序中不存在实例化阶段、动态内存分配和析构流程。属性的求值完全由编译器在编译过程中静态完成。</p>
-<p>从这种纯静态特性中还可以得出不存在运行时状态或状态转换的结论。由于类型特征的查询是线程中立且无副作用的，因此该 Trait 不受关于并发性的任何限制。推测 <code>ara::core::is_nothrow_swappable</code> 类似于标准原型继承自 <code>std::integral_constant&lt;bool, ...&gt;</code>，从而提供类型常量 <code>value</code> 以及相应的转换运算符，这些常量无需运行时开销即可作为常量使用。</p>
+<p>从这种纯静态特性中还可以得出不存在运行时状态或状态转换的结论。由于类型特征的查询是线程中立且无副作用的，因此该 Trait 不受关于并发性的任何限制。推测 <code>ara::core::is_nothrow_swappable</code> 类似于标准原型继承自 <code>std::integral_constant&lt;bool, ...&gt;</code>，从而提供类型常量 <code>value</code> 以及相应的转换运算符，这些常量无需运行时开销即可作为常量使用。 <a class="interp-q interp-q-open" data-q="Q-2d4f07696ff1d090" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2d4f07696ff1d090" title="问题 Q-2d4f07696ff1d090 (未决): Vererbung von std::integral_constant">问题 Q-2d4f07696ff1d090 (未决)</a></p>
 
 <h4>使用路径</h4>
 <p><code>ara::core::is_nothrow_swappable</code> 的典型使用路径分为待检查类型的定义、可交换性的静态查询以及编译期分支的控制：</p>
@@ -54,7 +54,7 @@
 
 <h4>错误场景</h4>
 <p>使用 <code>ara::core::is_nothrow_swappable</code> 时不会发生经典的运行时错误、错误代码或异常，因为该构造不在运行时执行。相反，错误情况仅在编译期间显现。</p>
-<p>Interpretation：在实例化时不完整的类型 <code>T</code>（即所谓 incomplete types）推测会导致编译器错误，因为 <code>swap</code> 表达式的有效性和异常安全性需要完整的类型定义。另一种错误场景发生在开发人员错误地假定类型为非抛出可交换时，此时静态断言（<code>static_assert</code>）有针对性地中止编译过程，以避免意外的运行时风险。</p>
+<p>Interpretation：在实例化时不完整的类型 <code>T</code>（即所谓 incomplete types）推测会导致编译器错误，因为 <code>swap</code> 表达式的有效性和异常安全性需要完整的类型定义。 <a class="interp-q interp-q-open" data-q="Q-e2785ad38b24b360" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-e2785ad38b24b360" title="问题 Q-e2785ad38b24b360 (未决): Unvollständige Typen führen zu Übersetzungsfehlern">问题 Q-e2785ad38b24b360 (未决)</a>另一种错误场景发生在开发人员错误地假定类型为非抛出可交换时，此时静态断言（<code>static_assert</code>）有针对性地中止编译过程，以避免意外的运行时风险。</p>
 
 <!-- annahmen: 1) Typische Nutzung zur Absicherung generischer Funktionen via SFINAE oder static_assert – Begründung: Standardmäßiger Einsatzzweck von Not-Throw-Swappable-Traits in generischen C++-Bibliotheken. 2) Vererbung von std::integral_constant – Begründung: Anlehnung an std::is_nothrow_swappable gemäß C++17 [meta.unary.prop] ohne abweichende Spezifikationsvorgaben im Payload. 3) Unvollständige Typen führen zu Übersetzungsfehlern – Begründung: C++-Regelwerk für Typ-Eigenschaftsprüfungen bei unvollständigen Typen. -->
 </div>

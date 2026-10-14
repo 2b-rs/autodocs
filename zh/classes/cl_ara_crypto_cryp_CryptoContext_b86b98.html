@@ -37,7 +37,7 @@
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
 <p>接口 <code>ara::crypto::cryp::CryptoContext</code> 定义了 AUTOSAR Adaptive Platform 加密模块内可变加密上下文（mutable cryptographic contexts）的基本抽象。与静态加密对象不同，此类上下文并不硬性绑定到单个加密对象。相反，它充当各种加密处理上下文的通用基类，这些上下文的内部状态在执行加密操作期间可能会发生变化。</p>
-<p>纯虚成员函数 <code>GetAlgId()</code> 充当该基本接口的核心元素。它允许交互伙伴查询当前在上下文中配置的加密算法的标识符 <a class="spec-record-ref" data-req="SWS_CRYPT_20411" href="../spec/record.html?id=SWS_CRYPT_20411">[SWS_CRYPT_20411]</a>。系统中的具体加密计算和转换上下文（例如用于哈希、签名或加密服务）可能派生自 <code>CryptoContext</code>，以提供特定的算法功能。</p>
+<p>纯虚成员函数 <code>GetAlgId()</code> 充当该基本接口的核心元素。它允许交互伙伴查询当前在上下文中配置的加密算法的标识符 <a class="spec-record-ref" data-req="SWS_CRYPT_20411" href="../spec/record.html?id=SWS_CRYPT_20411">[SWS_CRYPT_20411]</a>。系统中的具体加密计算和转换上下文（例如用于哈希、签名或加密服务）可能派生自 <code>CryptoContext</code>，以提供特定的算法功能。 <a class="interp-q interp-q-open" data-q="Q-203d40209cd355fa" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-203d40209cd355fa" title="问题 Q-203d40209cd355fa (未决): Konkrete kryptografische Transformationskontexte dürften von CryptoContext abgeleitet werden">问题 Q-203d40209cd355fa (未决)</a></p>
 
 <h4>生命周期</h4>
 <p><code>CryptoContext</code> 的生命周期具有明确的标识和严格的所有权特征。为了防止在编译时对上下文状态进行不受控制的复制或不一致的传输，完全禁止了语义复制过程。复制构造函数 <a class="spec-record-ref" data-req="SWS_CRYPT_41003" href="../spec/record.html?id=SWS_CRYPT_41003">[SWS_CRYPT_41003]</a> 和复制赋值运算符 <a class="spec-record-ref" data-req="SWS_CRYPT_30214" href="../spec/record.html?id=SWS_CRYPT_30214">[SWS_CRYPT_30214]</a> 均被显式声明为已删除（<code>=delete</code>）。</p>
@@ -45,7 +45,7 @@
 <p>关于并发性，针对 <code>GetAlgId()</code> 的要求明确指定了线程安全性 <a class="spec-record-ref" data-req="SWS_CRYPT_20411" href="../spec/record.html?id=SWS_CRYPT_20411">[SWS_CRYPT_20411]</a>。因此，多个线程可以同时且无需外部同步地读取同一上下文的算法标识符。</p>
 
 <h4>使用路径</h4>
-<p>由于 <code>CryptoContext</code> 是纯虚接口，应用程序开发人员无法直接创建实例。特化上下文类的实例通常可能通过加密栈的工厂函数或提供者组件进行实例化，并通过指针或引用提供给调用者。基接口级别的典型使用流程包括以下阶段：</p>
+<p>由于 <code>CryptoContext</code> 是纯虚接口，应用程序开发人员无法直接创建实例。特化上下文类的实例通常可能通过加密栈的工厂函数或提供者组件进行实例化，并通过指针或引用提供给调用者。 <a class="interp-q interp-q-open" data-q="Q-728a7b6dd526eb64" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-728a7b6dd526eb64" title="问题 Q-728a7b6dd526eb64 (未决): Instanzen spezialisierter Kontextklassen dürften über Factory-Funktionen oder Provider erzeugt und über Zeiger verwaltet werden">问题 Q-728a7b6dd526eb64 (未决)</a>基接口级别的典型使用流程包括以下阶段：</p>
 <ul>
 <li>提供：调用者从加密提供者接收对已配置上下文的引用或指针。</li>
 <li>算法检查：通过调用 <code>GetAlgId()</code> 查询并评估算法标识符 <a class="spec-record-ref" data-req="SWS_CRYPT_20411" href="../spec/record.html?id=SWS_CRYPT_20411">[SWS_CRYPT_20411]</a>，以确保上下文满足所需规范。</li>

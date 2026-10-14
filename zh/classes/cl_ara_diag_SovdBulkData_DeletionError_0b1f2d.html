@@ -46,7 +46,7 @@
 <h4>生命周期</h4>
 <p>结构体 <a class="spec-record-ref" data-req="SWS_DM_01844" href="../spec/record.html?id=SWS_DM_01844">[SWS_DM_01844]</a> 被设计为纯值对象（Plain Old Data / 值类型）。恰好在处理特定大容量数据元素的删除任务检测到错误时，在诊断基础设施端对其进行实例化。此时，字段 <code>item</code> 使用相应的 <code>BulkDataMetaDataDescriptor</code> <a class="spec-record-ref" data-req="SWS_DM_01845" href="../spec/record.html?id=SWS_DM_01845">[SWS_DM_01845]</a> 进行初始化，字段 <code>error</code> 使用具体的错误码 <code>ara::core::ErrorCode</code> <a class="spec-record-ref" data-req="SWS_DM_01846" href="../spec/record.html?id=SWS_DM_01846">[SWS_DM_01846]</a> 进行初始化。</p>
 
-<p>关于所有权关系，该实例（或此类实例的集合）通常作为返回值或在错误容器内转移至调用方所有。解释：该结构体不拥有自己的长期资源或活动线程；其生命周期直接绑定到调用方错误处理块或结果容器的作用域（Scope）。在由应用程序评估后，该结构体与其成员变量一起按标准在栈上或堆中销毁。由于它是一个被动数据包，因此结构体内部不会出现内部状态转换或并发同步要求。</p>
+<p>关于所有权关系，该实例（或此类实例的集合）通常作为返回值或在错误容器内转移至调用方所有。解释：该结构体不拥有自己的长期资源或活动线程；其生命周期直接绑定到调用方错误处理块或结果容器的作用域（Scope）。 <a class="interp-q interp-q-open" data-q="Q-60f135b9e36d7083" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-60f135b9e36d7083" title="问题 Q-60f135b9e36d7083 (未决): Die Zerstörung und Verwaltung von DeletionError erfolgt wertbasiert im Scope des aufrufenden Fehlerbehandlungsblocks.">问题 Q-60f135b9e36d7083 (未决)</a>在由应用程序评估后，该结构体与其成员变量一起按标准在栈上或堆中销毁。由于它是一个被动数据包，因此结构体内部不会出现内部状态转换或并发同步要求。</p>
 
 <h4>使用路径</h4>
 <p>在常规用例中，诊断组件或 SOVD 客户端通过接口 <code>SovdBulkData</code> 发起删除一个或多个大容量数据对象的操作。若至少有一个元素未能成功删除，平台将生成 <code>DeletionError</code> 的实例 <a class="spec-record-ref" data-req="SWS_DM_01844" href="../spec/record.html?id=SWS_DM_01844">[SWS_DM_01844]</a>。</p>

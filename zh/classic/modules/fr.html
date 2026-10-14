@@ -59,7 +59,7 @@
 <li><code>Fr_HaltCommunication</code> 在周期结束时停止。</li>
 <li><code>Fr_AbortCommunication</code> 立即中止 <a class="spec-record-ref" data-req="SWS_Fr_00011" href="../../spec/record.html?id=SWS_Fr_00011">[SWS_Fr_00011]</a>。</li>
 </ul>
-<p>在 <code>Fr_StartCommunication</code> 之后，不能保证处于 POC:normal active 或 normal passive。Interpretation：因此调用者可以通过 <code>Fr_GetPOCStatus</code> 跟踪进度。</p>
+<p>在 <code>Fr_StartCommunication</code> 之后，不能保证处于 POC:normal active 或 normal passive。Interpretation：因此调用者可以通过 <code>Fr_GetPOCStatus</code> 跟踪进度。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../../versions.html?tab=q&amp;qsub=module:classic:fr&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
 <div class="diagram" id="diag-poc--l3"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 583.05 496.80" style="max-width:777px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 482.4)">
 <title>poc</title>
@@ -354,7 +354,7 @@
 
 <p>每个 CC 都运行协议操作控制 (POC) 的状态机。其转换部分由硬件事件触发，部分由主机的 CHI 命令触发 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control.html" data-snip="SNIP_CLASSIC_FR_SECTION_7_4_POC_state_machine_control">Fr-SWS 第23页</a>。仅允许 <code>Fr_StartCommunication</code>、<code>Fr_HaltCommunication</code>、<code>Fr_AbortCommunication</code>、<code>Fr_SendWUP</code> 和 <code>Fr_ControllerInit</code> 更改 POC 状态。状态由 <code>Fr_POCStateType</code> 映射 <a class="spec-record-ref" data-req="SWS_Fr_00505" href="../../spec/record.html?id=SWS_Fr_00505">[SWS_Fr_00505]</a>。</p>
 
-<p><code>Fr_Init</code> 仅保存配置地址以供后续调用使用，不对 CC 提出任何前提条件 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_1_Fr_Init.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_1_Fr_Init">Fr-SWS 第39页</a>。<code>Fr_ControllerInit</code> 将 CC 从任何状态切换到 POC:config 并加载集群和节点参数以及缓冲区。之后，该函数使 CC 保持在 POC:ready 状态，且没有待处理的发送请求 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit">Fr-SWS 第41页</a>。<code>Fr_StartCommunication</code> 使用 CHI 命令 RUN 异步启动 Startup <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>。之后 CC 是否达到 POC:normal active 或 normal passive 并不能得到保证 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication">Fr-SWS 第42页</a>。Interpretation：因此调用者可以通过 <code>Fr_GetPOCStatus</code> 跟踪进度，该函数将状态作为 <code>Fr_POCStatusType</code> 返回 <a class="spec-record-ref" data-req="SWS_Fr_00510" href="../../spec/record.html?id=SWS_Fr_00510">[SWS_Fr_00510]</a>。<code>Fr_AllowColdstart</code> 在 POC:ready 或 POC:startup 中是允许的 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。<code>Fr_AllSlots</code> 需要与全局时间同步，并从下一个周期开始从关键时隙操作切换到全部时隙操作 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_5_Fr_AllSlots.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_5_Fr_AllSlots">Fr-SWS 第44页</a>。</p>
+<p><code>Fr_Init</code> 仅保存配置地址以供后续调用使用，不对 CC 提出任何前提条件 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_1_Fr_Init.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_1_Fr_Init">Fr-SWS 第39页</a>。<code>Fr_ControllerInit</code> 将 CC 从任何状态切换到 POC:config 并加载集群和节点参数以及缓冲区。之后，该函数使 CC 保持在 POC:ready 状态，且没有待处理的发送请求 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_2_Fr_ControllerInit">Fr-SWS 第41页</a>。<code>Fr_StartCommunication</code> 使用 CHI 命令 RUN 异步启动 Startup <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>。之后 CC 是否达到 POC:normal active 或 normal passive 并不能得到保证 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_3_Fr_StartCommunication">Fr-SWS 第42页</a>。Interpretation：因此调用者可以通过 <code>Fr_GetPOCStatus</code> 跟踪进度，该函数将状态作为 <code>Fr_POCStatusType</code> 返回 <a class="spec-record-ref" data-req="SWS_Fr_00510" href="../../spec/record.html?id=SWS_Fr_00510">[SWS_Fr_00510]</a>。<code>Fr_AllowColdstart</code> 在 POC:ready 或 POC:startup 中是允许的 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。<code>Fr_AllSlots</code> 需要与全局时间同步，并从下一个周期开始从关键时隙操作切换到全部时隙操作 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_5_Fr_AllSlots.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_5_Fr_AllSlots">Fr-SWS 第44页</a>。 <a class="interp-q interp-q-open" data-q="Q-aa60617897af9f9f" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-aa60617897af9f9f" title="问题 Q-aa60617897af9f9f (未决): Text (POC-Steuerung): Der Aufrufer verfolgt den Startup über Fr_GetPOCStatus">问题 Q-aa60617897af9f9f (未决)</a></p>
 
 <p>终止有两种途径。<code>Fr_HaltCommunication</code> 发出 DEFERRED_HALT；POC:halt 仅在当前周期结束时达到 <a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_6_Fr_HaltCommunication.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_6_Fr_HaltCommunication">Fr-SWS 第45页</a>。相反，<code>Fr_AbortCommunication</code> 使用 FREEZE 同步中止，并从任何状态引导至 POC:halt <a class="spec-record-ref" data-req="SWS_Fr_00011" href="../../spec/record.html?id=SWS_Fr_00011">[SWS_Fr_00011]</a>，<a class="docref internal-spec-ref" href="../../../spec/snippets/SNIP_CLASSIC_FR_SECTION_8_4_7_Fr_AbortCommunication.html" data-snip="SNIP_CLASSIC_FR_SECTION_8_4_7_Fr_AbortCommunication">Fr-SWS 第47页</a>。</p>
 
@@ -827,7 +827,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <p>根据 <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>，同步函数 <code>Fr_Init</code> 用于初始化 FlexRay 驱动（Fr）。它通过头文件 <code>Fr.h</code> 声明，并具有服务 ID <code>0x1c</code> <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。该接口仅需要类型为 <code>const Fr_ConfigType*</code> 的输入参数 <code>Fr_ConfigPtr</code> <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。该指针指向一个与驱动相关的配置结构，该结构为 FlexRay 驱动后续的运行操作提供所有必需的信息 <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。该函数既无输入/输出参数也无输出参数，且不提供返回值（<code>void</code>）<a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。</p>
-<p>关于并发性和限制，<code>Fr_Init</code> 被指定为不可重入（<code>Non Reentrant</code>）<a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。因此，绝不允许并行或嵌套调用。由于传入的配置结构包含了供后续运行使用的所有基础数据，因此初始化通常应在整个系统的启动阶段顺序执行，然后才能调用其他模块服务 <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。</p>
+<p>关于并发性和限制，<code>Fr_Init</code> 被指定为不可重入（<code>Non Reentrant</code>）<a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。因此，绝不允许并行或嵌套调用。由于传入的配置结构包含了供后续运行使用的所有基础数据，因此初始化通常应在整个系统的启动阶段顺序执行，然后才能调用其他模块服务 <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。 <a class="interp-q interp-q-open" data-q="Q-a208c696fbb083d4" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-a208c696fbb083d4" title="问题 Q-a208c696fbb083d4 (未决): Der Aufruf von Fr_Init dürfte typischerweise in der Startphase vor anderen Modulfunktionen erfolgen">问题 Q-a208c696fbb083d4 (未决)</a></p>
 <p>服务定义中未规定通过特定错误代码或状态反馈进行错误处理 <a class="spec-record-ref" data-req="SWS_Fr_00032" href="../../spec/record.html?id=SWS_Fr_00032">[SWS_Fr_00032]</a>。在本数据集中未记录进一步的要求，例如向 DET 或 DEM 发送通知。</p>
 <!-- annahmen: 1) Der Aufruf von Fr_Init dürfte typischerweise in der Startphase vor anderen Modulfunktionen erfolgen – Begründung: Fr_ConfigPtr übergibt laut SWS_Fr_00032 alle erforderlichen Daten für den anschließenden Betrieb des Moduls. -->
 </div>
@@ -864,7 +864,7 @@
 <li><code>E_NOT_OK</code>：调用因发生错误而提前中止 <a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。</li>
 </ul>
 <p>在指定的接口范围内未列出详细的错误代码以及向 DET 或 DEM 的报告 <a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。</p>
-<p>关于并发性，针对同一硬件单元，该函数被归类为不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。因此，不得同时对同一控制器索引 <code>Fr_CtrlIdx</code> 进行调用；相反，针对不同控制器的并发调用应该是允许的 <a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。由于未定义输入和输出参数（inout/out），因此初始化纯粹在驱动中基于状态进行 <a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。</p>
+<p>关于并发性，针对同一硬件单元，该函数被归类为不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。因此，不得同时对同一控制器索引 <code>Fr_CtrlIdx</code> 进行调用；相反，针对不同控制器的并发调用应该是允许的 <a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。 <a class="interp-q interp-q-open" data-q="Q-5bbbba38e8530b43" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-5bbbba38e8530b43" title="问题 Q-5bbbba38e8530b43 (未决): Interpretation: Die Angabe „Non Reentrant for the same device“ verbietet parallele Aufrufe für denselben Controller-Index (Fr_CtrlIdx), dürfte jedoch für voneinander verschiedene Controller-Instanzen zulässig sein.">问题 Q-5bbbba38e8530b43 (未决)</a>由于未定义输入和输出参数（inout/out），因此初始化纯粹在驱动中基于状态进行 <a class="spec-record-ref" data-req="SWS_Fr_00017" href="../../spec/record.html?id=SWS_Fr_00017">[SWS_Fr_00017]</a>。</p>
 <!-- annahmen: 1) Interpretation: Die Angabe „Non Reentrant for the same device“ verbietet parallele Aufrufe für denselben Controller-Index (Fr_CtrlIdx), dürfte jedoch für voneinander verschiedene Controller-Instanzen zulässig sein. – Begründung: Der Spezifikationstext schränkt die Nicht-Reentranz ausdrücklich auf dasselbe Gerät ein. -->
 </div>
 <p class="ai-note">本使用说明是基于 AUTOSAR 规范版本 R20-11 自动生成的。</p>
@@ -897,7 +897,7 @@
   <h4>使用</h4>
   <p>调用以异步方式进行，同时传递参数 <code>Fr_CtrlIdx</code>（服务 ID <code>0x03</code>），该参数指示 FlexRay 通信控制器在驱动程序上下文中的索引 <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>。作为返回值，该函数提供类型为 <code>Std_ReturnType</code> 的状态 <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>：</p>
   <ul>
-    <li><code>E_OK</code>：API 调用成功完成 <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>。推测：鉴于异步语义，这可能意味着成功接受启动命令，而实际的连接建立随后进行。</li>
+    <li><code>E_OK</code>：API 调用成功完成 <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>。推测：鉴于异步语义，这可能意味着成功接受启动命令，而实际的连接建立随后进行。 <a class="interp-q interp-q-open" data-q="Q-fabca57ea7d32a05" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-fabca57ea7d32a05" title="问题 Q-fabca57ea7d32a05 (未决): Angesichts der asynchronen Ausführung dürfte E_OK die erfolgreiche Initiierung des Startbefehls bestätigen">问题 Q-fabca57ea7d32a05 (未决)</a></li>
     <li><code>E_NOT_OK</code>：由于错误，API 调用已中止 <a class="spec-record-ref" data-req="SWS_Fr_00010" href="../../spec/record.html?id=SWS_Fr_00010">[SWS_Fr_00010]</a>。</li>
   </ul>
   <h4>并发性与限制</h4>
@@ -942,7 +942,7 @@
 <p>在函数规范中，未针对该服务单独列出具体的错误原因或向 DEM 或 DET 的报告 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。</p>
 
 <h4>并发性与限制</h4>
-<p>该接口针对同一控制器实例是不可重入的（<code>Non Reentrant for the same device</code>）<a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。因此，不得使用相同的参数 <code>Fr_CtrlIdx</code> 进行并行或中断调用 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。推测：由于异步执行语义，返回值 <code>E_OK</code> 大概仅确认驱动程序接收了 CHI 命令，而控制器内部的状态更改在时间上延迟进行 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。</p>
+<p>该接口针对同一控制器实例是不可重入的（<code>Non Reentrant for the same device</code>）<a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。因此，不得使用相同的参数 <code>Fr_CtrlIdx</code> 进行并行或中断调用 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。推测：由于异步执行语义，返回值 <code>E_OK</code> 大概仅确认驱动程序接收了 CHI 命令，而控制器内部的状态更改在时间上延迟进行 <a class="spec-record-ref" data-req="SWS_Fr_00114" href="../../spec/record.html?id=SWS_Fr_00114">[SWS_Fr_00114]</a>。 <a class="interp-q interp-q-open" data-q="Q-e5c407f32c449510" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-e5c407f32c449510" title="问题 Q-e5c407f32c449510 (未决): Asynchrone Ausführung bedeutet vermutlich, dass E_OK die Entgegennahme des Befehls bestätigt und die Controller-Zustandsänderung asynchron erfolgt">问题 Q-e5c407f32c449510 (未决)</a></p>
 <!-- annahmen: 1) Asynchrone Ausführung bedeutet vermutlich, dass E_OK die Entgegennahme des Befehls bestätigt und die Controller-Zustandsänderung asynchron erfolgt – Begründung: Die Spezifikation definiert Sync/Async als 'Asynchronous' und E_OK als 'API call finished successfully', nennt aber keine synchronen Blockaden oder Bestätigungs-Callbacks im Payload. -->
 </div>
 <p class="ai-note">本使用说明是基于 AUTOSAR R20-11 版本的规范自动生成的。</p>
@@ -973,11 +973,11 @@
 <div class="ai-level" data-ai-level="4">
 <h4>使用与工作原理</h4>
   <p>函数 <code>Fr_AllSlots</code> 用于向被寻址的 FlexRay 通信控制器发送 CHI 命令（Controller Host Interface）<code>ALL_SLOTS</code> <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。它通过头文件 <code>Fr.h</code> 提供，并具有服务 ID <code>0x24</code> <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。</p>
-  <p>作为输入参数，该函数需要 <code>Fr_CtrlIdx</code>，用于指示受影响的 FlexRay 控制器在 FlexRay 驱动上下文中的索引 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。执行是异步进行的 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。返回值 <code>E_OK</code> 表示 API 调用已成功完成，而 <code>E_NOT_OK</code> 表示由于错误而中止 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。由于具有异步语义，<code>E_OK</code> 大概仅确认成功接收或触发了 CHI 命令，而不代表控制器硬件反应已完成（解释）。</p>
+  <p>作为输入参数，该函数需要 <code>Fr_CtrlIdx</code>，用于指示受影响的 FlexRay 控制器在 FlexRay 驱动上下文中的索引 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。执行是异步进行的 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。返回值 <code>E_OK</code> 表示 API 调用已成功完成，而 <code>E_NOT_OK</code> 表示由于错误而中止 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。由于具有异步语义，<code>E_OK</code> 大概仅确认成功接收或触发了 CHI 命令，而不代表控制器硬件反应已完成（解释）。 <a class="interp-q interp-q-open" data-q="Q-c526e3b174a4b44a" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-c526e3b174a4b44a" title="问题 Q-c526e3b174a4b44a (未决): E_OK quittiert bei asynchroner Natur das Absetzen des Kommandos am Controller, nicht das physikalische Slot-Verhalten">问题 Q-c526e3b174a4b44a (未决)</a></p>
 
   <h4>错误处理与并发</h4>
   <p>若执行失败，该调用将以返回值 <code>E_NOT_OK</code> 中止 <a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。该元素的规范中未指明具体的错误原因或 DET/DEM 消息。</p>
-  <p>关于可重入性，<code>Fr_AllSlots</code> 被指定为针对同一控制器不可重入（<code>Non Reentrant for the same device</code>）<a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。因此，上层必须避免针对同一控制器实例的并发调用。相反，针对不同控制器实例的并行调用应该是允许的（解释）。</p>
+  <p>关于可重入性，<code>Fr_AllSlots</code> 被指定为针对同一控制器不可重入（<code>Non Reentrant for the same device</code>）<a class="spec-record-ref" data-req="SWS_Fr_00516" href="../../spec/record.html?id=SWS_Fr_00516">[SWS_Fr_00516]</a>。因此，上层必须避免针对同一控制器实例的并发调用。相反，针对不同控制器实例的并行调用应该是允许的（解释）。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../../versions.html?tab=q&amp;qsub=element:classic:SWS_Fr_00516&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
   <!-- annahmen: 1) E_OK quittiert bei asynchroner Natur das Absetzen des Kommandos am Controller, nicht das physikalische Slot-Verhalten – Begründung: Das Element ist als Asynchronous spezifiziert. 2) Reentranz für unterschiedliche Fr_CtrlIdx ist gegeben – Begründung: Die Spezifikation schränkt die Reentranz explizit nur für dasselbe Gerät ein ("Non Reentrant for the same device"). -->
 </div>
 <p class="ai-note">本使用说明为自动生成。专业陈述完全基于 AUTOSAR 规范摘录。</p>
@@ -1097,7 +1097,7 @@
   </ul>
 
   <h4>并发性与限制</h4>
-  <p>该函数被指定为针对同一设备不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00009" href="../../spec/record.html?id=SWS_Fr_00009">[SWS_Fr_00009]</a>。推测：这可能意味着上层模块必须对同一控制器实例的并发调用进行同步，而对不同控制器实例的调用则可以并发执行。未定义输入/输出参数或纯输出参数 <a class="spec-record-ref" data-req="SWS_Fr_00009" href="../../spec/record.html?id=SWS_Fr_00009">[SWS_Fr_00009]</a>。</p>
+  <p>该函数被指定为针对同一设备不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00009" href="../../spec/record.html?id=SWS_Fr_00009">[SWS_Fr_00009]</a>。推测：这可能意味着上层模块必须对同一控制器实例的并发调用进行同步，而对不同控制器实例的调用则可以并发执行。 <a class="interp-q interp-q-open" data-q="Q-0e3b4e70a0755877" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-0e3b4e70a0755877" title="问题 Q-0e3b4e70a0755877 (未决): Die Eigenschaft „Non Reentrant for the same device“ wird so interpretiert, dass Aufrufe für denselben Controller gegeneinander gesperrt werden müssen, während Aufrufe für unterschiedliche Controller parallel zulässig sein dürften">问题 Q-0e3b4e70a0755877 (未决)</a>未定义输入/输出参数或纯输出参数 <a class="spec-record-ref" data-req="SWS_Fr_00009" href="../../spec/record.html?id=SWS_Fr_00009">[SWS_Fr_00009]</a>。</p>
 <!-- annahmen: 1) Die Eigenschaft „Non Reentrant for the same device“ wird so interpretiert, dass Aufrufe für denselben Controller gegeneinander gesperrt werden müssen, während Aufrufe für unterschiedliche Controller parallel zulässig sein dürften – Begründung: Die Spezifikation beschränkt die Nicht-Reentranz ausdrücklich auf dieselbe Geräteinstanz. -->
 </div>
 <p class="ai-note">此文本由 AI 基于 AUTOSAR 规范 R20-11 生成。</p>
@@ -1182,7 +1182,7 @@
   <p>未为此函数记录特定的错误码、DET 或 DEM 条目；发生错误时，该函数仅通过返回值 <code>E_NOT_OK</code> 来指示该错误 <a class="spec-record-ref" data-req="SWS_Fr_00610" href="../../spec/record.html?id=SWS_Fr_00610">[SWS_Fr_00610]</a>。</p>
 
   <h4>并发性与限制</h4>
-  <p>在并发行为方面，<code>Fr_CancelTxLPdu</code> 被指定为针对同一设备不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00610" href="../../spec/record.html?id=SWS_Fr_00610">[SWS_Fr_00610]</a>。这可能意味着针对同一控制器实例的并行调用必须在调用方级别进行同步。不存在其他输入或输出参数 <a class="spec-record-ref" data-req="SWS_Fr_00610" href="../../spec/record.html?id=SWS_Fr_00610">[SWS_Fr_00610]</a>。</p>
+  <p>在并发行为方面，<code>Fr_CancelTxLPdu</code> 被指定为针对同一设备不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00610" href="../../spec/record.html?id=SWS_Fr_00610">[SWS_Fr_00610]</a>。这可能意味着针对同一控制器实例的并行调用必须在调用方级别进行同步。 <a class="interp-q interp-q-open" data-q="Q-ec480944eec04076" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-ec480944eec04076" title="问题 Q-ec480944eec04076 (未决): Die Eigenschaft „Non Reentrant for the same device“ erfordert vermutlich aufrufseitige Synchronisation bei gleichzeitigem Zugriff auf denselben Controller">问题 Q-ec480944eec04076 (未决)</a>不存在其他输入或输出参数 <a class="spec-record-ref" data-req="SWS_Fr_00610" href="../../spec/record.html?id=SWS_Fr_00610">[SWS_Fr_00610]</a>。</p>
   <!-- annahmen: 1) Die Eigenschaft „Non Reentrant for the same device“ erfordert vermutlich aufrufseitige Synchronisation bei gleichzeitigem Zugriff auf denselben Controller – Begründung: Der Spezifikationsauszug definiert das Reentranz-Verhalten, beschreibt jedoch keine treiberinternen Sperrmechanismen. -->
 </div>
 <p class="ai-note">此使用说明基于 AUTOSAR R20-11 规范版本自动生成。</p>
@@ -1279,7 +1279,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>用法与语义</h4>
-  <p>根据 <a class="spec-record-ref" data-req="SWS_Fr_00107" href="../../spec/record.html?id=SWS_Fr_00107">[SWS_Fr_00107]</a>，同步函数 <code>Fr_PrepareLPdu</code> 用于准备 L-PDU（<em>Prepares a LPdu</em>），并通过头文件 <code>Fr.h</code> 提供。作为输入参数，该服务需要控制器索引 <code>Fr_CtrlIdx</code> 以在驱动上下文中寻址 FlexRay 通信控制器（CC），并需要 <code>Fr_LPduIdx</code> 以唯一标识关联的 FlexRay 帧 <a class="spec-record-ref" data-req="SWS_Fr_00107" href="../../spec/record.html?id=SWS_Fr_00107">[SWS_Fr_00107]</a>。解释：该调用可能用于为帧随后的发送或接收过程初始化或使能硬件特定的缓冲区结构。</p>
+  <p>根据 <a class="spec-record-ref" data-req="SWS_Fr_00107" href="../../spec/record.html?id=SWS_Fr_00107">[SWS_Fr_00107]</a>，同步函数 <code>Fr_PrepareLPdu</code> 用于准备 L-PDU（<em>Prepares a LPdu</em>），并通过头文件 <code>Fr.h</code> 提供。作为输入参数，该服务需要控制器索引 <code>Fr_CtrlIdx</code> 以在驱动上下文中寻址 FlexRay 通信控制器（CC），并需要 <code>Fr_LPduIdx</code> 以唯一标识关联的 FlexRay 帧 <a class="spec-record-ref" data-req="SWS_Fr_00107" href="../../spec/record.html?id=SWS_Fr_00107">[SWS_Fr_00107]</a>。解释：该调用可能用于为帧随后的发送或接收过程初始化或使能硬件特定的缓冲区结构。 <a class="interp-q interp-q-open" data-q="Q-c4375099d73dbea2" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-c4375099d73dbea2" title="问题 Q-c4375099d73dbea2 (未决): Die interne Vorbereitung dürfte Hardware-Pufferstrukturen oder Kontrollregister für die Übertragung konfigurieren">问题 Q-c4375099d73dbea2 (未决)</a></p>
 
   <h4>并发性与限制</h4>
   <p>关于并发行为，<code>Fr_PrepareLPdu</code> 被指定为针对相同硬件设备不可重入（<em>Non Reentrant for the same device</em>）<a class="spec-record-ref" data-req="SWS_Fr_00107" href="../../spec/record.html?id=SWS_Fr_00107">[SWS_Fr_00107]</a>。因此，调用方必须严格避免针对同一控制器索引 <code>Fr_CtrlIdx</code> 进行并行或中断调用。</p>
@@ -1327,7 +1327,7 @@
 <li><code>Fr_PayloadLength</code> 和 <code>Fr_HeaderCRC</code>：以字节为单位的有效数据长度以及帧的关联报头 CRC。</li>
 </ul>
 <h4>并发性与返回值</h4>
-<p>该服务对于同一个控制器是不可重入的（<code>Non Reentrant for the same device</code>）<a class="spec-record-ref" data-req="SWS_Fr_00524" href="../../spec/record.html?id=SWS_Fr_00524">[SWS_Fr_00524]</a>。相反，针对不同 FlexRay 控制器实例的调用应当是可重入的（理解）。重新配置成功时，调用返回 <code>E_OK</code>；若因错误导致重新配置失败，则返回 <code>E_NOT_OK</code> <a class="docref internal-spec-ref" href="../../spec/record.html?doc=26&amp;page=65">AUTOSAR_SWS_FlexRayDriver 第65页</a>。</p>
+<p>该服务对于同一个控制器是不可重入的（<code>Non Reentrant for the same device</code>）<a class="spec-record-ref" data-req="SWS_Fr_00524" href="../../spec/record.html?id=SWS_Fr_00524">[SWS_Fr_00524]</a>。相反，针对不同 FlexRay 控制器实例的调用应当是可重入的（理解）。 <a class="interp-q interp-q-open" data-q="Q-85908ef4796c80c7" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-85908ef4796c80c7" title="问题 Q-85908ef4796c80c7 (未决): Reentranz über verschiedene Controller dürfte zulässig sein">问题 Q-85908ef4796c80c7 (未决)</a>重新配置成功时，调用返回 <code>E_OK</code>；若因错误导致重新配置失败，则返回 <code>E_NOT_OK</code> <a class="docref internal-spec-ref" href="../../spec/record.html?doc=26&amp;page=65">AUTOSAR_SWS_FlexRayDriver 第65页</a>。</p>
 <!-- annahmen: 1) Reentranz über verschiedene Controller dürfte zulässig sein – Begründung: Die Spezifikation schränkt die Nicht-Reentranz ausdrücklich auf dasselbe Gerät ein („Non Reentrant for the same device“). -->
 </div>
 <p class="ai-note">本文由 AI 创建；无法保证准确性。</p>
@@ -1428,7 +1428,7 @@
 </ul>
 
 <h4>并发性与限制</h4>
-<p>关于并发性，针对同一设备，该接口被定义为不可重入（“Non Reentrant for the same device”）（<a class="spec-record-ref" data-req="SWS_Fr_00095" href="../../spec/record.html?id=SWS_Fr_00095">[SWS_Fr_00095]</a>）。调用层必须确保不会针对同一控制器发生并发或中断性访问。解释：相反，对于不同的控制器，执行应该是允许重入的。</p>
+<p>关于并发性，针对同一设备，该接口被定义为不可重入（“Non Reentrant for the same device”）（<a class="spec-record-ref" data-req="SWS_Fr_00095" href="../../spec/record.html?id=SWS_Fr_00095">[SWS_Fr_00095]</a>）。调用层必须确保不会针对同一控制器发生并发或中断性访问。解释：相反，对于不同的控制器，执行应该是允许重入的。 <a class="interp-q interp-q-open" data-q="Q-01203b0b28193021" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-01203b0b28193021" title="问题 Q-01203b0b28193021 (未决): Reentranz über mehrere Geräte hinweg">问题 Q-01203b0b28193021 (未决)</a></p>
 <!-- annahmen: 1) Reentranz über mehrere Geräte hinweg – Begründung: Die Spezifikation schränkt die Nicht-Reentranz ausdrücklich auf dasselbe Gerät ein („Non Reentrant for the same device“). -->
 </div>
 <p class="ai-note">本使用说明基于 AUTOSAR R20-11 规范自动生成。</p>
@@ -1468,7 +1468,7 @@
 <li><code>E_OK</code>：API 调用已成功完成 <a class="spec-record-ref" data-req="SWS_Fr_00034" href="../../spec/record.html?id=SWS_Fr_00034">[SWS_Fr_00034]</a>。</li>
 <li><code>E_NOT_OK</code>：由于错误，函数调用已中止 <a class="spec-record-ref" data-req="SWS_Fr_00034" href="../../spec/record.html?id=SWS_Fr_00034">[SWS_Fr_00034]</a>。</li>
 </ul>
-<p>在并发性方面，该函数被指定为针对同一设备不可重入（“Non Reentrant for the same device”）<a class="spec-record-ref" data-req="SWS_Fr_00034" href="../../spec/record.html?id=SWS_Fr_00034">[SWS_Fr_00034]</a>。这要求必须严格避免针对同一控制器实例的并发调用；然而，大概允许针对不同控制器实例进行并行调用。函数描述中未列出开发错误或生产错误的特定错误代码（DET/DEM）；发生的错误会直接导致返回 <code>E_NOT_OK</code> <a class="spec-record-ref" data-req="SWS_Fr_00034" href="../../spec/record.html?id=SWS_Fr_00034">[SWS_Fr_00034]</a>。</p>
+<p>在并发性方面，该函数被指定为针对同一设备不可重入（“Non Reentrant for the same device”）<a class="spec-record-ref" data-req="SWS_Fr_00034" href="../../spec/record.html?id=SWS_Fr_00034">[SWS_Fr_00034]</a>。这要求必须严格避免针对同一控制器实例的并发调用；然而，大概允许针对不同控制器实例进行并行调用。 <a class="interp-q interp-q-open" data-q="Q-d7e594a84357e129" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-d7e594a84357e129" title="问题 Q-d7e594a84357e129 (未决): Parallele Aufrufe für unterschiedliche Controller dürften zulässig sein">问题 Q-d7e594a84357e129 (未决)</a>函数描述中未列出开发错误或生产错误的特定错误代码（DET/DEM）；发生的错误会直接导致返回 <code>E_NOT_OK</code> <a class="spec-record-ref" data-req="SWS_Fr_00034" href="../../spec/record.html?id=SWS_Fr_00034">[SWS_Fr_00034]</a>。</p>
 <!-- annahmen: 1) Parallele Aufrufe für unterschiedliche Controller dürften zulässig sein – Begründung: Die Spezifikation schränkt die Nicht-Reentranz explizit auf dasselbe Gerät ein („Non Reentrant for the same device“). -->
 </div>
 <p class="ai-note">本使用说明基于规范 SWS_Fr_00034 自动生成。</p>
@@ -1575,7 +1575,7 @@
     <li>返回值：执行成功时返回 <code>E_OK</code>，发生错误时返回 <code>E_NOT_OK</code> <a class="spec-record-ref" data-req="SWS_Fr_00651" href="../../spec/record.html?id=SWS_Fr_00651">[SWS_Fr_00651]</a>。</li>
   </ul>
   <h4>并发性与错误行为</h4>
-  <p>该函数设计为针对同一控制器不可重入（“Non Reentrant for the same device”）<a class="spec-record-ref" data-req="SWS_Fr_00651" href="../../spec/record.html?id=SWS_Fr_00651">[SWS_Fr_00651]</a>。因此，针对不同控制器实例的同时调用应当是允许的。接口定义中未指定具体的 DET 或 DEM 错误；错误状态会导致中止并返回 <code>E_NOT_OK</code> <a class="spec-record-ref" data-req="SWS_Fr_00651" href="../../spec/record.html?id=SWS_Fr_00651">[SWS_Fr_00651]</a>。调用方可能需要确保 <code>Fr_ConfigParamValuePtr</code> 指向有效的内存区域。</p>
+  <p>该函数设计为针对同一控制器不可重入（“Non Reentrant for the same device”）<a class="spec-record-ref" data-req="SWS_Fr_00651" href="../../spec/record.html?id=SWS_Fr_00651">[SWS_Fr_00651]</a>。因此，针对不同控制器实例的同时调用应当是允许的。 <a class="interp-q interp-q-open" data-q="Q-b5e4172654514747" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-b5e4172654514747" title="问题 Q-b5e4172654514747 (未决): Zeitgleiche Aufrufe für unterschiedliche Controller-Instanzen dürften zulässig sein">问题 Q-b5e4172654514747 (未决)</a>接口定义中未指定具体的 DET 或 DEM 错误；错误状态会导致中止并返回 <code>E_NOT_OK</code> <a class="spec-record-ref" data-req="SWS_Fr_00651" href="../../spec/record.html?id=SWS_Fr_00651">[SWS_Fr_00651]</a>。调用方可能需要确保 <code>Fr_ConfigParamValuePtr</code> 指向有效的内存区域。</p>
   <!-- annahmen: 1) Zeitgleiche Aufrufe für unterschiedliche Controller-Instanzen dürften zulässig sein – Begründung: Die Spezifikation schränkt die Nicht-Reentranz ausdrücklich auf dasselbe Gerät ein („Non Reentrant for the same device“). 2) Der Aufrufer hat vermutlich sicherzustellen, dass Fr_ConfigParamValuePtr auf einen gültigen Speicherbereich verweist – Begründung: Der Parameter dient als Ausgabeadresse, detaillierte Gültigkeitsprüfungen werden im Payload jedoch nicht spezifiziert. -->
 </div>
 <p class="ai-note">本段文本由人工智能基于 AUTOSAR 规范 R20-11 生成。</p>
@@ -1612,7 +1612,7 @@
 <li><code>FR_SLOTMODE_ALL_PENDING</code>（值 <code>0x01</code>）：映射形式类型定义 <code>T_SlotMode</code> 的字面量 <code>ALL_PENDING</code> <a class="spec-record-ref" data-req="SWS_Fr_00506" href="../../spec/record.html?id=SWS_Fr_00506">[SWS_Fr_00506]</a>。</li>
 <li><code>FR_SLOTMODE_ALL</code>（值 <code>0x02</code>）：映射形式类型定义 <code>T_SlotMode</code> 的字面量 <code>ALL</code> <a class="spec-record-ref" data-req="SWS_Fr_00506" href="../../spec/record.html?id=SWS_Fr_00506">[SWS_Fr_00506]</a>。</li>
 </ul>
-<p>当与符合较旧标准 FlexRay 2.1 Rev A 的控制器一起使用时，必须考虑不同的命名：此处字面量 <code>SINGLESLOT</code> 替代了字面量 <code>KEYSLOT</code> <a class="spec-record-ref" data-req="SWS_Fr_00506" href="../../spec/record.html?id=SWS_Fr_00506">[SWS_Fr_00506]</a>。解释：在驱动和软件层面，该类型可能用于确定 FlexRay 控制器当前是仅使能主时隙（Key Slots）还是使能所有时隙进行传输，或者是否有相应的切换挂起。</p>
+<p>当与符合较旧标准 FlexRay 2.1 Rev A 的控制器一起使用时，必须考虑不同的命名：此处字面量 <code>SINGLESLOT</code> 替代了字面量 <code>KEYSLOT</code> <a class="spec-record-ref" data-req="SWS_Fr_00506" href="../../spec/record.html?id=SWS_Fr_00506">[SWS_Fr_00506]</a>。解释：在驱动和软件层面，该类型可能用于确定 FlexRay 控制器当前是仅使能主时隙（Key Slots）还是使能所有时隙进行传输，或者是否有相应的切换挂起。 <a class="interp-q interp-q-open" data-q="Q-f926c41c8a5d3380" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-f926c41c8a5d3380" title="问题 Q-f926c41c8a5d3380 (未决): Der Typ dient zur Bestimmung, ob der Controller nur Key-Slots oder alle Slots überträgt bzw. ein Wechsel ansteht">问题 Q-f926c41c8a5d3380 (未决)</a></p>
 <!-- annahmen: 1) Der Typ dient zur Bestimmung, ob der Controller nur Key-Slots oder alle Slots überträgt bzw. ein Wechsel ansteht – Begründung: Der Payload beschreibt die Zuordnung zu T_SlotMode im POC-Status, führt jedoch keine konkreten API-Funktionen auf. -->
 </div>
 <p class="ai-note">本段文本由人工智能基于 AUTOSAR 规范 R20-11 生成。</p>
@@ -1651,7 +1651,7 @@
 </ul>
 
 <h4>集成与边界条件</h4>
-<p>解释：该类型可能主要用作 FlexRay 驱动查询函数中的返回值或状态参数，以便将控制器的状态传输给上层软件层。由于 <a class="spec-record-ref" data-req="SWS_Fr_00507" href="../../spec/record.html?id=SWS_Fr_00507">[SWS_Fr_00507]</a> 仅指定数据结构，因此在类型级别不存在通过 DET 或 DEM 进行的独立错误处理，也没有针对可重入性或并发性的直接要求。</p>
+<p>解释：该类型可能主要用作 FlexRay 驱动查询函数中的返回值或状态参数，以便将控制器的状态传输给上层软件层。 <a class="interp-q interp-q-open" data-q="Q-e4d6ae534d1dfa2c" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-e4d6ae534d1dfa2c" title="问题 Q-e4d6ae534d1dfa2c (未决): Der Typ dürfte vorrangig in Statusabfragen des FlexRay-Treibers zur Signalisierung des POC-Fehlermodus an übergeordnete Schichten genutzt werden.">问题 Q-e4d6ae534d1dfa2c (未决)</a>由于 <a class="spec-record-ref" data-req="SWS_Fr_00507" href="../../spec/record.html?id=SWS_Fr_00507">[SWS_Fr_00507]</a> 仅指定数据结构，因此在类型级别不存在通过 DET 或 DEM 进行的独立错误处理，也没有针对可重入性或并发性的直接要求。</p>
 <!-- annahmen: 1) Der Typ dürfte vorrangig in Statusabfragen des FlexRay-Treibers zur Signalisierung des POC-Fehlermodus an übergeordnete Schichten genutzt werden. – Begründung: Der Payload zu SWS_Fr_00507 enthält nur die Enumerationswerte und deren Bezug zu T_ErrorMode, nennt jedoch keine konkreten API-Funktionen. -->
 </div>
 <p class="ai-note">本段文本由人工智能基于 AUTOSAR 规范 R20-11 生成。</p>
@@ -1692,7 +1692,7 @@
 <li><code>FR_WAKEUP_TRANSMITTED</code>（0x06）：确认成功发送唤醒信号（字面量 <code>TRANSMITTED</code>）<a class="spec-record-ref" data-req="SWS_Fr_00508" href="../../spec/record.html?id=SWS_Fr_00508">[SWS_Fr_00508]</a>。</li>
 </ul>
 <h4>交互与限制</h4>
-<p>解释：该类型可能主要用作驱动函数的状态参数，以使上层模块能够对通道和唤醒状态进行精确诊断。由于规范本身未为该类型定义特定的错误代码或并发限制，因此其使用取决于各自查询 API 函数的调用约定 <a class="spec-record-ref" data-req="SWS_Fr_00508" href="../../spec/record.html?id=SWS_Fr_00508">[SWS_Fr_00508]</a>。</p>
+<p>解释：该类型可能主要用作驱动函数的状态参数，以使上层模块能够对通道和唤醒状态进行精确诊断。 <a class="interp-q interp-q-open" data-q="Q-48907418bc3729a1" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-48907418bc3729a1" title="问题 Q-48907418bc3729a1 (未决): Die Verwendung des Typs als Statusrückgabe in Treiberfunktionen ist eine Interpretation">问题 Q-48907418bc3729a1 (未决)</a>由于规范本身未为该类型定义特定的错误代码或并发限制，因此其使用取决于各自查询 API 函数的调用约定 <a class="spec-record-ref" data-req="SWS_Fr_00508" href="../../spec/record.html?id=SWS_Fr_00508">[SWS_Fr_00508]</a>。</p>
 <!-- annahmen: 1) Die Verwendung des Typs als Statusrückgabe in Treiberfunktionen ist eine Interpretation – Begründung: Der Payload enthält die Typdefinition, spezifiziert jedoch keine zugehörigen Funktionssignaturen. -->
 </div>
 <p class="ai-note">本使用说明基于 AUTOSAR CP R20-11 规范自动生成。</p>
@@ -1728,7 +1728,7 @@
     <li><code>FR_STARTUP_INTEGRATION_LISTEN</code> (0x06)、<code>FR_STARTUP_INITIALIZE_SCHEDULE</code> (0x07) 和 <code>FR_STARTUP_INTEGRATION_CONSISTENCY_CHECK</code> (0x08)：表示时间表中的集成和初始化步骤。</li>
     <li><code>FR_STARTUP_EXTERNAL_STARTUP</code> (0x0A)：表示外部控制的启动。</li>
   </ul>
-  <p>进行集成的软件模块使用此类型（推测：主要用于状态查询或监控控制器启动）。由于 <code>Fr_StartupStateType</code> 是纯类型定义，因此不会直接触发错误代码或错误报告；但是评估者必须注意，0x00 至 0x0A 范围之外的值是未指定的。</p>
+  <p>进行集成的软件模块使用此类型（推测：主要用于状态查询或监控控制器启动）。 <a class="interp-q interp-q-open" data-q="Q-7d07faa6c48d4e58" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-7d07faa6c48d4e58" title="问题 Q-7d07faa6c48d4e58 (未决): Die Nutzung erfolgt primär zur Statusabfrage oder Überwachung des Controller-Hochlaufs">问题 Q-7d07faa6c48d4e58 (未决)</a>由于 <code>Fr_StartupStateType</code> 是纯类型定义，因此不会直接触发错误代码或错误报告；但是评估者必须注意，0x00 至 0x0A 范围之外的值是未指定的。</p>
 <!-- annahmen: 1) Die Nutzung erfolgt primär zur Statusabfrage oder Überwachung des Controller-Hochlaufs – Begründung: Der Payload beschreibt lediglich die Enumerationswerte und deren Bezug zum POC-Status, nennt aber keine konkreten Funktionssignaturen. -->
 </div>
 <p class="ai-note">本文档由 AI 生成，仅供参考。唯一具有约束力的是 AUTOSAR 规范文本。</p>
@@ -1766,7 +1766,7 @@
 <li><code>CHIHaltRequest</code>、<code>CHIReadyRequest</code> 以及 <code>ColdstartNoise</code>（均为 <code>boolean</code>），用于指示主机接口请求或冷启动期间的线路噪声 <a class="spec-record-ref" data-req="SWS_Fr_00510" href="../../spec/record.html?id=SWS_Fr_00510">[SWS_Fr_00510]</a>。</li>
 </ul>
 <h4>并发与集成</h4>
-<p>推测：由于 <code>Fr_POCStatusType</code> 是没有自身功能逻辑的纯数据结构，它可能主要用作 FlexRay 硬件状态查询时的输出参数。如果多个任务或软件层访问此结构的实例，调用者必须自行确保适当的同步，以确保一致地读取相关联的部分状态 <a class="spec-record-ref" data-req="SWS_Fr_00510" href="../../spec/record.html?id=SWS_Fr_00510">[SWS_Fr_00510]</a>。</p>
+<p>推测：由于 <code>Fr_POCStatusType</code> 是没有自身功能逻辑的纯数据结构，它可能主要用作 FlexRay 硬件状态查询时的输出参数。 <a class="interp-q interp-q-open" data-q="Q-960f2475ff1068fc" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-960f2475ff1068fc" title="问题 Q-960f2475ff1068fc (未决): Die Struktur dürfte primär als Ausgabeparameter für Treiber-Statusabfragen verwendet werden.">问题 Q-960f2475ff1068fc (未决)</a>如果多个任务或软件层访问此结构的实例，调用者必须自行确保适当的同步，以确保一致地读取相关联的部分状态 <a class="spec-record-ref" data-req="SWS_Fr_00510" href="../../spec/record.html?id=SWS_Fr_00510">[SWS_Fr_00510]</a>。</p>
 <!-- annahmen: 1) Die Struktur dürfte primär als Ausgabeparameter für Treiber-Statusabfragen verwendet werden. – Begründung: Der Payload enthält in SWS_Fr_00510 ausschließlich die Definition der Datenstruktur ohne Funktionsprototyp. -->
 </div>
 <p class="ai-note">本使用说明基于 SWS_Fr_00510 的有效负载自动生成。</p>
@@ -1801,7 +1801,7 @@
     <li><code>FR_TRANSMITTED_CONFLICT</code>（<code>0x01</code>）：传输过程中发生冲突 <a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511">[SWS_Fr_00511]</a>。</li>
     <li><code>FR_NOT_TRANSMITTED</code>（<code>0x02</code>）：LPdu 未被传输 <a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511">[SWS_Fr_00511]</a>。</li>
   </ul>
-  <p>关于交互和调用上下文，该状态值通常可能被上层用于查询 FlexRay 驱动中的发送缓冲区状态（解释）。规范中未为该数据类型规定特定的错误代码、错误处理例程以及 DET 或 DEM 消息，因为它是纯粹的类型声明 <a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511">[SWS_Fr_00511]</a>。</p>
+  <p>关于交互和调用上下文，该状态值通常可能被上层用于查询 FlexRay 驱动中的发送缓冲区状态（解释）。 <a class="interp-q interp-q-open" data-q="Q-347a88512db1f006" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-347a88512db1f006" title="问题 Q-347a88512db1f006 (未决): Übergeordnete Module dürften den Aufzählungswert bei Statusabfragen von Sendepuffern auswerten">问题 Q-347a88512db1f006 (未决)</a>规范中未为该数据类型规定特定的错误代码、错误处理例程以及 DET 或 DEM 消息，因为它是纯粹的类型声明 <a class="spec-record-ref" data-req="SWS_Fr_00511" href="../../spec/record.html?id=SWS_Fr_00511">[SWS_Fr_00511]</a>。</p>
 <!-- annahmen: 1) Übergeordnete Module dürften den Aufzählungswert bei Statusabfragen von Sendepuffern auswerten – Begründung: Die Spezifikation beschreibt den Zweck des Typs, nennt im vorliegenden Payload jedoch keine konkreten Schnittstellenfunktionen. -->
 </div>
 <p class="ai-note">本段文本由人工智能基于 AUTOSAR 规范 R20-11 生成。</p>
@@ -1841,7 +1841,7 @@
 <li><code>FR_RECEIVED_MORE_DATA_AVAILABLE</code>（<code>0x02</code>）：L-PDU 已接收且存在该 L-PDU 的更多实例可用，如使用接收 FIFO 时所出现的情况 <a class="spec-record-ref" data-req="SWS_Fr_00512" href="../../spec/record.html?id=SWS_Fr_00512">[SWS_Fr_00512]</a>。</li>
 </ul>
 <p>
-通过缓冲区结构进行接收操作时，该类型不仅区分是否存在接收到的数据，而且在 FIFO 操作中还额外指示是否存在更多实例 <a class="spec-record-ref" data-req="SWS_Fr_00512" href="../../spec/record.html?id=SWS_Fr_00512">[SWS_Fr_00512]</a>。这可能向调用方指示，在读取当前实例后，可以立即从 FIFO 中检索更多数据 <a class="spec-record-ref" data-req="SWS_Fr_00512" href="../../spec/record.html?id=SWS_Fr_00512">[SWS_Fr_00512]</a>。
+通过缓冲区结构进行接收操作时，该类型不仅区分是否存在接收到的数据，而且在 FIFO 操作中还额外指示是否存在更多实例 <a class="spec-record-ref" data-req="SWS_Fr_00512" href="../../spec/record.html?id=SWS_Fr_00512">[SWS_Fr_00512]</a>。这可能向调用方指示，在读取当前实例后，可以立即从 FIFO 中检索更多数据 <a class="spec-record-ref" data-req="SWS_Fr_00512" href="../../spec/record.html?id=SWS_Fr_00512">[SWS_Fr_00512]</a>。 <a class="interp-q interp-q-open" data-q="Q-0ab7cac72ff7f549" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-0ab7cac72ff7f549" title="问题 Q-0ab7cac72ff7f549 (未决): Der Statuswert FR_RECEIVED_MORE_DATA_AVAILABLE dürfte Aufrufern als Kriterium dienen, um verbleibende FIFO-Instanzen ohne erneute Empfangsbenachrichtigung abzurufen">问题 Q-0ab7cac72ff7f549 (未决)</a>
 </p>
 <!-- annahmen: 1) Der Statuswert FR_RECEIVED_MORE_DATA_AVAILABLE dürfte Aufrufern als Kriterium dienen, um verbleibende FIFO-Instanzen ohne erneute Empfangsbenachrichtigung abzurufen – Begründung: SWS_Fr_00512 vermerkt bei Wert 0x02 explizit 'More instances of this LPdu are available (FIFO usage)'. -->
 </div>
@@ -1879,7 +1879,7 @@
     <li><code>channelId</code>（类型 <code>Fr_ChannelType</code>）：指定进行传输或接收的 FlexRay 通道 <a class="spec-record-ref" data-req="SWS_Fr_91002" href="../../spec/record.html?id=SWS_Fr_91002">[SWS_Fr_91002]</a>。</li>
   </ul>
 
-  <p>由于 <code>Fr_SlotAssignmentType</code> 是纯数据结构，它不具备同步性或重入性等自身的执行语义，其本身也不会触发 DET 或 DEM 错误消息 <a class="spec-record-ref" data-req="SWS_Fr_91002" href="../../spec/record.html?id=SWS_Fr_91002">[SWS_Fr_91002]</a>。所包含的周期、时隙和通道值的 consistency 应当由使用它的驱动函数负责（理解）。</p>
+  <p>由于 <code>Fr_SlotAssignmentType</code> 是纯数据结构，它不具备同步性或重入性等自身的执行语义，其本身也不会触发 DET 或 DEM 错误消息 <a class="spec-record-ref" data-req="SWS_Fr_91002" href="../../spec/record.html?id=SWS_Fr_91002">[SWS_Fr_91002]</a>。所包含的周期、时隙和通道值的 consistency 应当由使用它的驱动函数负责（理解）。 <a class="interp-q interp-q-open" data-q="Q-77f88375e544e298" data-q-status="open" href="../../versions.html?tab=q&amp;id=Q-77f88375e544e298" title="问题 Q-77f88375e544e298 (未决): Die Konsistenzprüfung der Strukturfelder obliegt den aufrufenden bzw. verarbeitenden Treiberfunktionen">问题 Q-77f88375e544e298 (未决)</a></p>
   <!-- annahmen: 1) Die Konsistenzprüfung der Strukturfelder obliegt den aufrufenden bzw. verarbeitenden Treiberfunktionen – Begründung: SWS_Fr_91002 beschreibt ausschließlich die Typdeklaration und enthält keine eigenen Validierungsregeln. -->
 </div>
 <p class="ai-note">本段文本由人工智能生成，且仅基于 AUTOSAR Classic R20-11 的规范数据。</p>

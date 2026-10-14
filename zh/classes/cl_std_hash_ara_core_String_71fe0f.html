@@ -37,10 +37,10 @@
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
 <p>结构 <code>std::hash&lt; ara::core::String &gt;</code> 表示 Adaptive Platform 模块 <code>core</code> 内针对类型 <code>ara::core::String</code> 的标准化 C++ 函数类 <code>std::hash</code> 的模板特化。根据 C++ 标准库的一般架构，它充当将字符串实例映射为整数哈希值的哈希函数对象。典型的交互伙伴是关联标准容器（如无序集合或映射），它们依靠标准化哈希接口来快速索引和分发元素。该声明被指定为 <code>final</code>，因此排除了此特化的进一步派生。</p>
-<p>解释：由于本规范摘录中未存储显式需求或文档段落，该特化的角色应该无缝契合 <code>std::hash</code> 的传统标准库语义，并主要用于 <code>ara::core::String</code> 与基于哈希的数据结构之间的互操作性。</p>
+<p>解释：由于本规范摘录中未存储显式需求或文档段落，该特化的角色应该无缝契合 <code>std::hash</code> 的传统标准库语义，并主要用于 <code>ara::core::String</code> 与基于哈希的数据结构之间的互操作性。 <a class="interp-q interp-q-open" data-q="Q-6d2835413a6e35a5" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-6d2835413a6e35a5" title="问题 Q-6d2835413a6e35a5 (未决): Die Spezialisierung verhält sich konform zu den allgemeinen Anforderungen an std::hash aus der C++-Standardbibliothek">问题 Q-6d2835413a6e35a5 (未决)</a></p>
 
 <h4>生命周期</h4>
-<p>作为无状态函数对象，<code>std::hash&lt; ara::core::String &gt;</code> 不经历复杂的生命周期阶段或动态状态转换。该结构的实例可根据需要进行实例化，或者创建为临时函数对象并在计算后立即再次销毁。对传入的字符串不存在持久的所有权关系。由于该结构是无状态的，只要基础字符串在哈希计算期间未发生并发修改，对 <code>ara::core::String</code> 的常量实例调用函数运算符在本质上应该是并发安全和线程安全的。</p>
+<p>作为无状态函数对象，<code>std::hash&lt; ara::core::String &gt;</code> 不经历复杂的生命周期阶段或动态状态转换。该结构的实例可根据需要进行实例化，或者创建为临时函数对象并在计算后立即再次销毁。对传入的字符串不存在持久的所有权关系。由于该结构是无状态的，只要基础字符串在哈希计算期间未发生并发修改，对 <code>ara::core::String</code> 的常量实例调用函数运算符在本质上应该是并发安全和线程安全的。 <a class="interp-q interp-q-open" data-q="Q-bec5dd50aaf196d9" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-bec5dd50aaf196d9" title="问题 Q-bec5dd50aaf196d9 (未决): Der Aufrufoperator ist threadsicher und zustandslos">问题 Q-bec5dd50aaf196d9 (未决)</a></p>
 
 <h4>使用路径</h4>
 <p><code>std::hash&lt; ara::core::String &gt;</code> 的常规使用要么通过关联容器隐式发生，要么通过显式实例化以确定字符串的哈希值来发生：</p>
@@ -49,7 +49,7 @@
   <li>实例化函数对象 <code>std::hash&lt; ara::core::String &gt;</code>，或在未排序的标准容器中隐式用作默认哈希参数。</li>
   <li>执行调用运算符并传入字符串，以返回计算出的哈希值。</li>
 </ul>
-<p>解释：该过程推测遵循 C++ 函数对象的常规模式，无需额外的配置或初始化步骤。</p>
+<p>解释：该过程推测遵循 C++ 函数对象的常规模式，无需额外的配置或初始化步骤。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_std_hash_ara_core_String_71fe0f&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
 
 <h4>错误场景</h4>
 <p>哈希值的计算要求传入的字符串实例 <code>ara::core::String</code> 有效。在有效负载中未指出此特化存在 <code>ara::core::ErrorCode</code> 意义上的错误状态或特定错误代码。基于对哈希函数的标准要求，可以假定计算是确定性的，并且只要保证对字符串存储区域的访问，通常不会引发异常。</p>

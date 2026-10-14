@@ -40,7 +40,7 @@
 
 <h4>수명 주기</h4>
 <p><code>ara::diag::GenericUDSService::OperationOutput</code>의 인스턴스는 매우 집중적이고 짧은 수명 주기를 갖습니다. 이 구조체는 들어오는 UDS 요청의 로컬 컨텍스트에서 서비스 애플리케이션에 의해 인스턴스화됩니다. <code>ara::core::Vector&lt;std::uint8_t&gt;</code> 유형의 유일한 공개 멤버 변수 <code>responseData</code>을 통해 구조체는 페이로드 바이트의 완전한 소유권을 갖습니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>).</p>
-<p>해석: <code>OperationOutput</code>의 수명은 일시적이며 각 요청 처리 기간에 바인딩됩니다. 인스턴스는 채워진 후 반환 값 또는 이동 시맨틱을 통해 Diagnostic Management로 전달되고 UDS 응답 프레임으로 직렬화된 후 다시 소멸될 것으로 보입니다. 내부 상태 로직이 없는 순수 데이터 전송 객체(DTO)이므로 상태 전이가 존재하지 않습니다. 동시성과 관련하여 <code>OperationOutput</code>은 고유한 스레드 안전성을 제공하지 않지만, 인스턴스화 및 채우기가 요청별로 처리 컨텍스트 내에서 격리되어 수행되므로 일반적인 서비스 애플리케이션에서는 외부 동기화가 필요하지 않습니다.</p>
+<p>해석: <code>OperationOutput</code>의 수명은 일시적이며 각 요청 처리 기간에 바인딩됩니다. 인스턴스는 채워진 후 반환 값 또는 이동 시맨틱을 통해 Diagnostic Management로 전달되고 UDS 응답 프레임으로 직렬화된 후 다시 소멸될 것으로 보입니다. 내부 상태 로직이 없는 순수 데이터 전송 객체(DTO)이므로 상태 전이가 존재하지 않습니다. 동시성과 관련하여 <code>OperationOutput</code>은 고유한 스레드 안전성을 제공하지 않지만, 인스턴스화 및 채우기가 요청별로 처리 컨텍스트 내에서 격리되어 수행되므로 일반적인 서비스 애플리케이션에서는 외부 동기화가 필요하지 않습니다. <a class="interp-q interp-q-open" data-q="Q-c736182a9518978a" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-c736182a9518978a" title="질문 Q-c736182a9518978a (열림): Interpretation: Die Lebensdauer von OperationOutput ist flüchtig und an die Dauer der jeweiligen Anfragebearbeitung gebunden.">질문 Q-c736182a9518978a (열림)</a></p>
 
 <h4>사용 경로</h4>
 <p>진단 요청 처리 시 일반적인 흐름은 다음 단계로 나뉩니다:</p>
@@ -48,7 +48,7 @@
 <li>수신: Diagnostic Management가 외부 진단 테스터로부터 UDS 요청을 수신하고 이를 <code>GenericUDSService</code>의 해당 인스턴스로 전달합니다(<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=81">AUTOSAR_AP_SWS_Diagnostics 81쪽</a>).</li>
 <li>서비스 실행: 애플리케이션이 수신된 매개변수를 해석하고 내부 진단 기능을 실행합니다.</li>
 <li>결과 제공: 처리가 성공하면 애플리케이션은 <code>OperationOutput</code> 유형의 객체를 인스턴스화하고 응답 페이로드를 <code>responseData</code> 필드에 할당합니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>). 이때 사양에서는 <code>responseData</code>이 서비스 식별자(SID) 없이 오직 데이터 바이트만을 포함해야 한다고 구속력 있게 규정합니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>).</li>
-<li>전달: 애플리케이션이 <code>OperationOutput</code>을 Diagnostic Management에 전달합니다. 해석: 전달은 일반적으로 동기 반환 값으로 이루어지거나 <code>ara::core::Future</code>과 같은 비동기 Future 값에 임베드되어 이루어집니다.</li>
+<li>전달: 애플리케이션이 <code>OperationOutput</code>을 Diagnostic Management에 전달합니다. 해석: 전달은 일반적으로 동기 반환 값으로 이루어지거나 <code>ara::core::Future</code>과 같은 비동기 Future 값에 임베드되어 이루어집니다. <a class="interp-q interp-q-open" data-q="Q-2dcf40060cca29a1" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2dcf40060cca29a1" title="질문 Q-2dcf40060cca29a1 (열림): Interpretation: Die Übergabe an das Diagnostic Management erfolgt als Rückgabewert oder über ara::core::Future.">질문 Q-2dcf40060cca29a1 (열림)</a></li>
 <li>메시지 전송: Diagnostic Management가 긍정 SID를 자동으로 앞에 추가하여 UDS 텔레그램을 완성하고 진단 테스터에 응답을 전송합니다.</li>
 </ul>
 
@@ -58,7 +58,7 @@
 <h4>오류 시나리오</h4>
 <p>구조체를 사용할 때는 주요 제약 조건과 오류 시 동작 패턴에 유의해야 합니다:</p>
 <ul>
-<li>부정 응답 제외: 사양에 따르면 <code>OperationOutput</code>은 명시적으로 오직 긍정 응답 메시지의 내용만을 나타냅니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>). 해석: 서비스 요청을 성공적으로 처리할 수 없는 경우(예: 허용되지 않는 매개변수 또는 잘못된 전제 조건으로 인해) <code>OperationOutput</code>가 생성되지 않아야 하며, 대신 애플리케이션이 Diagnostic Management에 Negative Response Code(NRC)를 알릴 것으로 보입니다.</li>
+<li>부정 응답 제외: 사양에 따르면 <code>OperationOutput</code>은 명시적으로 오직 긍정 응답 메시지의 내용만을 나타냅니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>). 해석: 서비스 요청을 성공적으로 처리할 수 없는 경우(예: 허용되지 않는 매개변수 또는 잘못된 전제 조건으로 인해) <code>OperationOutput</code>가 생성되지 않아야 하며, 대신 애플리케이션이 Diagnostic Management에 Negative Response Code(NRC)를 알릴 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-09abb9092c1dc167" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-09abb9092c1dc167" title="질문 Q-09abb9092c1dc167 (열림): Interpretation: Im Fehlerfall (Negative Response) wird OperationOutput nicht instanziiert, sondern ein NRC signalisiert.">질문 Q-09abb9092c1dc167 (열림)</a></li>
 <li>잘못된 SID 포함: 서비스 식별자가 실수로 <code>responseData</code>에 삽입되면 Diagnostic Management가 긍정 응답 시 SID를 자체적으로 앞에 추가하기 때문에 잘못 포맷된 UDS 텔레그램이 생성됩니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>).</li>
 <li>메모리 할당: <code>responseData</code>은 동적 벡터(<code>ara::core::Vector</code>)로 선언되어 있으므로 매우 큰 양의 페이로드를 할당할 때 발생할 수 있는 메모리 병목 현상을 고려해야 합니다(<a class="spec-record-ref" data-req="SWS_DM_00632" href="../spec/record.html?id=SWS_DM_00632">[SWS_DM_00632]</a>).</li>
 </ul>

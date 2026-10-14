@@ -31,17 +31,17 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="详细程度：摘要 – 点击切换为详细" aria-label="详细程度：摘要 – 点击切换为详细"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="详细程度：摘要 – 点击切换为详细">摘要</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="详细程度：详细 – 点击切换为摘要">详细</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">作为通用函数对象生成确定性哈希值，以在关联数据结构中使用。</p>
 <div class="ai-level" data-ai-level="2">
-<p>如 <code>[bitset]</code> 规范中所述，模板结构 <code>ara::core::hash</code> 在模块 <code>core</code> 中用作确定性计算散列值的泛型函数对象。它提供了一个统一接口，通过该接口经由函数调用将输入对象转换为整数哈希值，以在关联数据结构中进行索引。由于该结构推测被设计为无状态函数对象，因此散列值计算无副作用，并且可以在没有同步开销的情况下并发执行。</p>
+<p>如 <code>[bitset]</code> 规范中所述，模板结构 <code>ara::core::hash</code> 在模块 <code>core</code> 中用作确定性计算散列值的泛型函数对象。它提供了一个统一接口，通过该接口经由函数调用将输入对象转换为整数哈希值，以在关联数据结构中进行索引。由于该结构推测被设计为无状态函数对象，因此散列值计算无副作用，并且可以在没有同步开销的情况下并发执行。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_hash_83e629&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a></p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
-<p>模板结构 <code>ara::core::hash</code> 在 AUTOSAR Adaptive Platform（Release R25-11）模块 <code>core</code> 中提供用于生成散列值（哈希码）的标准化接口。形式声明为 <code>template &lt;class T&gt; struct hash;</code>。根据规范描述，其行为基于 <code>[bitset]</code> 中的对应使用。在系统上下文中，<code>ara::core::hash</code> 推测承担遵循 <code>std::hash</code> 模式的符合标准的函数对象角色，该对象为数据结构和算法提供类型 <code>T</code> 实例的一致散列值。</p>
+<p>模板结构 <code>ara::core::hash</code> 在 AUTOSAR Adaptive Platform（Release R25-11）模块 <code>core</code> 中提供用于生成散列值（哈希码）的标准化接口。形式声明为 <code>template &lt;class T&gt; struct hash;</code>。根据规范描述，其行为基于 <code>[bitset]</code> 中的对应使用。在系统上下文中，<code>ara::core::hash</code> 推测承担遵循 <code>std::hash</code> 模式的符合标准的函数对象角色，该对象为数据结构和算法提供类型 <code>T</code> 实例的一致散列值。 <a class="interp-q interp-q-open" data-q="Q-c0770dd7d494f007" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-c0770dd7d494f007" title="问题 Q-c0770dd7d494f007 (未决): Die Template-Struktur fungiert vermutlich als generisches Funktionsobjekt zur Streuwertberechnung analog zu std::hash">问题 Q-c0770dd7d494f007 (未决)</a></p>
 <p>作为核心实用工具，该结构通常与关联数据结构、哈希表以及泛型算法进行交互。针对 Adaptive 基础类型（例如针对位集）的预定义特化使上层组件能够有效地在基于哈希的查找表中组织异构对象。该结构的核心职责在于封装与类型相关的哈希算法，从而使调用算法能够独立于有效载荷数据类型的具体内部结构进行操作。</p>
 
 <h4>生命周期</h4>
 <p>结构 <code>ara::core::hash</code> 具有函数特性，不具有复杂的生命周期。按照通常的设计，模板类的实例不管理动态系统资源，也不维护持久的内部状态。函数对象的创建通常通过默认构造函数在调用点即时进行，或在泛型容器类的上下文中隐式进行。</p>
-<p>由于 <code>ara::core::hash</code> 的实例推测被设计为无状态函数对象，因此既不存在离散的运行阶段，也不存在显式的状态转换。实例的销毁是平凡的，不需要释放逻辑。假定的无状态性还意味着跨多个线程的并行执行本质上是并发且线程安全的：多个执行线程可以同时调用相同的函子或同时创建的实例，而无需同步机制。</p>
+<p>由于 <code>ara::core::hash</code> 的实例推测被设计为无状态函数对象，因此既不存在离散的运行阶段，也不存在显式的状态转换。 <a class="interp-q interp-q-open" data-q="Q-f8cb3f1f0979d453" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f8cb3f1f0979d453" title="问题 Q-f8cb3f1f0979d453 (未决): Die Implementierung von ara::core::hash dürfte zustandslos und somit thread-sicher sein">问题 Q-f8cb3f1f0979d453 (未决)</a>实例的销毁是平凡的，不需要释放逻辑。假定的无状态性还意味着跨多个线程的并行执行本质上是并发且线程安全的：多个执行线程可以同时调用相同的函子或同时创建的实例，而无需同步机制。</p>
 
 <h4>使用路径</h4>
 <p>使用 <code>ara::core::hash</code> 时的典型流程分为以下步骤：</p>
@@ -53,7 +53,7 @@
 <p>对于用户定义的数据类型，可以特化模板结构以提供特定的计算算法。无论类型如何，对于每个符合规范的实现，在整个运行期间，对于相同的输入值都必须可重现地生成完全相同的哈希值。</p>
 
 <h4>错误场景</h4>
-<p>由于散列值计算的确定性本质，<code>ara::core::hash</code> 中不会出现错误代码或运行时错误状态。根据一般设计原则，求值推测被设计为无异常操作。潜在问题仅限于静态设计决策和哈希方法的固有属性：</p>
+<p>由于散列值计算的确定性本质，<code>ara::core::hash</code> 中不会出现错误代码或运行时错误状态。根据一般设计原则，求值推测被设计为无异常操作。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_hash_83e629&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>潜在问题仅限于静态设计决策和哈希方法的固有属性：</p>
 <ul>
 <li><strong>缺少类型特化：</strong>如果对不存在适当特化的类型使用 <code>ara::core::hash</code>，会导致编译期错误。</li>
 <li><strong>哈希冲突：</strong>不同输入值出现相同散列值是一种数学上无法避免的特性。这并非函数对象的错误，而是一种正常情况，使用该函数对象的数据结构必须通过冲突解决来处理。</li>

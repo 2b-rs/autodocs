@@ -92,7 +92,7 @@
 <p class="diagram-note">上下文图：ara::diag::Conversation 在应用程序与 Diagnostic Management 之间的集成。来源：<a class="spec-record-ref" data-req="SWS_DM_00692" href="../spec/record.html?id=SWS_DM_00692">[SWS_DM_00692]</a>、<a class="spec-record-ref" data-req="SWS_DM_00782" href="../spec/record.html?id=SWS_DM_00782">[SWS_DM_00782]</a>、<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=80">SWS Diagnostics §8.2 “Conversation”</a>。</p>
 
 <h4>生命周期</h4>
-<p><code>ara::diag::Conversation</code> 的实例完全由 Diagnostic Management 守护进程实例化和管理。排除了应用程序手动创建、复制或移动：复制构造函数 <a class="spec-record-ref" data-req="SWS_DM_02090" href="../spec/record.html?id=SWS_DM_02090">[SWS_DM_02090]</a> 和移动构造函数 <a class="spec-record-ref" data-req="SWS_DM_02092" href="../spec/record.html?id=SWS_DM_02092">[SWS_DM_02092]</a> 以及赋值运算符 <a class="spec-record-ref" data-req="SWS_DM_02091" href="../spec/record.html?id=SWS_DM_02091">[SWS_DM_02091]</a> <a class="spec-record-ref" data-req="SWS_DM_02093" href="../spec/record.html?id=SWS_DM_02093">[SWS_DM_02093]</a> 均已删除 (<code>=delete</code>)。因此，被引用对象的生命周期推测与诊断子系统的运行时状态直接挂钩。</p>
+<p><code>ara::diag::Conversation</code> 的实例完全由 Diagnostic Management 守护进程实例化和管理。排除了应用程序手动创建、复制或移动：复制构造函数 <a class="spec-record-ref" data-req="SWS_DM_02090" href="../spec/record.html?id=SWS_DM_02090">[SWS_DM_02090]</a> 和移动构造函数 <a class="spec-record-ref" data-req="SWS_DM_02092" href="../spec/record.html?id=SWS_DM_02092">[SWS_DM_02092]</a> 以及赋值运算符 <a class="spec-record-ref" data-req="SWS_DM_02091" href="../spec/record.html?id=SWS_DM_02091">[SWS_DM_02091]</a> <a class="spec-record-ref" data-req="SWS_DM_02093" href="../spec/record.html?id=SWS_DM_02093">[SWS_DM_02093]</a> 均已删除 (<code>=delete</code>)。因此，被引用对象的生命周期推测与诊断子系统的运行时状态直接挂钩。 <a class="interp-q interp-q-open" data-q="Q-f8deca481d5b76e1" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-f8deca481d5b76e1" title="问题 Q-f8deca481d5b76e1 (未决): Die Lebensdauer der referenzierten Conversation-Instanzen dürfte an den internen Lebenszyklus des Diagnostic Management gebunden sein.">问题 Q-f8deca481d5b76e1 (未决)</a></p>
 <p>对现有实例的访问仅通过静态查询函数进行。使用 <code>GetAllConversations()</code> 可以检索对所有已配置连接的引用 <a class="spec-record-ref" data-req="SWS_DM_00782" href="../spec/record.html?id=SWS_DM_00782">[SWS_DM_00782]</a>，而 <code>GetCurrentActiveConversations()</code> 返回当前活动通道的列表，其活动状态对应于 <code>kActive</code> <a class="spec-record-ref" data-req="SWS_DM_00783" href="../spec/record.html?id=SWS_DM_00783">[SWS_DM_00783]</a>。此外，可通过 <code>GetConversation(metaInfo)</code> 根据正在进行的诊断请求的元数据解析出特定连接 <a class="spec-record-ref" data-req="SWS_DM_00692" href="../spec/record.html?id=SWS_DM_00692">[SWS_DM_00692]</a>。</p>
 <p>在并发方面，对状态和标识符的所有只读访问均被规范为线程安全 <a class="spec-record-ref" data-req="SWS_DM_00694" href="../spec/record.html?id=SWS_DM_00694">[SWS_DM_00694]</a> <a class="spec-record-ref" data-req="SWS_DM_00696" href="../spec/record.html?id=SWS_DM_00696">[SWS_DM_00696]</a> <a class="spec-record-ref" data-req="SWS_DM_00698" href="../spec/record.html?id=SWS_DM_00698">[SWS_DM_00698]</a>。相反，注册通知回调以及重置会话被视为非线程安全 (not thread-safe) <a class="spec-record-ref" data-req="SWS_DM_00695" href="../spec/record.html?id=SWS_DM_00695">[SWS_DM_00695]</a> <a class="spec-record-ref" data-req="SWS_DM_00701" href="../spec/record.html?id=SWS_DM_00701">[SWS_DM_00701]</a>，需要应用程序端进行同步。</p>
 
@@ -681,7 +681,7 @@
 <p>如果查询失败，该方法将返回带有错误码 <code>DiagErrc::kServiceNotAvailable</code> 的 <code>ara::core::Result</code> <a class="spec-record-ref" data-req="SWS_DM_00698" href="../spec/record.html?id=SWS_DM_00698">[SWS_DM_00698]</a>。在应用回滚语义的情况下，这表明 Diagnostic Management（DM）的基本功能在调用时刻不可用。在执行安全性方面，<code>GetDiagnosticSecurityLevel</code> 被归类为线程安全及异常安全 <a class="spec-record-ref" data-req="SWS_DM_00698" href="../spec/record.html?id=SWS_DM_00698">[SWS_DM_00698]</a>，因此允许来自不同线程的并发调用。</p>
 
 <h4>相互作用</h4>
-<p>解读：调用通常可能发生在执行受保护的诊断活动之前，以比对是否存在所需权限级别。对于后续处理或诊断输出，所确定的 <code>SecurityLevelType</code> 可通过方法 <code>GetDiagnosticSecurityLevelShortName</code>（<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=363">AUTOSAR_AP_SWS_Diagnostics §8.9.3.2.2.7 “GetDiagnosticSecurityLevelShortName”</a>、<a class="spec-record-ref" data-req="SWS_DM_00708" href="../spec/record.html?id=SWS_DM_00708">[SWS_DM_00708]</a>）转换为关联的符号短名称（<code>shortName</code> 作为 <code>ara::core::StringView</code>）。</p>
+<p>解读：调用通常可能发生在执行受保护的诊断活动之前，以比对是否存在所需权限级别。 <a class="interp-q interp-q-open" data-q="Q-8c056d4c5199524d" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-8c056d4c5199524d" title="问题 Q-8c056d4c5199524d (未决): Die Abfrage erfolgt vor geschützten Diagnoseaktivitäten zur Berechtigungsprüfung">问题 Q-8c056d4c5199524d (未决)</a>对于后续处理或诊断输出，所确定的 <code>SecurityLevelType</code> 可通过方法 <code>GetDiagnosticSecurityLevelShortName</code>（<a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=363">AUTOSAR_AP_SWS_Diagnostics §8.9.3.2.2.7 “GetDiagnosticSecurityLevelShortName”</a>、<a class="spec-record-ref" data-req="SWS_DM_00708" href="../spec/record.html?id=SWS_DM_00708">[SWS_DM_00708]</a>）转换为关联的符号短名称（<code>shortName</code> 作为 <code>ara::core::StringView</code>）。</p>
 <!-- annahmen: 1) Die Abfrage erfolgt vor geschützten Diagnoseaktivitäten zur Berechtigungsprüfung – Begründung: Die Spezifikation definiert das Element als Repräsentation der aktiven Sicherheitsstufe einer Konversation. -->
 </div>
 <p class="ai-note">本使用说明基于 AUTOSAR Adaptive R25-11 规范自动生成。</p>
@@ -791,7 +791,7 @@
 </ul>
 
 <h4>并发性与限制</h4>
-<p>该方法声明为 <code>noexcept</code>，并被指定为异常安全（<em>exception safe</em>）和线程安全（<em>thread-safe</em>）<a class="spec-record-ref" data-req="SWS_DM_00708" href="../spec/record.html?id=SWS_DM_00708">[SWS_DM_00708]</a>。由于指定的线程安全性，即使在存在并发诊断活动时，该调用也应是安全的，而无需应用程序端进行互斥同步。在访问被引用的字符串之前，应用程序必须检查 <code>ara::core::Result</code> 是否包含错误。</p>
+<p>该方法声明为 <code>noexcept</code>，并被指定为异常安全（<em>exception safe</em>）和线程安全（<em>thread-safe</em>）<a class="spec-record-ref" data-req="SWS_DM_00708" href="../spec/record.html?id=SWS_DM_00708">[SWS_DM_00708]</a>。由于指定的线程安全性，即使在存在并发诊断活动时，该调用也应是安全的，而无需应用程序端进行互斥同步。 <a class="interp-q interp-q-open" data-q="Q-b851a473c2d836b7" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-b851a473c2d836b7" title="问题 Q-b851a473c2d836b7 (未决): Aufrufe können ohne anwendungsseitige Sperren aus parallelen Threads erfolgen">问题 Q-b851a473c2d836b7 (未决)</a>在访问被引用的字符串之前，应用程序必须检查 <code>ara::core::Result</code> 是否包含错误。</p>
 <!-- annahmen: 1) Aufrufe können ohne anwendungsseitige Sperren aus parallelen Threads erfolgen – Begründung: SWS_DM_00708 spezifiziert die Funktion explizit als thread-safe. -->
 </div>
 <p class="ai-note">本使用说明为自动生成。所有依据均来自针对 Release R25-11 的 AUTOSAR Adaptive Platform 规范。</p>
@@ -1047,7 +1047,7 @@
 <p>调用通过头文件 <code>#include "ara/diag/conversation.h"</code> 在 <code>ara::diag::Conversation</code> 的实例上无参数进行 <a class="spec-record-ref" data-req="SWS_DM_00701" href="../spec/record.html?id=SWS_DM_00701">[SWS_DM_00701]</a>。调用该方法时，Diagnostic Server 实例首先完成当前请求，此后才将该会话的诊断会话切换为 Default Session <a class="spec-record-ref" data-req="SWS_DM_00842" href="../spec/record.html?id=SWS_DM_00842">[SWS_DM_00842]</a>。</p>
 <h4>错误处理与并发</h4>
 <ul>
-<li><strong>返回值与错误：</strong>该函数返回一个 <code>ara::core::Result&lt;void&gt;</code> <a class="spec-record-ref" data-req="SWS_DM_00701" href="../spec/record.html?id=SWS_DM_00701">[SWS_DM_00701]</a>。未预设标准化错误码；Interpretation：<code>Result</code> 中的任何错误都可能反映 Diagnostic Server 在任务处理中的厂商特定问题。</li>
+<li><strong>返回值与错误：</strong>该函数返回一个 <code>ara::core::Result&lt;void&gt;</code> <a class="spec-record-ref" data-req="SWS_DM_00701" href="../spec/record.html?id=SWS_DM_00701">[SWS_DM_00701]</a>。未预设标准化错误码；Interpretation：<code>Result</code> 中的任何错误都可能反映 Diagnostic Server 在任务处理中的厂商特定问题。 <a class="interp-q interp-q-open" data-q="Q-9f780f4ef7991bf4" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-9f780f4ef7991bf4" title="问题 Q-9f780f4ef7991bf4 (未决): Etwaige Fehler im Result-Objekt dürften herstellerspezifische Fehler des Diagnostic Servers darstellen">问题 Q-9f780f4ef7991bf4 (未决)</a></li>
 <li><strong>线程安全：</strong>该函数是异常安全的（<code>noexcept</code>），但被指定为非线程安全（<em>not thread-safe</em>）<a class="spec-record-ref" data-req="SWS_DM_00701" href="../spec/record.html?id=SWS_DM_00701">[SWS_DM_00701]</a>。因此，对同一会话对象的并行调用必须由调用应用进行协调。</li>
 </ul>
 <h4>相互作用</h4>
@@ -1165,7 +1165,7 @@
 
 <h4>生命周期交互</h4>
 <p>
-会话实例由 Diagnostic Server 提供，其中并行会话的最大数量通过 <code>maxConversations</code> 配置 <a class="spec-record-ref" data-req="SWS_DM_00840" href="../spec/record.html?id=SWS_DM_00840">[SWS_DM_00840]</a>。当诊断会话的生命周期结束时，Diagnostic Server 将活动状态设置为 <code>kInactive</code> <a class="spec-record-ref" data-req="SWS_DM_00843" href="../spec/record.html?id=SWS_DM_00843">[SWS_DM_00843]</a>。这可能会向注册的通知器指示活动诊断通信的结束。
+会话实例由 Diagnostic Server 提供，其中并行会话的最大数量通过 <code>maxConversations</code> 配置 <a class="spec-record-ref" data-req="SWS_DM_00840" href="../spec/record.html?id=SWS_DM_00840">[SWS_DM_00840]</a>。当诊断会话的生命周期结束时，Diagnostic Server 将活动状态设置为 <code>kInactive</code> <a class="spec-record-ref" data-req="SWS_DM_00843" href="../spec/record.html?id=SWS_DM_00843">[SWS_DM_00843]</a>。这可能会向注册的通知器指示活动诊断通信的结束。 <a class="interp-q interp-q-open" data-q="Q-93c30267eb100ed7" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-93c30267eb100ed7" title="问题 Q-93c30267eb100ed7 (未决): Es wird angenommen, dass der Übergang zu kInactive bei Beendigung des Lebenszyklus über den registrierten Notifier signalisiert wird">问题 Q-93c30267eb100ed7 (未决)</a>
 </p>
 <!-- annahmen: 1) Es wird angenommen, dass der Übergang zu kInactive bei Beendigung des Lebenszyklus über den registrierten Notifier signalisiert wird – Begründung: Laut [SWS_DM_00695] benachrichtigt der Notifier über Aktivitätsänderungen und [SWS_DM_00843] setzt bei Konversationsende den ActivityStatus auf kInactive. -->
 </div>
@@ -1273,7 +1273,7 @@
   <p>调用在 <code>ara::diag::Conversation</code> 的实例上同步进行，同时传递类型为 <code>SessionControl TypeNotifier</code> 的参数 <code>notifier</code> <a class="spec-record-ref" data-req="SWS_DM_00697" href="../spec/record.html?id=SWS_DM_00697">[SWS_DM_00697]</a>。连续或重复的方法调用将完全覆盖先前注册的通知器 <a class="docref internal-spec-ref" href="../spec/record.html?doc=AUTOSAR_AP_SWS_Diagnostics&amp;page=365">AUTOSAR_AP_SWS_Diagnostics §8.9.3.2.2.12 “SetDiagnosticSessionNotifier”</a>。</p>
 
   <h4>返回值与错误处理</h4>
-  <p>作为返回值，该接口返回一个 <code>ara::core::Result&lt;void&gt;</code>，其要么确认成功注册，要么包含一个错误对象 <a class="spec-record-ref" data-req="SWS_DM_00697" href="../spec/record.html?id=SWS_DM_00697">[SWS_DM_00697]</a>。规范未为此调用定义标准化错误码；因此发生的错误可能归因于实现特定的验证。</p>
+  <p>作为返回值，该接口返回一个 <code>ara::core::Result&lt;void&gt;</code>，其要么确认成功注册，要么包含一个错误对象 <a class="spec-record-ref" data-req="SWS_DM_00697" href="../spec/record.html?id=SWS_DM_00697">[SWS_DM_00697]</a>。规范未为此调用定义标准化错误码；因此发生的错误可能归因于实现特定的验证。 <a class="interp-q interp-q-open" data-q="Q-1ac7eebee90e3c22" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-1ac7eebee90e3c22" title="问题 Q-1ac7eebee90e3c22 (未决): Etwaige Fehler im Result-Objekt resultieren aus implementierungsspezifischen Prüfungen">问题 Q-1ac7eebee90e3c22 (未决)</a></p>
 
   <h4>并发性与限制</h4>
   <ul>
@@ -1391,7 +1391,7 @@
   </p>
   <h4>错误处理</h4>
   <p>
-    规范未为 <code>SetSecurityLevelNotifier</code> 定义标准化错误码 <a class="spec-record-ref" data-req="SWS_DM_00699" href="../spec/record.html?id=SWS_DM_00699">[SWS_DM_00699]</a>。因此，在 <code>ara::core::Result</code> 中可能返回的错误可能是厂商特定的，或者是底层平台运行时引起的。
+    规范未为 <code>SetSecurityLevelNotifier</code> 定义标准化错误码 <a class="spec-record-ref" data-req="SWS_DM_00699" href="../spec/record.html?id=SWS_DM_00699">[SWS_DM_00699]</a>。因此，在 <code>ara::core::Result</code> 中可能返回的错误可能是厂商特定的，或者是底层平台运行时引起的。 <a class="interp-q interp-q-open" data-q="Q-c8dd53e9d661cc78" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-c8dd53e9d661cc78" title="问题 Q-c8dd53e9d661cc78 (未决): Eventuell im Result-Objekt auftretende Fehler dürften herstellerspezifisch oder plattformbedingt sein">问题 Q-c8dd53e9d661cc78 (未决)</a>
   </p>
   <h4>并发性与限制</h4>
   <p>

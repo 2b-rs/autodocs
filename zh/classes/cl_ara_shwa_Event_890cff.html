@@ -31,7 +31,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
-<p>类 <code>ara::shwa::Event</code> 在模块 <code>shwa</code> 内部充当硬件加速器任务的核心同步元素。其主要职责是同步至关联或依赖任务的完成 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00604" href="../spec/record.html?id=AP_SWS_SHWA_00604">[AP_SWS_SHWA_00604]</a>。交互方是协调异步加速器操作的调用方线程和应用程序组件。解释：由于该接口负责同步任务完成情况，单个 <code>Event</code> 对象可能封装了特定硬件执行的执行与同步信号。</p>
+<p>类 <code>ara::shwa::Event</code> 在模块 <code>shwa</code> 内部充当硬件加速器任务的核心同步元素。其主要职责是同步至关联或依赖任务的完成 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00604" href="../spec/record.html?id=AP_SWS_SHWA_00604">[AP_SWS_SHWA_00604]</a>。交互方是协调异步加速器操作的调用方线程和应用程序组件。解释：由于该接口负责同步任务完成情况，单个 <code>Event</code> 对象可能封装了特定硬件执行的执行与同步信号。 <a class="interp-q interp-q-open" data-q="Q-b4aa1debd356c45c" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-b4aa1debd356c45c" title="问题 Q-b4aa1debd356c45c (未决): Da die Schnittstelle Aufgabenabschlüsse synchronisiert, dürfte ein einzelnes Event-Objekt die Ausführungs- und Synchronisationssignale einer spezifischen Hardware-Ausführung kapseln.">问题 Q-b4aa1debd356c45c (未决)</a></p>
 
 <h4>生命周期</h4>
 <p><code>ara::shwa::Event</code> 的实例通过静态工厂方法 <code>Create()</code> 创建，该方法返回 <code>ara::core::Result&lt;Event&gt;</code> <a class="spec-record-ref" data-req="AP_SWS_SHWA_00602" href="../spec/record.html?id=AP_SWS_SHWA_00602">[AP_SWS_SHWA_00602]</a>。该创建路径是线程安全的（thread-safe），并且不抛出异常（<code>noexcept</code>，exception safe）<a class="spec-record-ref" data-req="AP_SWS_SHWA_00602" href="../spec/record.html?id=AP_SWS_SHWA_00602">[AP_SWS_SHWA_00602]</a>。创建完成后，该对象处于活动运行状态，并支持依赖项查询以及同步操作。</p>
@@ -41,7 +41,7 @@
 <p>常规同步流程分为对象创建、可选的依赖项检查以及实际等待执行：</p>
 <ol>
 <li><strong>实例化：</strong>调用方调用 <code>Create()</code> 并检查返回的 <code>ara::core::Result</code> 是否成功 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00602" href="../spec/record.html?id=AP_SWS_SHWA_00602">[AP_SWS_SHWA_00602]</a>。</li>
-<li><strong>查询依赖项：</strong>通过 <code>GetWaitList()</code> 可以将依赖事件的列表作为 <code>ara::core::Vector&lt;Event&gt;</code> 读取 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00603" href="../spec/record.html?id=AP_SWS_SHWA_00603">[AP_SWS_SHWA_00603]</a>。推测 <code>GetWaitList()</code> 用于检查前置任务，该事件内部依赖于这些前置任务的完成。</li>
+<li><strong>查询依赖项：</strong>通过 <code>GetWaitList()</code> 可以将依赖事件的列表作为 <code>ara::core::Vector&lt;Event&gt;</code> 读取 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00603" href="../spec/record.html?id=AP_SWS_SHWA_00603">[AP_SWS_SHWA_00603]</a>。推测 <code>GetWaitList()</code> 用于检查前置任务，该事件内部依赖于这些前置任务的完成。 <a class="interp-q interp-q-open" data-q="Q-ed01dc595c23ce28" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-ed01dc595c23ce28" title="问题 Q-ed01dc595c23ce28 (未决): Vermutlich fungiert GetWaitList() als Inspektion vorgelagerter Aufgaben, auf deren Fertigstellung das Event intern angewiesen ist.">问题 Q-ed01dc595c23ce28 (未决)</a></li>
 <li><strong>执行同步：</strong>有三种变体可用于同步：
 <ul>
 <li>基于实例的通过 <code>Wait()</code> 进行的等待会阻塞，直到与该事件关联的任务完成 <a class="spec-record-ref" data-req="AP_SWS_SHWA_00604" href="../spec/record.html?id=AP_SWS_SHWA_00604">[AP_SWS_SHWA_00604]</a>。</li>

@@ -37,11 +37,11 @@
 <div class="ai-level" data-ai-level="4">
 <h4>컨텍스트</h4>
 <p>템플릿 구조체 <code>ara::core::is_nothrow_swappable</code>은 AUTOSAR Adaptive Platform(R25-11 릴리스)의 모듈 <code>core</code>에서 정적 타입 검사를 위한 메타함수 유틸리티를 제공합니다. 시맨틱 정의는 ISO C++17 표준 ISO/IEC 14882:2017([meta.unary.prop] 절)에 따른 <code>std::is_nothrow_swappable</code>를 직접 참조합니다. 트레이트(trait)로서 이는 제네릭 컴포넌트 개발자가 구체적인 데이터 타입 <code>T</code>의 두 lvalue를 예외 발생 없이 서로 교환할 수 있는지 컴파일 타임에 쿼리하는 데 사용됩니다.</p>
-<p>아키텍처 컨텍스트에서 이 트레이트는 주로 AUTOSAR Core 모듈의 제네릭 알고리즘, 컨테이너, 유틸리티 함수 및 애플리케이션별 구현과 상호작용합니다. 이 검사는 일반적으로 SFINAE, <code>static_assert</code> 또는 조건부 <code>noexcept</code> 명세를 통해 예외 안전 교환 연산을 보장하기 위해 모듈의 제네릭 라이브러리 함수나 데이터 구조에서 활용될 것으로 보입니다. 이 검사를 통해 버퍼 내용이나 상태 교환과 같은 연산이 Adaptive 에코시스템의 견고하고 결정론적인 동작 요구사항을 충족함을 보장합니다.</p>
+<p>아키텍처 컨텍스트에서 이 트레이트는 주로 AUTOSAR Core 모듈의 제네릭 알고리즘, 컨테이너, 유틸리티 함수 및 애플리케이션별 구현과 상호작용합니다. 이 검사는 일반적으로 SFINAE, <code>static_assert</code> 또는 조건부 <code>noexcept</code> 명세를 통해 예외 안전 교환 연산을 보장하기 위해 모듈의 제네릭 라이브러리 함수나 데이터 구조에서 활용될 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-2d97f825685fd7df" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2d97f825685fd7df" title="질문 Q-2d97f825685fd7df (열림): Typische Nutzung zur Absicherung generischer Funktionen via SFINAE oder static_assert">질문 Q-2d97f825685fd7df (열림)</a> 이 검사를 통해 버퍼 내용이나 상태 교환과 같은 연산이 Adaptive 에코시스템의 견고하고 결정론적인 동작 요구사항을 충족함을 보장합니다.</p>
 
 <h4>수명 주기</h4>
 <p><code>ara::core::is_nothrow_swappable</code>은 순수 템플릿 메타프로그래밍 구조체이므로 런타임에 전형적인 수명 주기를 갖지 않습니다. 실행되는 애플리케이션에서 인스턴스화 단계, 동적 메모리 할당 및 소멸 프로세스가 존재하지 않습니다. 속성의 평가는 컴파일 프로세스 중에 컴파일러에 의해 완전히 정적으로 수행됩니다.</p>
-<p>이러한 순수 정적 특성으로 인해 런타임 상태나 상태 전이 또한 존재하지 않습니다. 타입 특성 쿼리는 스레드 중립적이며 부작용이 없으므로 트레이트는 동시성과 관련된 어떠한 제한도 받지 않습니다. <code>ara::core::is_nothrow_swappable</code>은 표준 모델과 유사하게 <code>std::integral_constant&lt;bool, ...&gt;</code>로부터 상속받을 것으로 추정되며, 이를 통해 런타임 오버헤드 없이 상수로 제공되는 타입 상수 <code>value</code> 및 해당 변환 연산자를 제공합니다.</p>
+<p>이러한 순수 정적 특성으로 인해 런타임 상태나 상태 전이 또한 존재하지 않습니다. 타입 특성 쿼리는 스레드 중립적이며 부작용이 없으므로 트레이트는 동시성과 관련된 어떠한 제한도 받지 않습니다. <code>ara::core::is_nothrow_swappable</code>은 표준 모델과 유사하게 <code>std::integral_constant&lt;bool, ...&gt;</code>로부터 상속받을 것으로 추정되며, 이를 통해 런타임 오버헤드 없이 상수로 제공되는 타입 상수 <code>value</code> 및 해당 변환 연산자를 제공합니다. <a class="interp-q interp-q-open" data-q="Q-2d4f07696ff1d090" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2d4f07696ff1d090" title="질문 Q-2d4f07696ff1d090 (열림): Vererbung von std::integral_constant">질문 Q-2d4f07696ff1d090 (열림)</a></p>
 
 <h4>사용 경로</h4>
 <p><code>ara::core::is_nothrow_swappable</code>의 전형적인 사용 경로는 검사할 타입 정의, 교환 가능성에 대한 정적 쿼리, 컴파일 타임 분기 제어로 나뉩니다:</p>
@@ -54,7 +54,7 @@
 
 <h4>오류 시나리오</h4>
 <p>이 구문은 런타임에 실행되지 않으므로 <code>ara::core::is_nothrow_swappable</code> 사용 시 기존의 런타임 오류, 오류 코드 또는 예외는 발생하지 않습니다. 오류 상황은 대신 컴파일 중에만 배타적으로 나타납니다.</p>
-<p>해석: <code>swap</code> 표현식의 유효성과 예외 안전성에 완전한 타입 정의가 필요하므로 인스턴스화 시점에 불완전한 타입(소위 incomplete types)인 타입 <code>T</code>은 컴파일러 오류를 유발할 것으로 보입니다. 또 다른 오류 시나리오는 개발자가 특정 타입이 예외를 던지지 않고 스왑 가능하다고 잘못 가정할 때 발생하며, 이 경우 예상치 못한 런타임 위험을 방지하기 위해 정적 단언(<code>static_assert</code>)이 컴파일 과정을 의도적으로 중단합니다.</p>
+<p>해석: <code>swap</code> 표현식의 유효성과 예외 안전성에 완전한 타입 정의가 필요하므로 인스턴스화 시점에 불완전한 타입(소위 incomplete types)인 타입 <code>T</code>은 컴파일러 오류를 유발할 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-e2785ad38b24b360" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-e2785ad38b24b360" title="질문 Q-e2785ad38b24b360 (열림): Unvollständige Typen führen zu Übersetzungsfehlern">질문 Q-e2785ad38b24b360 (열림)</a> 또 다른 오류 시나리오는 개발자가 특정 타입이 예외를 던지지 않고 스왑 가능하다고 잘못 가정할 때 발생하며, 이 경우 예상치 못한 런타임 위험을 방지하기 위해 정적 단언(<code>static_assert</code>)이 컴파일 과정을 의도적으로 중단합니다.</p>
 
 <!-- annahmen: 1) Typische Nutzung zur Absicherung generischer Funktionen via SFINAE oder static_assert – Begründung: Standardmäßiger Einsatzzweck von Not-Throw-Swappable-Traits in generischen C++-Bibliotheken. 2) Vererbung von std::integral_constant – Begründung: Anlehnung an std::is_nothrow_swappable gemäß C++17 [meta.unary.prop] ohne abweichende Spezifikationsvorgaben im Payload. 3) Unvollständige Typen führen zu Übersetzungsfehlern – Begründung: C++-Regelwerk für Typ-Eigenschaftsprüfungen bei unvollständigen Typen. -->
 </div>

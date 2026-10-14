@@ -33,10 +33,10 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
-<p>命名空间 <code>apext::phm</code> 为 AUTOSAR Adaptive Platform R25-11 版本中的 Platform Health Management（<code>phm</code>）模块提供底层平台扩展。该命名空间的核心组成部分是类 <code>WatchdogInterface</code>，它充当物理硬件监控（硬件看门狗）的接口。平台的标准接口主要针对应用程序和进程的逻辑监控，而 <code>WatchdogInterface</code> 则构成了与底层硬件层连接的纽带。根据规范说明，<code>WatchdogInterface</code> 在代码中语法和语义上均可识别为接口（Interface），但在架构上被明确归类为 PlatformExtension。解读：该扩展可能用于将底层硬件看门狗驱动程序或板级支持包连接到标准化健康管理，而不会将与硬件相关的细节引入核心模块的与供应商无关的接口中。</p>
+<p>命名空间 <code>apext::phm</code> 为 AUTOSAR Adaptive Platform R25-11 版本中的 Platform Health Management（<code>phm</code>）模块提供底层平台扩展。该命名空间的核心组成部分是类 <code>WatchdogInterface</code>，它充当物理硬件监控（硬件看门狗）的接口。平台的标准接口主要针对应用程序和进程的逻辑监控，而 <code>WatchdogInterface</code> 则构成了与底层硬件层连接的纽带。根据规范说明，<code>WatchdogInterface</code> 在代码中语法和语义上均可识别为接口（Interface），但在架构上被明确归类为 PlatformExtension。解读：该扩展可能用于将底层硬件看门狗驱动程序或板级支持包连接到标准化健康管理，而不会将与硬件相关的细节引入核心模块的与供应商无关的接口中。 <a class="interp-q interp-q-open" data-q="Q-96fc2d8f01697e24" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-96fc2d8f01697e24" title="问题 Q-96fc2d8f01697e24 (未决): Anbindung von Hardware-Treibern">问题 Q-96fc2d8f01697e24 (未决)</a></p>
 
 <h4>生命周期</h4>
-<p>命名空间 <code>apext::phm</code> 中定义的组件的生命周期与平台的监控阶段紧密耦合。解读：<code>WatchdogInterface</code> 的实例通常可能在 Platform Health Management 守护进程的早期启动阶段创建并初始化。在常规运行期间，该接口保持持久活动状态，以将周期性触发信号转发给硬件看门狗。接口的销毁或释放仅在平台受控关闭或停用看门狗功能时发生。由于底层硬件看门狗通常为心跳信号指定严格的时间窗口，因此与 <code>WatchdogInterface</code> 的交互可能受到确定性执行的约束，并且必须能够经受住来自不同监控上下文的并发访问。</p>
+<p>命名空间 <code>apext::phm</code> 中定义的组件的生命周期与平台的监控阶段紧密耦合。解读：<code>WatchdogInterface</code> 的实例通常可能在 Platform Health Management 守护进程的早期启动阶段创建并初始化。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=namespace:adaptive:ns_phm_apext_phm_c44d23&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>在常规运行期间，该接口保持持久活动状态，以将周期性触发信号转发给硬件看门狗。接口的销毁或释放仅在平台受控关闭或停用看门狗功能时发生。由于底层硬件看门狗通常为心跳信号指定严格的时间窗口，因此与 <code>WatchdogInterface</code> 的交互可能受到确定性执行的约束，并且必须能够经受住来自不同监控上下文的并发访问。</p>
 
 <h4>使用路径</h4>
 <p><code>WatchdogInterface</code> 的典型使用路径包括 Platform Health Management 对硬件看门狗接口的提供、配置和周期性操作：</p>
@@ -47,7 +47,7 @@
 </ul>
 
 <h4>错误场景</h4>
-<p>围绕 <code>apext::phm</code> 的错误场景主要涉及硬件连接丢失或错过关键时间界限。如果通过 <code>WatchdogInterface</code> 与硬件的通信失败或看门狗设备不再响应，Platform Health Management 将无法继续确保平台的物理安全防护。解读：对硬件看门狗未发出周期性触发信号，可能确定性地导致硬件定时器超时，从而导致硬件侧复位或 ECU 进入安全系统状态。对 <code>WatchdogInterface</code> 调用的前置条件包括成功初始化的硬件驱动程序，而后置条件则要求在定义的时间容差窗口内确认信号发送。</p>
+<p>围绕 <code>apext::phm</code> 的错误场景主要涉及硬件连接丢失或错过关键时间界限。如果通过 <code>WatchdogInterface</code> 与硬件的通信失败或看门狗设备不再响应，Platform Health Management 将无法继续确保平台的物理安全防护。解读：对硬件看门狗未发出周期性触发信号，可能确定性地导致硬件定时器超时，从而导致硬件侧复位或 ECU 进入安全系统状态。 <a class="interp-q interp-q-open" data-q="Q-615f4c11f7da15fd" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-615f4c11f7da15fd" title="问题 Q-615f4c11f7da15fd (未决): Hardware-Reset bei Ausbleiben">问题 Q-615f4c11f7da15fd (未决)</a>对 <code>WatchdogInterface</code> 调用的前置条件包括成功初始化的硬件驱动程序，而后置条件则要求在定义的时间容差窗口内确认信号发送。</p>
 <!-- annahmen: 1) Anbindung von Hardware-Treibern – Begründung: WatchdogInterface ist als PlatformExtension für Hardware-Watchdogs deklariert, Details zur Treiberarchitektur fehlen im Payload. 2) Instanziierung im PHM-Daemon – Begründung: Hardware-Watchdog-Anbindung setzt zentralen Betrieb voraus, Instanziierungsort ist nicht spezifiziert. 3) Hardware-Reset bei Ausbleiben – Begründung: Standardfunktion von Hardware-Watchdogs, konkretes Reset-Verhalten wird im Payload nicht weiter ausgeführt. -->
 </div>
 <p class="ai-note">本指南完全基于 AUTOSAR R25-11 版本中命名空间 apext::phm 的规范数据。</p>

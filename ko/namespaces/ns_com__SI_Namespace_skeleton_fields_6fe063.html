@@ -27,7 +27,7 @@
 <button type="button" class="ai-level-nav" data-ai-level-cycle title="상세 수준: 요약 – 클릭하면 상세" aria-label="상세 수준: 요약 – 클릭하면 상세"><span class="ai-level-go is-current" data-ai-level-go="2" data-ai-level-label="상세 수준: 요약 – 클릭하면 상세">요약</span><span class="ai-level-go" data-ai-level-go="4" data-ai-level-label="상세 수준: 상세 – 클릭하면 요약">상세</span></button>
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">인터페이스 필드의 제공 및 업데이트를 위한 서비스 스켈레톤용 서버 측 필드 클래스를 정의합니다.</p>
 <div class="ai-level" data-ai-level="2">
-<p>이 네임스페이스는 com 모듈의 Skeleton 아키텍처 내에서 ServiceInterface에 선언된 각 필드에 대한 서버 측 필드 클래스를 캡슐화합니다. 서비스 제공자는 이러한 생성된 클래스를 사용하여 현재 필드 값을 관리하고 값이 변경될 때 연결된 클라이언트에 전송합니다. 필드 객체의 인스턴스화 및 수명은 상위 Skeleton 인스턴스에 직접 바인딩될 것으로 추정됩니다. 데이터를 업데이트하고 제공할 때는 서비스 스켈레톤의 스레딩 모델에 따른 동기화에 유의해야 합니다.</p>
+<p>이 네임스페이스는 com 모듈의 Skeleton 아키텍처 내에서 ServiceInterface에 선언된 각 필드에 대한 서버 측 필드 클래스를 캡슐화합니다. 서비스 제공자는 이러한 생성된 클래스를 사용하여 현재 필드 값을 관리하고 값이 변경될 때 연결된 클라이언트에 전송합니다. 필드 객체의 인스턴스화 및 수명은 상위 Skeleton 인스턴스에 직접 바인딩될 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-bd1d4d2cab97eada" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-bd1d4d2cab97eada" title="질문 Q-bd1d4d2cab97eada (열림): Die Instanziierung der Klassen in skeleton::fields dürfte als Member der übergeordneten Skeleton-Klasse erfolgen">질문 Q-bd1d4d2cab97eada (열림)</a> 데이터를 업데이트하고 제공할 때는 서비스 스켈레톤의 스레딩 모델에 따른 동기화에 유의해야 합니다.</p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="더 자세한 버전 보기">자세히 ›</button></p>
 </div>
 <div class="ai-level" data-ai-level="4">
@@ -36,9 +36,9 @@
 <p>서비스 지향 아키텍처에서 필드는 일반적으로 읽기 액세스(Getter), 쓰기 액세스(Setter) 및 이벤트 기반 알림(Notifier)의 조합으로 구성될 수 있는 서비스의 속성을 나타냅니다. 클라이언트 측의 프록시 네임스페이스에서는 소비 접근을 위한 해당 인터페이스가 생성되는 반면, <code>skeleton::fields</code>은 서비스 제공자(서버)가 내부 상태를 관리하고 외부에 노출하는 데 사용하는 클래스를 제공합니다. <code>&lt;SI-Namespace&gt;::skeleton::fields</code> 네임스페이스의 클래스는 통신 및 프로토콜별 전송을 캡슐화하므로 애플리케이션 개발자는 서비스의 기능적 로직에 집중할 수 있습니다.</p>
 
 <h4>수명 주기</h4>
-<p>생성 및 소유권과 관련하여 <code>skeleton::fields</code> 네임스페이스 내 필드 클래스의 수명은 서비스 인터페이스의 상위 Skeleton 클래스에 직접 바인딩될 것으로 추정됩니다. Adaptive Platform의 C++ 기반 구현에서 필드 인스턴스는 일반적으로 생성된 Skeleton 내에서 직접적인 멤버 객체로 인스턴스화됩니다. 결과적으로 필드 객체의 라이프사이클은 서비스 스켈레톤의 생성자 호출로 시작되어 소멸 시 자동으로 종료됩니다.</p>
+<p>생성 및 소유권과 관련하여 <code>skeleton::fields</code> 네임스페이스 내 필드 클래스의 수명은 서비스 인터페이스의 상위 Skeleton 클래스에 직접 바인딩될 것으로 추정됩니다. <a class="interp-q interp-q-open" data-q="Q-375f07429819a937" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-375f07429819a937" title="질문 Q-375f07429819a937 (열림): Die Feld-Klasse dürfte Aktualisierungen des Feldwerts und Anfragen verwalten">질문 Q-375f07429819a937 (열림)</a> Adaptive Platform의 C++ 기반 구현에서 필드 인스턴스는 일반적으로 생성된 Skeleton 내에서 직접적인 멤버 객체로 인스턴스화됩니다. 결과적으로 필드 객체의 라이프사이클은 서비스 스켈레톤의 생성자 호출로 시작되어 소멸 시 자동으로 종료됩니다.</p>
 <p>운영 단계 동안 필드 객체는 서비스 제공자의 메모리에 유지됩니다. 네트워크에서 서비스를 제공하기 전이나 제공하는 동안(예: 서비스 등록 전 또는 직후) 필드 인스턴스는 유효한 초기값으로 초기화됩니다. Skeleton은 전체 수명 동안 쿼리 및 업데이트에 사용될 수 있으므로 필드 인스턴스도 영구적으로 사용 가능한 상태로 유지됩니다.</p>
-<p>동시성 및 스레딩과 관련하여 필드 액세스 처리는 Skeleton의 선택된 처리 모델에 크게 의존할 것으로 보입니다. 필드 클래스가 수신 쓰기 또는 읽기 요청을 위한 콜백 메커니즘을 제공하거나 필드 값을 업데이트하는 메서드를 제공하는 경우 동시 처리 시 레이스 컨디션을 방지하기 위해 적용 서비스 구현에 의한 동시 액세스를 동기화해야 합니다.</p>
+<p>동시성 및 스레딩과 관련하여 필드 액세스 처리는 Skeleton의 선택된 처리 모델에 크게 의존할 것으로 보입니다. <a class="interp-q interp-q-open" data-q="Q-d3456f67c7a4ba8d" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d3456f67c7a4ba8d" title="질문 Q-d3456f67c7a4ba8d (열림): Aufrufe an die Feld-Instanzen dürften gemäß dem Threading-Modell des Service-Skeletons zu synchronisieren sein">질문 Q-d3456f67c7a4ba8d (열림)</a> 필드 클래스가 수신 쓰기 또는 읽기 요청을 위한 콜백 메커니즘을 제공하거나 필드 값을 업데이트하는 메서드를 제공하는 경우 동시 처리 시 레이스 컨디션을 방지하기 위해 적용 서비스 구현에 의한 동시 액세스를 동기화해야 합니다.</p>
 
 <h4>사용 경로</h4>
 <p><code>&lt;SI-Namespace&gt;::skeleton::fields</code> 클래스의 일반적인 사용 경로는 서비스 제공자의 초기화 프레임워크 내에서 시작됩니다. Skeleton 인스턴스를 구축할 때 구성된 각 필드에 대해 해당 필드 객체가 생성됩니다. 서비스 구현은 일반적으로 요청하는 클라이언트가 처음부터 일관된 데이터를 찾을 수 있도록 필드 클래스에 처음에 유효한 시작값을 할당합니다.</p>

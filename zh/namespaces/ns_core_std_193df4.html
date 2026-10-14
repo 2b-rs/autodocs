@@ -82,9 +82,9 @@
 <p>这些特化涵盖了不同的数据结构：</p>
 <ul>
 <li>字符串和视图：<code>std::hash&lt;ara::core::String&gt;</code> 和 <code>std::hash&lt;ara::core::StringView&gt;</code> 计算所包含字符序列的哈希值。</li>
-<li>复合类型：<code>std::hash&lt;ara::core::Optional&lt;T&gt;&gt;</code>、<code>std::hash&lt;ara::core::Variant&lt;...&gt;&gt;</code> 和 <code>std::hash&lt;ara::core::Vector&lt;T, Allocator&gt;&gt;</code> 支持对复杂类型结构进行哈希计算。解释：针对 <code>ara::core::Optional</code> 和 <code>ara::core::Variant</code> 的特化推测以标准化原型的语义行为为导向，并为空状态或未占用状态生成确定性值。</li>
+<li>复合类型：<code>std::hash&lt;ara::core::Optional&lt;T&gt;&gt;</code>、<code>std::hash&lt;ara::core::Variant&lt;...&gt;&gt;</code> 和 <code>std::hash&lt;ara::core::Vector&lt;T, Allocator&gt;&gt;</code> 支持对复杂类型结构进行哈希计算。解释：针对 <code>ara::core::Optional</code> 和 <code>ara::core::Variant</code> 的特化推测以标准化原型的语义行为为导向，并为空状态或未占用状态生成确定性值。 <a class="interp-q interp-q-open" data-q="Q-c432b06f0ba32c5e" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-c432b06f0ba32c5e" title="问题 Q-c432b06f0ba32c5e (未决): Die Spezialisierungen von std::hash für zusammengesetzte Typen wie Optional und Variant dürften sich am semantischen Verhalten der entsprechenden C++-Standardtypen orientieren.">问题 Q-c432b06f0ba32c5e (未决)</a></li>
 <li>无状态类型：<code>std::hash&lt;ara::core::Monostate&gt;</code> 为空状态提供哈希函数，正如它们通常在变体类型中所使用的那样。</li>
-<li>元组协议：对于固定数据字段，<code>std::tuple_size&lt;ara::core::Array&lt;T, N&gt;&gt;</code> 在编译时提供元素数量，而 <code>std::tuple_element&lt;I, ara::core::Array&lt;T, N&gt;&gt;</code> 确定位置 <code>I</code> 的数据类型。解释：<code>std::tuple_size</code> 和 <code>std::tuple_element</code> 的特化推测由此允许将 <code>ara::core::Array</code> 与结构化绑定（Structured Bindings）结合使用。</li>
+<li>元组协议：对于固定数据字段，<code>std::tuple_size&lt;ara::core::Array&lt;T, N&gt;&gt;</code> 在编译时提供元素数量，而 <code>std::tuple_element&lt;I, ara::core::Array&lt;T, N&gt;&gt;</code> 确定位置 <code>I</code> 的数据类型。解释：<code>std::tuple_size</code> 和 <code>std::tuple_element</code> 的特化推测由此允许将 <code>ara::core::Array</code> 与结构化绑定（Structured Bindings）结合使用。 <a class="interp-q interp-q-open" data-q="Q-3abb70390e67dbce" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-3abb70390e67dbce" title="问题 Q-3abb70390e67dbce (未决): Die Spezialisierungen von std::tuple_size und std::tuple_element für ara::core::Array dürften die Nutzung strukturierter Bindungen ermöglichen.">问题 Q-3abb70390e67dbce (未决)</a></li>
 </ul>
 
 <h4>错误场景</h4>
@@ -93,7 +93,7 @@
 <li>基础类型缺少哈希能力：如果为嵌套类型（如 <code>ara::core::Optional&lt;T&gt;</code> 或 <code>ara::core::Vector&lt;T, Allocator&gt;</code>）实例化 <code>std::hash</code>，则元素类型 <code>T</code> 也必须存在 <code>std::hash</code> 的有效特化。如果缺少该特化，将导致编译错误。</li>
 <li>元组协议中的无效索引：使用索引 <code>I &gt;= N</code> 访问 <code>std::tuple_element&lt;I, ara::core::Array&lt;T, N&gt;&gt;</code> 违反了模板的前置条件并会中止编译过程。</li>
 </ul>
-<p>解释：错误场景推测基本上局限于不完整类型特化或静态越界时的编译时错误，因为规范摘录中未定义任何运行时错误代码或异常接口。</p>
+<p>解释：错误场景推测基本上局限于不完整类型特化或静态越界时的编译时错误，因为规范摘录中未定义任何运行时错误代码或异常接口。 <a class="interp-q interp-q-open" data-q="Q-8cda269c72bd701c" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-8cda269c72bd701c" title="问题 Q-8cda269c72bd701c (未决): Fehlerszenarien dürften sich auf Kompilierzeitfehler beschränken.">问题 Q-8cda269c72bd701c (未决)</a></p>
 <!-- annahmen: 1) Die Spezialisierungen von std::hash für zusammengesetzte Typen wie Optional und Variant dürften sich am semantischen Verhalten der entsprechenden C++-Standardtypen orientieren. – Begründung: Der Payload enthält nur Klassendeklarationen, spezifiziert jedoch keine abweichende Hash-Semantik. 2) Die Spezialisierungen von std::tuple_size und std::tuple_element für ara::core::Array dürften die Nutzung strukturierter Bindungen ermöglichen. – Begründung: Der Payload verweist explizit auf die entsprechende Nutzung in [array]. 3) Fehlerszenarien dürften sich auf Kompilierzeitfehler beschränken. – Begründung: Im Payload sind weder Exception-Spezifikationen noch ara::core::ErrorCode-Werte für std-Spezialisierungen dokumentiert. -->
 </div>
 <p class="ai-note">本指南仅基于 core 模块针对 Release R25-11 声明的类特化。</p>

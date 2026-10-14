@@ -41,15 +41,15 @@
 
 <h4>生命周期</h4>
 <p>哈希特化的生命周期极其轻量，并遵循 C++ 标准仿函数的约定。该类不具有持久状态变量或引用的资源。因此，创建是通过隐式默认构造函数平凡完成的，通常直接在栈上的使用位置或作为容器操作中的临时对象。</p>
-<p>由于该特化是无状态的，该对象应该可以不受限制地复制和移动。销毁不需要显式释放资源或析构函数逻辑。关于并发性，只要要哈希的 <code>ara::core::Variant</code> 实例没有被另一个执行线程同时修改，调用仿函数就是线程安全的。多个线程可以同时使用哈希仿函数的同一实例或并行实例，而无需外部同步。</p>
+<p>由于该特化是无状态的，该对象应该可以不受限制地复制和移动。 <a class="interp-q interp-q-open" data-q="Q-2cffd290e7f00968" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-2cffd290e7f00968" title="问题 Q-2cffd290e7f00968 (未决): Die Spezialisierung ist zustandslos und damit thread-sicher">问题 Q-2cffd290e7f00968 (未决)</a>销毁不需要显式释放资源或析构函数逻辑。关于并发性，只要要哈希的 <code>ara::core::Variant</code> 实例没有被另一个执行线程同时修改，调用仿函数就是线程安全的。多个线程可以同时使用哈希仿函数的同一实例或并行实例，而无需外部同步。</p>
 
 <h4>使用路径</h4>
 <p>典型使用是通过标准库的关联容器间接进行，或者通过显式执行调用运算符 <code>operator()</code> 直接进行。用例始于提供保存有具体备选值的已初始化的 <code>ara::core::Variant</code> 实例。</p>
-<p>调用哈希函数时，会查询 Variant 的当前状态。该计算应该分两个概念性子步骤进行：首先，确定当前所持类型的判别器（discriminator）或索引。随后，将 Variant 中包含的具体值传递给该类型的匹配 <code>std::hash</code> 特化。最后，将类型索引和值哈希相互组合，以生成类型为 <code>std::size_t</code> 的结果散列值。这确保了具有相同备选值但不同类型标识的 Variant 能够可靠地获得不同的哈希值。</p>
+<p>调用哈希函数时，会查询 Variant 的当前状态。该计算应该分两个概念性子步骤进行：首先，确定当前所持类型的判别器（discriminator）或索引。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_std_hash_ara_core_Variant_22cf88&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>随后，将 Variant 中包含的具体值传递给该类型的匹配 <code>std::hash</code> 特化。最后，将类型索引和值哈希相互组合，以生成类型为 <code>std::size_t</code> 的结果散列值。这确保了具有相同备选值但不同类型标识的 Variant 能够可靠地获得不同的哈希值。</p>
 
 <h4>错误场景</h4>
 <p>哈希计算的稳健性主要取决于模板参数和所传入 Variant 的状态。一个基本先决条件是为参数包 <code>Types...</code> 中声明的所有类型都存在 <code>std::hash</code> 的可用特化。即使仅缺少一个类型的此类定义，一旦哈希仿函数被实例化，编译就会失败。</p>
-<p>在运行时，该方法要求传入的 Variant 不是无效的。如果底层的 Variant 对象由于先前失败的赋值而进入了异常性空状态，则哈希计算的行为推测为未定义或导致运行时异常。此外，各个备选类型的哈希计算预期不会抛出异常，以满足标准哈希函数的要求。</p>
+<p>在运行时，该方法要求传入的 Variant 不是无效的。如果底层的 Variant 对象由于先前失败的赋值而进入了异常性空状态，则哈希计算的行为推测为未定义或导致运行时异常。 <a class="interp-q interp-q-open" data-q="Q-d1e0b4858aa9dc16" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-d1e0b4858aa9dc16" title="问题 Q-d1e0b4858aa9dc16 (未决): Die Hash-Berechnung kombiniert den Typindex mit dem Hash des Werts">问题 Q-d1e0b4858aa9dc16 (未决)</a>此外，各个备选类型的哈希计算预期不会抛出异常，以满足标准哈希函数的要求。</p>
 <!-- annahmen: 1) Die Hash-Berechnung kombiniert den Typindex mit dem Hash des Werts – Begründung: Zur Vermeidung von Hash-Kollisionen bei typverschiedenen Alternativen. | 2) Die Spezialisierung ist zustandslos und damit thread-sicher – Begründung: Entspricht der üblichen Semantik von std::hash-Spezialisierungen. | 3) Alle Typen in Types... müssen selbst über std::hash verfügen – Begründung: Notwendig für die generische Delegierung der Hash-Berechnung. -->
 </div>
 <p class="ai-note">本文由 AI 基于 AUTOSAR 规范 R25-11 生成。</p>

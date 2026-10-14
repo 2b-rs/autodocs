@@ -32,7 +32,7 @@
 <p class="ai-level ai-oneliner-lead" data-ai-level="1">在编译时确定 const-volatile 限定的 Variant 的备选类型数量。</p>
 <div class="ai-level" data-ai-level="2">
 <p>
-模板特化 <code>ara::core::variant_size&lt; const volatile T &gt;</code> 用于在编译时确定 <code>const volatile</code> 限定的 Variant 的备选类型数量。根据规范，其行为遵循 Variant 的通用用法。解释：该类可能充当纯元编程萃取，它将查询透明地转发给未限定的基础特化。在运行时不发生实例化，因此类型实参不匹配时的错误仅表现为编译时错误。
+模板特化 <code>ara::core::variant_size&lt; const volatile T &gt;</code> 用于在编译时确定 <code>const volatile</code> 限定的 Variant 的备选类型数量。根据规范，其行为遵循 Variant 的通用用法。解释：该类可能充当纯元编程萃取，它将查询透明地转发给未限定的基础特化。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_variant_size_const_ec9113&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>在运行时不发生实例化，因此类型实参不匹配时的错误仅表现为编译时错误。
 </p>
 <p class="ai-level-more-inline"><button type="button" class="ai-level-step ai-level-more" data-ai-level-step="1" title="显示更详细的版本">更多 ›</button></p>
 </div>
@@ -42,7 +42,7 @@
 模板类 <code>ara::core::variant_size&lt; const volatile T &gt;</code> 是 AUTOSAR Adaptive Platform 版本 R25-11 中模块 <code>core</code> 内的元编程组件。根据描述，此模板的行为遵循变体类型的标准化使用。该特化确保即使类型表达式同时带有 <code>const</code> 和 <code>volatile</code> 限定符，确定 Variant 中定义的备选类型数量也能以符合类型规范的方式工作。
 </p>
 <p>
-解释：该辅助模板可能充当偏特化，它抽象了限定符并将类型数量的确定透明地委托给未限定的特化 <code>ara::core::variant_size&lt;T&gt;</code>。在软件架构中，它在编译时承担被动类型检查器的角色。其主要交互伙伴包括在并发或硬件相关上下文中使用的泛型算法、编译时验证器以及 <code>ara::core::variant</code> 的实例。
+解释：该辅助模板可能充当偏特化，它抽象了限定符并将类型数量的确定透明地委托给未限定的特化 <code>ara::core::variant_size&lt;T&gt;</code>。 <a class="interp-q interp-q-open" data-q="Q-4e018c966a312ec6" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-4e018c966a312ec6" title="问题 Q-4e018c966a312ec6 (未决): ara::core::variant_size&lt; const volatile T &gt; leitet die Größenbestimmung transparent an ara::core::variant_size&lt;T&gt; weiter.">问题 Q-4e018c966a312ec6 (未决)</a>在软件架构中，它在编译时承担被动类型检查器的角色。其主要交互伙伴包括在并发或硬件相关上下文中使用的泛型算法、编译时验证器以及 <code>ara::core::variant</code> 的实例。
 </p>
 
 <h4>使用路径</h4>
@@ -58,7 +58,7 @@
 <li>所得的整型值直接在通过 <code>static_assert</code> 的静态断言中使用，或用于确定从属类型结构的大小。</li>
 </ul>
 <p>
-解释：开发人员推测使用此特化来使泛型模板库对任意类型限定具备鲁棒性，从而省去了通过辅助模板（如 <code>std::remove_cv</code>）进行易错的预先转换。
+解释：开发人员推测使用此特化来使泛型模板库对任意类型限定具备鲁棒性，从而省去了通过辅助模板（如 <code>std::remove_cv</code>）进行易错的预先转换。 <a class="interp-q interp-q-open" data-q="Q-41ff53018f6792e2" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-41ff53018f6792e2" title="问题 Q-41ff53018f6792e2 (未决): Die Spezialisierung dient primär generischem Metaprogrammierungs-Code zur Vermeidung manueller Entfernung von cv-Qualifizierern.">问题 Q-41ff53018f6792e2 (未决)</a>
 </p>
 
 <h4>错误场景</h4>
@@ -66,7 +66,7 @@
 由于该类在运行时不执行任何方法，因此排除了传统的运行时错误场景、异常处理或类型为 <code>ara::core::ErrorCode</code> 的返回值。先决条件和错误原因仅涉及编译期间的静态类型正确性。
 </p>
 <p>
-解释：如果使用不对应于 Variant 类型或不存在 <code>ara::core::variant_size</code> 的主特化的类型 <code>T</code> 来实例化该模板，则访问 <code>value</code> 可能会由于类型定义不完整而导致硬编译错误。因此，基本前提条件是实参 <code>T</code> 满足格式良好的 Variant 类型的属性。
+解释：如果使用不对应于 Variant 类型或不存在 <code>ara::core::variant_size</code> 的主特化的类型 <code>T</code> 来实例化该模板，则访问 <code>value</code> 可能会由于类型定义不完整而导致硬编译错误。 <a class="interp-q interp-q-unmatched" data-q-status="unmatched" href="../versions.html?tab=q&amp;qsub=class:adaptive:cl_ara_core_variant_size_const_ec9113&amp;qst=open" title="关于此文本的假设与问题（版本与来源浏览器）">问题 (未决)</a>因此，基本前提条件是实参 <code>T</code> 满足格式良好的 Variant 类型的属性。
 </p>
 <!-- annahmen: 1) ara::core::variant_size< const volatile T > leitet die Größenbestimmung transparent an ara::core::variant_size<T> weiter. – Begründung: Der Payload verweist auf das Verhalten in [variant], analog zur C++-Standardspezifikation für cv-qualifizierte variant_size-Traits. 2) Die Spezialisierung dient primär generischem Metaprogrammierungs-Code zur Vermeidung manueller Entfernung von cv-Qualifizierern. – Begründung: cv-Spezialisierungen in C++-Traits stellen Orthogonalität und Robustheit in generischen Template-Kontexten sicher. 3) Fehler bei unpassenden Typen T äußern sich ausschließlich als Compile-Zeit-Fehler (fehlende Definition oder unvollständiger Typ). – Begründung: Es handelt sich um ein reines Compile-Time-Trait ohne Laufzeit-Zustand oder Methoden. -->
 </div>

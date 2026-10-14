@@ -36,7 +36,7 @@
 </div>
 <div class="ai-level" data-ai-level="4">
 <h4>上下文</h4>
-<p>结构 <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface9&gt;StopOutput</code> 是 Release R25-11 中 AUTOSAR Adaptive Platform 诊断模块（<code>diag</code>）的一部分。根据描述，它用作封装停止操作输出实参的数据结构（<em>“Structure wrapping the out arguments for a Stop”</em>）。在例程控制的诊断通信框架内，推测该结构用于将例程停止时返回的结果数据捆绑返回给调用方或诊断系统。</p>
+<p>结构 <code>&lt;RoutineInterface-Namespace&gt;::&lt;RoutineInterface&gt;::&lt;RoutineInterface9&gt;StopOutput</code> 是 Release R25-11 中 AUTOSAR Adaptive Platform 诊断模块（<code>diag</code>）的一部分。根据描述，它用作封装停止操作输出实参的数据结构（<em>“Structure wrapping the out arguments for a Stop”</em>）。在例程控制的诊断通信框架内，推测该结构用于将例程停止时返回的结果数据捆绑返回给调用方或诊断系统。 <a class="interp-q interp-q-open" data-q="Q-8fd69717e4ad4d46" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-8fd69717e4ad4d46" title="问题 Q-8fd69717e4ad4d46 (未决): Interpretation: Die Struktur dient der Kapselung und Rückgabe von Ausgabedaten einer Routinen-Stop-Aktion im Diagnose-Stack an den Aufrufer.">问题 Q-8fd69717e4ad4d46 (未决)</a></p>
 
 <h4>生命周期</h4>
 <p>作为数据结构（<code>struct</code>），<code>&lt;RoutineInterface9&gt;StopOutput</code> 具有简单的值对象生命周期。在处理停止命令时，它通常在诊断例程的实现内部进行实例化。输出数据存放在该结构的元素中，随后该实例通过返回值或异步地通过 Future 移交给诊断框架。在所包含实参完成传输或进一步处理后，该实例即被销毁。对于这种纯数据载体，极大概率不存在复杂的内部状态管理或跨多个调用的独立生命周期。</p>
@@ -51,7 +51,7 @@
 </ul>
 
 <h4>错误场景</h4>
-<p>由于属于被动输出结构，该类型本身推测不会引发异常。如果停止例程在业务上失败或出现无效状态，这推测不会仅通过该结构的值指示，而是通过关联的返回通道（例如通过 Result 类型的错误代码）指示。合理使用的前提条件是成功或至少明确定义了停止操作的执行，从而可以使用有效数据填充输出字段。</p>
+<p>由于属于被动输出结构，该类型本身推测不会引发异常。 <a class="interp-q interp-q-open" data-q="Q-e5d45b3ff9043fcd" data-q-status="open" href="../versions.html?tab=q&amp;id=Q-e5d45b3ff9043fcd" title="问题 Q-e5d45b3ff9043fcd (未决): Interpretation: Das Objekt besitzt einen passiven Wertobjekt-Lebenszyklus ohne eigene Zustandsmaschine und wird per Value/Future übergeben.">问题 Q-e5d45b3ff9043fcd (未决)</a>如果停止例程在业务上失败或出现无效状态，这推测不会仅通过该结构的值指示，而是通过关联的返回通道（例如通过 Result 类型的错误代码）指示。合理使用的前提条件是成功或至少明确定义了停止操作的执行，从而可以使用有效数据填充输出字段。</p>
 
 <!-- annahmen: 1) Interpretation: Die Struktur dient der Kapselung und Rückgabe von Ausgabedaten einer Routinen-Stop-Aktion im Diagnose-Stack an den Aufrufer. – Begründung: Der Payload beschreibt die Struktur als „Structure wrapping the out arguments for a Stop“ im Modul diag, enthält jedoch keine detaillierten Member-Spezifikationen. 2) Interpretation: Das Objekt besitzt einen passiven Wertobjekt-Lebenszyklus ohne eigene Zustandsmaschine und wird per Value/Future übergeben. – Begründung: Es handelt sich um ein reines struct zur Argumentkapselung. 3) Interpretation: Fachliche Fehler beim Stoppen werden über den übergeordneten Aufrufmechanismus signalisiert. – Begründung: Reine Argument-Wrapper-Strukturen enthalten typischerweise keine eigene Fehlerbehandlungslogik. -->
 </div>

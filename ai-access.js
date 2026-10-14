@@ -689,6 +689,108 @@
           admErrNoSelection: "Minstens één abonnement of eindpunt vereist." }
   };
   Object.keys(L8).forEach(function (k) { if (L[k]) Object.assign(L[k], L8[k]); });
+  var L9 = {
+    de: {
+      authLoading: "Anmeldung wird vorbereitet …",
+      authTimeout: "Die Anmeldung konnte nicht geladen werden (Zeitüberschreitung nach 15 s).",
+      authRetry: "Erneut versuchen",
+      errPopupBlocked: "Pop-up blockiert – bitte erlaube Pop-ups für diese Seite und versuche es erneut.",
+      errAccountExistsProvider: "Diese E-Mail-Adresse ist bereits mit %p registriert. Melde dich zuerst mit %p an; %a wird danach automatisch verknüpft.",
+      errAccountExistsAny: "Diese E-Mail-Adresse ist bereits mit dem zuvor genutzten Anbieter registriert. Melde dich zuerst mit dem Anbieter an, den du zuvor genutzt hast; %a wird danach automatisch verknüpft.",
+      linkedToast: "%s wurde mit deinem Konto verknüpft."
+    },
+    en: {
+      authLoading: "Preparing sign-in …",
+      authTimeout: "Sign-in could not be loaded (timed out after 15 s).",
+      authRetry: "Try again",
+      errPopupBlocked: "Pop-up blocked – please allow pop-ups for this site and try again.",
+      errAccountExistsProvider: "This e-mail is already registered with %p. Sign in with %p first; %a is then linked automatically.",
+      errAccountExistsAny: "This e-mail is already registered with the provider you used before. Sign in with the provider you used before first; %a is then linked automatically.",
+      linkedToast: "%s has been linked to your account."
+    },
+    es: {
+      authLoading: "Preparando el inicio de sesión …",
+      authTimeout: "No se pudo cargar el inicio de sesión (tiempo agotado tras 15 s).",
+      authRetry: "Reintentar",
+      errPopupBlocked: "Ventana emergente bloqueada: permite las ventanas emergentes para este sitio e inténtalo de nuevo.",
+      errAccountExistsProvider: "Este correo ya está registrado con %p. Inicia sesión primero con %p; %a se vinculará automáticamente después.",
+      errAccountExistsAny: "Este correo ya está registrado con el proveedor que usaste antes. Inicia sesión primero con el proveedor que usaste antes; %a se vinculará automáticamente después.",
+      linkedToast: "Se ha vinculado %s con tu cuenta."
+    },
+    pt: {
+      authLoading: "Preparando o login …",
+      authTimeout: "Não foi possível carregar o login (tempo esgotado após 15 s).",
+      authRetry: "Tentar novamente",
+      errPopupBlocked: "Pop-up bloqueado – permita pop-ups para este site e tente novamente.",
+      errAccountExistsProvider: "Este e-mail já está registrado com %p. Entre primeiro com %p; %a será vinculado automaticamente em seguida.",
+      errAccountExistsAny: "Este e-mail já está registrado com o provedor que você usou antes. Entre primeiro com o provedor usado anteriormente; %a será vinculado automaticamente em seguida.",
+      linkedToast: "%s foi vinculado à sua conta."
+    },
+    fr: {
+      authLoading: "Préparation de la connexion …",
+      authTimeout: "Impossible de charger la connexion (délai dépassé après 15 s).",
+      authRetry: "Réessayer",
+      errPopupBlocked: "Fenêtre surgissante bloquée – veuillez autoriser les pop-ups pour ce site et réessayer.",
+      errAccountExistsProvider: "Cet e-mail est déjà enregistré avec %p. Connectez-vous d'abord avec %p ; %a sera ensuite lié automatiquement.",
+      errAccountExistsAny: "Cet e-mail est déjà enregistré avec le fournisseur utilisé précédemment. Connectez-vous d'abord avec le fournisseur que vous avez utilisé auparavant ; %a sera ensuite lié automatiquement.",
+      linkedToast: "%s a été lié à votre compte."
+    },
+    ru: {
+      authLoading: "Подготовка входа …",
+      authTimeout: "Не удалось загрузить вход (превышено время ожидания 15 с).",
+      authRetry: "Повторить попытку",
+      errPopupBlocked: "Всплывающее окно заблокировано — разрешите всплывающие окна для этого сайта и повторите попытку.",
+      errAccountExistsProvider: "Этот адрес эл. почты уже зарегистрирован через %p. Сначала войдите через %p; затем %a будет привязан автоматически.",
+      errAccountExistsAny: "Этот адрес эл. почты уже зарегистрирован через ранее использованный способ входа. Сначала войдите через провайдера, которого вы использовали ранее; затем %a будет привязан автоматически.",
+      linkedToast: "%s привязан к вашему аккаунту."
+    },
+    ar: {
+      authLoading: "جارٍ تحضير تسجيل الدخول …",
+      authTimeout: "تعذّر تحميل تسجيل الدخول (انتهت المهلة بعد 15 ثانية).",
+      authRetry: "إعادة المحاولة",
+      errPopupBlocked: "تم حظر النافذة المنبثقة – يُرجى السماح بالنوافذ المنبثقة لهذا الموقع والمحاولة مرة أخرى.",
+      errAccountExistsProvider: "هذا البريد الإلكتروني مسجّل بالفعل عبر %p. سجّل الدخول عبر %p أولًا؛ وسيتم ربط %a تلقائيًا بعد ذلك.",
+      errAccountExistsAny: "هذا البريد الإلكتروني مسجّل بالفعل لدى المزوّد الذي استخدمته من قبل. سجّل الدخول أولًا بالمزوّد الذي استخدمته سابقًا؛ وسيتم ربط %a تلقائيًا بعد ذلك.",
+      linkedToast: "تم ربط %s بحسابك."
+    },
+    hi: {
+      authLoading: "साइन-इन तैयार किया जा रहा है …",
+      authTimeout: "साइन-इन लोड नहीं हो सका (15 सेकंड बाद समय समाप्त)।",
+      authRetry: "पुनः प्रयास करें",
+      errPopupBlocked: "पॉप-अप अवरुद्ध – कृपया इस साइट के लिए पॉप-अप की अनुमति दें और पुनः प्रयास करें।",
+      errAccountExistsProvider: "यह ई-मेल पहले से %p के साथ पंजीकृत है। पहले %p से साइन इन करें; उसके बाद %a अपने आप जुड़ जाएगा।",
+      errAccountExistsAny: "यह ई-मेल पहले उपयोग किए गए प्रदाता के साथ पंजीकृत है। पहले उस प्रदाता से साइन इन करें जिसका आपने पहले उपयोग किया था; उसके बाद %a अपने आप जुड़ जाएगा।",
+      linkedToast: "%s को आपके खाते से जोड़ दिया गया है।"
+    },
+    ko: {
+      authLoading: "로그인 준비 중 …",
+      authTimeout: "로그인을 불러오지 못했습니다(15초 시간 초과).",
+      authRetry: "다시 시도",
+      errPopupBlocked: "팝업이 차단되었습니다 – 이 사이트의 팝업을 허용한 뒤 다시 시도하세요.",
+      errAccountExistsProvider: "이 이메일은 이미 %p(으)로 등록되어 있습니다. 먼저 %p(으)로 로그인하면 %a 계정이 자동으로 연결됩니다.",
+      errAccountExistsAny: "이 이메일은 이전에 사용한 로그인 제공자에 이미 등록되어 있습니다. 이전에 사용한 제공자로 먼저 로그인하면 %a 계정이 자동으로 연결됩니다.",
+      linkedToast: "%s 계정이 내 계정에 연결되었습니다."
+    },
+    zh: {
+      authLoading: "正在准备登录…",
+      authTimeout: "无法加载登录（15 秒后超时）。",
+      authRetry: "重试",
+      errPopupBlocked: "弹出窗口已被拦截——请允许本网站的弹出窗口后重试。",
+      errAccountExistsProvider: "此电子邮件已通过 %p 注册。请先使用 %p 登录，之后会自动关联 %a。",
+      errAccountExistsAny: "此电子邮件已通过你之前使用的提供商注册。请先使用你之前用过的提供商登录，之后会自动关联 %a。",
+      linkedToast: "已将 %s 关联到你的账号。"
+    },
+    nl: {
+      authLoading: "Aanmelden wordt voorbereid …",
+      authTimeout: "Aanmelden kon niet worden geladen (time-out na 15 s).",
+      authRetry: "Opnieuw proberen",
+      errPopupBlocked: "Pop-up geblokkeerd – sta pop-ups toe voor deze site en probeer het opnieuw.",
+      errAccountExistsProvider: "Dit e-mailadres is al geregistreerd bij %p. Meld je eerst aan met %p; %a wordt daarna automatisch gekoppeld.",
+      errAccountExistsAny: "Dit e-mailadres is al geregistreerd bij de aanbieder die je eerder hebt gebruikt. Meld je eerst aan met de aanbieder die je eerder gebruikte; %a wordt daarna automatisch gekoppeld.",
+      linkedToast: "%s is aan je account gekoppeld."
+    }
+  };
+  Object.keys(L9).forEach(function (k) { if (L[k]) Object.assign(L[k], L9[k]); });
   function tr(key, arg) {
     var d = L[lang()] || L.en;
     var s = d[key] != null ? d[key] : (L.en[key] != null ? L.en[key] : key);
@@ -1207,7 +1309,7 @@
 
   // ----------------------------------------------------------- Anmeldung
   var state = { config: null, auth: "idle", user: null, error: "", view: "", pendingEmail: "",
-                backend: null, fb: null };
+                backend: null, fb: null, authTimedOut: false, authRetry: null, pendingCred: null };
   var configPromise = null;
   function loadConfig() {
     if (configPromise) return configPromise;
@@ -1223,30 +1325,86 @@
     return configPromise;
   }
   function linkInUrl(href) { return /[?&]oobCode=/.test(href || "") && /[?&]mode=signIn\b/.test(href || ""); }
-  var fbPromise = null;
+  var fbPromise = null, fbSeq = 0, fbRetryCount = 0, authTimer = null;
+  function authTimeoutMs() {
+    var n = Number((state.config && state.config.auth_timeout_ms) || root.__aiaAuthTimeoutMs);
+    return n > 0 ? n : 15000;
+  }
+  function clearAuthTimer() {
+    if (authTimer) { clearTimeout(authTimer); authTimer = null; }
+  }
   function ensureFirebase() {
+    if (state.auth === "unconfigured") return Promise.resolve(null);
+    if (state.fb && state.auth !== "loading") return Promise.resolve(state.fb);
     if (fbPromise) return fbPromise;
-    fbPromise = loadConfig().then(async function (cfg) {
-      if (state.auth === "unconfigured") return null;
-      state.auth = "loading";
+    var seq = ++fbSeq;
+    var t0 = Date.now();
+    state.auth = "loading";
+    state.authTimedOut = false;
+    state.authRetry = null;
+    state.error = "";
+    clearAuthTimer();
+    function onTimeout() {
+      if (seq !== fbSeq || state.auth !== "loading") return;
+      fbSeq++;
+      authTimer = null;
+      fbPromise = null;
+      state.fb = null;
+      state.auth = "signed-out";
+      state.authTimedOut = true;
+      state.authRetry = "firebase";
+      state.error = tr("authTimeout");
       emit();
+    }
+    var initialMs = authTimeoutMs();
+    authTimer = setTimeout(onTimeout, initialMs);
+    emit();
+    fbPromise = loadConfig().then(async function (cfg) {
+      if (seq !== fbSeq) return null;
+      if (state.auth === "unconfigured") {
+        clearAuthTimer();
+        fbPromise = null;
+        emit();
+        return null;
+      }
+      var cfgMs = authTimeoutMs();
+      if (cfgMs !== initialMs && state.auth === "loading") {
+        clearAuthTimer();
+        authTimer = setTimeout(onTimeout, Math.max(0, cfgMs - (Date.now() - t0)));
+      }
       var sdk = cfg.sdk || DEFAULT_SDK;
-      var appMod = await import(/* webpackIgnore: true */ sdk + "/firebase-app.js");
-      var authMod = await import(/* webpackIgnore: true */ sdk + "/firebase-auth.js");
-      var app = appMod.initializeApp(cfg.firebase, "autodocs");
+      var q = fbRetryCount ? (sdk.indexOf("?") === -1 ? "?retry=" : "&retry=") + fbRetryCount : "";
+      var appMod = await import(/* webpackIgnore: true */ sdk + "/firebase-app.js" + q);
+      var authMod = await import(/* webpackIgnore: true */ sdk + "/firebase-auth.js" + q);
+      if (seq !== fbSeq) return null;
+      var app;
+      try { app = appMod.initializeApp(cfg.firebase, "autodocs"); }
+      catch (eApp) { app = typeof appMod.getApp === "function" ? appMod.getApp("autodocs") : appMod.initializeApp(cfg.firebase); }
       var auth = authMod.getAuth(app);
       try { auth.languageCode = lang(); } catch (e) { /* ignore */ }
-      state.fb = { mod: authMod, auth: auth };
       await new Promise(function (resolve) {
         var first = true;
         authMod.onAuthStateChanged(auth, function (u) {
+          if (seq !== fbSeq) { if (first) { first = false; resolve(); } return; }
+          clearAuthTimer();
+          state.authTimedOut = false;
+          state.fb = { mod: authMod, auth: auth };
           setUser(u);
           if (first) { first = false; resolve(); }
         });
       });
-      try { await authMod.getRedirectResult(auth); } catch (e) { fail(e); }
+      if (seq !== fbSeq) return null;
+      clearAuthTimer();
+      try {
+        var redir = await authMod.getRedirectResult(auth);
+        if (redir && redir.user) handleSignInSuccess(redir, state.fb);
+      } catch (e) {
+        handleSignInError(e, "", "", state.fb);
+      }
       return state.fb;
     }).catch(function (e) {
+      if (seq !== fbSeq) return null;
+      clearAuthTimer();
       fbPromise = null;
       state.auth = "signed-out";
       fail(e);
@@ -1254,11 +1412,30 @@
     });
     return fbPromise;
   }
+  function preloadFirebase() {
+    if (state.auth === "unconfigured") return Promise.resolve(null);
+    if (state.config) {
+      return (signInOffered() || sget("local", SESSION_FLAG)) ? ensureFirebase() : Promise.resolve(null);
+    }
+    return loadConfig().then(function () {
+      return (state.auth !== "unconfigured" && (signInOffered() || sget("local", SESSION_FLAG))) ? ensureFirebase() : null;
+    });
+  }
+  function linkPendingIfAny(u, fb) {
+    fb = fb || state.fb;
+    if (!u || !state.pendingCred || !state.pendingCred.cred || !fb || !fb.mod || typeof fb.mod.linkWithCredential !== "function") return;
+    var pending = state.pendingCred;
+    state.pendingCred = null;
+    Promise.resolve(fb.mod.linkWithCredential(u, pending.cred)).then(function () {
+      toast(tr("linkedToast", pending.providerName || "GitHub"));
+    }).catch(fail);
+  }
   function setUser(u) {
     var before = state.user && state.user.uid;
     var pid = u && u.providerData && u.providerData[0] ? u.providerData[0].providerId : (u && u.providerId) || "";
     state.user = u ? { uid: u.uid, email: u.email || "", name: u.displayName || "", photo: u.photoURL || "", provider: pid } : null;
     state.auth = u ? "signed-in" : "signed-out";
+    if (u) { state.authTimedOut = false; state.authRetry = null; state.error = ""; }
     sset("local", SESSION_FLAG, u ? "1" : null);
     var changed = before !== (state.user && state.user.uid);
     if (changed && state.user && dlg && dlg.open && (state.view === "sent" || state.view === "confirm")) {
@@ -1266,12 +1443,41 @@
       state.view = state.afterSignIn || (projectOffered() ? "request" : "account");
     }
     emit();
+    if (u && state.pendingCred) linkPendingIfAny(u, state.fb);
     if (changed) syncQuota();
+  }
+  function attemptedProviderLabel(kind, arg, cred) {
+    var pid = (cred && cred.providerId) || arg ||
+      (kind === "GithubAuthProvider" ? "github.com" : kind === "GoogleAuthProvider" ? "google.com" : "");
+    return providerName(pid) || "GitHub";
+  }
+  function extractPendingCredential(e, kind, fb) {
+    var mod = (fb && fb.mod) || {};
+    var Ctor = kind && mod[kind];
+    var cred = null;
+    if (Ctor && typeof Ctor.credentialFromError === "function") {
+      try { cred = Ctor.credentialFromError(e); } catch (x) { cred = null; }
+    }
+    if (!cred && mod.OAuthProvider && typeof mod.OAuthProvider.credentialFromError === "function") {
+      try { cred = mod.OAuthProvider.credentialFromError(e); } catch (x) { cred = null; }
+    }
+    if (!cred && mod.GithubAuthProvider && typeof mod.GithubAuthProvider.credentialFromError === "function") {
+      try { cred = mod.GithubAuthProvider.credentialFromError(e); } catch (x) { cred = null; }
+    }
+    if (!cred && mod.GoogleAuthProvider && typeof mod.GoogleAuthProvider.credentialFromError === "function") {
+      try { cred = mod.GoogleAuthProvider.credentialFromError(e); } catch (x) { cred = null; }
+    }
+    if (!cred && e && e.credential) cred = e.credential;
+    return cred || null;
   }
   function friendly(e) {
     var code = (e && e.code) || "";
     if (state.lastProvider === "apple.com" && /invalid-oauth-client-id|invalid-credential|operation-not-allowed|internal-error|argument-error/.test(code)) return tr("appleSetup");
     if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return "";
+    if (code === "auth/popup-blocked") return tr("errPopupBlocked");
+    if (code === "auth/account-exists-with-different-credential") {
+      return trf("errAccountExistsAny", { a: attemptedProviderLabel(state.lastProvider, state.lastProvider, null) });
+    }
     if (code === "auth/invalid-email" || code === "auth/missing-email") return tr("errMail");
     if (code === "auth/unauthorized-domain" || code === "auth/unauthorized-continue-uri") return tr("errDomain");
     if (code === "auth/invalid-action-code" || code === "auth/expired-action-code") return tr("errLink");
@@ -1280,20 +1486,86 @@
     return tr("errGeneric", (e && (e.message || e.code)) || String(e));
   }
   function fail(e) { state.error = friendly(e); emit(); }
-  async function signInGoogle() { return signInWith("GoogleAuthProvider"); }
-  async function signInWith(kind, arg) {
-    state.error = "";
-    state.lastProvider = arg || kind;
-    var fb = await ensureFirebase();
-    if (!fb) return;
-    var provider = arg ? new fb.mod[kind](arg) : new fb.mod[kind]();
-    try {
-      await fb.mod.signInWithPopup(fb.auth, provider);
-    } catch (e) {
-      if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) {
-        try { await fb.mod.signInWithRedirect(fb.auth, provider); } catch (e2) { fail(e2); }
-      } else fail(e);
+  function handleSignInSuccess(res, fb) {
+    var rawUser = (res && res.user) || (fb && fb.auth && fb.auth.currentUser) || null;
+    if (rawUser && !state.user) setUser(rawUser);
+    if (rawUser) linkPendingIfAny(rawUser, fb);
+  }
+  function handleSignInError(e, kind, arg, fb) {
+    var code = (e && e.code) || "";
+    if (code === "auth/popup-blocked") {
+      state.authRetry = { kind: kind || "GoogleAuthProvider", arg: arg };
+      state.error = tr("errPopupBlocked");
+      emit();
+      return;
     }
+    if (code === "auth/account-exists-with-different-credential") {
+      var cred = extractPendingCredential(e, kind, fb);
+      var attempted = attemptedProviderLabel(kind, arg, cred);
+      if (cred) state.pendingCred = { cred: cred, providerName: attempted };
+      var email = (e && e.customData && e.customData.email) || (e && e.email) || "";
+      state.error = trf("errAccountExistsAny", { a: attempted });
+      emit();
+      if (email && fb && fb.mod && typeof fb.mod.fetchSignInMethodsForEmail === "function") {
+        Promise.resolve().then(function () {
+          return fb.mod.fetchSignInMethodsForEmail(fb.auth, email);
+        }).then(function (methods) {
+          if (Array.isArray(methods) && methods.length) {
+            var prov = providerName(methods[0]) || methods[0];
+            state.error = trf("errAccountExistsProvider", { p: prov, a: attempted });
+            emit();
+          }
+        }).catch(function () { /* Enumeration-Schutz: allgemeiner Hinweis bleibt stehen */ });
+      }
+      return;
+    }
+    fail(e);
+  }
+  function retryAuth() {
+    var r = state.authRetry;
+    state.error = "";
+    state.authTimedOut = false;
+    state.authRetry = null;
+    if (r && typeof r === "object" && r.kind && state.fb) {
+      return signInWith(r.kind, r.arg);
+    }
+    fbRetryCount++;
+    fbPromise = null;
+    state.fb = null;
+    return ensureFirebase();
+  }
+  function signInGoogle() { return signInWith("GoogleAuthProvider"); }
+  function signInWith(kind, arg) {
+    state.error = "";
+    state.authTimedOut = false;
+    state.authRetry = null;
+    state.lastProvider = arg || kind;
+    if (state.fb) {
+      var fb = state.fb;
+      var provider = arg ? new fb.mod[kind](arg) : new fb.mod[kind]();
+      var p;
+      try {
+        p = Promise.resolve(fb.mod.signInWithPopup(fb.auth, provider));
+      } catch (e) {
+        return Promise.resolve(handleSignInError(e, kind, arg, fb));
+      }
+      return p.then(function (res) {
+        return handleSignInSuccess(res, fb);
+      }, function (e) {
+        return handleSignInError(e, kind, arg, fb);
+      });
+    }
+    return ensureFirebase().then(function (fb) {
+      if (!fb) return;
+      var provider = arg ? new fb.mod[kind](arg) : new fb.mod[kind]();
+      return Promise.resolve().then(function () {
+        return fb.mod.signInWithPopup(fb.auth, provider);
+      }).then(function (res) {
+        return handleSignInSuccess(res, fb);
+      }, function (e) {
+        return handleSignInError(e, kind, arg, fb);
+      });
+    });
   }
   function cleanHref() {
     var u = new URL(root.location.href);
@@ -1707,6 +1979,7 @@
     if (isLocalHost() && root.location.protocol !== "file:" && await backendStatus()) return { kind: "local" };
     if (!fbConfigured()) return { kind: "issue", repo: repo() };
     if (state.auth !== "unconfigured" && sget("local", SESSION_FLAG)) await ensureFirebase();
+    else if (signInOffered() && !state.authTimedOut) ensureFirebase();
     var st = await fbSettings();
     return { kind: "firestore", open: st.offen, anonym: st.anonym, signedIn: !!state.user,
              name: state.user ? (state.user.name || state.user.email || "") : "", email: state.user ? state.user.email || "" : "",
@@ -2458,8 +2731,11 @@
       else { if (el.dataset.aiaTitle == null) el.dataset.aiaTitle = el.title || ""; el.title = tr("noAccessHint"); }
     });
   }
+  var PRELOAD_CONTROLS = ".fia-btn, [data-fig-act], [data-feedback-open], .feedback-open, [data-review-open], [data-review-outcome], .curation-btn, [data-open-discuss], .btn-toggle-workbench-chat, #btn-toggle-workbench-chat, .ai-badge-dossier-btn, .dossier-open-link";
   function guardDiscussClicks() {
     document.addEventListener("click", function (e) {
+      var pre = e.target.closest && e.target.closest(PRELOAD_CONTROLS);
+      if (pre) preloadFirebase();
       var el = e.target.closest && e.target.closest(DISCUSS_CONTROLS);
       if (!el || !el.classList.contains("aia-off")) return;
       e.preventDefault();
@@ -2544,6 +2820,7 @@
   function openAdmin() {
     ensureDialogs();
     state.error = "";
+    state.authRetry = false;
     if (dlg.open) dlg.close();
     state.view = "admin";
     renderDialog();
@@ -2569,7 +2846,7 @@
       sub = makeDialog("aia-dialog aia-sub", "aia-subtitle");
       dlg.addEventListener("close", function () { if (sub.open) sub.close(); });
       sub.addEventListener("close", function () {
-        if (state.view !== "account") { state.view = "account"; state.error = ""; renderDialog(); }
+        if (!sub.open && state.view !== "account") { state.view = "account"; state.error = ""; state.authRetry = false; renderDialog(); }
       });
       bindReorder(dlg);
     }
@@ -2577,20 +2854,27 @@
   function openDialog(view) {
     ensureDialogs();
     state.error = "";
+    state.authRetry = false;
     state.view = view || defaultView();
     // Statusseite zuerst öffnen, damit ein Popup (BYOK, Anfrage, Verwaltung) darüber liegt.
     if (!dlg.open) { if (sub.open) sub.close(); try { dlg.showModal(); } catch (e) { dlg.setAttribute("open", ""); } }
+    if (view === "signin" || view === "request") ensureFirebase();
+    else preloadFirebase();
     renderDialog();
     loadConfig().then(function () {
       backendStatus();
       // Vorladen, damit der Klick auf „Mit Google fortfahren“ das Popup direkt öffnen darf.
-      if (state.auth !== "unconfigured" && (signInOffered() || sget("local", SESSION_FLAG))) ensureFirebase();
+      if (state.auth !== "unconfigured" && (signInOffered() || sget("local", SESSION_FLAG) || state.view === "signin" || state.view === "request")) ensureFirebase();
       renderDialog();
     });
     var f = dlg.querySelector("[autofocus]") || dlg.querySelector("button.aia-google, input, button");
     if (f) setTimeout(function () { try { f.focus(); } catch (e) { /* ignore */ } }, 30);
   }
-  function errLine() { return state.error ? '<p class="aia-error" role="alert">' + esc(state.error) + "</p>" : ""; }
+  function errLine() {
+    if (!state.error) return "";
+    var retryBtn = state.authRetry ? ' <button type="button" class="aia-link aia-retry" data-aia="retry">' + esc(tr("authRetry")) + "</button>" : "";
+    return '<p class="aia-error" role="alert"><span>' + esc(state.error) + "</span>" + retryBtn + "</p>";
+  }
   function closeBtn() {
     return '<button type="button" class="aia-x" data-aia="close" aria-label="' + esc(tr("close")) + '">✕</button>';
   }
@@ -2604,14 +2888,18 @@
     var off = state.auth === "unconfigured";
     var busy = state.auth === "loading";
     var dis = off || busy ? " disabled" : "";
-    return '<section class="aia-sec aia-signin">' + (plain ? "" : '<div class="aia-or"><span>' +
-      esc(tr(requiresSignIn() ? "signInRequired" : "orSignIn")) + "</span></div>") +
+    var loadingLine = busy ? '<p class="aia-auth-loading" role="status" aria-live="polite" data-aia-loading>' +
+      '<span class="aia-spin" aria-hidden="true"></span><span>' + esc(tr("authLoading")) + "</span></p>" : "";
+    return '<section class="aia-sec aia-signin"' + (busy ? ' aria-busy="true"' : "") + ">" +
+      (plain ? "" : '<div class="aia-or"><span>' + esc(tr(requiresSignIn() ? "signInRequired" : "orSignIn")) + "</span></div>") +
       (off ? '<p class="aia-note">' + esc(tr("setup")) + "</p>" : "") +
+      loadingLine +
+      errLine() +
       (offers("google") ? '<button type="button" class="aia-google" data-aia="google"' + dis + ">" + G_LOGO + "<span>" + esc(tr("google")) + "</span></button>" : "") +
       (offers("apple") ? '<button type="button" class="aia-google aia-apple" data-aia="apple"' + dis + ">" + APPLE_LOGO + "<span>" + esc(tr("apple")) + "</span></button>" : "") +
       (offers("github") ? '<button type="button" class="aia-google aia-github" data-aia="github"' + dis + ">" + GH_LOGO + "<span>" + esc(tr("github")) + "</span></button>" : "") +
       (offers("email") ? '<form class="aia-row" data-aia-form="mail"><input type="email" name="email" required autocomplete="email" placeholder="' +
-        esc(tr("mailPh")) + '" aria-label="E-Mail"' + (off ? " disabled" : "") + ' value="' + esc(state.pendingEmail || "") + '">' +
+        esc(tr("mailPh")) + '" aria-label="E-Mail"' + dis + ' value="' + esc(state.pendingEmail || "") + '">' +
         '<button type="submit" class="aia-btn"' + dis + ">" + esc(tr("sendLink")) + "</button></form>" : "") +
       '<p class="aia-fine">' + esc(tr("fine")) + "</p></section>";
   }
@@ -3021,8 +3309,7 @@
       providerCards() + endpointRow() +
       (keyStatus.text ? '<p class="aia-status is-' + keyStatus.kind + '" role="status">' + esc(keyStatus.text) + "</p>" : "") +
       "</form>" +
-      (!state.user && requiresSignIn() ? signInBlock() : "") +
-      errLine() +
+      (!state.user && requiresSignIn() ? signInBlock() : errLine()) +
       localSection();
   }
   // Alternative zu den vier Karten: ein weiterer OpenAI-kompatibler Endpunkt; Enter verbindet.
@@ -3049,7 +3336,7 @@
       '<form class="aia-key" data-aia-form="request"><label class="aia-label" for="aia-reason">' + esc(tr("reqReason")) + "</label>" +
       '<textarea id="aia-reason" name="reason" class="aia-input" rows="3" maxlength="1000" required autofocus placeholder="' +
       esc(tr("reqReasonPh")) + '"></textarea><button type="submit" class="aia-btn aia-btn-primary">' + esc(tr("reqSend")) + "</button></form>";
-    return '<p class="aia-lead">' + esc(tr("reqLead")) + "</p>" + body + errLine();
+    return '<p class="aia-lead">' + esc(tr("reqLead")) + "</p>" + body + (state.user ? errLine() : "");
   }
   function shortUid(uid) { uid = String(uid || ""); return uid.length > 10 ? uid.slice(0, 8) + "…" : uid; }
   // Eine Person eindeutig: Name, E-Mail, Anmeldeweg (falls bekannt) und UID-Kurzform; das eigene Konto mit „(du selbst)“.
@@ -3402,23 +3689,24 @@
     if (!t) return;
     if (t.hasAttribute("data-aia-card")) t = t.querySelector("[data-aia-prov]");
     var a = t.getAttribute("data-aia");
-    if (a === "close") { if (e.currentTarget === sub) { state.view = "account"; renderDialog(); } else dlg.close(); }
+    if (a === "close") { if (e.currentTarget === sub) { state.view = "account"; state.error = ""; state.authRetry = false; renderDialog(); } else dlg.close(); }
+    else if (a === "retry") retryAuth();
     else if (a === "google") signInGoogle();
     else if (a === "probe") probeLocal();
     else if (a === "recheck") recheckLocal();
     else if (a === "github") signInWith("GithubAuthProvider");
     else if (a === "apple") signInWith("OAuthProvider", "apple.com");
-    else if (a === "request") { state.view = "request"; renderDialog(); ensureFirebase(); }
+    else if (a === "request") { state.error = ""; state.authRetry = false; state.view = "request"; ensureFirebase(); renderDialog(); }
     else if (a === "withdraw") withdrawRequest().catch(fail);
-    else if (a === "signin") { state.afterSignIn = "account"; state.view = "signin"; renderDialog(); ensureFirebase(); }
+    else if (a === "signin") { state.afterSignIn = "account"; state.error = ""; state.authRetry = false; state.view = "signin"; ensureFirebase(); renderDialog(); }
     else if (a === "admin") { state.view = "admin"; renderDialog(); loadAdmin().then(emit).catch(fail); }
     else if (a === "fbadmin") { state.view = "fbadmin"; renderDialog(); loadFeedbackAdmin().then(emit).catch(fail); }
     else if (a === "skip") { state.view = Object.keys(vault().providers).length ? "account" : "connect"; renderDialog(); }
     else if (a === "resend") sendLink(state.pendingEmail).then(function (ok) { if (ok) toast(tr("resent")); });
-    else if (a === "restart") { state.view = "connect"; renderDialog(); ensureFirebase(); }
+    else if (a === "restart") { state.view = "connect"; ensureFirebase(); renderDialog(); }
     else if (a === "signout") signOut();
     else if (a === "connect") { keyStatus = { text: "", kind: "" }; state.view = "connect"; renderDialog(); }
-    else if (a === "account") { state.view = "account"; renderDialog(); }
+    else if (a === "account") { state.view = "account"; state.error = ""; state.authRetry = false; renderDialog(); }
     else if (a === "reveal") {
       var inp = e.currentTarget.querySelector("#aia-key");
       inp.type = inp.type === "password" ? "text" : "password";
@@ -3608,6 +3896,20 @@
   }
 
   var inited = false;
+  function scheduleIdlePreload() {
+    function run() {
+      if (typeof root.requestIdleCallback === "function") {
+        root.requestIdleCallback(function () { if (state.auth !== "unconfigured" && signInOffered()) ensureFirebase(); }, { timeout: 2000 });
+      } else {
+        setTimeout(function () { if (state.auth !== "unconfigured" && signInOffered()) ensureFirebase(); }, 2000);
+      }
+    }
+    if (root.document && root.document.readyState !== "complete" && typeof root.addEventListener === "function") {
+      root.addEventListener("load", run, { once: true });
+    } else {
+      run();
+    }
+  }
   function init() {
     if (inited || !root.document) return;
     inited = true;
@@ -3631,6 +3933,8 @@
             if (ok) { toast(tr("signedIn", state.user && state.user.email)); openDialog(); }
           });
         });
+      } else if (state.auth !== "unconfigured" && signInOffered()) {
+        scheduleIdlePreload();
       }
       renderHeader();
     });
@@ -3653,6 +3957,7 @@
     _grantAbos: grantAbos, _grantEndpoints: grantEndpoints, _adminModelOptions: adminModelOptions, _saveGrantEdit: saveGrantEdit,
     _picks: picks, _setPick: setPick, _localChain: localChain, _localState: localState, _promoteSource: promoteSource,
     _accessIcons: accessIcons,
-    _viewFeedbackAdmin: viewFeedbackAdmin, _fbAdm: function () { return fbAdm; }
+    _viewFeedbackAdmin: viewFeedbackAdmin, _fbAdm: function () { return fbAdm; },
+    _ensureFirebase: ensureFirebase, _retryAuth: retryAuth, _signInBlock: signInBlock
   };
 });
