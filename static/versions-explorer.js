@@ -3570,6 +3570,17 @@
         body.push(esc(t("qh_generated_text", { model: by.name || "–", run: by.run ? String(by.run).slice(0, 8) : "–" })));
         body.push('<span class="ve-muted">' + esc(t("q_prompt")) + " <code>" + esc(shortHash(h.prompt_hash)) + "</code>" +
           (h.recipe ? " · " + esc(h.recipe) : "") + "</span>");
+        var o = h.original;
+        if (o && (o.assumption || o.text)) {
+          body.push('<span class="ve-q-orig"><span class="ve-muted">' + esc(t("qh_original", { lang: o.lang || "" })) + ":</span> " +
+            '<span lang="' + esc(o.lang || "") + '">' + esc(o.assumption || o.text) +
+            (o.rationale ? " — " + esc(o.rationale) : "") + "</span></span>");
+        }
+      } else if (op === "normalise") {
+        var pv = h.provenance || {};
+        body.push('<span lang="en">' + esc(h.assumption_en || h.text_en || "") + "</span>");
+        if (h.rationale_en) body.push('<span class="ve-muted">' + esc(t("q_rationale")) + ":</span> " + '<span lang="en">' + esc(h.rationale_en) + "</span>");
+        body.push('<span class="ve-muted">' + esc(t("qh_normalise_text", { model: pv.model || "–" })) + "</span>");
       } else if (h.origin === "derived") {
         if (op === "resolve") {
           body.push(esc(t("qh_unused_text")));
@@ -3579,6 +3590,7 @@
               to: rb.prompt_hash ? shortHash(rb.prompt_hash) : t("qh_fragment_gone") })) + "</span>");
           });
         } else if (op === "reappear") body.push(esc(t("qh_reappear_text")));
+        else if (op === "continue") body.push(esc(t("qh_continue_text")));
         if (h.harvest) body.push('<span class="ve-muted">' + esc(t("qh_harvest", { id: h.harvest })) + "</span>");
       } else {
         if (h.outcome) body.push("<strong>" + esc(t("qo_" + h.outcome)) + "</strong>");
@@ -3587,9 +3599,9 @@
         if (h.reason) body.push('<span class="ve-muted">' + esc(t("q_reason", { r: h.reason })) + "</span>");
         if (h.evidence && h.evidence.length) body.push(evidenceLinks(h.evidence));
       }
-      var who = op === "generated" ? t("qby_guide") : h.origin === "derived" ? t("qby_harvest")
+      var who = op === "generated" ? t("qby_guide") : h.origin === "derived" ? t("qby_harvest") : op === "normalise" ? t("qby_worker")
         : (by.name ? by.name + " (" + t("qby_" + (by.kind || "curator")) + ")" : t("qby_" + (by.kind || "curator")));
-      var src = h.source ? srcLink(h.source) : "";
+      var src = h.source && op !== "normalise" ? srcLink(h.source) : "";
       return '<li class="ve-q-ev ve-q-ev-' + esc(op) + '"><div class="ve-q-evhead"><span class="ve-q-evop">' + esc(t("qh_" + op)) +
         "</span>" + (h.at ? ' <time datetime="' + esc(h.at) + '">' + esc(fmtDate(h.at)) + "</time>" : "") +
         ' <span class="ve-muted">' + esc(who) + "</span>" + (src ? " · " + src : "") + "</div>" +

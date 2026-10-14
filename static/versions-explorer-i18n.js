@@ -440,7 +440,12 @@ window.VE_I18N = {
   "q_since": "(seit {d})",
   "q_not_normative": "Diskussionsergebnis aus der Kuration, nicht normativ (kein AUTOSAR-Text).",
   "q_anchors_head": "Anker ({n})",
-  "q_history_head": "Verlauf"
+  "q_history_head": "Verlauf",
+  "qh_normalise": "englische Fassung",
+  "qh_normalise_text": "Übersetzt in die Sprache der Spezifikation (Modell {model}).",
+  "qh_original": "Originalformulierung im Leitfaden ({lang})",
+  "qh_continue": "fortgeführt",
+  "qh_continue_text": "Der neu erzeugte Guide trifft dieselbe Aussage auf Englisch."
  },
  "en": {
   "thumb_none": "no preview image in the catalog",
@@ -881,7 +886,12 @@ window.VE_I18N = {
   "q_since": "(since {d})",
   "q_not_normative": "Discussion result from curation, not normative (not AUTOSAR text).",
   "q_anchors_head": "Anchors ({n})",
-  "q_history_head": "History"
+  "q_history_head": "History",
+  "qh_normalise": "English version",
+  "qh_normalise_text": "Translated into the specification language (model {model}).",
+  "qh_original": "Original wording in the guide ({lang})",
+  "qh_continue": "continued",
+  "qh_continue_text": "The regenerated guide makes the same statement in English."
  },
  "es": {
   "thumb_none": "sin imagen de vista previa en el catálogo",
@@ -1322,7 +1332,12 @@ window.VE_I18N = {
   "q_since": "(desde {d})",
   "q_not_normative": "Resultado de un debate de curación, no normativo (no es texto AUTOSAR).",
   "q_anchors_head": "Anclas ({n})",
-  "q_history_head": "Historial"
+  "q_history_head": "Historial",
+  "qh_normalise": "versión en inglés",
+  "qh_normalise_text": "Traducido al idioma de la especificación (modelo {model}).",
+  "qh_original": "Redacción original en la guía ({lang})",
+  "qh_continue": "continuada",
+  "qh_continue_text": "La guía regenerada hace la misma afirmación en inglés."
  },
  "pt": {
   "thumb_none": "sem imagem de pré-visualização no catálogo",
@@ -1763,7 +1778,12 @@ window.VE_I18N = {
   "q_since": "(desde {d})",
   "q_not_normative": "Resultado de discussão da curadoria, não normativo (não é texto AUTOSAR).",
   "q_anchors_head": "Âncoras ({n})",
-  "q_history_head": "Histórico"
+  "q_history_head": "Histórico",
+  "qh_normalise": "versão em inglês",
+  "qh_normalise_text": "Traduzido para o idioma da especificação (modelo {model}).",
+  "qh_original": "Redação original no guia ({lang})",
+  "qh_continue": "continuada",
+  "qh_continue_text": "O guia regenerado faz a mesma afirmação em inglês."
  },
  "fr": {
   "thumb_none": "pas d’aperçu dans le catalogue",
@@ -2204,7 +2224,12 @@ window.VE_I18N = {
   "q_since": "(depuis le {d})",
   "q_not_normative": "Résultat d’une discussion de modération, non normatif (pas un texte AUTOSAR).",
   "q_anchors_head": "Ancres ({n})",
-  "q_history_head": "Historique"
+  "q_history_head": "Historique",
+  "qh_normalise": "version anglaise",
+  "qh_normalise_text": "Traduit dans la langue de la spécification (modèle {model}).",
+  "qh_original": "Formulation d’origine dans le guide ({lang})",
+  "qh_continue": "poursuivie",
+  "qh_continue_text": "Le guide régénéré fait la même affirmation en anglais."
  },
  "ru": {
   "thumb_none": "нет изображения в каталоге",
@@ -2645,7 +2670,12 @@ window.VE_I18N = {
   "q_since": "(с {d})",
   "q_not_normative": "Результат обсуждения в курации, не нормативный (не текст AUTOSAR).",
   "q_anchors_head": "Привязки ({n})",
-  "q_history_head": "История"
+  "q_history_head": "История",
+  "qh_normalise": "английская версия",
+  "qh_normalise_text": "Переведено на язык спецификации (модель {model}).",
+  "qh_original": "Исходная формулировка в руководстве ({lang})",
+  "qh_continue": "продолжено",
+  "qh_continue_text": "Заново созданное руководство делает то же утверждение на английском."
  },
  "ar": {
   "thumb_none": "لا توجد صورة معاينة في الفهرس",
@@ -3086,7 +3116,12 @@ window.VE_I18N = {
   "q_since": "(منذ {d})",
   "q_not_normative": "نتيجة نقاش من التقييم، غير معيارية (ليست نصًا من AUTOSAR).",
   "q_anchors_head": "المراسي ({n})",
-  "q_history_head": "السجل"
+  "q_history_head": "السجل",
+  "qh_normalise": "النسخة الإنجليزية",
+  "qh_normalise_text": "تُرجم إلى لغة المواصفة (النموذج {model}).",
+  "qh_original": "الصياغة الأصلية في الدليل ({lang})",
+  "qh_continue": "استمرار",
+  "qh_continue_text": "الدليل المُعاد توليده يقدّم العبارة نفسها بالإنجليزية."
  },
  "hi": {
   "thumb_none": "कैटलॉग में पूर्वावलोकन छवि नहीं",
@@ -3527,7 +3562,12 @@ window.VE_I18N = {
   "q_since": "({d} से)",
   "q_not_normative": "क्यूरेशन की चर्चा का परिणाम, मानक नहीं (AUTOSAR पाठ नहीं)।",
   "q_anchors_head": "एंकर ({n})",
-  "q_history_head": "इतिहास"
+  "q_history_head": "इतिहास",
+  "qh_normalise": "अंग्रेज़ी संस्करण",
+  "qh_normalise_text": "विनिर्देश की भाषा में अनुवादित (मॉडल {model})।",
+  "qh_original": "गाइड में मूल शब्दावली ({lang})",
+  "qh_continue": "जारी",
+  "qh_continue_text": "नए सिरे से बनी गाइड अंग्रेज़ी में वही कथन करती है।"
  },
  "ko": {
   "thumb_none": "카탈로그에 미리보기 이미지 없음",
@@ -3968,7 +4008,12 @@ window.VE_I18N = {
   "q_since": "({d}부터)",
   "q_not_normative": "큐레이션 토론 결과이며 규범이 아닙니다 (AUTOSAR 텍스트 아님).",
   "q_anchors_head": "앵커 ({n})",
-  "q_history_head": "이력"
+  "q_history_head": "이력",
+  "qh_normalise": "영어 버전",
+  "qh_normalise_text": "사양 언어로 번역됨 (모델 {model}).",
+  "qh_original": "가이드의 원래 문구 ({lang})",
+  "qh_continue": "이어짐",
+  "qh_continue_text": "다시 생성된 가이드가 같은 내용을 영어로 서술합니다."
  },
  "zh": {
   "thumb_none": "目录中无预览图",
@@ -4409,7 +4454,12 @@ window.VE_I18N = {
   "q_since": "（自 {d} 起）",
   "q_not_normative": "来自策展讨论的结果，非规范性（不是 AUTOSAR 文本）。",
   "q_anchors_head": "锚点（{n}）",
-  "q_history_head": "历史"
+  "q_history_head": "历史",
+  "qh_normalise": "英文版本",
+  "qh_normalise_text": "已翻译为规范语言（模型 {model}）。",
+  "qh_original": "指南中的原始表述（{lang}）",
+  "qh_continue": "已延续",
+  "qh_continue_text": "重新生成的指南以英文做出相同的陈述。"
  },
  "nl": {
   "thumb_none": "geen voorbeeldafbeelding in de catalogus",
@@ -4850,6 +4900,11 @@ window.VE_I18N = {
   "q_since": "(sinds {d})",
   "q_not_normative": "Discussie-uitkomst uit de curatie, niet normatief (geen AUTOSAR-tekst).",
   "q_anchors_head": "Ankers ({n})",
-  "q_history_head": "Geschiedenis"
+  "q_history_head": "Geschiedenis",
+  "qh_normalise": "Engelse versie",
+  "qh_normalise_text": "Vertaald naar de taal van de specificatie (model {model}).",
+  "qh_original": "Oorspronkelijke formulering in de gids ({lang})",
+  "qh_continue": "voortgezet",
+  "qh_continue_text": "De opnieuw gegenereerde gids doet dezelfde uitspraak in het Engels."
  }
 };
