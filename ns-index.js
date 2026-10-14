@@ -141,7 +141,7 @@
       var rel = currentRelease(), any = false;
       Object.keys(rows).forEach(function (n) {
         var r = rows[n], gone = rel && words(r, "data-dropped").indexOf(rel) >= 0;
-        if (rel && (words(r, "data-releases").indexOf(rel) >= 0 || gone)) any = true;
+        if (rel && (words(r, "data-releases").indexOf(rel) >= 0 || words(r, "data-present").indexOf(rel) >= 0 || gone)) any = true;
         [r, chips[n]].concat(oitems[n] || []).forEach(function (el) {
           if (!el) return;
           el.classList.toggle("nsx-dropped", !!gone);
@@ -3041,13 +3041,15 @@
       changes: "Änderungen", same: "Keine inhaltliche Änderung", first: "Erstmals in", gone: "Entfallen in",
       nodata: "Keine Versionsdaten verfügbar.", loading: "Versionsdaten werden geladen …", text: "Text",
       notext: "Wortlaut in diesem Release nicht erfasst", pick: "Zelle zeigen oder anklicken: gegen das gewählte Release vergleichen · Release-Kopf anklicken: Release wählen",
-      selrel: "Release wählen", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut"
+      selrel: "Release wählen", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut",
+      pdf: "im PDF vorhanden, Wortlaut nicht erfasst", cap: "Wortlaut erstmals erfasst"
     } : {
       add: "added", chg: "changed", pre: "unchanged", del: "removed", none: "not included",
       changes: "Changes", same: "No change in content", first: "First in", gone: "Removed in",
       nodata: "No version data available.", loading: "Loading version data …", text: "Text",
       notext: "Wording not captured for this release", pick: "Hover or click a cell: compare with the selected release · Click a release header: select the release",
-      selrel: "Select release", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording"
+      selrel: "Select release", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording",
+      pdf: "present in PDF, wording not captured", cap: "Wording captured for the first time"
     };
     // Beschriftungen der Seite (übersetzt über _src/i18n/ui.json, Gruppe „kind“) haben Vorrang;
     // die Tabellen oben sind nur der Rückfall für Seiten ohne diese Beschriftungen
@@ -3060,15 +3062,18 @@
     }
     function bySort(a, b) { return histKey(a) - histKey(b) || (a < b ? -1 : a > b ? 1 : 0); }
     function entryRels(r) {
-      var all = words(r, "data-releases").concat(words(r, "data-changes"), words(r, "data-dropped"));
+      var all = words(r, "data-releases").concat(words(r, "data-changes"), words(r, "data-dropped"), words(r, "data-present"));
       return all.filter(function (x, i) { return all.indexOf(x) === i; }).sort(bySort);
     }
-    // Zustand einer Zelle: add (erstes Auftreten), chg (geändert), pre (unverändert enthalten), del (entfallen), "" (nicht enthalten)
+    // Zustand einer Zelle: add (erstes Auftreten), chg (geändert), pre (unverändert enthalten), del (entfallen),
+    // pdf (im PDF vorhanden, Wortlaut nicht erfasst: kein Vergleich, nie „unverändert“/„geändert“),
+    // cap (erste Fassung mit Wortlaut nach Präsenz-Zellen: nicht „neu“, nicht „geändert“), "" (nicht enthalten)
     function cellState(r, rel) {
       if (words(r, "data-dropped").indexOf(rel) >= 0) return "del";
       var have = words(r, "data-releases").concat(words(r, "data-changes")).sort(bySort);
-      if (!have.length || have.indexOf(rel) < 0) return "";
-      if (rel === have[0]) return "add";
+      var pres = words(r, "data-present");
+      if (have.indexOf(rel) < 0) return pres.indexOf(rel) >= 0 ? "pdf" : "";
+      if (rel === have[0]) return pres.some(function (x) { return histKey(x) < histKey(rel); }) ? "cap" : "add";
       return words(r, "data-changes").indexOf(rel) >= 0 ? "chg" : "pre";
     }
     var histCols = [];
@@ -3103,7 +3108,7 @@
           var stt = cellState(r, c);
           var picked = histPick && histPick.name === a.getAttribute("data-n") && histPick.rel === c;
           return '<span class="nsx-hc' + (stt ? " nsx-hc-" + stt : "") + (c === cur ? " cur" : "") + (picked ? " sel" : "") + '" role="button" tabindex="-1" data-rel="' + esc(c) +
-            '" title="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '"></span>';
+            '" title="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '" aria-label="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '"></span>';
         }).join("");
         a.insertAdjacentHTML("beforeend", '<span class="nsx-hcells">' + html + "</span>");
       });
