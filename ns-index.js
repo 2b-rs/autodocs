@@ -260,8 +260,10 @@
       cluCards.classList.add("nsx-clucards");
     }
 
-    // ---- Content Area „Anforderungen“ (Gliederung, Inspektor, Elementansicht) als andockbares Element;
-    // Beschriftung aus dem UI-Katalog (Schlüssel „elements“, Admin 2026-10-13: „Anforderungen“ statt „Elemente“)
+    // ---- Content Area „Elemente“ (Gliederung, Inspektor, Elementansicht) als andockbares Element;
+    // Beschriftung aus dem UI-Katalog (Schlüssel „elements“). Admin 2026-10-14: auf Namespace-, Klassen-, Modul- und
+    // Clusterseiten wieder „Elemente“ (API-Elemente und Anforderungen); „Anforderungen“ heißt nur der Reiter des
+    // Versions-Explorers und die Kopfsuche, wo die Liste wirklich Anforderungen enthält
     root.setAttribute("data-fold", "elements");
     var elHead = root.querySelector(".nsx-elements-head");
     if (!elHead) {
@@ -274,7 +276,7 @@
       elHead.appendChild(elGr);
       var elH2 = document.createElement("h2");
       elH2.className = "sect";
-      elH2.textContent = labels.elements || "Anforderungen";
+      elH2.textContent = labels.elements || "Elemente";
       elHead.appendChild(elH2);
       root.insertBefore(elHead, root.firstChild);
     }
@@ -286,7 +288,7 @@
       elChev.className = "nsx-elchev";
       elChev.setAttribute("role", "button");
       elChev.setAttribute("tabindex", "0");
-      elChev.setAttribute("aria-label", labels.elements || "Anforderungen");
+      elChev.setAttribute("aria-label", labels.elements || "Elemente");
       var elH = elHead.querySelector("h2");
       elHead.insertBefore(elChev, elH || null);
     }
@@ -1033,7 +1035,7 @@
     });
     function foldLabel(f) {
       if (!f) return "";
-      if (f === root || f.getAttribute("data-fold") === "elements") return labels.elements || "Anforderungen";
+      if (f === root || f.getAttribute("data-fold") === "elements") return labels.elements || "Elemente";
       var h = f.querySelector("summary > h2, .nsx-elements-head > h2");
       if (!h) return f.getAttribute("data-fold") || "";
       var c = h.cloneNode(true);
@@ -1047,20 +1049,22 @@
     }
     var isCls = root.classList.contains("nsx-cls"), isSvc = root.classList.contains("nsx-svc");
     // ---- Layout der Kompaktansicht (Admin, 2026-10-13): Vorgabe beim ersten Besuch und nach dem
-    // Zurücksetzen: gelöst und ausgeklappt Definition, Kurzfassung des Guides und Anforderungen (die
-    // Box „elements“, bis 2026-10-13 „Elemente“; Schlüssel und IDs unverändert) (in dieser
+    // Zurücksetzen: gelöst und ausgeklappt Definition, Kurzfassung des Guides und Elemente (die
+    // Box „elements“, am 2026-10-13 kurz „Anforderungen“; Schlüssel und IDs unverändert) (in dieser
     // Reihenfolge), alles Übrige als eingeklappter Reiter in der Titelleiste. Gemerkt wird je Seitenart
     // (Cluster, Modul, Klasse, Namespace, Service) nur, was der Nutzer selbst ändert und von der Vorgabe
     // abweicht: Andockplätze, Reihenfolge, Ein-/Ausgeklappt. Die angedockten Elemente gelten nur für die
-    // Die angedockten Anforderungen gehören dazu (Reiter „elements“ in der Titelleiste, seit 2026-10-13
+    // Die angedockten Elemente gehören dazu (Reiter „elements“ in der Titelleiste, seit 2026-10-13
     // nicht mehr nur für die Sitzung des Tabs); die Stufe der Guides merkt fold.js je Guide-Art.
     var pageKind = isSvc ? "service" : isCls ? "class" : isClu ? "cluster" : isMod ? "module" : "namespace";
     var layoutKey = "nsx-layout:" + pageKind;
+    // Breite der Gliederung (linke Liste der Elemente) je Seitenart, Teiler zwischen Gliederung und Mitte
+    var OLW_KEY = "nsx-ol-w:" + pageKind;
     // Frühere Speicherorte (bis 2026-10-13 bei jedem Besuch geschrieben): nicht mehr gelesen, beim
     // Zurücksetzen entfernt
     var LEGACY_KEYS = [ORDER_KEY, TDOCK_KEY, TDOCK_KEY + "-cls", TOPDOCK_KEY, TOPDOCK_KEY + "-cls", "nsx-docks:" + location.pathname];
     var GUIDE_LEVEL_KEY = "autodocs-guide-level:";       // wie in fold.js (Stufe je Guide-Art)
-    // Früherer Sitzungsschlüssel der angedockten Anforderungen: nicht mehr gelesen, beim Zurücksetzen entfernt
+    // Früherer Sitzungsschlüssel der angedockten Elemente: nicht mehr gelesen, beim Zurücksetzen entfernt
     var elDockKey = "nsx-el-docked:" + location.pathname;
     function sessionSave(k, v) { try { if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* ohne Speicher */ } }
     var layoutApplying = false;
@@ -1463,7 +1467,7 @@
       });
       if (elDocked && canTitleDock(root)) dockTitle(root);           // eingeklappt im Reiter
       else setElementsOpen(closed.indexOf("elements") < 0);
-      // Reiter in der gemerkten Reihenfolge (auch der Reiter der Anforderungen), danach Reiter ohne
+      // Reiter in der gemerkten Reihenfolge (auch der Reiter der Elemente), danach Reiter ohne
       // gemerkten Platz in der Reihenfolge der Vorgabe
       if (tdock) ((lay && lay.title) || []).concat(def.title).forEach(function (k) {
         var b = tdock.querySelector(':scope > .nsx-tab[data-fold="' + k + '"]');
@@ -1505,7 +1509,7 @@
       return ks;
     }
     function layoutCustomized() {
-      if (load(layoutKey) !== null || load(W_KEY) !== null) return true;
+      if (load(layoutKey) !== null || load(W_KEY) !== null || load(OLW_KEY) !== null) return true;
       var ks = levelKinds();
       return Object.keys(ks).some(function (k) { var v = load(GUIDE_LEVEL_KEY + k); return v !== null && parseInt(v, 10) !== ks[k]; });
     }
@@ -1518,14 +1522,16 @@
     function layoutSnapshot() {
       var lv = {};
       Object.keys(levelKinds()).forEach(function (k) { lv[k] = load(GUIDE_LEVEL_KEY + k); });
-      return { layout: currentLayout(), raw: load(layoutKey), w: load(W_KEY),
-               wStyle: root.style.getPropertyValue("--nsx-aside-w"), lv: lv,
+      return { layout: currentLayout(), raw: load(layoutKey), w: load(W_KEY), olw: load(OLW_KEY),
+               wStyle: root.style.getPropertyValue("--nsx-aside-w"), olStyle: root.style.getPropertyValue("--nsx-ol-w"), lv: lv,
                cur: pageGuides().map(function (a) { return [a, parseInt(a.getAttribute("data-ai-level-cur"), 10) || 0]; }),
                legacy: LEGACY_KEYS.map(function (k) { return [k, load(k)]; }) };
     }
     function restoreLayout(snap) {
       save(layoutKey, snap.raw);
       save(W_KEY, snap.w);
+      save(OLW_KEY, snap.olw);
+      if (snap.olStyle) root.style.setProperty("--nsx-ol-w", snap.olStyle); else root.style.removeProperty("--nsx-ol-w");
       Object.keys(snap.lv).forEach(function (k) { save(GUIDE_LEVEL_KEY + k, snap.lv[k]); });
       snap.legacy.forEach(function (kv) { save(kv[0], kv[1]); });
       if (snap.wStyle) root.style.setProperty("--nsx-aside-w", snap.wStyle); else root.style.removeProperty("--nsx-aside-w");
@@ -1563,6 +1569,8 @@
       save(layoutKey, null);
       sessionSave(elDockKey, null);
       save(W_KEY, null);
+      save(OLW_KEY, null);
+      root.style.removeProperty("--nsx-ol-w");
       LEGACY_KEYS.forEach(function (k) { save(k, null); });
       Object.keys(levelKinds()).forEach(function (k) { save(GUIDE_LEVEL_KEY + k, null); });
       root.style.removeProperty("--nsx-aside-w");
@@ -1853,6 +1861,112 @@
         updateResetBtn();
       });
       split.addEventListener("dblclick", function () { root.style.removeProperty("--nsx-aside-w"); save(W_KEY, null); updateResetBtn(); });
+    }
+
+    // ---- Breite der Gliederung (Admin, 2026-10-14): Teiler zwischen Gliederung und Mitte. Ziehen oder Pfeiltasten
+    // am fokussierten Teiler (Pos1/Ende: schmalste/breiteste), Doppelklick setzt die Vorgabe der Ansicht zurück
+    // (style.css: 220 px, Historie 330 px). Gemerkt je Seitenart in localStorage (nsx-ol-w:<art>); ohne Speicher
+    // gilt die Breite nur für den Besuch. Rechts-nach-links (ar): die Gliederung steht rechts, die Richtungen kehren um.
+    var OLW_MIN = 160, OLW_MAX = 640, OLW_STEP = 16;
+    var olBody = root.querySelector(":scope > .nsx-body"), olSplit = null;
+    function olRtl() { return getComputedStyle(root).direction === "rtl"; }
+    function olMax() { return Math.max(OLW_MIN, Math.min(OLW_MAX, Math.round(root.clientWidth * 0.5))); }
+    function olWidth() { return outline ? Math.round(outline.getBoundingClientRect().width) : 0; }
+    function setOlW(w) {
+      w = Math.round(Math.max(OLW_MIN, Math.min(w, olMax())));
+      root.style.setProperty("--nsx-ol-w", w + "px");
+      if (olSplit) { olSplit.setAttribute("aria-valuenow", String(w)); placeOlSplit(); }
+      return w;
+    }
+    // Lage: in der Spaltenlücke zwischen Gliederung und Mitte, von der Oberkante der Spalten bis zum Ende der
+    // Box (die Gliederung klebt beim Scrollen, die Lücke bleibt überall greifbar); ausgeblendet ohne Gliederung
+    function placeOlSplit() {
+      if (!olSplit) return;
+      var vis = !!outline.offsetParent && !!olBody.offsetParent;
+      olSplit.hidden = !vis;
+      if (!vis) return;
+      var gap = parseFloat(getComputedStyle(root).columnGap) || 16;
+      var x = olRtl() ? olBody.offsetLeft + olBody.offsetWidth : olBody.offsetLeft - gap;
+      olSplit.style.left = Math.round(x) + "px";
+      olSplit.style.width = Math.round(gap) + "px";
+      olSplit.style.top = Math.round(Math.min(olBody.offsetTop, outline.offsetTop)) + "px";
+    }
+    function olSyncAria() {
+      if (!olSplit) return;
+      placeOlSplit();
+      olSplit.setAttribute("aria-valuemax", String(olMax()));
+      olSplit.setAttribute("aria-valuenow", String(olWidth()));
+    }
+    if (outline && olBody) {
+      olSplit = document.createElement("div");
+      olSplit.className = "nsx-olsplit";
+      olSplit.setAttribute("role", "separator");
+      olSplit.setAttribute("aria-orientation", "vertical");
+      olSplit.setAttribute("tabindex", "0");
+      olSplit.setAttribute("aria-valuemin", String(OLW_MIN));
+      olSplit.setAttribute("title", labels.olsplit || labels.split || "");
+      olSplit.setAttribute("aria-label", labels.olsplit || labels.split || "");
+      root.insertBefore(olSplit, outline);       // vor der Gliederung: Reihenfolge der übrigen Teile bleibt
+      var olw0 = parseInt(load(OLW_KEY), 10);
+      if (olw0) setOlW(olw0);
+      olSyncAria();
+      var olDone = function () {
+        save(OLW_KEY, String(olWidth()));
+        olSyncAria();
+        updateResetBtn();
+        if (selected) { drawArrows(selected); showRelations(selected); }
+      };
+      olSplit.addEventListener("pointerdown", function (ev) {
+        if (ev.button !== 0) return;
+        ev.preventDefault();
+        olSplit.setPointerCapture(ev.pointerId);
+        root.classList.add("nsx-resizing");
+        var x0 = ev.clientX, w0 = olWidth(), rtl = olRtl();
+        function move(e) { setOlW(w0 + (rtl ? x0 - e.clientX : e.clientX - x0)); }
+        function up() {
+          olSplit.removeEventListener("pointermove", move);
+          olSplit.removeEventListener("pointerup", up);
+          olSplit.removeEventListener("pointercancel", up);
+          root.classList.remove("nsx-resizing");
+          olDone();
+        }
+        olSplit.addEventListener("pointermove", move);
+        olSplit.addEventListener("pointerup", up);
+        olSplit.addEventListener("pointercancel", up);
+      });
+      olSplit.addEventListener("keydown", function (ev) {
+        var w = olWidth(), rtl = olRtl(), d = 0;
+        if (ev.key === "ArrowRight") d = rtl ? -OLW_STEP : OLW_STEP;
+        else if (ev.key === "ArrowLeft") d = rtl ? OLW_STEP : -OLW_STEP;
+        else if (ev.key === "Home") d = OLW_MIN - w;
+        else if (ev.key === "End") d = olMax() - w;
+        else return;
+        ev.preventDefault();
+        setOlW(w + d);
+        olDone();
+      });
+      olSplit.addEventListener("dblclick", function () {
+        root.style.removeProperty("--nsx-ol-w");
+        save(OLW_KEY, null);
+        olSyncAria();
+        updateResetBtn();
+      });
+      window.addEventListener("resize", olSyncAria);
+      if (window.ResizeObserver) {
+        var olRo = new ResizeObserver(function () { placeOlSplit(); });
+        olRo.observe(root);
+        olRo.observe(olBody);
+        olRo.observe(outline);
+      }
+    }
+
+    // ---- Leiste „Gruppierung nach“ bleibt oben in der Gliederung stehen; der Kopf des Release-Rasters
+    // (Historie) klebt darunter (--nsx-by-h)
+    var byBar = outline && outline.querySelector(":scope > .nsx-by");
+    if (byBar) {
+      var setByH = function () { outline.style.setProperty("--nsx-by-h", byBar.offsetHeight + "px"); };
+      setByH();
+      if (window.ResizeObserver) new ResizeObserver(setByH).observe(byBar);
     }
 
     // ---- Pfeile über der Karte
@@ -3042,14 +3156,14 @@
       nodata: "Keine Versionsdaten verfügbar.", loading: "Versionsdaten werden geladen …", text: "Text",
       notext: "Wortlaut in diesem Release nicht erfasst", pick: "Zelle zeigen oder anklicken: gegen das gewählte Release vergleichen · Release-Kopf anklicken: Release wählen",
       selrel: "Release wählen", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut",
-      pdf: "im PDF vorhanden, Wortlaut nicht erfasst", cap: "Wortlaut erstmals erfasst"
+      pdf: "im PDF vorhanden, Wortlaut noch nicht übernommen", cap: "Wortlaut erstmals erfasst"
     } : {
       add: "added", chg: "changed", pre: "unchanged", del: "removed", none: "not included",
       changes: "Changes", same: "No change in content", first: "First in", gone: "Removed in",
       nodata: "No version data available.", loading: "Loading version data …", text: "Text",
       notext: "Wording not captured for this release", pick: "Hover or click a cell: compare with the selected release · Click a release header: select the release",
       selrel: "Select release", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording",
-      pdf: "present in PDF, wording not captured", cap: "Wording captured for the first time"
+      pdf: "present in PDF, wording not yet imported", cap: "Wording captured for the first time"
     };
     // Beschriftungen der Seite (übersetzt über _src/i18n/ui.json, Gruppe „kind“) haben Vorrang;
     // die Tabellen oben sind nur der Rückfall für Seiten ohne diese Beschriftungen
@@ -3066,7 +3180,7 @@
       return all.filter(function (x, i) { return all.indexOf(x) === i; }).sort(bySort);
     }
     // Zustand einer Zelle: add (erstes Auftreten), chg (geändert), pre (unverändert enthalten), del (entfallen),
-    // pdf (im PDF vorhanden, Wortlaut nicht erfasst: kein Vergleich, nie „unverändert“/„geändert“),
+    // pdf (im PDF vorhanden, Wortlaut noch nicht übernommen: kein Vergleich, nie „unverändert“/„geändert“),
     // cap (erste Fassung mit Wortlaut nach Präsenz-Zellen: nicht „neu“, nicht „geändert“), "" (nicht enthalten)
     function cellState(r, rel) {
       if (words(r, "data-dropped").indexOf(rel) >= 0) return "del";

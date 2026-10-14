@@ -1980,9 +1980,17 @@
       var ta = modal.querySelector("#raw-prompt-textarea");
       var text = ta ? (ta.defaultValue || ta.value || "") : "";
       var user = text.split("=== USER PROMPT ===")[1] || "";
-      var at = user.indexOf("{");
+      // Payload beginnt mit „{“ am Zeilenanfang (wie lib_curation_modal._payload_from_prompt); Klammern in der
+      // Titelzeile („struct Output {...}“) sind nicht sein Anfang
+      var starts = [], re = /\n\{/g, mm;
+      while ((mm = re.exec(user))) starts.push(mm.index + 1);
+      var first = user.indexOf("{");
+      if (first >= 0 && starts.indexOf(first) < 0) starts.push(first);
       var payload = {};
-      try { payload = at >= 0 ? JSON.parse(user.slice(at)) : {}; } catch (err) { payload = {}; }
+      for (var si = 0; si < starts.length; si++) {
+        try { payload = JSON.parse(user.slice(starts[si])); break; } catch (err) { payload = {}; }
+      }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) payload = {};
       var dec = document.createElement("textarea");
       function unesc(v) { dec.innerHTML = String(v == null ? "" : v); return dec.value; }
       var modDoc = String(payload.module || "AUTOSAR Specification").toUpperCase();
@@ -2001,12 +2009,58 @@
         if (rid) seen.add(rid);
         recs.push({ i: rid, n: rid, s: rid, k: "requirement", d: reqDoc, t: unesc(get(r, "text", "")) });
       });
+      // Dokument und Seite nur, wenn der Payload sie nennt (wie lib_curation_modal.inbound_name)
       (payload.dokumentstellen || []).forEach(function (ds) {
-        var page = get(ds, "page", 1);
-        inb.push({ i: get(ds, "id", "DS_01"), n: get(ds, "doc", "Spec") + ", S. " + page, d: get(ds, "doc", "AUTOSAR"), p: page,
+        var page = get(ds, "page", null), doc = ds.doc || "";
+        inb.push({ i: get(ds, "id", "DS_01"), n: inboundName(doc, page), d: doc, p: page,
                    t: unesc(get(ds, "text", "")) });
       });
       return { records: recs, inbound: inb };
+    }
+
+    function inboundName(doc, page) {
+      return (page == null || page === "") ? String(doc || "") : doc + ", " + T("S. {page}", { page: page });
+    }
+    // Dokument-Chip einer Belegkarte: „Dokument (S. 3)“ in der Sprache der Seite, ohne Seite nur das Dokument
+    function docChipText(doc, page) {
+      return (doc || "") + ((page == null || page === "") ? "" : " (" + T("S. {page}", { page: page }) + ")");
+    }
+
+    // Zusätze des Prompt-Kontexts (lib_curation_modal.build_dossier_modal_html): entfernte Inbound-Kopien
+    // konstituierender Records ("deduped") und die Verweise, die der Leitfaden selbst setzt, ohne dass sie als
+    // Record oder Beleg im Prompt stehen ("cited"). Die Zitate sind Modellausgabe, keine Belege: eigene Liste
+    // ohne Abstimmung, mit Verweis auf die Record-Seite.
+    function renderPromptContextExtras(modal, ctx) {
+      var esc = escapeHtmlDiff;
+      var snipBox = modal.querySelector(".snippets-container");
+      if (!snipBox) return;
+      var deduped = Array.isArray(ctx.deduped) ? ctx.deduped : [];
+      if (deduped.length && !modal.querySelector(".dossier-dedupe-note")) {
+        snipBox.insertAdjacentHTML("beforebegin", '<p class="dossier-dedupe-note" role="note">' +
+          esc(T("Konstituierender Record nicht zusätzlich als Inbound-Beleg geführt: {ids}", { ids: deduped.join(", ") })) + '</p>');
+      }
+      var cited = Array.isArray(ctx.cited) ? ctx.cited : [];
+      if (!cited.length || modal.querySelector(".dossier-cited-section")) return;
+      var lang = (document.documentElement && document.documentElement.lang) || "de";
+      var recBase = getRootBasePrefix() + ((lang && lang !== "root") ? lang + "/" : "") + "spec/record.html?id=";
+      var items = cited.map(function (c) {
+        var label, href = "";
+        if (c.k === "docref") {
+          label = docChipText(c.d || "", c.p);
+        } else {
+          label = "[" + c.i + "]";
+          href = recBase + encodeURIComponent(c.i);
+        }
+        var where = c.m ? T("im Prompttext erwähnt, kein eigener Record oder Beleg") : T("nicht im Prompt");
+        return '<li data-cited-id="' + esc(c.i) + '" data-cited-kind="' + esc(c.k || "requirement") + '">' +
+          (href ? '<a class="cited-ref" href="' + esc(href) + '">' + esc(label) + '</a>' : '<span class="cited-ref">' + esc(label) + '</span>') +
+          ' <span class="cited-where">' + esc(where) + '</span></li>';
+      }).join("");
+      snipBox.insertAdjacentHTML("afterend",
+        '<section class="dossier-cited-section" aria-labelledby="' + esc(modal.id) + '-cited-title">' +
+        '<h3 id="' + esc(modal.id) + '-cited-title">' + esc(T("Im Leitfaden zitiert (nicht als Record oder Beleg im Prompt) ({n})", { n: cited.length })) + '</h3>' +
+        '<p class="dossier-section-desc">' + esc(T("Diese Verweise stammen aus dem generierten Text selbst. Sie sind keine Belege und standen nicht als Record oder Inbound-Beleg im Prompt.")) + '</p>' +
+        '<ul class="dossier-cited-list">' + items + '</ul></section>');
     }
 
     // Karten des Prompt-Kontexts (konstituierende Records, Inbound-Belege des Prompts) liegen als
@@ -2018,7 +2072,12 @@
       modal.setAttribute("data-prompt-hydrated", "1");
       var ctx = {};
       try { ctx = JSON.parse(data.textContent || "{}"); } catch (err) { ctx = {}; }
-      if (ctx.from_prompt) ctx = cardsFromPayload(modal);
+      if (ctx.from_prompt) {
+        var derived = cardsFromPayload(modal);
+        derived.cited = ctx.cited;
+        derived.deduped = ctx.deduped;
+        ctx = derived;
+      }
       var esc = escapeHtmlDiff;
       var recBox = modal.querySelector(".records-container");
       var snipBox = modal.querySelector(".snippets-container");
@@ -2041,15 +2100,16 @@
         Array.prototype.forEach.call(snipBox.querySelectorAll(":scope > p"), function (p) { p.remove(); });
         snipBox.insertAdjacentHTML("afterbegin", inb.map(function (o) {
           var page = o.p == null ? "" : String(o.p), doc = o.d || "";
-          var name = o.n || (doc + ", S. " + page);
+          var name = o.n || inboundName(doc, page);
           return dossierCardHtml({
             id: o.i, title: cardTitle(o.t, name), fullTitle: o.t, sws: name, name: name, kind: "inbound", chip: "inbound", doc: doc, page: page,
-            docChip: doc + " (S. " + page + ")",
+            docChip: docChipText(doc, page),
             bodyHtml: '<blockquote class="snippet-fulltext" style="' + QUOTE_STYLE + '"><div class="desc"><p>' + esc(o.t || "") + '</p></div></blockquote>' +
               '<div style="' + FOOT_STYLE + '"><span>' + esc(T("Eigenschaft:")) + ' <em>' + esc(T("Inbound-Spezifikationsbeleg")) + '</em></span><span>ID: <code>' + esc(o.i) + '</code></span></div>'
           });
         }).join(""));
       }
+      renderPromptContextExtras(modal, ctx);
       enrichDossierCards(modal);
       setTimeout(updateSnippetBadges, 0);
       watchUi(modal);
@@ -2166,7 +2226,7 @@
         var text = it.no_text ? "" : String(it.text || it.excerpt || "");
         return dossierCardHtml({
           id: it.id, title: cardTitle(text, it.id), fullTitle: text, sws: it.id, name: it.id, kind: "inbound", chip: kind,
-          doc: it.doc || "", page: page, docChip: (it.doc || "") + (page ? " (S. " + page + ")" : ""),
+          doc: it.doc || "", page: page, docChip: docChipText(it.doc || "", page),
           isNew: true, extraClass: "is-current-new",
           bodyHtml: (text
               ? '<blockquote class="current-excerpt snippet-fulltext"><div class="desc"><p>' + esc(text) + '</p></div></blockquote>'
