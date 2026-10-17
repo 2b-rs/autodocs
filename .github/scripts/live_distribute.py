@@ -288,8 +288,9 @@ class Agy:
         t0 = time.monotonic()
         try:
             rc, out, err, timed_out = _run_group(cmd, self.timeout_s + 60, self.env(slot), str(slot.call_dir))
-        except OSError:                        # z. B. E2BIG: Prompt zu lang für ein Argument
-            return CallResult("error", rc=EXIT_ERROR, wall_s=time.monotonic() - t0)
+        except (OSError, ValueError) as exc:    # z. B. E2BIG oder ein für argv unzulässiger Wert
+            return CallResult("error", rc=EXIT_ERROR, wall_s=time.monotonic() - t0,
+                              diagnostic=f"agy-start:{type(exc).__name__}")
         finally:
             slot.scrub()
         wall = time.monotonic() - t0
@@ -992,7 +993,10 @@ def cmd_run(a: argparse.Namespace) -> int:
     remaining = len(todo) - completed_now
     # Erschöpfter Generator bei offener Arbeit ist niemals ``done``. Das deckt
     # auch Exceptions vor dem ersten Modellaufruf und übersprungene Einheiten ab.
-    stop = budget.reason() or ("errors" if remaining else "done")
+    # Ein erschöpftes Ein-Aufruf-Budget darf einen vollständig unproduktiven
+    # Fehlerlauf nicht als erfolgreichen Budget-Stopp maskieren (Canary-Fall).
+    stop = ("errors" if tot["failed_batches"] and not new_decisions
+            else budget.reason() or ("errors" if remaining else "done"))
     elapsed_s = max(0.0, time.monotonic() - budget.t0)
     per_minute = completed_now * 60.0 / elapsed_s if elapsed_s > 0 else 0.0
     eta_s = (remaining * elapsed_s / completed_now

@@ -178,6 +178,18 @@ _BOILER = [re.compile(p) for p in (
     r"Specification of [A-Z][A-Za-z ]+ AUTOSAR (?:AP|CP) R\d\d-\d\d", r"\d+ of \d+ Document ID \d+:\s*\S+",
     r"Status: DRAFT", r"[⌈⌋]",
 )]
+_ARGV_UNSAFE_C0 = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+
+
+def argv_safe_prompt(text: str) -> str:
+    """Replace C0 controls that cannot safely carry prompt text in an argv value.
+
+    Tabs and line endings are intentional prompt layout.  Every other C0 byte is
+    an extraction artefact in our textual inputs; U+FFFD preserves its position
+    without silently joining the surrounding tokens.  For ordinary text this is
+    byte-identical.
+    """
+    return _ARGV_UNSAFE_C0.sub("\ufffd", text)
 
 
 def caveman(text: str) -> str:
@@ -493,8 +505,8 @@ def base_retrieve_prompt(text_lines: Sequence[str], items: Sequence[Item], cands
     if snippets_first:
         head = head.replace("Below is", "After the snippets follows").replace(
             "After the catalogue follows a batch of snippets", "First comes a batch of snippets")
-        return head + snip_block + catalogue + tail
-    return head + catalogue + snip_block + tail
+        return argv_safe_prompt(head + snip_block + catalogue + tail)
+    return argv_safe_prompt(head + catalogue + snip_block + tail)
 
 
 def forward_prompt(records: Dict[str, Record], items: Sequence[Item], cands: Dict[str, List[str]],
@@ -509,9 +521,11 @@ def reverse_prompt(records: Sequence[Record], pool: Sequence[Item]) -> str:
     rule = NO_TOOLS_RULE
     snip_lines = [json.dumps(dict(item_payload(it, core.METHOD["reverse_snippet_chars"]), refs=[]), ensure_ascii=False,
                              separators=(',', ':')) for it in pool]
-    return (rule + REVERSE_INSTRUCTIONS + REVERSE_EFFECT_RULES + "\n<records>\n" + "\n".join(r.line for r in records)
-            + "\n</records>\n<snippets>\n" + "\n".join(snip_lines) + "\n</snippets>\nRecord ids: "
-            + ", ".join(r.id for r in records) + "\nReturn the JSON object now.\n" + rule)
+    return argv_safe_prompt(
+        rule + REVERSE_INSTRUCTIONS + REVERSE_EFFECT_RULES + "\n<records>\n" + "\n".join(r.line for r in records)
+        + "\n</records>\n<snippets>\n" + "\n".join(snip_lines) + "\n</snippets>\nRecord ids: "
+        + ", ".join(r.id for r in records) + "\nReturn the JSON object now.\n" + rule
+    )
 
 
 def norm_relation(value: Any) -> str:
