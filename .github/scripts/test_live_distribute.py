@@ -6,6 +6,7 @@ lokalen Bare-Repo als autodocs-live. Kein Modellaufruf, keine Secrets, kein Netz
 """
 from __future__ import annotations
 
+import http.server
 import json
 import os
 import shutil
@@ -13,12 +14,15 @@ import stat
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import live_core as core  # noqa: E402
+import live_distribute as LD  # noqa: E402
 import live_method as M  # noqa: E402
 
 MARK = "ZEBRAQUAGGA"
@@ -33,7 +37,8 @@ prompt = argv[argv.index("-p") + 1]
 st = os.path.join(home, ".gemini", "antigravity-cli", "settings.json")
 with open(__LOG__, "a") as fh:
     fh.write(json.dumps({"profile": name, "cwd": os.path.realpath(os.getcwd()), "skip": "--dangerously-skip-permissions" in argv,
-                         "settings": json.load(open(st)) if os.path.exists(st) else None, "bytes": len(prompt.encode())}) + "\n")
+                         "settings": json.load(open(st)) if os.path.exists(st) else None, "bytes": len(prompt.encode()),
+                         "token_in_env": "DASHBOARD_WRITE_TOKEN" in os.environ, "argv": argv}) + "\n")
 mode = cfg.get(name, "ok")
 if mode == "exhausted":
     print("RESOURCE_EXHAUSTED quota reached. Resets in 2h", file=sys.stderr); sys.exit(3)
@@ -90,7 +95,7 @@ def make_bundle(root: Path) -> Path:
     return Path(res["path"])
 
 
-class LiveDistributeTest(unittest.TestCase):
+class LiveJobCase(unittest.TestCase):
     def setUp(self):
         self.root = Path(tempfile.mkdtemp(prefix="live-wf-test-"))
         self.bundle = make_bundle(self.root)
@@ -120,13 +125,18 @@ class LiveDistributeTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.root, ignore_errors=True)
 
-    def job(self, *extra):
+    def job(self, *extra, env_extra=None, timeout=120):
         env = dict(os.environ, PATH=self.path, AUTODOCS_AGY_PROFILES=self.profiles)
+        env.pop("DASHBOARD_WRITE_TOKEN", None)
+        if env_extra:
+            env.update(env_extra)
         cmd = [sys.executable, str(HERE / "live_distribute.py"), "run", "--bundle-file", str(self.bundle), "--bundle-sha256",
                self.sha, "--live-repo", str(self.clone), "--work", str(self.root / "work"), "--state",
                str(self.root / "agy-state.json"), "--concurrency", "2", "--run-id", "t1", *extra]
-        return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=300)
+        return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=timeout)
 
+
+class LiveDistributeTest(LiveJobCase):
     def test_run_commit_push_resume(self):
         r = self.job()
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
@@ -166,6 +176,298 @@ class LiveDistributeTest(unittest.TestCase):
         meta = json.loads((HERE / "live_vendor.json").read_text())
         for name, sha in meta["files"].items():
             self.assertEqual(core.file_sha256(HERE / name), sha, name)
+
+
+TOKEN = "dashboard-write-token-test-9f3a1c"
+
+
+class FakeLiveWorker:
+    """In-process PUT receiver. Does not contact the real Worker (NOT_RUN)."""
+
+    def __init__(self, token=TOKEN, fail_times=0, fail_status=503, echo_token=False):
+        self.token = token
+        self.fail_times = fail_times
+        self.fail_status = fail_status
+        self.echo_token = echo_token
+        self.requests = []
+        self._lock = threading.Lock()
+        parent = self
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, _fmt, *_args):
+                return
+
+            def do_PUT(self):
+                self._record("PUT")
+
+            def do_GET(self):
+                self._record("GET")
+
+            def do_POST(self):
+                self._record("POST")
+
+            def _record(self, method):
+                length = int(self.headers.get("Content-Length") or 0)
+                raw = self.rfile.read(length) if length else b""
+                try:
+                    body = json.loads(raw.decode("utf-8")) if raw else None
+                except ValueError:
+                    body = raw.decode("utf-8", errors="replace")
+                with parent._lock:
+                    n_fail = parent.fail_times
+                    if n_fail > 0:
+                        parent.fail_times -= 1
+                    parent.requests.append({"method": method, "path": self.path,
+                                            "headers": {k: v for k, v in self.headers.items()},
+                                            "body": body})
+                if n_fail > 0:
+                    payload = json.dumps({"error": {"code": "downstream",
+                                                    "echo": parent.token if parent.echo_token else "x"}})
+                    self.send_response(parent.fail_status)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(payload.encode("utf-8"))
+                    return
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"ok":true}')
+
+        self.httpd = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+        self.port = self.httpd.server_address[1]
+        self.url = f"http://127.0.0.1:{self.port}/dashboard/live-worker.json"
+        self._ready = threading.Event()
+        self._thread = threading.Thread(target=self._serve, daemon=True)
+
+    def _serve(self):
+        self._ready.set()
+        self.httpd.serve_forever()
+
+    def start(self):
+        self._thread.start()
+        self._ready.wait(2)
+
+    def stop(self):
+        self.httpd.shutdown()
+        self.httpd.server_close()
+        self._thread.join(timeout=2)
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, *_exc):
+        self.stop()
+
+
+def _scheduled_run(completed, hour, *, stop="budget-time", failed_batches=2, key="cfg"):
+    return {
+        "config_key": key, "stop": stop, "failed_batches": failed_batches,
+        "trigger": {"kind": "scheduled", "provenance": "dispatcher-declared",
+                    "scheduled_at": f"2026-10-17T{hour:02d}:00:00Z"},
+        "completed_by_kind": {"snippet": completed},
+        "elapsed_seconds_by_kind": {"snippet": 2400.0},
+    }
+
+
+class PerformanceEtaTest(unittest.TestCase):
+    SNIPPET_OPEN = {"snippet": {"planned": 34030, "done": 0},
+                    "figure": {"planned": 0, "done": 0},
+                    "element": {"planned": 0, "done": 0}}
+    CONFIG = {"key": "cfg", "kinds": ["snippet", "figure", "element"]}
+
+    def test_n1_emits_provisional_estimate(self):
+        perf = LD._performance([_scheduled_run(480, 15)], self.SNIPPET_OPEN, self.CONFIG)
+        scheduled = perf["scheduled"]
+        self.assertEqual("provisional", scheduled["confidence"])
+        self.assertEqual(1, scheduled["sample_count"])
+        self.assertEqual(255225.0, scheduled["eta_seconds"])
+        self.assertEqual([255225.0, 255225.0], scheduled["range_seconds"])
+        self.assertEqual("provisional", perf["by_kind"]["snippet"]["scheduled"]["confidence"])
+
+    def test_n2_real_samples_calendar_oracle(self):
+        # 480 and 576 decisions/hour, remaining 34030 → 59–71h range, ~64.5h center.
+        perf = LD._performance([_scheduled_run(480, 15), _scheduled_run(576, 16)], self.SNIPPET_OPEN, self.CONFIG)
+        scheduled = perf["scheduled"]
+        self.assertEqual("provisional", scheduled["confidence"])
+        self.assertEqual(2, scheduled["sample_count"])
+        self.assertEqual(232022.7, scheduled["eta_seconds"])
+        self.assertEqual([212687.5, 255225.0], scheduled["range_seconds"])
+        self.assertEqual(528.0, perf["by_kind"]["snippet"]["scheduled"]["yield_per_hour"])
+        self.assertAlmostEqual(scheduled["eta_seconds"] / 3600.0, 64.5, places=1)
+        self.assertAlmostEqual(scheduled["range_seconds"][0] / 3600.0, 59.08, places=1)
+        self.assertAlmostEqual(scheduled["range_seconds"][1] / 3600.0, 70.9, places=1)
+
+    def test_n3_emits_stable_estimate(self):
+        runs = [_scheduled_run(480, 15), _scheduled_run(528, 16), _scheduled_run(576, 17)]
+        perf = LD._performance(runs, self.SNIPPET_OPEN, self.CONFIG)
+        self.assertEqual("stable", perf["scheduled"]["confidence"])
+        self.assertEqual(3, perf["scheduled"]["sample_count"])
+        self.assertEqual(232022.7, perf["scheduled"]["eta_seconds"])
+        self.assertEqual("stable", perf["by_kind"]["snippet"]["scheduled"]["confidence"])
+
+    def test_budget_time_with_failed_or_timeout_batches_still_counts(self):
+        included = LD._performance([_scheduled_run(480, 15, failed_batches=4)], self.SNIPPET_OPEN, self.CONFIG)
+        self.assertEqual(1, included["scheduled"]["sample_count"])
+        self.assertIsNotNone(included["scheduled"]["eta_seconds"])
+        self.assertEqual(1, included["by_kind"]["snippet"]["active"]["sample_count"])
+
+    def test_excludes_errors_exhausted_needs_login_malformed_and_wrong_config(self):
+        bad = [
+            _scheduled_run(480, 15, stop="errors", failed_batches=0),
+            _scheduled_run(480, 16, stop="exhausted", failed_batches=0),
+            _scheduled_run(480, 17, stop="needs-login", failed_batches=0),
+            {**_scheduled_run(480, 18), "config_key": "other"},
+            {**_scheduled_run(480, 19), "failed_batches": True},
+            {**_scheduled_run(480, 20), "completed_by_kind": {"snippet": True, "figure": 0, "element": 0}},
+        ]
+        perf = LD._performance(bad, self.SNIPPET_OPEN, self.CONFIG)
+        self.assertEqual(0, perf["scheduled"]["sample_count"])
+        self.assertIsNone(perf["scheduled"]["eta_seconds"])
+        self.assertIsNone(perf["scheduled"]["confidence"])
+
+    def test_does_not_invent_total_eta_when_a_remaining_kind_lacks_samples(self):
+        plan = {"snippet": {"planned": 34030, "done": 0},
+                "figure": {"planned": 10, "done": 0},
+                "element": {"planned": 0, "done": 0}}
+        perf = LD._performance([_scheduled_run(480, 15), _scheduled_run(576, 16)], plan, self.CONFIG)
+        self.assertIsNotNone(perf["by_kind"]["snippet"]["scheduled"]["eta_seconds"])
+        self.assertIsNone(perf["by_kind"]["figure"]["scheduled"]["eta_seconds"])
+        self.assertIsNone(perf["scheduled"]["eta_seconds"])
+        self.assertIsNone(perf["scheduled"]["confidence"])
+
+
+class LiveWorkerTelemetryTest(LiveJobCase):
+    """Public client for PUT /dashboard/live-worker.json.
+
+    Real Worker/DO persistence and the public dashboard GET overlay: NOT_RUN.
+    Those are owned by the existing WSS source candidate, not this repository.
+    """
+
+    def telemetry_env(self, receiver, **extra):
+        env = {
+            "DASHBOARD_WRITE_TOKEN": receiver.token,
+            "DASHBOARD_LIVE_WORKER_URL": receiver.url,
+            "AUTODOCS_LIVE_WORKER_STATE": str(self.root / "live-worker-state.json"),
+            "GITHUB_RUN_ID": "555001",
+            "GITHUB_RUN_ATTEMPT": "2",
+        }
+        env.update(extra)
+        return env
+
+    def test_start_progress_terminal_order_and_fragment_shape(self):
+        with FakeLiveWorker() as receiver:
+            env = self.telemetry_env(receiver)
+            with mock.patch.dict(os.environ, env, clear=False):
+                self.assertEqual(0, LD.main(["dashboard", "--event", "start"]))
+            r = self.job(env_extra=env)
+            self.assertEqual(0, r.returncode, r.stdout + r.stderr)
+            with mock.patch.dict(os.environ, env, clear=False):
+                self.assertEqual(0, LD.main(["dashboard", "--event", "terminal"]))
+        events = [req["body"]["event"] for req in receiver.requests]
+        self.assertGreaterEqual(len(events), 3)
+        self.assertEqual("start", events[0])
+        self.assertIn("progress", events)
+        self.assertEqual(1, events.count("terminal"))
+        self.assertEqual("terminal", events[-1])
+        seqs = [req["body"]["seq"] for req in receiver.requests]
+        self.assertEqual(seqs, sorted(seqs))
+        self.assertEqual(seqs, list(range(1, len(seqs) + 1)))
+        for req in receiver.requests:
+            self.assertEqual("PUT", req["method"])
+            self.assertEqual("/dashboard/live-worker.json", req["path"])
+            self.assertEqual(f"Bearer {TOKEN}", req["headers"].get("Authorization"))
+            body = req["body"]
+            self.assertEqual(LD.LIVE_WORKER_SCHEMA, body["schema"])
+            self.assertEqual({"run_id": "555001", "run_attempt": 2, "unknown": []}, body["github"])
+            self.assertIn(body["event"], ("start", "progress", "terminal"))
+            self.assertIn("phase", body)
+            self.assertIn("state", body)
+            self.assertIn("timestamp", body)
+            self.assertIsInstance(body["interval"]["started"], str)
+            unknown = body["progress"]["unknown"]
+            if body["progress"]["done"] is None:
+                self.assertIn("done", unknown)
+            else:
+                self.assertNotIn("done", unknown)
+                self.assertIsInstance(body["progress"]["done"], int)
+            if body["progress"]["total"] is None:
+                self.assertIn("total", unknown)
+            else:
+                self.assertNotIn("total", unknown)
+                self.assertIsInstance(body["progress"]["total"], int)
+            if body["event"] == "start":
+                self.assertEqual(["done", "total"], body["progress"]["unknown"])
+                self.assertIsNone(body["interval"]["ended"])
+            if body["event"] == "terminal":
+                self.assertIsNotNone(body["interval"]["ended"])
+                self.assertIsNotNone(body["outcome"])
+                self.assertIsNotNone(body["reason"])
+                self.assertNotIn(TOKEN, json.dumps(body))
+            self.assertNotIn("/dashboard.json", req["path"])
+        start = receiver.requests[0]["body"]
+        self.assertEqual(["done", "total"], start["progress"]["unknown"])
+        progress = next(req["body"] for req in receiver.requests if req["body"]["event"] == "progress")
+        self.assertIsInstance(progress["progress"]["done"], int)
+        self.assertIsInstance(progress["progress"]["total"], int)
+        self.assertGreaterEqual(progress["progress"]["total"], progress["progress"]["done"])
+        self.assertEqual([], progress["progress"]["unknown"])
+        self.assertIn("completed", progress["counters"])
+
+    def test_retry_resends_same_seq(self):
+        with FakeLiveWorker(fail_times=2) as receiver:
+            env = self.telemetry_env(receiver)
+            with mock.patch.dict(os.environ, env, clear=False):
+                self.assertEqual(0, LD.main(["dashboard", "--event", "start"]))
+        self.assertEqual(3, len(receiver.requests))
+        seqs = [req["body"]["seq"] for req in receiver.requests]
+        self.assertEqual([1, 1, 1], seqs)
+        self.assertEqual(receiver.requests[0]["body"], receiver.requests[1]["body"])
+        self.assertEqual(receiver.requests[1]["body"], receiver.requests[2]["body"])
+
+    def test_receiver_failure_does_not_suppress_distribution(self):
+        with FakeLiveWorker(fail_times=99, echo_token=True) as receiver:
+            env = self.telemetry_env(receiver)
+            r = self.job(env_extra=env)
+            self.assertEqual(0, r.returncode, r.stdout + r.stderr)
+            combined = r.stdout + r.stderr
+            self.assertIn("telemetry warning", combined)
+            self.assertNotIn(TOKEN, combined)
+        st = core.verify_chain(self.clone)
+        self.assertTrue(st.ok, st.errors)
+        self.assertGreaterEqual(len([e for e in st.entries if e["kind"] == "decision"]), 4)
+
+    def test_token_not_in_agy_argv_env_or_logs(self):
+        with FakeLiveWorker() as receiver:
+            env = self.telemetry_env(receiver)
+            r = self.job(env_extra=env)
+            self.assertEqual(0, r.returncode, r.stdout + r.stderr)
+            combined = r.stdout + r.stderr
+            self.assertNotIn(TOKEN, combined)
+            self.assertNotIn(TOKEN, " ".join(map(str, r.args)))
+            log_text = self.log.read_text()
+            self.assertNotIn(TOKEN, log_text)
+            for line in log_text.splitlines():
+                row = json.loads(line)
+                self.assertFalse(row["token_in_env"])
+                self.assertNotIn(TOKEN, json.dumps(row["argv"]))
+            self.assertNotIn(TOKEN, str(LD._scrubbed_env(env)))
+            self.assertNotIn("DASHBOARD_WRITE_TOKEN", LD._scrubbed_env(env))
+            with mock.patch.dict(os.environ, env, clear=False):
+                git_env = LD._git_env()
+            self.assertNotIn("DASHBOARD_WRITE_TOKEN", git_env)
+            self.assertNotIn(TOKEN, git_env.values())
+            for req in receiver.requests:
+                self.assertEqual(f"Bearer {TOKEN}", req["headers"].get("Authorization"))
+                self.assertNotIn(TOKEN, json.dumps(req["body"]))
+
+    def test_refuses_canonical_dashboard_json_path(self):
+        with FakeLiveWorker() as receiver:
+            env = self.telemetry_env(receiver)
+            env["DASHBOARD_LIVE_WORKER_URL"] = f"http://127.0.0.1:{receiver.port}/dashboard.json"
+            with mock.patch.dict(os.environ, env, clear=False):
+                self.assertEqual(0, LD.main(["dashboard", "--event", "start"]))
+            self.assertEqual([], receiver.requests)
 
 
 if __name__ == "__main__":
