@@ -378,7 +378,10 @@ def _usable_performance_run(run: Any, config_key: Optional[str]) -> bool:
     if not isinstance(elapsed, dict):
         return False
     for value in elapsed.values():
-        if not _nonneg_finite_number(value):
+        # A scheduled invocation may legitimately spend no productive time on
+        # one kind while completing another.  Keep that invocation as a zero-
+        # yield calendar sample; only a present elapsed value must be finite.
+        if value is not None and not _nonneg_finite_number(value):
             return False
     return True
 
@@ -1482,7 +1485,7 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
                  "progress": round(done / total, 4) if total else 1.0, "by_kind": by_kind},
         "cost": {"list_price_usd_total": round(sum(float(r.get("list_price_usd") or 0) for r in runs), 4),
                  "runs": len(runs), "currency": "USD, API-Listenpreise"},
-        "last_runs": [{k: r.get(k) for k in ("run", "ended", "stop", "calls", "decided", "findings", "list_price_usd",
+        "last_runs": [{k: r.get(k) for k in ("run", "started", "ended", "stop", "calls", "decided", "findings", "list_price_usd",
                                               "profiles", "remaining", "elapsed_seconds", "completed_per_minute",
                                               "eta_seconds", "failed_batches", "skipped_units",
                                               "error_diagnostics", "trigger", "config_key", "completed_by_kind",
@@ -1493,7 +1496,9 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
             "state": "idle",
             "trigger": (runs[-1].get("trigger") if runs else None) or _trigger(),
             "config": config,
-            "last_error": ({"run": last_error_run.get("run"), "ended": last_error_run.get("ended"),
+            "last_error": ({"run": last_error_run.get("run"), "started": last_error_run.get("started"),
+                            "ended": last_error_run.get("ended"),
+                            "elapsed_seconds": last_error_run.get("elapsed_seconds"),
                             "stop": last_error_run.get("stop"),
                             "failed_batches": int(last_error_run.get("failed_batches") or 0),
                             "codes": sorted((last_error_run.get("error_diagnostics") or {}).keys())}
