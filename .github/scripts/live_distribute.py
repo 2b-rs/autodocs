@@ -170,7 +170,11 @@ class Slot:
         self.homes: List[Path] = []
         old = os.umask(0o077)
         try:
-            for base in base_profiles:
+            # Reihenfolge je Arbeitsplatz rotiert: agy_switch.py nimmt das erste verfügbare Profil, ohne Rotation liefen
+            # alle Plätze auf dem ersten Konto, bis es erschöpft ist (Übersetzungslauf 2026-10-15: 1940 von 1940 Aufrufen
+            # auf einem Konto).
+            k = idx % len(base_profiles) if base_profiles else 0
+            for base in base_profiles[k:] + base_profiles[:k]:
                 src = Path(base) / ".gemini" / "antigravity-cli"
                 home = self.dir / Path(base.rstrip("/")).name
                 cli = home / ".gemini" / "antigravity-cli"
@@ -220,6 +224,7 @@ class CallResult:
     rc: int = 0
     wall_s: float = 0.0
     steps: int = 0
+    diagnostic: str = ""
 
 
 _GROUPS: Set[int] = set()
@@ -302,9 +307,15 @@ class Agy:
             return CallResult("exhausted", profile=profile, rc=rc, wall_s=wall)
         if rc == EXIT_LOGIN:
             return CallResult("login", profile=profile, rc=rc, wall_s=wall)
-        result, steps, bad = M.parse_agy_stream(out)
-        tokens = M.usage_tokens((result or {}).get("usage") or {})
-        n_steps = sum(steps.values())
+        try:
+            result, steps, bad = M.parse_agy_stream(out)
+            tokens = M.usage_tokens((result or {}).get("usage") or {})
+            n_steps = sum(steps.values())
+        except Exception as exc:
+            # Never expose raw CLI output or exception text: either can contain
+            # prompt material. The phase and exception class are sufficient.
+            return CallResult("error", profile=profile, rc=EXIT_ERROR, wall_s=wall,
+                              diagnostic=f"agy-output:{type(exc).__name__}")
         if bad:
             return CallResult("contaminated", None, tokens, profile, rc, wall, n_steps)
         if rc != 0:
@@ -384,6 +395,7 @@ class BatchResult:
     outcome: str = "ok"
     unanswered: int = 0
     incomplete: int = 0
+    diagnostics: Dict[str, int] = field(default_factory=dict)
 
 
 class Job:
@@ -394,6 +406,7 @@ class Job:
         self.call_no = 0
         self._lock = threading.Lock()
         self.sizes = {"snippet": a.batch_snippets, "figure": a.batch_figures, "element": a.batch_elements}
+        self.skipped = {"missing": 0, "oversize": 0}
 
     # --- Prompts ---------------------------------------------------------------------------------------
     def items_for(self, units: List[Dict[str, Any]]) -> List[M.Item]:
@@ -431,11 +444,14 @@ class Job:
         prompt = ""
         for u in todo:
             if u["kind"] == "element" and u["ref"] not in self.data.records:
+                self.skipped["missing"] += 1
                 continue
             if u["kind"] != "element" and self.data.item(u["ref"], u.get("p")) is None:
+                self.skipped["missing"] += 1
                 continue
             u = self.fit(u)
             if u is None:
+                self.skipped["oversize"] += 1
                 log("Einheit zu groß für einen Aufruf, übersprungen")
                 continue
             if cur and (u["kind"] != cur[0]["kind"] or len(cur) >= self.sizes[cur[0]["kind"]]):
@@ -461,16 +477,20 @@ class Job:
             if not self.budget.take():
                 res.outcome = res.outcome if res.outcome != "ok" else "budget"
                 return None
+            # Count the reserved attempt before entering provider/decoder code.
+            # An exception there must never become a zero-call success again.
+            res.calls += 1
+            res.retries += 1 if n else 0
             r = self.agy.call(slot, text, schema)
             usd = M.list_price(self.agy.model, r.tokens)
             self.budget.spend(usd)
-            res.calls += 1
-            res.retries += 1 if n else 0
             res.usd += usd
             for key in res.tokens:
                 res.tokens[key] += r.tokens.get(key, 0)
             if r.profile:
                 res.profiles[r.profile] = res.profiles.get(r.profile, 0) + 1
+            if r.diagnostic:
+                res.diagnostics[r.diagnostic] = res.diagnostics.get(r.diagnostic, 0) + 1
             if r.outcome == "ok":
                 res.last_profile = r.profile      # type: ignore[attr-defined]
                 res.attempt = n + 1               # type: ignore[attr-defined]
@@ -496,9 +516,11 @@ class Job:
                 self._process_reverse(batch, slot, res)
             else:
                 self._process_forward(batch, slot, res)
-        except Exception as exc:          # ein fehlerhafter Batch hält den Lauf nicht an
+        except Exception as exc:          # der Koordinator zählt und begrenzt fehlerhafte Batches
             res.bodies = []
             res.outcome = f"exception:{type(exc).__name__}"
+            key = f"batch:{type(exc).__name__}"
+            res.diagnostics[key] = res.diagnostics.get(key, 0) + 1
         return res
 
     def _decision_body(self, u: Dict[str, Any], decision: Dict[str, Any], prompt: str, profile: str, share_usd: float,
@@ -752,7 +774,9 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
         "cost": {"list_price_usd_total": round(sum(float(r.get("list_price_usd") or 0) for r in runs), 4),
                  "runs": len(runs), "currency": "USD, API-Listenpreise"},
         "last_runs": [{k: r.get(k) for k in ("run", "ended", "stop", "calls", "decided", "findings", "list_price_usd",
-                                              "profiles")} for r in runs[-10:]],
+                                              "profiles", "remaining", "elapsed_seconds", "completed_per_minute",
+                                              "eta_seconds", "failed_batches", "skipped_units",
+                                              "error_diagnostics")} for r in runs[-10:]],
         "findings": findings,
         "profiles": profile_state(state),
     }
@@ -878,7 +902,7 @@ def cmd_run(a: argparse.Namespace) -> int:
     new_decisions: List[Dict[str, Any]] = []
     tot = {"calls": 0, "retries": 0, "stage2_calls": 0, "usd": 0.0, "failed_batches": 0, "unanswered": 0,
            "incomplete": 0, "tokens": {"input": 0, "cached": 0, "output": 0, "thinking": 0}, "profiles": {},
-           "by_kind": {k: 0 for k in core.UNIT_KINDS}}
+           "by_kind": {k: 0 for k in core.UNIT_KINDS}, "completed": 0, "diagnostics": {}}
     consecutive_fail = 0
     started = core.utc_now()
     gen = job.batches(todo)
@@ -903,12 +927,27 @@ def cmd_run(a: argparse.Namespace) -> int:
                 break
             done, _ = wait(list(in_flight), return_when=FIRST_COMPLETED)
             for f in done:
-                free.append(in_flight.pop(f)[0])
-                r: BatchResult = f.result()
+                slot, batch_kind = in_flight.pop(f)
+                free.append(slot)
+                try:
+                    r: BatchResult = f.result()
+                except Exception as exc:
+                    # Job.process already contains the normal exception boundary. Keep
+                    # the coordinator fail-closed as a final guard in case construction
+                    # or future wrapper code fails outside that boundary.
+                    key = f"coordinator:{type(exc).__name__}"
+                    tot["diagnostics"][key] = tot["diagnostics"].get(key, 0) + 1
+                    tot["failed_batches"] += 1
+                    consecutive_fail += 1
+                    log(f"Worker ohne Ergebnis ({batch_kind}): {type(exc).__name__}")
+                    if consecutive_fail >= a.max_failures:
+                        budget.halt("errors")
+                    continue
                 for body in r.bodies:
                     e = live.append(body)
                     new_decisions.append(e)
                     tot["by_kind"][e["unit_kind"]] += 1
+                    tot["completed"] += 1 if core.decision_complete(e) else 0
                 tot["calls"] += r.calls
                 tot["retries"] += r.retries
                 tot["stage2_calls"] += r.stage2_calls
@@ -919,18 +958,26 @@ def cmd_run(a: argparse.Namespace) -> int:
                     tot["tokens"][k] += r.tokens.get(k, 0)
                 for p, n in r.profiles.items():
                     tot["profiles"][p] = tot["profiles"].get(p, 0) + n
+                for d, n in r.diagnostics.items():
+                    tot["diagnostics"][d] = tot["diagnostics"].get(d, 0) + n
                 if r.bodies:
                     consecutive_fail = 0
                     if len(new_decisions) and len(new_decisions) % 50 < len(r.bodies):
+                        elapsed = max(0.001, time.monotonic() - budget.t0)
+                        per_minute = tot["completed"] * 60.0 / elapsed
+                        remain_now = max(0, len(todo) - tot["completed"])
+                        eta = remain_now * 60.0 / per_minute if per_minute else None
+                        eta_text = f"{eta / 60.0:.1f} min" if eta is not None else "unbekannt"
                         log(f"Fortschritt: {len(new_decisions)} Entscheidungen, {tot['calls']} Aufrufe, "
-                            f"{tot['usd']:.3f} $ Listenpreis")
-                elif r.calls and r.outcome not in ("budget", "exhausted", "login"):
+                            f"{tot['usd']:.3f} $ Listenpreis, {per_minute:.1f}/min, "
+                            f"offen {remain_now}, ETA {eta_text}")
+                elif r.outcome not in ("budget", "exhausted", "login"):
                     tot["failed_batches"] += 1
                     consecutive_fail += 1
-                    log(f"Batch ohne Ergebnis ({r.batch.kind}, {len(r.batch.units)} Einheiten): {r.outcome}")
+                    detail = ",".join(sorted(r.diagnostics)) or "ohne Diagnose"
+                    log(f"Batch ohne Ergebnis ({r.batch.kind}, {len(r.batch.units)} Einheiten): {r.outcome} [{detail}]")
                     if consecutive_fail >= a.max_failures:
                         budget.halt("errors")
-    stop = budget.reason() or "done"
     # Patrouille Stufe 1: Prüfregeln über die neuen Entscheidungen
     findings_new = run_validators(bundle, data, live, new_decisions, run_id)
     known = live.finding_ids()
@@ -941,7 +988,15 @@ def cmd_run(a: argparse.Namespace) -> int:
         live.append({"kind": "finding", "finding": f, "unit": f["subject"]["id"], "run": run_id, "at": core.utc_now()})
         known.add(f["id"])
         n_findings += 1
-    remaining = len(todo) - len([e for e in new_decisions if core.decision_complete(e)])
+    completed_now = tot["completed"]
+    remaining = len(todo) - completed_now
+    # Erschöpfter Generator bei offener Arbeit ist niemals ``done``. Das deckt
+    # auch Exceptions vor dem ersten Modellaufruf und übersprungene Einheiten ab.
+    stop = budget.reason() or ("errors" if remaining else "done")
+    elapsed_s = max(0.0, time.monotonic() - budget.t0)
+    per_minute = completed_now * 60.0 / elapsed_s if elapsed_s > 0 else 0.0
+    eta_s = (remaining * elapsed_s / completed_now
+             if completed_now and stop not in ("errors", "exhausted", "needs-login") else None)
     run_entry = {"kind": "run", "run": run_id, "at": core.utc_now(), "started": started, "ended": core.utc_now(),
                  "stop": stop, "assets": dict(job.assets, source_commit=bundle.manifest.get("source_commit"),
                                               created=bundle.manifest.get("created")),
@@ -952,8 +1007,14 @@ def cmd_run(a: argparse.Namespace) -> int:
                  "failed_batches": tot["failed_batches"], "unanswered_units": tot["unanswered"],
                  "incomplete": tot["incomplete"], "decided": len(new_decisions), "decided_by_kind": tot["by_kind"],
                  "findings": n_findings, "tokens": tot["tokens"], "list_price_usd": round(tot["usd"], 6),
-                 "profiles": tot["profiles"], "remaining": remaining}
-    if tot["calls"] or new_decisions:
+                 "profiles": tot["profiles"], "remaining": remaining,
+                 "error_diagnostics": tot["diagnostics"],
+                 "skipped_units": job.skipped, "elapsed_seconds": round(elapsed_s, 3),
+                 "completed_per_minute": round(per_minute, 3),
+                 "eta_seconds": round(eta_s, 1) if eta_s is not None else None}
+    # Auch ein Null-Aufruf-Fehler ist ein Lauf: Er muss in Status und Historie
+    # erscheinen, damit unverändert offene Arbeit nicht wie Erfolg aussieht.
+    if tot["calls"] or new_decisions or tot["failed_batches"] or remaining:
         live.append(run_entry)
         live.write_pointer(run_id, bundle.sha256[:12])
         core.write_atomic(repo / core.STATUS_FILE, (json.dumps(build_status(live, plan, bundle, state), indent=1,

@@ -19,8 +19,8 @@ from typing import Any, Dict, Iterable, List, Optional
 
 SCHEMA = "finding@v1"
 # distribution-decision: Entscheidung der Live-Verteilung (CONCEPT-0061, Prüfregeln in live_core.py).
-SUBJECT_KINDS = ("figure-description", "figure-delta", "element-guide", "module-guide", "spec-record",
-                 "distribution-decision")
+SUBJECT_KINDS = ("figure-description", "figure-delta", "element-guide", "module-guide", "cluster-guide",
+                 "spec-record", "distribution-decision")
 # Konzept §4.1 plus zwei Belegarten der Wortlisten-Regeln (§4.2): die Liste belegter Verleser und die Textstelle;
 # dazu drei Belegarten der Verteilungsregeln: Glied im Entscheidungsprotokoll, Element-Universum des Bündels,
 # konsolidierte Zuordnungsmatrix.

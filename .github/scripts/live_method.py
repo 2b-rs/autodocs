@@ -619,6 +619,10 @@ def parse_agy_stream(text: str) -> Tuple[Optional[Dict[str, Any]], Dict[str, int
             ev = json.loads(line)
         except ValueError:
             continue
+        # The CLI stream is not schema-bound JSONL. New releases may interleave
+        # JSON scalars or arrays (for example ``null`` heartbeats) with events.
+        if not isinstance(ev, dict):
+            continue
         if ev.get("event") == "result" and isinstance(ev.get("result"), dict):
             result = ev["result"]
         elif ev.get("event") == "step_update":
@@ -642,6 +646,9 @@ def parse_agy_stream(text: str) -> Tuple[Optional[Dict[str, Any]], Dict[str, int
 
 
 def usage_tokens(usage: Dict[str, Any]) -> Dict[str, int]:
+    if not isinstance(usage, dict):
+        usage = {}
+
     def g(k: str) -> int:
         v = (usage or {}).get(k)
         return int(v) if isinstance(v, (int, float)) else 0
