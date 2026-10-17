@@ -5,39 +5,39 @@ name: "Live-Verteilung (Snippets und Schaubilder an Elemente und Fragmente)"
 # als Kettenglied in das Daten-Repo (vars.LIVE_REPO, Vorgabe 2b-rs/autodocs-live). Läufe müssen nicht fertig
 # werden: jede Einheit ist über den Hash ihrer Eingaben verschlüsselt, der nächste Lauf macht weiter.
 #
-# Stündlich, sobald vars.LIVE_DISTRIBUTION_ENABLED == 'true'; manuell mit eigenem Budget. agy läuft gesperrt
+# Stündlich ausschließlich durch den Cloudflare-Dispatcher; manuell mit eigenem Budget. agy läuft gesperrt
 # (setup-agy mit lockdown_dir, je Arbeitsplatz eine settings.json: nur Lesen im leeren Aufrufverzeichnis, jeder
 # Befehl verboten, nie --dangerously-skip-permissions). Der Deploy-Key (Secret AUTODOCS_LIVE_DEPLOY_KEY der Umgebung
 # agy) existiert nur in den Schritten Klonen und Übertragen, nie neben agy.
 # Das Log nennt nur Zahlen, Kosten zu API-Listenpreisen und die Profilnamen leo/neo; nie Prompts oder Antworten.
 on:
-  schedule:
-    - cron: "23 * * * *"
   workflow_dispatch:
     inputs:
+      trigger_kind:
+        description: "Herkunft des Starts (Cloudflare setzt cloudflare-schedule; sonst manual)"
+        default: "manual"
+        type: string
+      scheduled_at:
+        description: "Vom Dispatcher deklarierter Sollzeitpunkt als ISO-8601 (leer bei manuellem Start)"
+        default: ""
+        type: string
       max_calls:
         description: "Höchstzahl Modellaufrufe in diesem Lauf"
-        default: "300"
         type: string
       max_minutes:
         description: "Zeitbudget in Minuten (danach geordnetes Ende)"
-        default: "40"
         type: string
       concurrency:
         description: "Parallele agy-Aufrufe"
-        default: "4"
         type: string
       batch_snippets:
         description: "Snippets je Modellaufruf (sicherer Startwert 4)"
-        default: "4"
         type: string
       max_prompt_bytes:
         description: "Maximale Promptgröße je Modellaufruf in Bytes (sicherer Startwert 40000)"
-        default: "40000"
         type: string
       max_usd:
         description: "Obergrenze in $ zu API-Listenpreisen (0 = keine)"
-        default: "0"
         type: string
       kinds:
         description: "Nur diese Arten: snippet,figure,element (leer = alle, in dieser Reihenfolge)"
@@ -67,6 +67,9 @@ jobs:
       LIVE_REPO: ${{ vars.LIVE_REPO || '2b-rs/autodocs-live' }}
       LIVE_BUNDLE_URL: ${{ vars.LIVE_BUNDLE_URL }}
       LIVE_BUNDLE_SHA256: ${{ vars.LIVE_BUNDLE_SHA256 }}
+      # Nur Dispatcher-Provenienz; keine kryptografische Attestierung.
+      AUTODOCS_TRIGGER_KIND: ${{ inputs.trigger_kind }}
+      AUTODOCS_SCHEDULED_AT: ${{ inputs.scheduled_at }}
     steps:
       # Das Repository enthält die ganze Website (mehrere GB); der Job braucht nur .github/.
       - uses: actions/checkout@v4

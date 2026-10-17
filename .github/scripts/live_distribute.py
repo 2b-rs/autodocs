@@ -27,7 +27,9 @@ Exit: 0 fertig oder Budget erreicht oder nichts zu tun, 75 alle Profile erschöp
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -40,6 +42,7 @@ import time
 import urllib.request
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
@@ -60,6 +63,9 @@ BATCH = {"snippet": 20, "figure": 20, "element": 12}
 # Linux begrenzt ein einzelnes Argument auf 128 KiB (agy -p); bis 100.000 Bytes bleibt ein Aufruf auch unter der
 # Schwelle von ~47.000 Tokens, ab der agy in Agentenschleifen fiel.
 MAX_PROMPT_BYTES = 100_000
+PERFORMANCE_MIN_SAMPLES = 3
+SCHEDULE_CADENCE_SECONDS = 3600
+SCHEDULED_AT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$")
 
 
 def log(msg: str) -> None:
@@ -747,7 +753,241 @@ def profile_state(path: Optional[Path]) -> Dict[str, Any]:
     return out
 
 
-def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bundle, state: Optional[Path]) -> Dict[str, Any]:
+def _median(values: List[float]) -> float:
+    values = sorted(values)
+    middle = len(values) // 2
+    if len(values) % 2:
+        return values[middle]
+    return (values[middle - 1] + values[middle]) / 2.0
+
+
+def _finite_projection(value: Any) -> Optional[float]:
+    """Return a non-negative finite public metric, otherwise no estimate."""
+    try:
+        projected = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return projected if math.isfinite(projected) and projected >= 0 else None
+
+
+def _finite_sum(values: List[float]) -> Optional[float]:
+    try:
+        return _finite_projection(math.fsum(values))
+    except OverflowError:
+        return None
+
+
+def _valid_scheduled_at(value: Any) -> bool:
+    if not isinstance(value, str) or not SCHEDULED_AT_RE.fullmatch(value):
+        return False
+    try:
+        parsed = datetime.fromisoformat(value[:-1] + "+00:00")
+    except ValueError:
+        return False
+    return parsed.tzinfo == timezone.utc
+
+
+def _scheduled_sample(trigger: Any) -> bool:
+    return (isinstance(trigger, dict) and trigger.get("kind") == "scheduled"
+            and trigger.get("provenance") == "dispatcher-declared"
+            and _valid_scheduled_at(trigger.get("scheduled_at")))
+
+
+def _trigger() -> Dict[str, Any]:
+    event = os.environ.get("GITHUB_EVENT_NAME", "").strip()
+    if event == "schedule":
+        return {"kind": "scheduled", "cadence_seconds": SCHEDULE_CADENCE_SECONDS,
+                "provenance": "github-event", "scheduled_at": None}
+    if event == "workflow_dispatch":
+        # workflow_dispatch is used both by humans and by the Cloudflare cron.
+        # The marker is dispatcher-declared provenance, not a cryptographic
+        # attestation; only the exact pair emitted by live-cron.mjs is counted
+        # as a scheduled performance sample.
+        kind = os.environ.get("AUTODOCS_TRIGGER_KIND", "").strip()
+        scheduled_at = os.environ.get("AUTODOCS_SCHEDULED_AT", "").strip()
+        if kind == "cloudflare-schedule" and _valid_scheduled_at(scheduled_at):
+            return {"kind": "scheduled", "cadence_seconds": SCHEDULE_CADENCE_SECONDS,
+                    "provenance": "dispatcher-declared", "scheduled_at": scheduled_at}
+        return {"kind": "requested", "cadence_seconds": None,
+                "provenance": "github-event", "scheduled_at": None}
+    return {"kind": "local" if not event else "other", "cadence_seconds": None,
+            "provenance": "local" if not event else "github-event", "scheduled_at": None}
+
+
+def _performance_config(a: argparse.Namespace, concurrency: int, profiles: List[str]) -> Dict[str, Any]:
+    profile_ids = sorted(Path(profile.rstrip("/")).name.removeprefix("agy-profile-") for profile in profiles)
+    config = {
+        "model": a.model,
+        "effort": a.effort,
+        # This is external-call concurrency.  It deliberately does not claim
+        # CPU/vCPU assignment, which is owned by the build runtime.
+        "external_call_concurrency": concurrency,
+        "kinds": sorted(k for k in (a.kinds or "").split(",") if k) or list(core.UNIT_KINDS),
+        "batch": {"snippet": a.batch_snippets, "figure": a.batch_figures, "element": a.batch_elements},
+        "max_prompt_bytes": a.max_prompt_bytes,
+        "call_timeout_seconds": a.call_timeout,
+        "budget": {"max_calls": a.max_calls, "max_minutes": a.max_minutes, "max_usd": a.max_usd},
+        "profiles": profile_ids,
+    }
+    raw = json.dumps(config, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return {**config, "key": hashlib.sha256(raw).hexdigest()[:16]}
+
+
+def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, int]],
+                 config: Dict[str, Any]) -> Dict[str, Any]:
+    """Robust, conservative ETA from successful same-config run samples.
+
+    Active throughput measures productive worker time.  Scheduled yield is a
+    separate wall-clock quantity: units per hourly scheduled invocation.  A
+    kind is estimable only after three valid samples; the overall ETA stays
+    null while any still-open kind lacks that evidence.
+    """
+    by_kind: Dict[str, Dict[str, Any]] = {}
+    active_etas: List[float] = []
+    active_lows: List[float] = []
+    active_highs: List[float] = []
+    scheduled_etas: List[float] = []
+    scheduled_lows: List[float] = []
+    scheduled_highs: List[float] = []
+    active_counts: List[int] = []
+    scheduled_counts: List[int] = []
+    all_active_valid = True
+    all_scheduled_valid = True
+    all_scheduled_ranges_valid = True
+    config_key = config.get("key") if isinstance(config.get("key"), str) and config.get("key") else None
+    configured_kinds = config.get("kinds")
+    selected_kinds = ({kind for kind in configured_kinds if kind in core.UNIT_KINDS}
+                      if isinstance(configured_kinds, list) else set(core.UNIT_KINDS))
+    for kind in core.UNIT_KINDS:
+        active_rates: List[float] = []
+        scheduled_yields: List[float] = []
+        for run in runs:
+            if config_key is None or run.get("config_key") != config_key:
+                continue
+            failed_batches = run.get("failed_batches") or 0
+            if (run.get("stop") in {"errors", "exhausted", "needs-login"}
+                    or not isinstance(failed_batches, int) or isinstance(failed_batches, bool) or failed_batches):
+                continue
+            completed = (run.get("completed_by_kind") or {}).get(kind)
+            elapsed = (run.get("elapsed_seconds_by_kind") or {}).get(kind)
+            if (kind in selected_kinds and _scheduled_sample(run.get("trigger"))
+                    and isinstance(completed, int) and not isinstance(completed, bool) and completed >= 0):
+                scheduled_yields.append(float(completed))
+            if (isinstance(completed, int) and not isinstance(completed, bool) and completed > 0
+                    and isinstance(elapsed, (int, float)) and not isinstance(elapsed, bool)
+                    and math.isfinite(float(elapsed)) and elapsed > 0):
+                try:
+                    rate, completed_float = completed / float(elapsed), float(completed)
+                except (OverflowError, ZeroDivisionError):
+                    continue
+                if not math.isfinite(rate) or not math.isfinite(completed_float) or rate <= 0:
+                    continue
+                active_rates.append(rate)
+        remaining = max(0, int((plan_by_kind.get(kind) or {}).get("planned", 0))
+                        - int((plan_by_kind.get(kind) or {}).get("done", 0)))
+        active_ok = len(active_rates) >= PERFORMANCE_MIN_SAMPLES
+        scheduled_mean = (sum(scheduled_yields) / len(scheduled_yields)) if scheduled_yields else 0.0
+        scheduled_ok = (len(scheduled_yields) >= PERFORMANCE_MIN_SAMPLES
+                        and math.isfinite(scheduled_mean) and scheduled_mean > 0)
+        active_eta = scheduled_eta = None
+        active_range = scheduled_range = None
+        if remaining == 0:
+            active_eta = scheduled_eta = 0.0
+            active_range = scheduled_range = [0.0, 0.0]
+        else:
+            if active_ok:
+                median_rate = _median(active_rates)
+                active_eta = _finite_projection(remaining / median_rate)
+                active_range = [_finite_projection(remaining / max(active_rates)),
+                                _finite_projection(remaining / min(active_rates))]
+                throughput = _finite_projection(median_rate * 60.0)
+                if active_eta is not None and None not in active_range and throughput is not None:
+                    active_range = [float(active_range[0]), float(active_range[1])]
+                    active_etas.append(active_eta)
+                    active_lows.append(active_range[0])
+                    active_highs.append(active_range[1])
+                    active_counts.append(len(active_rates))
+                else:
+                    active_ok = False
+            if not active_ok:
+                active_eta = active_range = None
+                all_active_valid = False
+            if scheduled_ok:
+                scheduled_eta = _finite_projection(remaining / scheduled_mean * SCHEDULE_CADENCE_SECONDS)
+                scheduled_range = None
+                if min(scheduled_yields) > 0:
+                    projected_range = [
+                        _finite_projection(remaining / max(scheduled_yields) * SCHEDULE_CADENCE_SECONDS),
+                        _finite_projection(remaining / min(scheduled_yields) * SCHEDULE_CADENCE_SECONDS),
+                    ]
+                    if None not in projected_range:
+                        scheduled_range = [float(projected_range[0]), float(projected_range[1])]
+                scheduled_yield = _finite_projection(scheduled_mean)
+                if scheduled_eta is not None and scheduled_yield is not None:
+                    scheduled_etas.append(scheduled_eta)
+                    if scheduled_range is not None:
+                        scheduled_lows.append(scheduled_range[0])
+                        scheduled_highs.append(scheduled_range[1])
+                    else:
+                        all_scheduled_ranges_valid = False
+                    scheduled_counts.append(len(scheduled_yields))
+                else:
+                    scheduled_ok = False
+            if not scheduled_ok:
+                scheduled_eta = scheduled_range = None
+                all_scheduled_valid = False
+        by_kind[kind] = {
+            "remaining": remaining,
+            "active": {
+                "eta_seconds": round(active_eta, 1) if active_eta is not None else None,
+                "range_seconds": [round(v, 1) for v in active_range] if active_range else None,
+                "sample_count": len(active_rates),
+                "throughput_per_minute": round(_median(active_rates) * 60.0, 3) if active_ok else None,
+            },
+            "scheduled": {
+                "eta_seconds": round(scheduled_eta, 1) if scheduled_eta is not None else None,
+                "range_seconds": [round(v, 1) for v in scheduled_range] if scheduled_range else None,
+                "sample_count": len(scheduled_yields),
+                "yield_per_hour": round(scheduled_mean, 3) if scheduled_ok else None,
+            },
+        }
+    remaining_total = sum(item["remaining"] for item in by_kind.values())
+    active_total = _finite_sum(active_etas)
+    active_low_total = _finite_sum(active_lows)
+    active_high_total = _finite_sum(active_highs)
+    # Each kind's yield already includes zero progress in scheduled
+    # invocations that worked on another selected kind.  The estimates are
+    # therefore calendar rates; shared invocations finish when the slowest
+    # remaining kind finishes, rather than being summed once per kind.
+    scheduled_total = max(scheduled_etas, default=0.0)
+    scheduled_low_total = max(scheduled_lows, default=0.0)
+    scheduled_high_total = max(scheduled_highs, default=0.0)
+    if remaining_total and (active_total is None or active_low_total is None or active_high_total is None):
+        all_active_valid = False
+    return {
+        "basis": ("active median and scheduled calendar mean of successful same-config runs; "
+                  "minimum 3 samples per remaining kind"),
+        "minimum_samples_per_kind": PERFORMANCE_MIN_SAMPLES,
+        "active": {
+            "eta_seconds": (0.0 if not remaining_total else round(active_total, 1)) if all_active_valid else None,
+            "range_seconds": ([0.0, 0.0] if not remaining_total else
+                              [round(active_low_total, 1), round(active_high_total, 1)]) if all_active_valid else None,
+            "sample_count": min(active_counts) if active_counts else 0,
+        },
+        "scheduled": {
+            "eta_seconds": (0.0 if not remaining_total else round(scheduled_total, 1)) if all_scheduled_valid else None,
+            "range_seconds": ([0.0, 0.0] if not remaining_total else
+                              [round(scheduled_low_total, 1), round(scheduled_high_total, 1)])
+                              if all_scheduled_valid and all_scheduled_ranges_valid else None,
+            "sample_count": min(scheduled_counts) if scheduled_counts else 0,
+            "cadence_seconds": SCHEDULE_CADENCE_SECONDS,
+        },
+        "by_kind": by_kind,
+    }
+
+
+def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bundle, state: Optional[Path],
+                 config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     decided = live.decided_keys()
     by_kind: Dict[str, Dict[str, int]] = {}
     for u in plan:
@@ -757,12 +997,16 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
     total = sum(b["planned"] for b in by_kind.values())
     done = sum(b["done"] for b in by_kind.values())
     runs = [e for e in live.entries if e.get("kind") == "run"]
+    config = config or ((runs[-1].get("config") or {}) if runs else {})
     findings: Dict[str, int] = {}
     for e in live.entries:
         if e.get("kind") == "finding":
             c = e["finding"].get("class", "other")
             findings[c] = findings.get(c, 0) + 1
     head = live.head
+    last_error_run = next((run for run in reversed(runs)
+                           if run.get("stop") in {"errors", "exhausted", "needs-login"}
+                           or int(run.get("failed_batches") or 0)), None)
     return {
         "schema": "live-status@v1",
         "updated": core.utc_now(),
@@ -777,9 +1021,21 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
         "last_runs": [{k: r.get(k) for k in ("run", "ended", "stop", "calls", "decided", "findings", "list_price_usd",
                                               "profiles", "remaining", "elapsed_seconds", "completed_per_minute",
                                               "eta_seconds", "failed_batches", "skipped_units",
-                                              "error_diagnostics")} for r in runs[-10:]],
+                                              "error_diagnostics", "trigger", "config_key", "completed_by_kind",
+                                              "elapsed_seconds_by_kind")} for r in runs[-10:]],
         "findings": findings,
         "profiles": profile_state(state),
+        "worker": {
+            "state": "idle",
+            "trigger": (runs[-1].get("trigger") if runs else None) or _trigger(),
+            "config": config,
+            "last_error": ({"run": last_error_run.get("run"), "ended": last_error_run.get("ended"),
+                            "stop": last_error_run.get("stop"),
+                            "failed_batches": int(last_error_run.get("failed_batches") or 0),
+                            "codes": sorted((last_error_run.get("error_diagnostics") or {}).keys())}
+                           if last_error_run else None),
+        },
+        "performance": _performance(runs, by_kind, config),
     }
 
 
@@ -898,18 +1154,24 @@ def cmd_run(a: argparse.Namespace) -> int:
     agy = Agy(Path(a.switch), state, a.model, a.effort, a.call_timeout, a.python)
     slots_root = Path(a.slots or (work / "agy-workers"))
     slots = [Slot(i, base_profiles, slots_root) for i in range(max(1, a.concurrency))]
+    performance_config = _performance_config(a, len(slots), base_profiles)
+    trigger = _trigger()
     free: List[Slot] = list(slots)
     job = Job(a, bundle, data, live, agy, budget, run_id)
     new_decisions: List[Dict[str, Any]] = []
     tot = {"calls": 0, "retries": 0, "stage2_calls": 0, "usd": 0.0, "failed_batches": 0, "unanswered": 0,
            "incomplete": 0, "tokens": {"input": 0, "cached": 0, "output": 0, "thinking": 0}, "profiles": {},
-           "by_kind": {k: 0 for k in core.UNIT_KINDS}, "completed": 0, "diagnostics": {}}
+           "by_kind": {k: 0 for k in core.UNIT_KINDS},
+           "completed_by_kind": {k: 0 for k in core.UNIT_KINDS},
+           "completed": 0, "diagnostics": {}}
     consecutive_fail = 0
     started = core.utc_now()
     gen = job.batches(todo)
     in_flight: Dict[Any, Tuple[Slot, str]] = {}
     pending: Optional[Batch] = None
     exhausted_gen = False
+    kind_started: Dict[str, float] = {}
+    kind_ended: Dict[str, float] = {}
     with ThreadPoolExecutor(max_workers=len(slots)) as ex:
         while True:
             while free and not exhausted_gen and not budget.reason():
@@ -922,6 +1184,7 @@ def cmd_run(a: argparse.Namespace) -> int:
                 if any(kind != pending.kind for _, kind in in_flight.values()):
                     break
                 slot = free.pop()
+                kind_started.setdefault(pending.kind, time.monotonic())
                 in_flight[ex.submit(job.process, pending, slot)] = (slot, pending.kind)
                 pending = None
             if not in_flight:
@@ -929,6 +1192,7 @@ def cmd_run(a: argparse.Namespace) -> int:
             done, _ = wait(list(in_flight), return_when=FIRST_COMPLETED)
             for f in done:
                 slot, batch_kind = in_flight.pop(f)
+                kind_ended[batch_kind] = time.monotonic()
                 free.append(slot)
                 try:
                     r: BatchResult = f.result()
@@ -948,7 +1212,9 @@ def cmd_run(a: argparse.Namespace) -> int:
                     e = live.append(body)
                     new_decisions.append(e)
                     tot["by_kind"][e["unit_kind"]] += 1
-                    tot["completed"] += 1 if core.decision_complete(e) else 0
+                    if core.decision_complete(e):
+                        tot["completed"] += 1
+                        tot["completed_by_kind"][e["unit_kind"]] += 1
                 tot["calls"] += r.calls
                 tot["retries"] += r.retries
                 tot["stage2_calls"] += r.stage2_calls
@@ -998,6 +1264,8 @@ def cmd_run(a: argparse.Namespace) -> int:
     stop = ("errors" if tot["failed_batches"] and not new_decisions
             else budget.reason() or ("errors" if remaining else "done"))
     elapsed_s = max(0.0, time.monotonic() - budget.t0)
+    elapsed_by_kind = {kind: round(max(0.0, kind_ended[kind] - started_at), 3)
+                       for kind, started_at in kind_started.items() if kind in kind_ended}
     per_minute = completed_now * 60.0 / elapsed_s if elapsed_s > 0 else 0.0
     eta_s = (remaining * elapsed_s / completed_now
              if completed_now and stop not in ("errors", "exhausted", "needs-login") else None)
@@ -1006,14 +1274,17 @@ def cmd_run(a: argparse.Namespace) -> int:
                                               created=bundle.manifest.get("created")),
                  "code": core.code_hashes(HERE),
                  "model": a.model, "effort": a.effort, "concurrency": len(slots),
+                 "trigger": trigger, "config": performance_config, "config_key": performance_config["key"],
                  "budget": {"max_calls": a.max_calls, "max_minutes": a.max_minutes, "max_usd": a.max_usd},
                  "calls": tot["calls"], "retries": tot["retries"], "stage2_calls": tot["stage2_calls"],
                  "failed_batches": tot["failed_batches"], "unanswered_units": tot["unanswered"],
                  "incomplete": tot["incomplete"], "decided": len(new_decisions), "decided_by_kind": tot["by_kind"],
+                 "completed_by_kind": tot["completed_by_kind"],
                  "findings": n_findings, "tokens": tot["tokens"], "list_price_usd": round(tot["usd"], 6),
                  "profiles": tot["profiles"], "remaining": remaining,
                  "error_diagnostics": tot["diagnostics"],
                  "skipped_units": job.skipped, "elapsed_seconds": round(elapsed_s, 3),
+                 "elapsed_seconds_by_kind": elapsed_by_kind,
                  "completed_per_minute": round(per_minute, 3),
                  "eta_seconds": round(eta_s, 1) if eta_s is not None else None}
     # Auch ein Null-Aufruf-Fehler ist ein Lauf: Er muss in Status und Historie
@@ -1021,8 +1292,10 @@ def cmd_run(a: argparse.Namespace) -> int:
     if tot["calls"] or new_decisions or tot["failed_batches"] or remaining:
         live.append(run_entry)
         live.write_pointer(run_id, bundle.sha256[:12])
-        core.write_atomic(repo / core.STATUS_FILE, (json.dumps(build_status(live, plan, bundle, state), indent=1,
-                                                               sort_keys=True, ensure_ascii=False) + "\n").encode())
+        core.write_atomic(repo / core.STATUS_FILE, (json.dumps(build_status(live, plan, bundle, state,
+                                                               performance_config), indent=1,
+                                                               sort_keys=True, ensure_ascii=False,
+                                                               allow_nan=False) + "\n").encode())
         check = core.verify_chain(repo)
         if not check.ok:
             log("Kette nach dem Schreiben ungültig: " + "; ".join(check.errors[:3]))
