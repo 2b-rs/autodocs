@@ -10,6 +10,9 @@ name: "Live-Verteilung (Snippets und Schaubilder an Elemente und Fragmente)"
 # Befehl verboten, nie --dangerously-skip-permissions). Der Deploy-Key (Secret AUTODOCS_LIVE_DEPLOY_KEY der Umgebung
 # agy) existiert nur in den Schritten Klonen und Übertragen, nie neben agy.
 # Das Log nennt nur Zahlen, Kosten zu API-Listenpreisen und die Profilnamen leo/neo; nie Prompts oder Antworten.
+# Live-Worker-Telemetrie: PUT /dashboard/live-worker.json (Fragment dashboard-live-worker-update@1), nie /dashboard.json.
+# DASHBOARD_WRITE_TOKEN nur aus der Umgebung, nie in argv, Dateien, Outputs oder Logs; fehlende Telemetrie
+# unterbricht die Verteilung nicht.
 on:
   workflow_dispatch:
     inputs:
@@ -70,6 +73,7 @@ jobs:
       # Nur Dispatcher-Provenienz; keine kryptografische Attestierung.
       AUTODOCS_TRIGGER_KIND: ${{ inputs.trigger_kind }}
       AUTODOCS_SCHEDULED_AT: ${{ inputs.scheduled_at }}
+      AUTODOCS_LIVE_WORKER_STATE: ${{ runner.temp }}/live-worker-state.json
     steps:
       # Das Repository enthält die ganze Website (mehrere GB); der Job braucht nur .github/.
       - uses: actions/checkout@v4
@@ -77,6 +81,19 @@ jobs:
           sparse-checkout: .github
           filter: blob:none
           persist-credentials: false
+
+      - name: Live-Worker-Fragment (Start)
+        if: always()
+        shell: bash
+        env:
+          DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
+        run: |
+          set +e -uo pipefail
+          script="$GITHUB_WORKSPACE/.github/scripts/live_distribute.py"
+          if [ -f "$script" ]; then
+            python3 "$script" dashboard --event start
+          fi
+          exit 0
 
       - name: Konfiguration prüfen
         id: cfg
@@ -129,6 +146,7 @@ jobs:
         shell: bash
         env:
           IN_KINDS: ${{ inputs.kinds }}
+          DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
         run: |
           set +e -uo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/live_distribute.py" pending \
@@ -172,6 +190,7 @@ jobs:
           IN_KINDS: ${{ inputs.kinds }}
           IN_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
           RUN_ID: gh-${{ github.run_id }}-${{ github.run_attempt }}
+          DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
         run: |
           set +e -uo pipefail          # Exitcodes des Jobs auswerten statt abbrechen
           [ -n "${AUTODOCS_AGY_PROFILES:-}" ] || { echo "::error::Keine agy-Profile (AGY_OAUTH_TOKEN_1/_2)"; echo "rc=77" >> "$GITHUB_OUTPUT"; exit 0; }
@@ -241,3 +260,22 @@ jobs:
             78) echo "::error::Konfiguration: Job-Code passt nicht zum Datenbündel (live_bundle.py vendor) oder Eingaben fehlen"; exit 1 ;;
             *) echo "::error::Lauf mit Fehler beendet (rc=${RC:-?})"; exit 1 ;;
           esac
+
+      - name: Live-Worker-Fragment (Ende)
+        if: always()
+        shell: bash
+        env:
+          DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
+          CFG_SKIP: ${{ steps.cfg.outputs.skip }}
+          CFG_OUTCOME: ${{ steps.cfg.outcome }}
+          RC: ${{ steps.run.outputs.rc || steps.pending.outputs.rc }}
+          PENDING: ${{ steps.pending.outputs.pending }}
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+          PENDING_OUTCOME: ${{ steps.pending.outcome }}
+        run: |
+          set +e -uo pipefail
+          script="$GITHUB_WORKSPACE/.github/scripts/live_distribute.py"
+          if [ -f "$script" ]; then
+            python3 "$script" dashboard --event terminal
+          fi
+          exit 0

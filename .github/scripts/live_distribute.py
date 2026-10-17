@@ -39,6 +39,8 @@ import sys
 import tempfile
 import threading
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
@@ -63,13 +65,339 @@ BATCH = {"snippet": 20, "figure": 20, "element": 12}
 # Linux begrenzt ein einzelnes Argument auf 128 KiB (agy -p); bis 100.000 Bytes bleibt ein Aufruf auch unter der
 # Schwelle von ~47.000 Tokens, ab der agy in Agentenschleifen fiel.
 MAX_PROMPT_BYTES = 100_000
-PERFORMANCE_MIN_SAMPLES = 3
+PERFORMANCE_STABLE_SAMPLES = 3
 SCHEDULE_CADENCE_SECONDS = 3600
 SCHEDULED_AT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$")
+LIVE_WORKER_SCHEMA = "dashboard-live-worker-update@1"
+LIVE_WORKER_PATH = "/dashboard/live-worker.json"
+LIVE_WORKER_URL = "https://autodocs-nexos.autodocs-2b-rs.workers.dev/dashboard/live-worker.json"
+DASHBOARD_TOKEN_ENV = "DASHBOARD_WRITE_TOKEN"
+TELEMETRY_ATTEMPTS = 3
+TELEMETRY_TIMEOUT_S = 15.0
+TELEMETRY_WARN_MAX = 180
+TERMINAL_STOPS = {"errors", "exhausted", "needs-login"}
+SUCCESSFUL_STOPS = {"done", "budget-time", "budget-calls", "budget-usd"}
+_TELEMETRY_LOCK = threading.Lock()
 
 
 def log(msg: str) -> None:
     print("live: " + msg, flush=True)
+
+
+def _dashboard_token() -> str:
+    value = os.environ.get(DASHBOARD_TOKEN_ENV)
+    return value if isinstance(value, str) else ""
+
+
+def _redact(text: str, token: Optional[str] = None) -> str:
+    token = token if token is not None else _dashboard_token()
+    if not isinstance(text, str):
+        text = str(text)
+    if token:
+        text = text.replace(token, "[redacted]")
+    return text
+
+
+def _scrubbed_env(src: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    """Copy an environment mapping without the dashboard write token (name or value)."""
+    env = dict(src if src is not None else os.environ)
+    token = env.get(DASHBOARD_TOKEN_ENV, "") if isinstance(env.get(DASHBOARD_TOKEN_ENV), str) else ""
+    env.pop(DASHBOARD_TOKEN_ENV, None)
+    if token:
+        for key, value in list(env.items()):
+            if value == token:
+                env.pop(key, None)
+    return env
+
+
+def _git_env() -> Dict[str, str]:
+    env = _scrubbed_env(os.environ)
+    env.update(GIT_AUTHOR_NAME="autodocs-live-worker", GIT_COMMITTER_NAME="autodocs-live-worker",
+               GIT_AUTHOR_EMAIL="autodocs-live-worker@users.noreply.github.com",
+               GIT_COMMITTER_EMAIL="autodocs-live-worker@users.noreply.github.com")
+    env.pop(DASHBOARD_TOKEN_ENV, None)
+    return env
+
+
+def _telemetry_warn(msg: str) -> None:
+    text = _redact(msg)[:TELEMETRY_WARN_MAX]
+    log("telemetry warning: " + text)
+    print("::warning::dashboard telemetry " + text, flush=True)
+
+
+def _worker_state_path() -> Path:
+    raw = os.environ.get("AUTODOCS_LIVE_WORKER_STATE", "").strip()
+    if raw:
+        return Path(raw)
+    tmp = os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()
+    run = os.environ.get("GITHUB_RUN_ID") or "local"
+    attempt = os.environ.get("GITHUB_RUN_ATTEMPT") or "0"
+    return Path(tmp) / f"live-worker-state-{run}-{attempt}.json"
+
+
+def _load_worker_state(path: Path) -> Dict[str, Any]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"seq": 0, "terminal_sent": False, "started": None}
+    return data if isinstance(data, dict) else {"seq": 0, "terminal_sent": False, "started": None}
+
+
+def _save_worker_state(path: Path, state: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {k: v for k, v in state.items() if k != DASHBOARD_TOKEN_ENV}
+    core.write_atomic(path, (json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                                        ensure_ascii=False, allow_nan=False) + "\n").encode("utf-8"))
+
+
+def _github_ids() -> Dict[str, Any]:
+    run_id = os.environ.get("GITHUB_RUN_ID") or ""
+    attempt_raw = os.environ.get("GITHUB_RUN_ATTEMPT") or ""
+    unknown: List[str] = []
+    if not run_id:
+        unknown.append("run_id")
+        run_id_out: Optional[str] = None
+    else:
+        run_id_out = run_id
+    attempt: Optional[int]
+    try:
+        attempt = int(attempt_raw) if attempt_raw else None
+    except ValueError:
+        attempt = None
+    if attempt is None or isinstance(attempt, bool) or attempt < 1:
+        unknown.append("run_attempt")
+        attempt = None
+    return {"run_id": run_id_out, "run_attempt": attempt, "unknown": unknown}
+
+
+def _progress_obj(done: Optional[int], total: Optional[int]) -> Dict[str, Any]:
+    unknown: List[str] = []
+    done_out: Optional[int] = done
+    total_out: Optional[int] = total
+    if done_out is None or isinstance(done_out, bool) or not isinstance(done_out, int) or done_out < 0:
+        if done_out is not None:
+            unknown.append("done")
+        else:
+            unknown.append("done")
+        done_out = None
+    if total_out is None or isinstance(total_out, bool) or not isinstance(total_out, int) or total_out < 0:
+        unknown.append("total")
+        total_out = None
+    return {"done": done_out, "total": total_out, "unknown": unknown}
+
+
+def _live_worker_target() -> Optional[str]:
+    raw = (os.environ.get("DASHBOARD_LIVE_WORKER_URL") or LIVE_WORKER_URL).strip()
+    try:
+        parsed = urllib.parse.urlparse(raw)
+    except ValueError:
+        _telemetry_warn("refused: unusable URL")
+        return None
+    if parsed.path.rstrip("/") != LIVE_WORKER_PATH.rstrip("/"):
+        _telemetry_warn("refused: path is not /dashboard/live-worker.json")
+        return None
+    if parsed.username or parsed.password:
+        _telemetry_warn("refused: credentials in URL")
+        return None
+    if parsed.scheme == "https":
+        return raw
+    host = (parsed.hostname or "").lower()
+    if parsed.scheme == "http" and host in {"127.0.0.1", "localhost", "::1"}:
+        return raw
+    _telemetry_warn("refused: URL scheme")
+    return None
+
+
+def _put_live_worker(url: str, token: str, body: bytes) -> Tuple[int, str]:
+    request = urllib.request.Request(
+        url, data=body,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
+                 "Accept": "application/json", "User-Agent": "autodocs-live-worker/1.0"},
+        method="PUT")
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        with opener.open(request, timeout=TELEMETRY_TIMEOUT_S) as resp:
+            payload = resp.read()
+            return int(resp.getcode() or 0), payload.decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as exc:
+        try:
+            payload = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            payload = ""
+        try:
+            exc.close()
+        except Exception:
+            pass
+        return int(exc.code or 0), payload
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+        return 0, type(exc).__name__
+
+
+def _confidence(sample_count: int, *, remaining: int, eta_ok: bool) -> Optional[str]:
+    if remaining == 0:
+        return "stable"
+    if not eta_ok:
+        return None
+    if sample_count >= PERFORMANCE_STABLE_SAMPLES:
+        return "stable"
+    if sample_count >= 1:
+        return "provisional"
+    return None
+
+
+def _usable_performance_run(run: Any, config_key: Optional[str]) -> bool:
+    if not isinstance(run, dict) or not config_key or run.get("config_key") != config_key:
+        return False
+    if run.get("stop") in TERMINAL_STOPS:
+        return False
+    failed_batches = run.get("failed_batches")
+    if failed_batches is None:
+        failed_batches = 0
+    if not isinstance(failed_batches, int) or isinstance(failed_batches, bool) or failed_batches < 0:
+        return False
+    return True
+
+
+def publish_live_worker(*, event: str, phase: str, state: str,
+                        done: Optional[int] = None, total: Optional[int] = None,
+                        counters: Optional[Dict[str, Any]] = None,
+                        outcome: Optional[str] = None, reason: Optional[str] = None,
+                        performance: Optional[Dict[str, Any]] = None,
+                        ended: bool = False) -> bool:
+    """PUT one live-worker fragment. Failure-open: never raises, never changes distribution rc."""
+    try:
+        return _publish_live_worker(event=event, phase=phase, state=state, done=done, total=total,
+                                    counters=counters, outcome=outcome, reason=reason,
+                                    performance=performance, ended=ended)
+    except Exception as exc:
+        _telemetry_warn(f"publish:{type(exc).__name__}")
+        return False
+
+
+def _publish_live_worker(*, event: str, phase: str, state: str,
+                         done: Optional[int] = None, total: Optional[int] = None,
+                         counters: Optional[Dict[str, Any]] = None,
+                         outcome: Optional[str] = None, reason: Optional[str] = None,
+                         performance: Optional[Dict[str, Any]] = None,
+                         ended: bool = False) -> bool:
+    token = _dashboard_token()
+    if not token:
+        log("telemetry: skipped (DASHBOARD_WRITE_TOKEN unset)")
+        return False
+    url = _live_worker_target()
+    if not url:
+        return False
+    with _TELEMETRY_LOCK:
+        path = _worker_state_path()
+        worker_state = _load_worker_state(path)
+        if event == "terminal" and worker_state.get("terminal_sent"):
+            return True
+        if event == "start" and worker_state.get("started") and int(worker_state.get("seq") or 0) > 0:
+            return True
+        now = core.utc_now()
+        started = worker_state.get("started") or now
+        worker_state["started"] = started
+        seq = int(worker_state.get("seq") or 0) + 1
+        worker_state["seq"] = seq
+        fragment: Dict[str, Any] = {
+            "schema": LIVE_WORKER_SCHEMA,
+            "github": _github_ids(),
+            "seq": seq,
+            "event": event,
+            "phase": phase,
+            "state": state,
+            "interval": {"started": started, "ended": now if ended or event == "terminal" else None},
+            "progress": _progress_obj(done, total),
+            "counters": counters or {},
+            "timestamp": now,
+            "outcome": outcome,
+            "reason": reason,
+        }
+        if performance is not None:
+            fragment["performance"] = performance
+        if event == "terminal":
+            worker_state["terminal_sent"] = True
+            worker_state["last_outcome"] = outcome
+            worker_state["last_reason"] = reason
+        worker_state["last_progress"] = fragment["progress"]
+        worker_state["last_counters"] = fragment["counters"]
+        try:
+            _save_worker_state(path, worker_state)
+        except (OSError, TypeError, ValueError) as exc:
+            _telemetry_warn(f"state-write:{type(exc).__name__}")
+        try:
+            body = json.dumps(fragment, sort_keys=True, separators=(",", ":"),
+                              ensure_ascii=False, allow_nan=False).encode("utf-8")
+        except (TypeError, ValueError) as exc:
+            _telemetry_warn(f"encode:{type(exc).__name__}")
+            return False
+        last_status, last_detail = 0, "unsent"
+        for attempt in range(1, TELEMETRY_ATTEMPTS + 1):
+            status, detail = _put_live_worker(url, token, body)
+            last_status, last_detail = status, detail
+            if status == 200:
+                log(f"telemetry: {event} seq={seq} http=200")
+                return True
+            if attempt < TELEMETRY_ATTEMPTS:
+                time.sleep(0.2 * attempt)
+        _telemetry_warn(f"{event} seq={seq} http={last_status} {_redact(last_detail, token)}")
+        return False
+
+
+def _workflow_terminal_fields() -> Tuple[str, str, str]:
+    if os.environ.get("CFG_SKIP") == "true":
+        return "skipped", "config-skip", "skipped"
+    if os.environ.get("CFG_OUTCOME") == "failure":
+        return "error", "config", "error"
+    pending = os.environ.get("PENDING", "")
+    rc_raw = os.environ.get("RC", "")
+    if pending == "0" and rc_raw in ("", "0"):
+        return "ok", "nothing-to-do", "idle"
+    try:
+        rc = int(rc_raw) if rc_raw not in ("",) else 1
+    except ValueError:
+        rc = 1
+    mapping = {0: ("ok", "completed", "idle"), 75: ("exhausted", "exhausted", "error"),
+               77: ("needs-login", "needs-login", "error"), 65: ("error", "data", "error"),
+               78: ("error", "config", "error")}
+    return mapping.get(rc, ("error", f"rc-{rc}"[:40], "error"))
+
+
+def _run_terminal_fields(stop: str) -> Tuple[str, str, str]:
+    if stop in SUCCESSFUL_STOPS:
+        return "ok", stop, "idle"
+    if stop == "exhausted":
+        return "exhausted", stop, "error"
+    if stop == "needs-login":
+        return "needs-login", stop, "error"
+    if stop == "errors":
+        return "error", stop, "error"
+    return "error", (stop or "unknown")[:40], "error"
+
+
+def cmd_dashboard(a: argparse.Namespace) -> int:
+    """Workflow helper: start/terminal fragment. Always returns 0 (failure-open)."""
+    try:
+        if a.event == "start":
+            publish_live_worker(event="start", phase="start", state="active")
+        elif a.event == "progress":
+            publish_live_worker(event="progress", phase=a.phase or "progress", state=a.state or "active",
+                                done=a.done, total=a.total, outcome=a.outcome or None, reason=a.reason or None)
+        else:
+            path = _worker_state_path()
+            worker_state = _load_worker_state(path)
+            last = worker_state.get("last_progress") if isinstance(worker_state.get("last_progress"), dict) else {}
+            outcome, reason, state = _workflow_terminal_fields()
+            if worker_state.get("terminal_sent"):
+                return EXIT_OK
+            publish_live_worker(event="terminal", phase="terminal", state=state,
+                                done=last.get("done"), total=last.get("total"),
+                                counters=worker_state.get("last_counters")
+                                if isinstance(worker_state.get("last_counters"), dict) else {},
+                                outcome=outcome, reason=reason, ended=True)
+    except Exception as exc:
+        _telemetry_warn(f"dashboard:{type(exc).__name__}")
+    return EXIT_OK
 
 
 # ==============================================================================
@@ -248,6 +576,8 @@ def _terminate(signum, _frame) -> None:
 
 def _run_group(cmd: List[str], timeout: float, env: Dict[str, str], cwd: str) -> Tuple[int, str, str, bool]:
     """Prozess in eigener Gruppe; bei Zeitüberschreitung wird die ganze Gruppe (auch agy) beendet."""
+    env = _scrubbed_env(env)
+    env.pop(DASHBOARD_TOKEN_ENV, None)
     with tempfile.TemporaryFile("w+", encoding="utf-8") as out, tempfile.TemporaryFile("w+", encoding="utf-8") as err:
         proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=out, stderr=err, env=env, cwd=cwd,
                                 start_new_session=True, text=True)
@@ -276,12 +606,13 @@ class Agy:
         self.timeout_s, self.python = timeout_s, python
 
     def env(self, slot: Slot) -> Dict[str, str]:
-        src = os.environ
+        src = _scrubbed_env(os.environ)
         env = {"PATH": src.get("PATH", "/usr/bin:/bin"), "LANG": src.get("LANG", "C.UTF-8"),
                "AUTODOCS_AGY_PROFILES": slot.profiles, "AGY_STATE": str(self.state)}
         for k in ("RUNNER_TEMP", "TMPDIR", "TZ"):
             if src.get(k):
                 env[k] = src[k]
+        env.pop(DASHBOARD_TOKEN_ENV, None)
         return env
 
     def call(self, slot: Slot, prompt: str, schema: Dict[str, Any]) -> CallResult:
@@ -838,9 +1169,13 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
     """Robust, conservative ETA from successful same-config run samples.
 
     Active throughput measures productive worker time.  Scheduled yield is a
-    separate wall-clock quantity: units per hourly scheduled invocation.  A
-    kind is estimable only after three valid samples; the overall ETA stays
-    null while any still-open kind lacks that evidence.
+    separate wall-clock quantity: units per hourly scheduled invocation.
+    Budget-time runs that still completed units after failed or timeout batches
+    contribute realized yield and elapsed productive time.  Terminal errors,
+    exhaustion, login failure, malformed samples, and mismatched config stay
+    excluded.  n=1 and n=2 emit provisional (low-confidence) estimates; the
+    stable/high-confidence label is reserved for n>=3.  Overall ETA stays null
+    while any still-open kind lacks supporting samples.
     """
     by_kind: Dict[str, Dict[str, Any]] = {}
     active_etas: List[float] = []
@@ -862,14 +1197,10 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
         active_rates: List[float] = []
         scheduled_yields: List[float] = []
         for run in runs:
-            if config_key is None or run.get("config_key") != config_key:
+            if not _usable_performance_run(run, config_key):
                 continue
-            failed_batches = run.get("failed_batches") or 0
-            if (run.get("stop") in {"errors", "exhausted", "needs-login"}
-                    or not isinstance(failed_batches, int) or isinstance(failed_batches, bool) or failed_batches):
-                continue
-            completed = (run.get("completed_by_kind") or {}).get(kind)
-            elapsed = (run.get("elapsed_seconds_by_kind") or {}).get(kind)
+            completed = (run.get("completed_by_kind") or {}).get(kind) if isinstance(run.get("completed_by_kind"), dict) else None
+            elapsed = (run.get("elapsed_seconds_by_kind") or {}).get(kind) if isinstance(run.get("elapsed_seconds_by_kind"), dict) else None
             if (kind in selected_kinds and _scheduled_sample(run.get("trigger"))
                     and isinstance(completed, int) and not isinstance(completed, bool) and completed >= 0):
                 scheduled_yields.append(float(completed))
@@ -885,10 +1216,10 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
                 active_rates.append(rate)
         remaining = max(0, int((plan_by_kind.get(kind) or {}).get("planned", 0))
                         - int((plan_by_kind.get(kind) or {}).get("done", 0)))
-        active_ok = len(active_rates) >= PERFORMANCE_MIN_SAMPLES
-        scheduled_mean = (sum(scheduled_yields) / len(scheduled_yields)) if scheduled_yields else 0.0
-        scheduled_ok = (len(scheduled_yields) >= PERFORMANCE_MIN_SAMPLES
-                        and math.isfinite(scheduled_mean) and scheduled_mean > 0)
+        n_active, n_scheduled = len(active_rates), len(scheduled_yields)
+        scheduled_center = _median(scheduled_yields) if n_scheduled else 0.0
+        active_ok = n_active >= 1
+        scheduled_ok = n_scheduled >= 1 and math.isfinite(scheduled_center) and scheduled_center > 0
         active_eta = scheduled_eta = None
         active_range = scheduled_range = None
         if remaining == 0:
@@ -906,14 +1237,14 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
                     active_etas.append(active_eta)
                     active_lows.append(active_range[0])
                     active_highs.append(active_range[1])
-                    active_counts.append(len(active_rates))
+                    active_counts.append(n_active)
                 else:
                     active_ok = False
             if not active_ok:
                 active_eta = active_range = None
                 all_active_valid = False
             if scheduled_ok:
-                scheduled_eta = _finite_projection(remaining / scheduled_mean * SCHEDULE_CADENCE_SECONDS)
+                scheduled_eta = _finite_projection(remaining / scheduled_center * SCHEDULE_CADENCE_SECONDS)
                 scheduled_range = None
                 if min(scheduled_yields) > 0:
                     projected_range = [
@@ -922,7 +1253,7 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
                     ]
                     if None not in projected_range:
                         scheduled_range = [float(projected_range[0]), float(projected_range[1])]
-                scheduled_yield = _finite_projection(scheduled_mean)
+                scheduled_yield = _finite_projection(scheduled_center)
                 if scheduled_eta is not None and scheduled_yield is not None:
                     scheduled_etas.append(scheduled_eta)
                     if scheduled_range is not None:
@@ -930,7 +1261,7 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
                         scheduled_highs.append(scheduled_range[1])
                     else:
                         all_scheduled_ranges_valid = False
-                    scheduled_counts.append(len(scheduled_yields))
+                    scheduled_counts.append(n_scheduled)
                 else:
                     scheduled_ok = False
             if not scheduled_ok:
@@ -941,14 +1272,17 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
             "active": {
                 "eta_seconds": round(active_eta, 1) if active_eta is not None else None,
                 "range_seconds": [round(v, 1) for v in active_range] if active_range else None,
-                "sample_count": len(active_rates),
+                "sample_count": n_active,
                 "throughput_per_minute": round(_median(active_rates) * 60.0, 3) if active_ok else None,
+                "confidence": _confidence(n_active, remaining=remaining, eta_ok=active_ok and active_eta is not None),
             },
             "scheduled": {
                 "eta_seconds": round(scheduled_eta, 1) if scheduled_eta is not None else None,
                 "range_seconds": [round(v, 1) for v in scheduled_range] if scheduled_range else None,
-                "sample_count": len(scheduled_yields),
-                "yield_per_hour": round(scheduled_mean, 3) if scheduled_ok else None,
+                "sample_count": n_scheduled,
+                "yield_per_hour": round(scheduled_center, 3) if scheduled_ok else None,
+                "confidence": _confidence(n_scheduled, remaining=remaining,
+                                          eta_ok=scheduled_ok and scheduled_eta is not None),
             },
         }
     remaining_total = sum(item["remaining"] for item in by_kind.values())
@@ -964,23 +1298,30 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
     scheduled_high_total = max(scheduled_highs, default=0.0)
     if remaining_total and (active_total is None or active_low_total is None or active_high_total is None):
         all_active_valid = False
+    active_n = min(active_counts) if active_counts else 0
+    scheduled_n = min(scheduled_counts) if scheduled_counts else 0
     return {
-        "basis": ("active median and scheduled calendar mean of successful same-config runs; "
-                  "minimum 3 samples per remaining kind"),
-        "minimum_samples_per_kind": PERFORMANCE_MIN_SAMPLES,
+        "basis": ("active median and scheduled calendar median of successful same-config runs; "
+                  "low-confidence/provisional at 1–2 samples per remaining kind, "
+                  "stable/high-confidence at 3+"),
+        "minimum_samples_per_kind": 1,
+        "stable_samples_per_kind": PERFORMANCE_STABLE_SAMPLES,
         "active": {
             "eta_seconds": (0.0 if not remaining_total else round(active_total, 1)) if all_active_valid else None,
             "range_seconds": ([0.0, 0.0] if not remaining_total else
                               [round(active_low_total, 1), round(active_high_total, 1)]) if all_active_valid else None,
-            "sample_count": min(active_counts) if active_counts else 0,
+            "sample_count": active_n,
+            "confidence": _confidence(active_n, remaining=remaining_total, eta_ok=all_active_valid),
         },
         "scheduled": {
             "eta_seconds": (0.0 if not remaining_total else round(scheduled_total, 1)) if all_scheduled_valid else None,
             "range_seconds": ([0.0, 0.0] if not remaining_total else
                               [round(scheduled_low_total, 1), round(scheduled_high_total, 1)])
                               if all_scheduled_valid and all_scheduled_ranges_valid else None,
-            "sample_count": min(scheduled_counts) if scheduled_counts else 0,
+            "sample_count": scheduled_n,
             "cadence_seconds": SCHEDULE_CADENCE_SECONDS,
+            "confidence": _confidence(scheduled_n, remaining=remaining_total,
+                                      eta_ok=all_scheduled_valid and (not remaining_total or scheduled_etas)),
         },
         "by_kind": by_kind,
     }
@@ -1040,10 +1381,7 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
 
 
 def git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    env = dict(os.environ, GIT_AUTHOR_NAME="autodocs-live-worker", GIT_COMMITTER_NAME="autodocs-live-worker",
-               GIT_AUTHOR_EMAIL="autodocs-live-worker@users.noreply.github.com",
-               GIT_COMMITTER_EMAIL="autodocs-live-worker@users.noreply.github.com")
-    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, env=env, check=check)
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, env=_git_env(), check=check)
 
 
 def is_git(repo: Path) -> bool:
@@ -1113,12 +1451,16 @@ def prepare(a: argparse.Namespace, work: Path, repo: Path):
 
 def cmd_pending(a: argparse.Namespace) -> int:
     """Nur zählen (vor der Einrichtung von agy): ``pending=<n>`` nach $GITHUB_OUTPUT bzw. --github-output."""
-    rc, _bundle, _live, _plan, todo = prepare(a, Path(a.work or tempfile.mkdtemp(prefix="live-work-")), Path(a.live_repo))
+    rc, _bundle, _live, plan, todo = prepare(a, Path(a.work or tempfile.mkdtemp(prefix="live-work-")), Path(a.live_repo))
     n = len(todo) if todo is not None else 0
     out = a.github_output or os.environ.get("GITHUB_OUTPUT")
     if out:
         with open(out, "a", encoding="utf-8") as fh:
             fh.write(f"pending={n if rc == EXIT_OK else 'error'}\nrc={rc}\n")
+    if rc == EXIT_OK and plan is not None and todo is not None:
+        publish_live_worker(event="progress", phase="pending", state="idle" if not n else "active",
+                            done=len(plan) - n, total=len(plan),
+                            counters={"remaining": n, "planned": len(plan)})
     if rc == EXIT_OK and not n:
         log("nichts zu tun")
     return rc
@@ -1131,6 +1473,11 @@ def cmd_run(a: argparse.Namespace) -> int:
     rc, bundle, live, plan, todo = prepare(a, work, repo)
     if rc != EXIT_OK:
         return rc
+    base_done = len(plan) - len(todo)
+    plan_total = len(plan)
+    publish_live_worker(event="progress", phase="distribute", state="active" if todo else "idle",
+                        done=base_done, total=plan_total,
+                        counters={"remaining": len(todo), "completed": 0, "calls": 0, "failed_batches": 0})
     if not todo:
         log("nichts zu tun")
         return EXIT_OK
@@ -1145,10 +1492,15 @@ def cmd_run(a: argparse.Namespace) -> int:
                 break
         log(f"Trockenlauf: erste {len(sizes)} Batches, Prompt-Bytes Median {sorted(sizes)[len(sizes) // 2] if sizes else 0}, "
             f"Maximum {max(sizes) if sizes else 0}; kein Modellaufruf")
+        publish_live_worker(event="terminal", phase="terminal", state="idle", done=base_done, total=plan_total,
+                            counters={"remaining": len(todo)}, outcome="ok", reason="dry-run", ended=True)
         return EXIT_OK
     base_profiles = [p for p in os.environ.get("AUTODOCS_AGY_PROFILES", "").split(",") if p]
     if not base_profiles:
         log("keine agy-Profile (setup-agy, AUTODOCS_AGY_PROFILES)")
+        publish_live_worker(event="terminal", phase="terminal", state="error", done=base_done, total=plan_total,
+                            counters={"remaining": len(todo)}, outcome="needs-login", reason="needs-login",
+                            ended=True)
         return EXIT_LOGIN
     state = Path(a.state or os.environ.get("AGY_STATE") or (work / "agy-state.json"))
     agy = Agy(Path(a.switch), state, a.model, a.effort, a.call_timeout, a.python)
@@ -1165,6 +1517,7 @@ def cmd_run(a: argparse.Namespace) -> int:
            "completed_by_kind": {k: 0 for k in core.UNIT_KINDS},
            "completed": 0, "diagnostics": {}}
     consecutive_fail = 0
+    progress_sent = False
     started = core.utc_now()
     gen = job.batches(todo)
     in_flight: Dict[Any, Tuple[Slot, str]] = {}
@@ -1229,15 +1582,25 @@ def cmd_run(a: argparse.Namespace) -> int:
                     tot["diagnostics"][d] = tot["diagnostics"].get(d, 0) + n
                 if r.bodies:
                     consecutive_fail = 0
-                    if len(new_decisions) and len(new_decisions) % 50 < len(r.bodies):
-                        elapsed = max(0.001, time.monotonic() - budget.t0)
+                    elapsed = max(0.001, time.monotonic() - budget.t0)
+                    remain_now = max(0, len(todo) - tot["completed"])
+                    crossed = bool(len(new_decisions) and len(new_decisions) % 50 < len(r.bodies))
+                    if crossed:
                         per_minute = tot["completed"] * 60.0 / elapsed
-                        remain_now = max(0, len(todo) - tot["completed"])
                         eta = remain_now * 60.0 / per_minute if per_minute else None
                         eta_text = f"{eta / 60.0:.1f} min" if eta is not None else "unbekannt"
                         log(f"Fortschritt: {len(new_decisions)} Entscheidungen, {tot['calls']} Aufrufe, "
                             f"{tot['usd']:.3f} $ Listenpreis, {per_minute:.1f}/min, "
                             f"offen {remain_now}, ETA {eta_text}")
+                    if not progress_sent or crossed:
+                        progress_sent = True
+                        publish_live_worker(
+                            event="progress", phase="distribute", state="active",
+                            done=base_done + tot["completed"], total=plan_total,
+                            counters={"calls": tot["calls"], "completed": tot["completed"],
+                                      "failed_batches": tot["failed_batches"], "remaining": remain_now,
+                                      "elapsed_seconds": round(elapsed, 3),
+                                      "completed_by_kind": dict(tot["completed_by_kind"])})
                 elif r.outcome not in ("budget", "exhausted", "login"):
                     tot["failed_batches"] += 1
                     consecutive_fail += 1
@@ -1297,12 +1660,31 @@ def cmd_run(a: argparse.Namespace) -> int:
                                                                sort_keys=True, ensure_ascii=False,
                                                                allow_nan=False) + "\n").encode())
         check = core.verify_chain(repo)
-        if not check.ok:
+        chain_ok = check.ok
+        if not chain_ok:
             log("Kette nach dem Schreiben ungültig: " + "; ".join(check.errors[:3]))
-            return EXIT_DATA
-        if a.commit:
+        elif a.commit:
             commit(repo, f"live-distribution {run_id}: {len(new_decisions)} Entscheidungen, {n_findings} Befunde, "
                          f"{tot['calls']} Aufrufe, {tot['usd']:.2f} $ Listenpreis")
+    else:
+        chain_ok = True
+    outcome, reason, worker_state_name = _run_terminal_fields(stop)
+    if not chain_ok:
+        outcome, reason, worker_state_name = "error", "chain", "error"
+    try:
+        perf = build_status(live, plan, bundle, state, performance_config).get("performance")
+    except Exception:
+        perf = None
+    publish_live_worker(event="terminal", phase="terminal", state=worker_state_name,
+                        done=base_done + completed_now, total=plan_total,
+                        counters={"calls": tot["calls"], "completed": tot["completed"],
+                                  "failed_batches": tot["failed_batches"], "remaining": remaining,
+                                  "elapsed_seconds": round(elapsed_s, 3),
+                                  "completed_by_kind": dict(tot["completed_by_kind"]),
+                                  "findings": n_findings},
+                        outcome=outcome, reason=reason, performance=perf, ended=True)
+    if not chain_ok:
+        return EXIT_DATA
     prof = ", ".join(f"{p} {n}" for p, n in sorted(tot["profiles"].items())) or "-"
     log(f"Ende ({stop}): {len(new_decisions)} Entscheidungen " + " ".join(f"{k}={v}" for k, v in tot["by_kind"].items())
         + f", {n_findings} Befunde, {tot['calls']} Aufrufe (Wiederholungen {tot['retries']}, Stufe 2 {tot['stage2_calls']}), "
@@ -1433,12 +1815,21 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--bundle-sha256", default=None)
     s = sub.add_parser("status", help="Fortschritt anzeigen")
     s.add_argument("--live-repo", required=True)
+    d = sub.add_parser("dashboard", help="Live-Worker-Fragment senden (Start/Fortschritt/Ende, fehlertolerant)")
+    d.add_argument("--event", choices=("start", "progress", "terminal"), required=True)
+    d.add_argument("--phase", default="")
+    d.add_argument("--state", default="")
+    d.add_argument("--outcome", default="")
+    d.add_argument("--reason", default="")
+    d.add_argument("--done", type=int, default=None)
+    d.add_argument("--total", type=int, default=None)
     return p
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     a = build_parser().parse_args(argv)
-    fn = {"run": cmd_run, "pending": cmd_pending, "finalize": cmd_finalize, "verify": cmd_verify, "status": cmd_status}[a.cmd]
+    fn = {"run": cmd_run, "pending": cmd_pending, "finalize": cmd_finalize, "verify": cmd_verify,
+          "status": cmd_status, "dashboard": cmd_dashboard}[a.cmd]
     if os.environ.get("LIVE_DEBUG") == "1":
         return fn(a)
     try:
