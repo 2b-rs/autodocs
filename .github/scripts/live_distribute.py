@@ -135,19 +135,114 @@ def _worker_state_path() -> Path:
     return Path(tmp) / f"live-worker-state-{run}-{attempt}.json"
 
 
+def _acked_seq(value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return 0
+    return value
+
+
 def _load_worker_state(path: Path) -> Dict[str, Any]:
+    fallback = {"seq": 0, "terminal_sent": False, "started": None}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return {"seq": 0, "terminal_sent": False, "started": None}
-    return data if isinstance(data, dict) else {"seq": 0, "terminal_sent": False, "started": None}
+        return dict(fallback)
+    if not isinstance(data, dict):
+        return dict(fallback)
+    data["seq"] = _acked_seq(data.get("seq"))
+    data["terminal_sent"] = data.get("terminal_sent") is True
+    if "started" not in data:
+        data["started"] = None
+    return data
 
 
 def _save_worker_state(path: Path, state: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {k: v for k, v in state.items() if k != DASHBOARD_TOKEN_ENV}
-    core.write_atomic(path, (json.dumps(payload, sort_keys=True, separators=(",", ":"),
-                                        ensure_ascii=False, allow_nan=False) + "\n").encode("utf-8"))
+    text = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                      ensure_ascii=False, allow_nan=False) + "\n"
+    token = _dashboard_token()
+    if token and token in text:
+        raise ValueError("refusing to persist dashboard token")
+    core.write_atomic(path, text.encode("utf-8"))
+
+
+def _persist_worker_state(path: Path, state: Dict[str, Any]) -> bool:
+    try:
+        _save_worker_state(path, state)
+        return True
+    except (OSError, TypeError, ValueError) as exc:
+        _telemetry_warn(f"state-write:{type(exc).__name__}")
+        return False
+
+
+def _pending_record(worker_state: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    pending = worker_state.get("pending")
+    if pending is None:
+        return None
+    if not isinstance(pending, dict):
+        return {"malformed": True}
+    body = pending.get("body")
+    if not isinstance(body, str) or not body:
+        return {"malformed": True}
+    return pending
+
+
+def _ack_pending(worker_state: Dict[str, Any], pending: Dict[str, Any]) -> None:
+    seq = pending.get("seq")
+    event = pending.get("event")
+    if not (isinstance(seq, int) and not isinstance(seq, bool) and seq > 0) or not isinstance(event, str):
+        try:
+            fragment = json.loads(pending.get("body") or "")
+        except (TypeError, ValueError):
+            fragment = {}
+        if isinstance(fragment, dict):
+            if not (isinstance(seq, int) and not isinstance(seq, bool) and seq > 0):
+                seq = fragment.get("seq")
+            if not isinstance(event, str):
+                event = fragment.get("event")
+    if isinstance(seq, int) and not isinstance(seq, bool) and seq > 0:
+        worker_state["seq"] = seq
+    if event == "terminal":
+        worker_state["terminal_sent"] = True
+        if "outcome" in pending:
+            worker_state["last_outcome"] = pending.get("outcome")
+        if "reason" in pending:
+            worker_state["last_reason"] = pending.get("reason")
+    worker_state.pop("pending", None)
+
+
+def _put_live_worker_attempts(url: str, token: str, body: bytes, event: str, seq: int) -> Tuple[int, str, bool]:
+    last_status, last_detail = 0, "unsent"
+    for attempt in range(1, TELEMETRY_ATTEMPTS + 1):
+        status, detail = _put_live_worker(url, token, body)
+        last_status, last_detail = status, detail
+        if status == 200:
+            log(f"telemetry: {event} seq={seq} http=200")
+            return status, detail, True
+        if attempt < TELEMETRY_ATTEMPTS:
+            time.sleep(0.2 * attempt)
+    return last_status, last_detail, False
+
+
+def _flush_pending_event(url: str, token: str, path: Path, worker_state: Dict[str, Any]) -> bool:
+    """Retry a persisted un-acked body. False means a later event must not be built."""
+    pending = _pending_record(worker_state)
+    if pending is None:
+        return True
+    if pending.get("malformed"):
+        _telemetry_warn("pending:malformed")
+        return False
+    body = pending["body"].encode("utf-8")
+    seq = pending.get("seq") if isinstance(pending.get("seq"), int) and not isinstance(pending.get("seq"), bool) else 0
+    event = pending.get("event") if isinstance(pending.get("event"), str) else "pending"
+    last_status, last_detail, ok = _put_live_worker_attempts(url, token, body, event, seq)
+    if not ok:
+        _telemetry_warn(f"{event} seq={seq} http={last_status} {_redact(last_detail, token)}")
+        return False
+    _ack_pending(worker_state, pending)
+    _persist_worker_state(path, worker_state)
+    return True
 
 
 def _github_ids() -> Dict[str, Any]:
@@ -245,16 +340,46 @@ def _confidence(sample_count: int, *, remaining: int, eta_ok: bool) -> Optional[
     return None
 
 
+def _nonneg_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _nonneg_finite_number(value: Any) -> bool:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    return math.isfinite(number) and number >= 0
+
+
 def _usable_performance_run(run: Any, config_key: Optional[str]) -> bool:
     if not isinstance(run, dict) or not config_key or run.get("config_key") != config_key:
         return False
-    if run.get("stop") in TERMINAL_STOPS:
+    if run.get("stop") not in SUCCESSFUL_STOPS:
         return False
     failed_batches = run.get("failed_batches")
     if failed_batches is None:
         failed_batches = 0
-    if not isinstance(failed_batches, int) or isinstance(failed_batches, bool) or failed_batches < 0:
+    if not _nonneg_int(failed_batches):
         return False
+    completed = run.get("completed_by_kind")
+    if completed is None:
+        completed = {}
+    if not isinstance(completed, dict):
+        return False
+    for value in completed.values():
+        if not _nonneg_int(value):
+            return False
+    elapsed = run.get("elapsed_seconds_by_kind")
+    if elapsed is None:
+        elapsed = {}
+    if not isinstance(elapsed, dict):
+        return False
+    for value in elapsed.values():
+        if not _nonneg_finite_number(value):
+            return False
     return True
 
 
@@ -290,15 +415,15 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
     with _TELEMETRY_LOCK:
         path = _worker_state_path()
         worker_state = _load_worker_state(path)
-        if event == "terminal" and worker_state.get("terminal_sent"):
+        if not _flush_pending_event(url, token, path, worker_state):
+            return False
+        if event == "terminal" and worker_state.get("terminal_sent") is True:
             return True
-        if event == "start" and worker_state.get("started") and int(worker_state.get("seq") or 0) > 0:
+        if event == "start" and worker_state.get("started") and _acked_seq(worker_state.get("seq")) > 0:
             return True
         now = core.utc_now()
         started = worker_state.get("started") or now
-        worker_state["started"] = started
-        seq = int(worker_state.get("seq") or 0) + 1
-        worker_state["seq"] = seq
+        seq = _acked_seq(worker_state.get("seq")) + 1
         fragment: Dict[str, Any] = {
             "schema": LIVE_WORKER_SCHEMA,
             "github": _github_ids(),
@@ -315,31 +440,29 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
         }
         if performance is not None:
             fragment["performance"] = performance
-        if event == "terminal":
-            worker_state["terminal_sent"] = True
-            worker_state["last_outcome"] = outcome
-            worker_state["last_reason"] = reason
-        worker_state["last_progress"] = fragment["progress"]
-        worker_state["last_counters"] = fragment["counters"]
-        try:
-            _save_worker_state(path, worker_state)
-        except (OSError, TypeError, ValueError) as exc:
-            _telemetry_warn(f"state-write:{type(exc).__name__}")
         try:
             body = json.dumps(fragment, sort_keys=True, separators=(",", ":"),
                               ensure_ascii=False, allow_nan=False).encode("utf-8")
         except (TypeError, ValueError) as exc:
             _telemetry_warn(f"encode:{type(exc).__name__}")
             return False
-        last_status, last_detail = 0, "unsent"
-        for attempt in range(1, TELEMETRY_ATTEMPTS + 1):
-            status, detail = _put_live_worker(url, token, body)
-            last_status, last_detail = status, detail
-            if status == 200:
-                log(f"telemetry: {event} seq={seq} http=200")
-                return True
-            if attempt < TELEMETRY_ATTEMPTS:
-                time.sleep(0.2 * attempt)
+        worker_state["started"] = started
+        worker_state["last_progress"] = fragment["progress"]
+        worker_state["last_counters"] = fragment["counters"]
+        worker_state["pending"] = {
+            "body": body.decode("utf-8"),
+            "event": event,
+            "seq": seq,
+            "outcome": outcome,
+            "reason": reason,
+        }
+        if not _persist_worker_state(path, worker_state):
+            return False
+        last_status, last_detail, ok = _put_live_worker_attempts(url, token, body, event, seq)
+        if ok:
+            _ack_pending(worker_state, worker_state["pending"])
+            _persist_worker_state(path, worker_state)
+            return True
         _telemetry_warn(f"{event} seq={seq} http={last_status} {_redact(last_detail, token)}")
         return False
 

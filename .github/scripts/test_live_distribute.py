@@ -326,6 +326,42 @@ class PerformanceEtaTest(unittest.TestCase):
         self.assertIsNone(perf["scheduled"]["eta_seconds"])
         self.assertIsNone(perf["scheduled"]["confidence"])
 
+    def test_rejects_unknown_missing_stop_and_malformed_counters(self):
+        base = _scheduled_run(480, 15)
+        rejects = [
+            {k: v for k, v in base.items() if k != "stop"},
+            {**base, "stop": "timeout"},
+            {**base, "stop": "unknown"},
+            {**base, "stop": True},
+            {**base, "failed_batches": -1},
+            {**base, "failed_batches": 1.5},
+            {**base, "failed_batches": True},
+            {**base, "completed_by_kind": {"snippet": True}},
+            {**base, "completed_by_kind": {"snippet": -1}},
+            {**base, "completed_by_kind": ["snippet", 480]},
+            {**base, "elapsed_seconds_by_kind": {"snippet": True}},
+            {**base, "elapsed_seconds_by_kind": {"snippet": -1.0}},
+            {**base, "elapsed_seconds_by_kind": {"snippet": float("nan")}},
+            {**base, "elapsed_seconds_by_kind": {"snippet": float("inf")}},
+            {**base, "elapsed_seconds_by_kind": {"snippet": "2400"}},
+        ]
+        for run in rejects:
+            self.assertFalse(LD._usable_performance_run(run, "cfg"), run)
+            perf = LD._performance([run], self.SNIPPET_OPEN, self.CONFIG)
+            self.assertEqual(0, perf["scheduled"]["sample_count"], run)
+            self.assertIsNone(perf["scheduled"]["eta_seconds"], run)
+
+    def test_accepts_each_successful_stop_and_budget_time_with_failed_batches(self):
+        for stop in ("done", "budget-time", "budget-calls", "budget-usd"):
+            run = _scheduled_run(480, 15, stop=stop, failed_batches=0)
+            self.assertTrue(LD._usable_performance_run(run, "cfg"), stop)
+            perf = LD._performance([run], self.SNIPPET_OPEN, self.CONFIG)
+            self.assertEqual(1, perf["scheduled"]["sample_count"], stop)
+            self.assertIsNotNone(perf["scheduled"]["eta_seconds"], stop)
+        run = _scheduled_run(480, 15, stop="budget-time", failed_batches=4)
+        self.assertTrue(LD._usable_performance_run(run, "cfg"))
+        self.assertEqual(1, LD._performance([run], self.SNIPPET_OPEN, self.CONFIG)["scheduled"]["sample_count"])
+
     def test_does_not_invent_total_eta_when_a_remaining_kind_lacks_samples(self):
         plan = {"snippet": {"planned": 34030, "done": 0},
                 "figure": {"planned": 10, "done": 0},
@@ -354,6 +390,9 @@ class LiveWorkerTelemetryTest(LiveJobCase):
         }
         env.update(extra)
         return env
+
+    def load_worker_state(self):
+        return json.loads((self.root / "live-worker-state.json").read_text(encoding="utf-8"))
 
     def test_start_progress_terminal_order_and_fragment_shape(self):
         with FakeLiveWorker() as receiver:
@@ -424,6 +463,119 @@ class LiveWorkerTelemetryTest(LiveJobCase):
         self.assertEqual([1, 1, 1], seqs)
         self.assertEqual(receiver.requests[0]["body"], receiver.requests[1]["body"])
         self.assertEqual(receiver.requests[1]["body"], receiver.requests[2]["body"])
+        state = self.load_worker_state()
+        self.assertEqual(1, state["seq"])
+        self.assertFalse(state["terminal_sent"])
+        self.assertNotIn("pending", state)
+        self.assertNotIn(TOKEN, json.dumps(state))
+
+    def test_failed_start_is_retried_before_later_progress(self):
+        with FakeLiveWorker(fail_times=3) as receiver:
+            env = self.telemetry_env(receiver)
+            with mock.patch.object(LD.time, "sleep", return_value=None), mock.patch.dict(os.environ, env, clear=False):
+                self.assertFalse(LD.publish_live_worker(event="start", phase="start", state="active"))
+                failed = self.load_worker_state()
+                self.assertEqual(0, failed["seq"])
+                self.assertFalse(failed["terminal_sent"])
+                self.assertEqual("start", failed["pending"]["event"])
+                self.assertEqual(1, failed["pending"]["seq"])
+                self.assertNotIn(TOKEN, json.dumps(failed))
+                pending_body = json.loads(failed["pending"]["body"])
+                self.assertTrue(LD.publish_live_worker(event="progress", phase="distribute",
+                                                       state="active", done=3, total=10))
+        events = [req["body"]["event"] for req in receiver.requests]
+        seqs = [req["body"]["seq"] for req in receiver.requests]
+        self.assertEqual(["start", "start", "start", "start", "progress"], events)
+        self.assertEqual([1, 1, 1, 1, 2], seqs)
+        start_bodies = [req["body"] for req in receiver.requests if req["body"]["event"] == "start"]
+        self.assertEqual(4, len(start_bodies))
+        self.assertTrue(all(body == pending_body for body in start_bodies))
+        self.assertEqual(pending_body, receiver.requests[0]["body"])
+        self.assertEqual("progress", receiver.requests[-1]["body"]["event"])
+        self.assertEqual(2, receiver.requests[-1]["body"]["seq"])
+        acked = self.load_worker_state()
+        self.assertEqual(2, acked["seq"])
+        self.assertFalse(acked["terminal_sent"])
+        self.assertNotIn("pending", acked)
+        self.assertNotIn(TOKEN, json.dumps(acked))
+
+    def test_unacked_start_blocks_later_event_construction(self):
+        with FakeLiveWorker(fail_times=6) as receiver:
+            env = self.telemetry_env(receiver)
+            with mock.patch.object(LD.time, "sleep", return_value=None), mock.patch.dict(os.environ, env, clear=False):
+                self.assertFalse(LD.publish_live_worker(event="start", phase="start", state="active"))
+                self.assertFalse(LD.publish_live_worker(event="progress", phase="distribute",
+                                                        state="active", done=1, total=2))
+                blocked = self.load_worker_state()
+        self.assertEqual(["start"] * 6, [req["body"]["event"] for req in receiver.requests])
+        self.assertEqual([1] * 6, [req["body"]["seq"] for req in receiver.requests])
+        self.assertEqual(receiver.requests[0]["body"], receiver.requests[-1]["body"])
+        self.assertEqual(0, blocked["seq"])
+        self.assertFalse(blocked["terminal_sent"])
+        self.assertEqual("start", blocked["pending"]["event"])
+
+    def test_failed_terminal_is_retried_and_acked_later(self):
+        with FakeLiveWorker(fail_times=3) as receiver:
+            env = self.telemetry_env(receiver)
+            with mock.patch.object(LD.time, "sleep", return_value=None), mock.patch.dict(os.environ, env, clear=False):
+                self.assertFalse(LD.publish_live_worker(
+                    event="terminal", phase="terminal", state="idle", ended=True,
+                    outcome="ok", reason="done"))
+                failed = self.load_worker_state()
+                self.assertEqual(0, failed["seq"])
+                self.assertFalse(failed["terminal_sent"])
+                self.assertEqual("terminal", failed["pending"]["event"])
+                self.assertEqual(1, failed["pending"]["seq"])
+                pending_body = json.loads(failed["pending"]["body"])
+                self.assertEqual(0, LD.main(["dashboard", "--event", "terminal"]))
+        self.assertEqual(["terminal"] * 4, [req["body"]["event"] for req in receiver.requests])
+        self.assertEqual([1, 1, 1, 1], [req["body"]["seq"] for req in receiver.requests])
+        self.assertTrue(all(req["body"] == pending_body for req in receiver.requests))
+        acked = self.load_worker_state()
+        self.assertEqual(1, acked["seq"])
+        self.assertTrue(acked["terminal_sent"])
+        self.assertNotIn("pending", acked)
+        self.assertNotIn(TOKEN, json.dumps(acked))
+        self.assertEqual("ok", acked.get("last_outcome"))
+        self.assertEqual("done", acked.get("last_reason"))
+
+    def test_terminal_response_lost_duplicate_is_idempotent(self):
+        with FakeLiveWorker() as receiver:
+            env = self.telemetry_env(receiver)
+            lost = {"n": 3}
+            real_put = LD._put_live_worker
+
+            def put_losing_ack(url, token, body):
+                status, detail = real_put(url, token, body)
+                if lost["n"] > 0 and status == 200:
+                    lost["n"] -= 1
+                    return 0, "lost-response"
+                return status, detail
+
+            with mock.patch.object(LD, "_put_live_worker", put_losing_ack), \
+                    mock.patch.object(LD.time, "sleep", return_value=None), \
+                    mock.patch.dict(os.environ, env, clear=False):
+                self.assertFalse(LD.publish_live_worker(
+                    event="terminal", phase="terminal", state="idle", ended=True,
+                    outcome="ok", reason="budget-time"))
+                failed = self.load_worker_state()
+                self.assertEqual(0, failed["seq"])
+                self.assertFalse(failed["terminal_sent"])
+                pending_body = json.loads(failed["pending"]["body"])
+                self.assertTrue(LD.publish_live_worker(
+                    event="terminal", phase="terminal", state="error", ended=True,
+                    outcome="error", reason="rc-1"))
+        self.assertEqual(4, len(receiver.requests))
+        self.assertTrue(all(req["body"]["event"] == "terminal" for req in receiver.requests))
+        self.assertTrue(all(req["body"]["seq"] == 1 for req in receiver.requests))
+        self.assertTrue(all(req["body"] == pending_body for req in receiver.requests))
+        self.assertEqual("budget-time", pending_body["reason"])
+        acked = self.load_worker_state()
+        self.assertEqual(1, acked["seq"])
+        self.assertTrue(acked["terminal_sent"])
+        self.assertNotIn("pending", acked)
+        self.assertEqual("ok", acked.get("last_outcome"))
+        self.assertEqual("budget-time", acked.get("last_reason"))
 
     def test_receiver_failure_does_not_suppress_distribution(self):
         with FakeLiveWorker(fail_times=99, echo_token=True) as receiver:
