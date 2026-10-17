@@ -39,7 +39,79 @@
   // Liegt die Site auf localhost an der Origin-Wurzel (_src/serve.py), gehört /api/ zu ihr. Unter GitHub
   // Pages (/autodocs/) gehört /api/ der Origin jemand anderem: dann nur über einen von ai-access.js
   // gefundenen lokalen Dienst (absolute Adresse), sonst gar nicht abfragen.
-  var FOLD_SRC = !isNode && document.currentScript ? document.currentScript.src : "";
+  var FOLD_TAG = !isNode && document.currentScript ? document.currentScript : null;
+  var FOLD_SRC = FOLD_TAG ? FOLD_TAG.src : "";
+
+  // Einmalige Aufwaertskompatibilitaet fuer bereits veroeffentlichte Seiten:
+  // Vor site-shell@1 lud jede Seite fold.js, aber noch nicht site-shell.js. So
+  // koennen die zwei zentralen Shell-Assets sofort ausgerollt werden, ohne den
+  // gesamten HTML-Bestand erneut zu materialisieren. Neu erzeugte Seiten tragen
+  // data-site-shell bereits und nehmen deshalb immer den direkten Template-Weg.
+  function legacyShellDomain(pathname, hash) {
+    var name = String(pathname || "").split("/").pop() || "index.html";
+    if (/component-graph/.test(String(hash || ""))) return "trace";
+    if (name === "context-distribution.html") return "context";
+    if (name === "versions.html") return "versions";
+    if (name === "extraction-reports.html") return "extract";
+    if (name === "build-reports.html") return "build";
+    if (name === "curation-report.html") return "curate";
+    if (name === "open-reviews.html") return "review";
+    if (name === "process.html") return "work";
+    return "explore";
+  }
+  function upgradeLegacyShellMenu(host) {
+    var menu = host && host.querySelector && host.querySelector(".shell-dropdown-menu");
+    if (!menu || menu.querySelector(".shell-legacy")) return !!menu;
+    var primary = ["pipeline", "context", "versions"];
+    var legacy = ["extract", "build", "curate", "review", "trace", "work"];
+    var explore = menu.querySelector('a[data-domain="explore"]');
+    var before = explore ? explore.nextSibling : menu.firstChild;
+    for (var i = 0; i < primary.length; i++) {
+      if (menu.querySelector('a[data-domain="' + primary[i] + '"]')) continue;
+      var link = document.createElement("a");
+      link.setAttribute("data-domain", primary[i]);
+      link.setAttribute("href", "#");
+      link.textContent = primary[i];
+      menu.insertBefore(link, before);
+    }
+    var details = document.createElement("details");
+    details.className = "shell-legacy";
+    var summary = document.createElement("summary");
+    summary.textContent = "Legacy";
+    var group = document.createElement("div");
+    group.className = "shell-legacy-links";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Legacy");
+    for (var j = 0; j < legacy.length; j++) {
+      var old = menu.querySelector('a[data-domain="' + legacy[j] + '"]');
+      if (old) group.appendChild(old);
+    }
+    details.appendChild(summary);
+    details.appendChild(group);
+    menu.appendChild(details);
+    return true;
+  }
+  function bootstrapLegacySiteShell() {
+    if (isNode || !FOLD_TAG || !document.querySelector || !document.createElement) return false;
+    var host = document.querySelector("header.shell");
+    if (!host || host.hasAttribute("data-site-shell")) return false;
+    var ref = FOLD_TAG.getAttribute("src") || "";
+    if (!/^(?:\.\.\/)*fold\.js(?:[?#].*)?$/.test(ref)) return false;
+    var rootPrefix = ref.replace(/fold\.js(?:[?#].*)?$/, "");
+    if (!upgradeLegacyShellMenu(host)) return false;
+    host.setAttribute("data-site-shell", "legacy-bootstrap");
+    host.setAttribute("data-shell-root-prefix", rootPrefix);
+    host.setAttribute("data-shell-lang", (document.documentElement && document.documentElement.lang) || "en");
+    host.setAttribute("data-shell-active-domain", legacyShellDomain(
+      window.location && window.location.pathname, window.location && window.location.hash));
+    var script = document.createElement("script");
+    script.src = rootPrefix + "static/site-shell.js";
+    script.setAttribute("data-site-shell-config", rootPrefix + "static/site-shell.json");
+    script.defer = true;
+    (document.head || document.documentElement).appendChild(script);
+    return true;
+  }
+  bootstrapLegacySiteShell();
   function localApiReachable() {
     var a = typeof window !== "undefined" && window.AiAccess;
     if (a && a.localUrl && /^https?:/.test(a.localUrl(""))) return true;
