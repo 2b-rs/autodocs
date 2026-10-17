@@ -2696,9 +2696,11 @@
     return { gemini: "Gemini", anthropic: "Claude", openai: "OpenAI", nexos: "Nexos" }[r.provider] || providerLabel(r.provider);
   }
   function renderHeader() {
+    var r = routeSync(), ok = r.kind !== "none", h = accessHealth();
+    syncDiscussControls(ok);
+    document.querySelectorAll("[data-aia-chip]").forEach(updateChip);
     if (!headerBtn) return;
     headerBtn.hidden = false;
-    var r = routeSync(), ok = r.kind !== "none", h = accessHealth();
     var badge = "";
     var label = ok ? tr("hdrKi") + ": " + shortSource(r) : tr("headerConnect");
     var icons = accessIcons();
@@ -2711,7 +2713,6 @@
     var htxt = icons.map(function (i) { return i.tip; }).join(", ") || tr("hdrNone");
     headerBtn.setAttribute("aria-label", label2 + " – " + htxt);
     headerBtn.title = htxt;
-    syncDiscussControls(ok);
     headerBtn.classList.toggle("is-in", !!state.user);
     if (adminBtn) {
       adminBtn.hidden = !quota.admin;
@@ -2720,15 +2721,27 @@
         (pending ? '<span class="aia-badge">' + pending + "</span>" : "");
       adminBtn.title = tr("admTitle") + ": " + quota.open.length + " · " + tr("fbAdmTitle") + ": " + tr("fbAdmNew", String(fbNew));
     }
-    document.querySelectorAll("[data-aia-chip]").forEach(updateChip);
   }
   var DISCUSS_CONTROLS = "[data-open-discuss], .curation-btn[data-action=\"discuss\"], .btn-toggle-workbench-chat";
   function syncDiscussControls(ok) {
+    var hint = tr("noAccessHint");
     document.querySelectorAll(DISCUSS_CONTROLS).forEach(function (el) {
       el.classList.toggle("aia-off", !ok);
+      el.setAttribute("aria-disabled", ok ? "false" : "true");
       // Bedienbar bleiben (der Klick öffnet den KI-Dialog); der Hinweis steht im Tooltip.
-      if (ok) { if (el.dataset.aiaTitle != null) { el.title = el.dataset.aiaTitle; delete el.dataset.aiaTitle; } }
-      else { if (el.dataset.aiaTitle == null) el.dataset.aiaTitle = el.title || ""; el.title = tr("noAccessHint"); }
+      if (ok) {
+        if (el.dataset.aiaTitle != null) { el.title = el.dataset.aiaTitle; delete el.dataset.aiaTitle; }
+        if (el.dataset.aiaAriaLabel != null) {
+          if (el.dataset.aiaAriaLabel) el.setAttribute("aria-label", el.dataset.aiaAriaLabel);
+          else el.removeAttribute("aria-label");
+          delete el.dataset.aiaAriaLabel;
+        }
+      } else {
+        if (el.dataset.aiaTitle == null) el.dataset.aiaTitle = el.title || "";
+        if (el.dataset.aiaAriaLabel == null) el.dataset.aiaAriaLabel = el.getAttribute("aria-label") || "";
+        el.title = hint;
+        el.setAttribute("aria-label", hint);
+      }
     });
   }
   var PRELOAD_CONTROLS = ".fia-btn, [data-fig-act], [data-feedback-open], .feedback-open, [data-review-open], [data-review-outcome], .curation-btn, [data-open-discuss], .btn-toggle-workbench-chat, #btn-toggle-workbench-chat, .ai-badge-dossier-btn, .dossier-open-link";
@@ -3948,6 +3961,8 @@
                 isAdmin: function () { return !!quota.admin && fbConfigured(); }, newCount: fbNewCount, normalize: fbNormalize,
                 signIn: function () { state.afterSignIn = "account"; openDialog("signin"); } },
     proposalIssue: proposalIssue, openIssue: openIssue, toast: toast, snapshot: snapshot, idToken: idToken,
+    // Basis-URL des Projektdienstes (proxy/nexos-worker.mjs), z. B. für die Stimmen zu Leitfaden-Fassungen (fold.js)
+    service: async function () { await loadConfig(); return projectBase(); },
     // für Tests
     _buildDiscussPrompt: buildDiscussPrompt, _extractFinding: extractFinding, _redact: redact,
     _providers: PROVIDERS, _pickDefault: pickDefault, _state: state, _accessOrder: accessOrder, _routeSync: routeSync,

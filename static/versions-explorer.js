@@ -21,8 +21,9 @@
  * Gruppierung gleich den vollen Index; der Explorer übernimmt ihn (takeBoot). Schaubild- und Snippet-Index
  * kommen ohne elements.json aus; der Elementindex lädt im Leerlauf nach dem ersten Zeichnen.
  *
- * Gruppieren & Sortieren: bis zu drei Ebenen (Gruppierung + Sortierung je Ebene), in der URL (g/s, fg/fs,
- * sg/ss) und je Browser in localStorage ("autodocs-ve-order"); Gruppenköpfe sind Zeilen der virtuellen Liste.
+ * Gruppieren & Sortieren: eine Kette Sortierung → Gruppierung → … → Sortierung, in der URL (o, fo, so, qo; alte
+ * g/s-Verweise werden umgesetzt) und je Browser in localStorage ("autodocs-ve-order"); Gruppenköpfe sind Zeilen der
+ * virtuellen Liste.
  *
  * Schaubilder sind nicht öffentlich: Bilder lädt static/figure-images.js (geschützt über
  * den Worker, nur mit Anmeldung und Freigabe); der Explorer setzt nur Platzhalter.
@@ -61,7 +62,7 @@
     var s = { tab: "el", id: "", view: "ver", from: "", to: "", ffrom: "", fto: "", sfrom: "", sto: "", el: {}, fig: {}, snip: {}, q: {} };
     TABS.forEach(function (t) {
       PARAMS[t].forEach(function (p) { s[t][p[0]] = p[2] ? [] : ""; });
-      s[t].g = []; s[t].s = [];   // Gruppierung/Sortierung (Ebenen), kein Filter
+      s[t].o = emptyChain();      // Kette aus Sortier- und Gruppierungsschritten, kein Filter
     });
     return s;
   }
@@ -84,8 +85,7 @@
         if (v == null) return;
         s[t][p[0]] = p[2] ? v.split(",").map(function (x) { return x.trim(); }).filter(Boolean) : v.trim();
       });
-      s[t].g = parseOrderList(t, u.get(ORDER_PARAMS[t][0]), "g");
-      s[t].s = parseOrderList(t, u.get(ORDER_PARAMS[t][1]), "s");
+      s[t].o = chainFromParams(t, u);
     });
     // Deep-Link einer Frage: versions.html?tab=q&id=Q-… (die Diskussionsverweise der Guides)
     if (s.tab === "q" && !s.q.id && /^Q-[0-9a-f]{16}$/.test(s.id)) { s.q.id = s.id; s.id = ""; }
@@ -101,8 +101,8 @@
         if (p[2]) { if (v && v.length) u.set(p[1], v.join(",")); }
         else if (v) u.set(p[1], v);
       });
-      if (s[t].g && s[t].g.length) u.set(ORDER_PARAMS[t][0], orderListText(s[t].g));
-      if (s[t].s && s[t].s.length) u.set(ORDER_PARAMS[t][1], orderListText(s[t].s));
+      var ot = chainText(s[t].o);
+      if (ot) u.set(ORDER_PARAMS[t], ot);
     });
     // Frage im eigenen Reiter: kanonisch als id (versions.html?tab=q&id=Q-…), solange kein Element offen ist
     if (s.tab === "q" && s.q.id && !s.id) { u.delete("qid"); u.set("id", s.q.id); }
@@ -426,7 +426,7 @@
   function decodeQuestions(raw) {
     var c = raw.cols, n = c.id.length;
     var D = { n: n, ids: c.id, title: c.title, kind: c.kind, st: c.st, plat: c.plat, modBits: c.mod, sub: c.sub,
-              oc: c.oc, na: c.na, ne: c.ne || [], at: c.at || [], x: c.x || [], asr: c.asr || [], byId: new Map(),
+              oc: c.oc, na: c.na, ne: c.ne || [], at: c.at || [], rk: c.rk || [], x: c.x || [], asr: c.asr || [], byId: new Map(),
               hay: null, counts: raw.counts || null, names: {},
               dict: { kind: raw.kinds || [], st: raw.statuses || [], plat: raw.platforms || [], mod: raw.modules || [],
                       modUni: raw.module_universe || [], oc: raw.outcomes || [], sub: raw.subjects || [] } };
@@ -460,22 +460,31 @@
   }
 
   // ------------------------------------------------------------------ Gruppieren & Sortieren
-  // Bis zu ORDER_MAX Ebenen je Reiter, jede ein Paar aus Gruppierung (Feld, Richtung) und Sortierung (Feld,
-  // Richtung). Gruppen schachteln sich in Ebenenfolge (Ebene 1 außen); innerhalb der innersten Gruppe gilt die
-  // Sortierung in Ebenenfolge, danach die Indexreihenfolge (Kennung). Beides wirkt auf die gefilterte Trefferliste.
-  // URL: el g/s, fig fg/fs, snip sg/ss; Felder kommagetrennt, „-“ vorn = absteigend (z. B. g=mod,-kind&s=id).
-  var ORDER_MAX = 3;
-  var ORDER_PARAMS = { el: ["g", "s"], fig: ["fg", "fs"], snip: ["sg", "ss"], q: ["qg", "qs"] };
+  // Eine abwechselnde Kette Sortierung₁ → Gruppierung₁ → Sortierung₂ → … → Sortierungₙ (Zustand
+  // { g: [Feld, …], s: [[{f, d}, …], …] }, s.length = g.length + 1). Ein Sortierblock vor Gruppierung k ordnet die
+  // Gruppen dieser Ebene, der letzte Block die Einträge der innersten Gruppen (ohne Gruppen: die ganze Liste).
+  // Beides wirkt auf die gefilterte Trefferliste. URL: ein Parameter je Reiter (el o, fig fo, snip so, q qo); Blöcke
+  // und Gruppen abwechselnd mit „.“ getrennt, Kriterien kommagetrennt, „-“ vorn = absteigend
+  // (z. B. o=-cnt.mod..kind.-nv: Module nach Größe absteigend, darin Arten, Einträge nach Versionen absteigend).
+  // Alte Verweise mit getrennten Parametern (g/s, fg/fs, sg/ss, qg/qs) werden beim Laden umgesetzt.
+  var ORDER_MAX = 3;                       // nur für alte g/s-Verweise (damals höchstens drei je Liste)
+  var ORDER_PARAMS = { el: "o", fig: "fo", snip: "so", q: "qo" };
+  var ORDER_LEGACY = { el: ["g", "s"], fig: ["fg", "fs"], snip: ["sg", "ss"], q: ["qg", "qs"] };
+  var CNT = "cnt";                         // Sortierkriterium „Anzahl Einträge“ (nur vor einer Gruppierung wirksam)
   var STATUS_PRIO = [4, 1, 2, 8];          // primärer Status: entfallen vor neu vor geändert vor unverändert
   var STATUS_RANK = { 1: 0, 2: 1, 4: 2, 8: 3 };
   var MISSING = -1;                        // fehlender Wert: Gruppe „ohne Angabe“, beim Sortieren immer zuletzt
 
   function lowerRank(strings) {
-    // Rang je Eintrag nach Kleinschreibung (schneller als localeCompare; stabil über die Indexreihenfolge)
+    // Rang je Eintrag nach Kleinschreibung (schneller als localeCompare). Gleiche Werte bekommen den gleichen Rang,
+    // damit Minimum/Maximum zweier Gruppen gleichstehen können und der Gruppenschlüssel entscheidet.
     var n = strings.length, idx = new Array(n), low = new Array(n), rank = new Float64Array(n);
     for (var i = 0; i < n; i++) { idx[i] = i; low[i] = String(strings[i] || "").toLowerCase(); }
     idx.sort(function (a, b) { return low[a] < low[b] ? -1 : low[a] > low[b] ? 1 : a - b; });
-    for (var k = 0; k < n; k++) rank[idx[k]] = strings[idx[k]] ? k : MISSING;
+    for (var k = 0, r = 0; k < n; k++) {
+      if (k && low[idx[k]] !== low[idx[k - 1]]) r = k;
+      rank[idx[k]] = strings[idx[k]] ? r : MISSING;
+    }
     return rank;
   }
   function dictRank(values) {
@@ -597,6 +606,7 @@
       { f: "qna", g: 1, s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.na[i]; }); },
         label: function (D, k, tr) { return tr.t("q_anchors_n", { n: k }); } },
       { f: "qat", s: 1, keys: function (D) { return lowerRank(D.at); } },
+      { f: "qrk", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return D.rk && D.rk[i] ? D.rk[i] : -1; }); } },
       { f: "title", s: 1, keys: function (D) { return lowerRank(D.title); } },
       { f: "id", s: 1, keys: function (D) { return numKeys(D.n, function (i) { return i; }); } }
     ]
@@ -635,7 +645,8 @@
     for (var k = 0; k < list.length; k++) if (list[k].f === f) return list[k];
     return null;
   }
-  // "mod,-kind" -> [{f:"mod",d:1},{f:"kind",d:-1}] (nur bekannte Felder der Art, höchstens ORDER_MAX, ohne Doppelte)
+  // "mod,-kind" -> [{f:"mod",d:1},{f:"kind",d:-1}] (nur bekannte Felder der Art, höchstens ORDER_MAX, ohne Doppelte;
+  // Format der alten Parameter g/s)
   function parseOrderList(tab, text, kind) {
     var out = [], seen = {};
     String(text || "").split(",").forEach(function (x) {
@@ -652,7 +663,111 @@
   function orderListText(list) {
     return (list || []).map(function (o) { return (o.d < 0 ? "-" : "") + o.f; }).join(",");
   }
-  function orderActive(s, tab) { return !!((s[tab].g && s[tab].g.length) || (s[tab].s && s[tab].s.length)); }
+
+  // ---- Kette
+  function emptyChain() { return { g: [], s: [[]] }; }
+  function isSortField(tab, f) { if (f === CNT) return true; var fd = orderField(tab, f); return !!(fd && fd.s); }
+  function isGroupField(tab, f) { var fd = orderField(tab, f); return !!(fd && fd.g); }
+  // Kriterien eines Blocks: bekannte sortierbare Felder (und „Anzahl Einträge“), ohne Doppelte, Richtung ±1
+  function cleanBlock(tab, list) {
+    var out = [], seen = {};
+    (list || []).forEach(function (c) {
+      if (!c || !isSortField(tab, c.f) || seen[c.f]) return;
+      seen[c.f] = 1;
+      out.push({ f: c.f, d: c.d < 0 ? -1 : 1 });
+    });
+    return out;
+  }
+  // Zwei Sortierblöcke zusammenführen: Kriterien des späteren hinten an, ohne Doppelte (der frühere gewinnt)
+  function mergeBlocks(a, b) {
+    var seen = {}, out = [];
+    (a || []).concat(b || []).forEach(function (c) { if (!seen[c.f]) { seen[c.f] = 1; out.push({ f: c.f, d: c.d }); } });
+    return out;
+  }
+  // Gültige Kette: nur gruppierbare Felder, jedes höchstens einmal als Gruppierung; eine verworfene Gruppierung
+  // führt ihre Nachbarblöcke zusammen (wie das Entfernen einer Ebene). Liefert immer eine neue Kette.
+  function normalizeChain(tab, chain) {
+    chain = chain || {};
+    var g = chain.g || [], s = chain.s || [];
+    var out = { g: [], s: [cleanBlock(tab, s[0])] }, seen = {};
+    for (var k = 0; k < g.length; k++) {
+      var f = typeof g[k] === "string" ? g[k] : g[k] && g[k].f;
+      var next = cleanBlock(tab, s[k + 1]);
+      if (!isGroupField(tab, f) || seen[f]) {
+        out.s[out.s.length - 1] = mergeBlocks(out.s[out.s.length - 1], next);
+        continue;
+      }
+      seen[f] = 1;
+      out.g.push(f);
+      out.s.push(next);
+    }
+    return out;
+  }
+  // "-cnt.mod..kind.-nv,name" -> Blöcke an geraden, Gruppierungen an ungeraden Stellen
+  function parseChain(tab, text) {
+    var segs = String(text || "").split("."), raw = { g: [], s: [] };
+    for (var k = 0; k < segs.length; k++) {
+      var x = segs[k].trim();
+      if (k % 2) { raw.g.push(x); continue; }
+      raw.s.push(x.split(",").map(function (y) {
+        y = y.trim();
+        return y.charAt(0) === "-" ? { f: y.slice(1), d: -1 } : { f: y, d: 1 };
+      }).filter(function (c) { return c.f; }));
+    }
+    if (raw.s.length === raw.g.length) raw.s.push([]);
+    return normalizeChain(tab, raw);
+  }
+  function chainText(chain) {
+    if (!chain || !chain.s) return "";
+    var segs = [];
+    for (var k = 0; k < chain.s.length; k++) {
+      segs.push(orderListText(chain.s[k]));
+      if (k < chain.g.length) segs.push(chain.g[k]);
+    }
+    while (segs.length > 1 && segs[segs.length - 1] === "" && segs.length % 2) segs.pop();  // leerer letzter Block
+    var out = segs.join(".");
+    return out === "" ? "" : out;
+  }
+  // Alte Verweise (g=mod,-kind&s=-nv): die Sortierung wird der letzte Block, die Gruppierungen behalten ihre Folge
+  // mit leeren Blöcken dazwischen. Eine absteigende Gruppierung („-kind“) bekommt ihren Block mit genau diesem
+  // Kriterium, damit die Gruppenfolge des alten Verweises erhalten bleibt.
+  function legacyChain(tab, gText, sText) {
+    var G = parseOrderList(tab, gText, "g"), S = parseOrderList(tab, sText, "s");
+    var chain = { g: [], s: [] };
+    G.forEach(function (o) {
+      chain.s.push(o.d < 0 ? [{ f: o.f, d: -1 }] : []);
+      chain.g.push(o.f);
+    });
+    chain.s.push(S);
+    return normalizeChain(tab, chain);
+  }
+  function chainFromParams(tab, u) {
+    var P = ORDER_PARAMS[tab], L = ORDER_LEGACY[tab];
+    if (u.has(P)) return parseChain(tab, u.get(P));
+    if (u.has(L[0]) || u.has(L[1])) return legacyChain(tab, u.get(L[0]), u.get(L[1]));
+    return emptyChain();
+  }
+  // Gespeicherte Wahl je Browser: { o: "…" } oder (alt) { g: "…", s: "…" }
+  function chainFromStored(tab, st) {
+    if (!st) return emptyChain();
+    if (typeof st.o === "string") return parseChain(tab, st.o);
+    return legacyChain(tab, st.g, st.s);
+  }
+  // Ebene k entfernen: der spätere Nachbarblock wird ohne Doppelte an den früheren angehängt
+  function chainRemoveGroup(tab, chain, k) {
+    var ch = normalizeChain(tab, chain);
+    if (ch.g[k] == null) return ch;
+    ch.s[k] = mergeBlocks(ch.s[k], ch.s[k + 1]);
+    ch.g.splice(k, 1);
+    ch.s.splice(k + 1, 1);
+    return ch;
+  }
+  function chainCount(chain) {
+    var n = chain ? chain.g.length : 0;
+    (chain ? chain.s : []).forEach(function (b) { n += b.length; });
+    return n;
+  }
+  function orderActive(s, tab) { return chainCount(s[tab].o) > 0; }
 
   // Schlüssel je Feld einmal je Index berechnen
   function fieldKeys(D, tab, f, forGroup) {
@@ -662,47 +777,85 @@
     if (!D._okeys[name]) D._okeys[name] = (forGroup && fd.gkeys ? fd.gkeys : fd.keys)(D);
     return D._okeys[name];
   }
+  // fehlende Werte immer zuletzt, sonst nach Richtung
+  function cmpKey(x, y, d) {
+    if (x === y) return 0;
+    if (x === MISSING) return 1;
+    if (y === MISSING) return -1;
+    return (x - y) * d;
+  }
 
   /**
-   * Treffer (Indizes) gruppieren und sortieren. Liefert { order: sortierte Indizes, groups: [{level, key, start,
-   * end, path, parent}] } (start/end in order; Gruppen in Ausgabereihenfolge, Eltern vor Kindern).
+   * Treffer (Indizes) nach der Kette gruppieren und sortieren. Liefert { order: sortierte Indizes, groups: [{level,
+   * key, start, end, path, parent, f}] } (start/end in order; Gruppen in Ausgabereihenfolge, Eltern vor Kindern).
+   * Gruppen einer Ebene ordnet der Block davor lexikographisch: Kriterium = Gruppierungsfeld -> Gruppenschlüssel,
+   * „Anzahl Einträge“ -> Gruppengröße, sonst Minimum (aufsteigend) bzw. Maximum (absteigend) des Felds über die
+   * Einträge der Gruppe; Gleichstand -> Gruppenschlüssel aufsteigend. Der letzte Block ordnet die Einträge,
+   * danach die Indexreihenfolge. Nimmt die Kette selbst oder den Zustand eines Reiters ({o: Kette}).
    */
   function orderRows(D, tab, matches, spec) {
-    var G = (spec.g || []).map(function (o) { return { k: fieldKeys(D, tab, o.f, true), d: o.d, f: o.f }; });
-    var S = (spec.s || []).map(function (o) { return { k: fieldKeys(D, tab, o.f, false), d: o.d }; });
-    var keys = G.concat(S), L = keys.length;
-    var order = matches.slice();
-    if (L) {
-      order.sort(function (a, b) {
+    var chain = normalizeChain(tab, spec && spec.o ? spec.o : spec);
+    var G = chain.g.map(function (f) { return { f: f, k: fieldKeys(D, tab, f, true) }; });
+    var B = chain.s.map(function (blk, j) {
+      return blk.filter(function (c) { return c.f !== CNT || j < G.length; }).map(function (c) {
+        return { f: c.f, d: c.d, k: c.f === CNT ? null : fieldKeys(D, tab, c.f, false) };
+      });
+    });
+    var order = [], groups = [];
+    var last = B[G.length];
+    function sortItems(items) {
+      if (!last.length && !G.length) return items;
+      var L = last.length;
+      return items.sort(function (a, b) {
         for (var l = 0; l < L; l++) {
-          var K = keys[l].k, x = K[a], y = K[b];
-          if (x !== y) {
-            if (x === MISSING) return 1;          // ohne Angabe immer zuletzt
-            if (y === MISSING) return -1;
-            return (x - y) * keys[l].d;
-          }
+          var c = cmpKey(last[l].k[a], last[l].k[b], last[l].d);
+          if (c) return c;
         }
         return a - b;
       });
     }
-    var groups = [];
-    if (G.length) {
-      var open = [];                              // offene Gruppe je Ebene
-      for (var p = 0; p < order.length; p++) {
-        var i = order[p], changed = false;
-        for (var l = 0; l < G.length; l++) {
-          var key = G[l].k[i];
-          if (!changed && open[l] && open[l].key === key) continue;
-          changed = true;
-          if (open[l]) open[l].end = p;
-          var parent = l ? open[l - 1] : null;
-          var grp = { level: l, key: key, start: p, end: order.length, f: G[l].f,
-                      path: (parent ? parent.path + "|" : "") + G[l].f + "=" + key, parent: parent };
-          groups.push(grp);
-          open[l] = grp;
-        }
+    function build(items, lvl, parent) {
+      if (lvl === G.length) {
+        var sorted = sortItems(items);
+        for (var p = 0; p < sorted.length; p++) order.push(sorted[p]);
+        return;
       }
+      var K = G[lvl].k, byKey = new Map(), list = [];
+      for (var q = 0; q < items.length; q++) {
+        var key = K[items[q]], bucket = byKey.get(key);
+        if (!bucket) { bucket = { key: key, items: [] }; byKey.set(key, bucket); list.push(bucket); }
+        bucket.items.push(items[q]);
+      }
+      var crit = B[lvl], gf = G[lvl].f;
+      list.forEach(function (grp) {
+        grp.v = crit.map(function (c) {
+          if (c.f === gf) return grp.key;
+          if (c.f === CNT) return grp.items.length;
+          var best = MISSING, Kc = c.k;
+          for (var j = 0; j < grp.items.length; j++) {
+            var x = Kc[grp.items[j]];
+            if (x === MISSING) continue;
+            if (best === MISSING || (c.d < 0 ? x > best : x < best)) best = x;
+          }
+          return best;
+        });
+      });
+      list.sort(function (a, b) {
+        for (var l = 0; l < crit.length; l++) {
+          var c = cmpKey(a.v[l], b.v[l], crit[l].d);
+          if (c) return c;
+        }
+        return cmpKey(a.key, b.key, 1);
+      });
+      list.forEach(function (bk) {
+        var grp = { level: lvl, key: bk.key, start: order.length, end: order.length, f: gf,
+                    path: (parent ? parent.path + "|" : "") + gf + "=" + bk.key, parent: parent };
+        groups.push(grp);
+        build(bk.items, lvl + 1, grp);
+        grp.end = order.length;
+      });
     }
+    build(matches.slice(), 0, null);
     return { order: order, groups: groups };
   }
 
@@ -1524,8 +1677,11 @@
     decodeQuestions: decodeQuestions, questionGroups: questionGroups, filterQuestions: filterQuestions,
     parseSubject: parseSubject, TABS: TABS,
     itemsNeedElements: itemsNeedElements,
-    ORDER_MAX: ORDER_MAX, ORDER_FIELDS: ORDER_FIELDS, ORDER_PARAMS: ORDER_PARAMS, orderField: orderField,
-    parseOrderList: parseOrderList, orderListText: orderListText, orderActive: orderActive, orderRows: orderRows,
+    ORDER_MAX: ORDER_MAX, ORDER_FIELDS: ORDER_FIELDS, ORDER_PARAMS: ORDER_PARAMS, ORDER_LEGACY: ORDER_LEGACY, CNT: CNT,
+    orderField: orderField, parseOrderList: parseOrderList, orderListText: orderListText, orderActive: orderActive,
+    orderRows: orderRows, lowerRank: lowerRank, emptyChain: emptyChain, normalizeChain: normalizeChain, parseChain: parseChain,
+    chainText: chainText, legacyChain: legacyChain, chainFromStored: chainFromStored, chainCount: chainCount,
+    mergeBlocks: mergeBlocks, chainRemoveGroup: chainRemoveGroup, isGroupField: isGroupField, isSortField: isSortField,
     flattenOrder: flattenOrder,
     figureHref: figureHref, itemFile: itemFile, recordFile: recordFile, caseMask: caseMask, safeStem: safeStem,
     markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
@@ -1672,7 +1828,8 @@
         '</section>' +
         '</div>' +
         '<div class="ve-listpane" data-role="listpane"><div class="ve-listhead"><span data-role="count">' +
-        esc(t("loading")) + '</span><span class="ve-kbd-hint">' + esc(t("kbd_hint")) + '</span></div>' +
+        esc(t("loading")) + '</span><span class="ve-kbd-hint">' + esc(t("kbd_hint")) +
+        (tab === "q" ? " · " + esc(t("qa_kbd")) : "") + '</span></div>' +
         '<div class="ve-vlist" role="listbox" tabindex="0" data-role="list" aria-label="' + esc(t("list_" + tab)) +
         '"><div class="ve-vspace" data-role="space"></div></div></div>' +
         '<section class="ve-viewer" data-role="viewer" tabindex="-1" aria-label="' + esc(t("viewer_" + tab)) + '">' +
@@ -1935,9 +2092,10 @@
           var gc = groupCollapsed(self.tab, it);
           var g = groupOf(self.tab, it);
           var lvl = g ? (g.level + 1) : 1;
-          out.push('<div class="ve-row ve-grow ve-grow-lvl-' + lvl + (gc ? " is-collapsed" : "") + '" role="option" id="ve-opt-' + self.tab + "-" + k +
+          out.push('<div class="ve-row ve-grow ve-grow-lvl-' + lvl + (lvl > 3 ? " ve-grow-deep" : "") + (gc ? " is-collapsed" : "") + '" role="option" id="ve-opt-' + self.tab + "-" + k +
             '" data-k="' + k + '" data-level="' + lvl + '" aria-selected="false" aria-expanded="' + (gc ? "false" : "true") + '" aria-setsize="' + total +
-            '" aria-posinset="' + (k + 1) + '" style="top:' + (k * h) + "px;height:" + h + 'px">' + groupHtml(self.tab, it, gc) + "</div>");
+            '" aria-posinset="' + (k + 1) + '" style="top:' + (k * h) + "px;height:" + h + "px" + (lvl > 3 ? ";--ve-gind:" + (lvl - 1) * 12 + "px" : "") + '">' +
+            groupHtml(self.tab, it, gc) + "</div>");
           return;
         }
         var open = self.keyOf(it) === self.openKey;
@@ -1985,7 +2143,7 @@
     if (!g) return "";
     var label = groupLabel(tab, g);
     var lvl = (g.level || 0) + 1;
-    // Box offset stays on .ve-grow[data-level] (0 / 12 / 24 px). Header padding
+    // Box offset stays on .ve-grow[data-level] (0 / 12 / 24 px, from level 4 on --ve-gind). Header padding
     // is 0 so the two indents do not stack.
     var pad = "0rem";
     return '<div class="ve-ghead ve-ghead-lvl-' + lvl + '" data-level="' + lvl + '" style="padding-inline-start:' + pad + '" title="' + esc(t("grp_toggle")) + '">' +
@@ -2020,7 +2178,7 @@
   function relist(tab) {
     var r = ui[tab], D = view(tab);
     if (!r.ordered) return;
-    r.vlist.depth = r.ordered.groups.length ? (state[tab].g || []).length : 0;
+    r.vlist.depth = r.ordered.groups.length ? state[tab].o.g.length : 0;
     r.vlist.setItems(C.flattenOrder(r.ordered, r.collapsed), entryKey(D, r));
   }
   function entryKey(D, r) {
@@ -2034,134 +2192,251 @@
   }
   function saveOrder(tab) {
     try {
-      var all = loadStoredOrder();
-      var g = C.orderListText(state[tab].g), so = C.orderListText(state[tab].s);
-      if (g || so) all[tab] = { g: g, s: so }; else delete all[tab];
+      var all = loadStoredOrder(), o = C.chainText(state[tab].o);
+      if (o) all[tab] = { o: o }; else delete all[tab];
       window.localStorage.setItem(ORDER_STORE, JSON.stringify(all));
     } catch (e) { /* privater Modus u. ä.: nur die URL */ }
   }
-  // Ohne Angabe in der URL gilt die gespeicherte Wahl dieses Browsers
+  // Ohne Angabe in der URL gilt die gespeicherte Wahl dieses Browsers (auch im alten Format { g, s })
   function restoreOrder() {
     var u = new URLSearchParams(window.location.search), stored = loadStoredOrder(), changed = false;
     TABS.forEach(function (tab) {
-      var P = C.ORDER_PARAMS[tab], st = stored[tab];
-      if (u.has(P[0]) || u.has(P[1]) || !st) return;
-      state[tab].g = C.parseOrderList(tab, st.g, "g");
-      state[tab].s = C.parseOrderList(tab, st.s, "s");
+      var L = C.ORDER_LEGACY[tab], st = stored[tab];
+      if (u.has(C.ORDER_PARAMS[tab]) || u.has(L[0]) || u.has(L[1]) || !st) return;
+      state[tab].o = C.chainFromStored(tab, st);
       changed = changed || C.orderActive(state, tab);
     });
     return changed;
   }
-  // Group & sort overlay: an action bar (collapse, expand, reset), then one row of
-  // grouping badges and one row of sort badges. Selected levels are filled badges;
-  // the next level shows the remaining choices. Sort badges toggle direction;
-  // a selected grouping badge removes that level.
+
+  // Alte Verweise (g/s, fg/fs, sg/ss, qg/qs) in der Adresszeile durch den Kettenparameter ersetzen; alle übrigen
+  // Parameter (auch fremde wie r=) bleiben unverändert stehen
+  function canonicalOrderUrl() {
+    var u = new URLSearchParams(window.location.search), legacy = false;
+    TABS.forEach(function (tab) {
+      var L = C.ORDER_LEGACY[tab];
+      if (!u.has(L[0]) && !u.has(L[1])) return;
+      legacy = true;
+      u.delete(L[0]);
+      u.delete(L[1]);
+      var o = C.chainText(state[tab].o);
+      if (o) u.set(C.ORDER_PARAMS[tab], o); else u.delete(C.ORDER_PARAMS[tab]);
+    });
+    if (!legacy) return;
+    var qs = u.toString().replace(/%2C/g, ",").replace(/%3A/g, ":");
+    try { window.history.replaceState(window.history.state, "", window.location.pathname + (qs ? "?" + qs : "") + window.location.hash); }
+    catch (e) { /* file:// u. ä. */ }
+  }
+
+  // Group & sort overlay: the action bar (collapse, expand, reset), then one chain
+  // Sort₁ → Group₁ → Sort₂ → … → Sortₙ. Frozen sort blocks and group levels sit
+  // compact on the left, each with a vertical label and a trash button; the last
+  // sort block is the active one (selected criteria, the remaining choices and a
+  // vertical "+ group" button). "+ group" freezes the active block and offers the
+  // remaining grouping fields; picking one adds the level and a new active block.
+  var TRASH_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path fill="currentColor" ' +
+    'd="M6 1h4l.6 1.2H14v1.4H2V2.2h3.4zM3.2 4.6h9.6l-.8 9.6a1.1 1.1 0 0 1-1.1 1H5.1a1.1 1.1 0 0 1-1.1-1zm2.7 1.8v7h1.2v-7zm3 0v7h1.2v-7z"/></svg>';
+  function orderFieldsOf(tab, kind) {
+    return (C.ORDER_FIELDS[tab] || []).filter(function (fd) { return fd[kind]; }).map(function (fd) { return fd.f; });
+  }
+  function freeGroupFields(tab) {
+    var used = {};
+    state[tab].o.g.forEach(function (f) { used[f] = 1; });
+    return orderFieldsOf(tab, "g").filter(function (f) { return !used[f]; });
+  }
+  function critName(f) { return t("of_" + f); }
+  function dirText(d) { return t(d < 0 ? "order_desc" : "order_asc"); }
+  function blockSel(k) { return '.ve-oblock-s[data-block="' + k + '"]'; }
+  function groupSel(k) { return '.ve-oblock-g[data-group="' + k + '"]'; }
+  function vcol(label, extra) {
+    return '<div class="ve-ovcol"><span class="ve-ovlabel" aria-hidden="true">' + esc(label) + "</span>" + (extra || "") + "</div>";
+  }
+  function trashBtn(what, k, label) {
+    return '<button type="button" class="ve-otrash" data-orm="' + what + '" data-idx="' + k + '" aria-label="' + esc(label) +
+      '" title="' + esc(label) + '">' + TRASH_SVG + "</button>";
+  }
+  function critBadge(k, i, c, inert, vertical) {
+    var name = critName(c.f);
+    return '<button type="button" class="ve-obadge is-selected ve-ocrit' + (inert ? " is-inert" : "") + (vertical ? " is-vertical" : "") +
+      '" data-kind="s" data-block="' + k + '" data-crit="' + i + '" data-field="' + esc(c.f) + '" aria-label="' +
+      esc(t("order_sort_block", { n: k + 1 }) + ": " + name + ", " + dirText(c.d)) + '" title="' +
+      esc(t("order_toggle_dir") + " (" + dirText(c.d) + ") · " + t("order_remove") + (inert ? " · " + t("order_cnt_inert") : "")) + '">' +
+      '<span class="ve-obadge-dir" aria-hidden="true">' + (c.d < 0 ? "↓" : "↑") + "</span>" +
+      '<span class="ve-obadge-l">' + esc(name) + "</span>" +
+      '<span class="ve-obadge-x" aria-hidden="true">✕</span></button>';
+  }
   function renderOrderPanel(tab) {
-    var r = ui[tab], sel = state[tab], G = sel.g || [], S = sel.s || [];
-    var usedG = {}, usedS = {};
-    G.forEach(function (o) { usedG[o.f] = 1; });
-    S.forEach(function (o) { usedS[o.f] = 1; });
-    var grouped = G.length > 0;
-    var sorted = S.length > 0;
+    var r = ui[tab], ch = state[tab].o, n = ch.g.length, total = C.chainCount(ch);
+    var freeG = freeGroupFields(tab), pending = !!r.opending && freeG.length > 0;
+    var grouped = n > 0;
 
     var html = '<div class="ve-oactions ve-oacts">' +
       '<button type="button" class="ve-btn ve-oicon" data-oact="collapse"' + (grouped ? "" : " disabled") +
       ' aria-label="' + esc(t("order_collapse_all")) + '" title="' + esc(t("order_collapse_all")) + '"><span aria-hidden="true">⊟</span></button>' +
       '<button type="button" class="ve-btn ve-oicon" data-oact="expand"' + (grouped ? "" : " disabled") +
       ' aria-label="' + esc(t("order_expand_all")) + '" title="' + esc(t("order_expand_all")) + '"><span aria-hidden="true">⊞</span></button>' +
-      '<button type="button" class="ve-btn ve-oreset" data-oact="reset"' + (grouped || sorted ? "" : " disabled") +
+      '<button type="button" class="ve-btn ve-oreset" data-oact="reset"' + (total || pending ? "" : " disabled") +
       ' aria-label="' + esc(t("order_reset")) + '" title="' + esc(t("order_reset")) + '"><span aria-hidden="true">↺</span> <span>' +
       esc(t("reset")) + "</span></button>" +
       "</div>";
 
-    function renderSection(kind) {
-      var isG = kind === "g";
-      var list = isG ? G : S;
-      var used = isG ? usedG : usedS;
-      var fields = (C.ORDER_FIELDS[tab] || []).filter(function (fd) { return fd[kind]; });
-
-      var rowHtml = '<div class="ve-orow ve-orow-' + kind + '" data-orow="' + kind + '" data-kind="' + kind + '">';
-      rowHtml += '<div class="ve-ovlabel" aria-hidden="true">' + esc(t(isG ? "order_group_label" : "order_sort_label")) + "</div>";
-      rowHtml += '<div class="ve-orow-content">';
-
-      // 1. Bereits definierte Ebenen
-      for (var lvl = 0; lvl < list.length; lvl++) {
-        var item = list[lvl];
-        var fld = item.f;
-        var dirStr = item.d < 0 ? "↓" : "↑";
-        var dirTitle = t(item.d < 0 ? "order_desc" : "order_asc");
-        rowHtml += '<div class="ve-olevel ve-olvl ve-olevel-selected" data-level="' + lvl + '">';
-        rowHtml += '<span class="ve-olvl-tag">' + (lvl + 1) + "</span>";
-        rowHtml += '<button type="button" class="ve-obadge is-selected" data-kind="' + kind + '" data-field="' + esc(fld) + '" data-level="' + lvl + '"';
-        if (!isG) {
-          rowHtml += ' title="' + esc(t("order_toggle_dir") + " (" + dirTitle + ") · " + t("order_remove")) + '"';
-        } else {
-          rowHtml += ' title="' + esc(t("order_remove")) + '"';
-        }
-        rowHtml += ">";
-        if (!isG) {
-          rowHtml += '<span class="ve-obadge-dir" aria-hidden="true">' + dirStr + "</span> ";
-        }
-        rowHtml += '<span class="ve-obadge-l">' + esc(t("of_" + fld)) + "</span>";
-        rowHtml += '<span class="ve-obadge-x" data-remove="' + kind + '" data-level="' + lvl + '" aria-label="' + esc(t("order_remove")) + '">✕</span>';
-        rowHtml += "</button></div>";
+    // Abgeschlossener Sortierblock: so knapp wie möglich (ein Kriterium senkrecht, mehrere untereinander)
+    function frozenBlock(k) {
+      var blk = ch.s[k];
+      if (!blk.length) return "";
+      var out = '<div class="ve-oblock ve-oblock-s is-frozen" data-kind="s" data-block="' + k + '" role="group" aria-label="' +
+        esc(t("order_sort_block", { n: k + 1 })) + '">' +
+        vcol(t("order_sort_label"), trashBtn("block", k, t("order_rm_sort_block", { n: k + 1 }))) + '<div class="ve-ocrits">';
+      blk.forEach(function (c, i) { out += critBadge(k, i, c, false, blk.length === 1); });
+      return out + "</div></div>";
+    }
+    function groupBlock(k) {
+      var f = ch.g[k], name = critName(f), lab = t("order_group_level", { n: k + 1, f: name });
+      return '<div class="ve-oblock ve-oblock-g" data-kind="g" data-group="' + k + '" role="group" aria-label="' + esc(lab) + '">' +
+        vcol(t("order_group_label"), trashBtn("group", k, t("order_rm_group", { n: k + 1, f: name }))) +
+        '<button type="button" class="ve-obadge is-selected ve-ogfield is-vertical" data-kind="g" data-group="' + k + '" data-field="' + esc(f) +
+        '" aria-label="' + esc(lab) + '" title="' + esc(t("order_remove")) + '"><span class="ve-obadge-l">' + esc(name) +
+        '</span><span class="ve-obadge-x" aria-hidden="true">✕</span></button></div>';
+    }
+    function pickBlock() {
+      var lab = t("order_pick_group", { n: n + 1 });
+      var out = '<div class="ve-oblock ve-oblock-g is-picking" data-kind="g" role="group" aria-label="' + esc(lab) + '">' +
+        vcol(t("order_group_label")) + '<div class="ve-ochoices">';
+      freeG.forEach(function (f) {
+        out += '<button type="button" class="ve-obadge" data-kind="g" data-pick="1" data-field="' + esc(f) + '" aria-label="' +
+          esc(lab + ": " + critName(f)) + '">' + esc(critName(f)) + "</button>";
+      });
+      return out + "</div></div>";
+    }
+    function activeBlock() {
+      var blk = ch.s[n], used = {};
+      blk.forEach(function (c) { used[c.f] = 1; });
+      var avail = orderFieldsOf(tab, "s").filter(function (f) { return !used[f]; });
+      if (freeG.length && !used[C.CNT]) avail.push(C.CNT);   // ordnet die Gruppen der nächsten Ebene
+      var out = '<div class="ve-oblock ve-oblock-s is-active" data-kind="s" data-block="' + n + '" role="group" aria-label="' +
+        esc(t("order_sort_block", { n: n + 1 })) + '">' +
+        vcol(t("order_sort_label"), blk.length ? trashBtn("block", n, t("order_rm_sort_block", { n: n + 1 })) : "") +
+        '<div class="ve-ochoices">';
+      blk.forEach(function (c, i) { out += critBadge(n, i, c, c.f === C.CNT, false); });
+      avail.forEach(function (f) {
+        out += '<button type="button" class="ve-obadge" data-kind="s" data-add="1" data-block="' + n + '" data-field="' + esc(f) +
+          '" aria-label="' + esc(t("order_sort_block", { n: n + 1 }) + " · " + t("order_sort") + ": " + critName(f)) +
+          '"' + (f === C.CNT ? ' title="' + esc(t("order_cnt_hint")) + '"' : "") + ">" + esc(critName(f)) + "</button>";
+      });
+      out += "</div>";
+      if (freeG.length) {
+        out += '<button type="button" class="ve-oplus" data-oact="freeze" aria-label="' + esc(t("order_add_group")) + '" title="' +
+          esc(t("order_add_group")) + '"><span class="ve-oplus-t" aria-hidden="true">+ ' + esc(t("order_group_label")) + "</span></button>";
       }
-
-      // 2. Progressive Ebenen: Nächste undefinierte Ebene anzeigen, darüber liegende verbergen
-      if (list.length < C.ORDER_MAX) {
-        var nextLvl = list.length;
-        rowHtml += '<div class="ve-olevel ve-olvl ve-olevel-choices" data-level="' + nextLvl + '">';
-        if (list.length > 0) {
-          rowHtml += '<span class="ve-olvl-tag">' + (nextLvl + 1) + "</span>";
-        }
-        fields.forEach(function (fd) {
-          if (used[fd.f]) return;
-          rowHtml += '<button type="button" class="ve-obadge" data-kind="' + kind + '" data-field="' + esc(fd.f) + '" data-level="' + nextLvl + '"' +
-            ' aria-label="' + esc(t("order_level", { n: nextLvl + 1 }) + " · " + t(isG ? "order_group" : "order_sort") + ": " + t("of_" + fd.f)) + '">' +
-            esc(t("of_" + fd.f)) + "</button>";
-        });
-        rowHtml += "</div>";
-      }
-
-      rowHtml += "</div></div>";
-      return rowHtml;
+      return out + "</div>";
     }
 
-    html += renderSection("g");
-    html += renderSection("s");
+    html += '<div class="ve-ochain" data-role="ochain">';
+    for (var k = 0; k < n; k++) html += frozenBlock(k) + groupBlock(k);
+    html += pending ? frozenBlock(n) + pickBlock() : activeBlock();
+    html += "</div>";
 
     r.opanel.innerHTML = html;
-    var n = G.length + S.length;
-    r.obadge.textContent = n ? String(n) : "";
+    r.obadge.textContent = total ? String(total) : "";
+    fitVertical(r.opanel);
+    rovingInit(r.opanel);
+  }
+  // Senkrechte Namen nur, wenn sie in die Höhe des Widgets passen (sonst waagerecht)
+  function fitVertical(panel) {
+    if (panel.hidden) return;
+    // Höhe des Widgets ohne die senkrechten Namen: Spalten aus Beschriftung und Papierkorb, der aktive Block
+    var cap = 0;
+    Array.prototype.forEach.call(panel.querySelectorAll(".ve-ovcol"), function (col) {
+      var h = 0;
+      Array.prototype.forEach.call(col.children, function (c) { h += c.offsetHeight; });
+      cap = Math.max(cap, h + 6 * Math.max(0, col.children.length - 1));
+    });
+    var act = panel.querySelector(".ve-oblock.is-active .ve-ochoices, .ve-oblock.is-picking .ve-ochoices");
+    if (act) cap = Math.max(cap, act.offsetHeight);
+    Array.prototype.forEach.call(panel.querySelectorAll(".ve-obadge.is-vertical"), function (b) {
+      if (b.offsetHeight > cap + 2) b.classList.remove("is-vertical");
+    });
+  }
+  // Je Block ein Tabstopp für die Kriterien (Pfeiltasten wandern darin); Papierkorb und „+ Gruppieren“ eigene Stopps
+  function rovingInit(panel) {
+    Array.prototype.forEach.call(panel.querySelectorAll(".ve-oblock"), function (blk) {
+      var badges = blk.querySelectorAll(".ve-obadge"), pick = blk.querySelector(".ve-obadge.is-selected") || badges[0];
+      Array.prototype.forEach.call(badges, function (b) { b.tabIndex = b === pick ? 0 : -1; });
+    });
   }
   function setOrderOpen(tab, open) {
     var r = ui[tab];
+    if (!open) r.opending = false;
     r.opanel.hidden = !open;
     r.otoggle.setAttribute("aria-expanded", open ? "true" : "false");
     r.ocard.classList.toggle("is-open", open);
     if (open) renderOrderPanel(tab);
   }
-  // After add/remove, focus the badge now sitting at this level (the shifted
-  // selection, or the first choice when the level opened up).
-  function orderLevelFocus(kind, lvl) {
-    return '.ve-orow-' + kind + ' .ve-olevel[data-level="' + lvl + '"] .ve-obadge';
+  // Nach einer Änderung den ersten vorhandenen Kandidaten fokussieren (sonst die erste Auswahl im Widget)
+  function focusOrder(r, sels) {
+    if (r.opanel.hidden) return;
+    var list = (sels || []).concat([".ve-oblock.is-active .ve-obadge", ".ve-oblock.is-picking .ve-obadge", ".ve-obadge"]);
+    for (var k = 0; k < list.length; k++) {
+      var f = r.opanel.querySelector(list[k]);
+      if (f) { f.focus(); return; }
+    }
   }
-  function applyOrder(tab, spec, focusSel) {
+  function cloneChain(ch) {
+    return { g: ch.g.slice(), s: ch.s.map(function (b) { return b.map(function (c) { return { f: c.f, d: c.d }; }); }) };
+  }
+  function applyOrder(tab, chain, focusSels) {
     var r = ui[tab];
-    state[tab].g = C.parseOrderList(tab, C.orderListText(spec.g), "g");
-    state[tab].s = C.parseOrderList(tab, C.orderListText(spec.s), "s");
+    state[tab].o = C.normalizeChain(tab, chain);
     r.collapsed = {};
     saveOrder(tab);
     refreshInteractive(tab, false, "busy_group");
     commit(true);
     renderOrderPanel(tab);
-    if (!r.opanel.hidden && focusSel) {
-      var f = r.opanel.querySelector(focusSel);
-      if (f) f.focus();
-    }
+    focusOrder(r, focusSels);
   }
+  // Bausteine der Kette ändern (k = Block bzw. Ebene, i = Kriterium im Block)
+  var orderOps = {
+    toggle: function (tab, k, i) {
+      var ch = cloneChain(state[tab].o);
+      if (!ch.s[k] || !ch.s[k][i]) return;
+      ch.s[k][i].d = -ch.s[k][i].d;
+      applyOrder(tab, ch, [blockSel(k) + ' [data-crit="' + i + '"]']);
+    },
+    removeCrit: function (tab, k, i) {
+      var ch = cloneChain(state[tab].o);
+      if (!ch.s[k] || !ch.s[k][i]) return;
+      ch.s[k].splice(i, 1);
+      applyOrder(tab, ch, [blockSel(k) + ' [data-crit="' + i + '"]', blockSel(k) + ' [data-crit="' + (i - 1) + '"]',
+                           blockSel(k) + " .ve-obadge", groupSel(k) + " .ve-obadge"]);
+    },
+    addCrit: function (tab, k, f) {
+      var ch = cloneChain(state[tab].o);
+      if (!ch.s[k]) return;
+      ch.s[k].push({ f: f, d: 1 });
+      applyOrder(tab, ch, [blockSel(k) + ' [data-crit="' + (ch.s[k].length - 1) + '"]']);
+    },
+    removeBlock: function (tab, k) {
+      var ch = cloneChain(state[tab].o);
+      if (!ch.s[k]) return;
+      ch.s[k] = [];
+      applyOrder(tab, ch, [blockSel(k) + " .ve-obadge", groupSel(k) + " .ve-obadge"]);
+    },
+    removeGroup: function (tab, k) {
+      if (state[tab].o.g[k] == null) return;
+      var ch = C.chainRemoveGroup(tab, state[tab].o, k);
+      applyOrder(tab, ch, [groupSel(k) + " .ve-obadge", blockSel(k) + " .ve-obadge"]);
+    },
+    addGroup: function (tab, f) {
+      var ch = cloneChain(state[tab].o);
+      ch.g.push(f);
+      ch.s.push([]);
+      ui[tab].opending = false;
+      applyOrder(tab, ch, [".ve-oblock.is-active .ve-obadge", groupSel(ch.g.length - 1) + " .ve-obadge"]);
+    }
+  };
   function wireOrder(tab, r) {
     r.collapsed = {};
+    r.opending = false;
     r.otoggle.addEventListener("click", function (e) {
       e.stopPropagation();
       setOrderOpen(tab, r.opanel.hidden);
@@ -2176,75 +2451,70 @@
           return;
         }
         if (act === "reset") {
-          applyOrder(tab, { g: [], s: [] }, ".ve-orow-g .ve-obadge");
+          r.opending = false;
+          applyOrder(tab, C.emptyChain(), [".ve-oblock.is-active .ve-obadge"]);
+          return;
+        }
+        if (act === "freeze") {
+          r.opending = true;
+          renderOrderPanel(tab);
+          focusOrder(r, [".ve-oblock.is-picking .ve-obadge"]);
           return;
         }
       }
-      var rm = e.target.closest("[data-remove]");
-      if (rm) {
-        e.stopPropagation();
-        var rmKind = rm.getAttribute("data-remove");
-        var rmLvl = +rm.getAttribute("data-level");
-        var spec = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
-        if (spec[rmKind] && spec[rmKind][rmLvl] != null) {
-          spec[rmKind].splice(rmLvl, 1);
-          applyOrder(tab, spec, orderLevelFocus(rmKind, rmLvl));
-        }
+      var trash = e.target.closest(".ve-otrash");
+      if (trash) {
+        var idx = +trash.getAttribute("data-idx");
+        if (trash.getAttribute("data-orm") === "group") orderOps.removeGroup(tab, idx); else orderOps.removeBlock(tab, idx);
         return;
       }
       var badge = e.target.closest(".ve-obadge");
       if (!badge || badge.disabled) return;
-      var kind = badge.getAttribute("data-kind");
       var fld = badge.getAttribute("data-field");
-      var lvl = +badge.getAttribute("data-level");
-      if (badge.classList.contains("is-selected")) {
-        if (kind === "s") {
-          var specS = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
-          if (specS.s[lvl]) {
-            specS.s[lvl] = { f: specS.s[lvl].f, d: -specS.s[lvl].d };
-            applyOrder(tab, specS, orderLevelFocus("s", lvl));
-          }
-        } else if (kind === "g") {
-          var specG = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
-          if (specG.g[lvl] != null) {
-            specG.g.splice(lvl, 1);
-            applyOrder(tab, specG, orderLevelFocus("g", lvl));
-          }
-        }
+      if (badge.getAttribute("data-kind") === "g") {
+        if (badge.hasAttribute("data-pick")) orderOps.addGroup(tab, fld);
+        else orderOps.removeGroup(tab, +badge.getAttribute("data-group"));
         return;
       }
-      var specAdd = { g: (state[tab].g || []).slice(), s: (state[tab].s || []).slice() };
-      if (kind === "g" && specAdd.g.length < C.ORDER_MAX) {
-        specAdd.g.push({ f: fld, d: 1 });
-        applyOrder(tab, specAdd, orderLevelFocus("g", specAdd.g.length - 1));
-      } else if (kind === "s" && specAdd.s.length < C.ORDER_MAX) {
-        specAdd.s.push({ f: fld, d: 1 });
-        applyOrder(tab, specAdd, orderLevelFocus("s", specAdd.s.length - 1));
-      }
+      var k = +badge.getAttribute("data-block");
+      if (badge.hasAttribute("data-add")) { orderOps.addCrit(tab, k, fld); return; }
+      var i = +badge.getAttribute("data-crit");
+      if (e.target.closest(".ve-obadge-x")) orderOps.removeCrit(tab, k, i); else orderOps.toggle(tab, k, i);
+    });
+    r.opanel.addEventListener("focusin", function (e) {
+      var b = e.target.closest && e.target.closest(".ve-obadge"), blk = b && b.closest(".ve-oblock");
+      if (!blk) return;
+      Array.prototype.forEach.call(blk.querySelectorAll(".ve-obadge"), function (x) { x.tabIndex = x === b ? 0 : -1; });
     });
     r.opanel.addEventListener("keydown", function (e) {
+      var a = document.activeElement;
       if (e.key === "Escape") {
         e.preventDefault();
         setOrderOpen(tab, false);
         r.otoggle.focus();
         return;
       }
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-        var row = document.activeElement.closest(".ve-orow, .ve-oactions");
-        if (!row) return;
-        var buttons = Array.from(row.querySelectorAll("button:not([disabled])"));
-        var idx = buttons.indexOf(document.activeElement);
-        if (idx < 0) return;
-        var isRtl = document.documentElement.getAttribute("dir") === "rtl";
-        var nextIdx;
-        if (e.key === "ArrowRight") {
-          nextIdx = isRtl ? (idx - 1 + buttons.length) % buttons.length : (idx + 1) % buttons.length;
-        } else {
-          nextIdx = isRtl ? (idx + 1) % buttons.length : (idx - 1 + buttons.length) % buttons.length;
-        }
-        buttons[nextIdx].focus();
+      if (e.key === "Delete" || e.key === "Backspace") {
+        if (a && a.classList.contains("ve-otrash")) { e.preventDefault(); a.click(); return; }
+        if (!a || !a.classList.contains("ve-obadge") || !a.classList.contains("is-selected")) return;
         e.preventDefault();
+        if (a.getAttribute("data-kind") === "g") orderOps.removeGroup(tab, +a.getAttribute("data-group"));
+        else orderOps.removeCrit(tab, +a.getAttribute("data-block"), +a.getAttribute("data-crit"));
+        return;
       }
+      var keys = { ArrowLeft: 1, ArrowRight: 1, ArrowUp: 1, ArrowDown: 1, Home: 1, End: 1 };
+      if (!keys[e.key] || !a) return;
+      var row = a.closest(".ve-oblock, .ve-oactions");
+      if (!row) return;
+      var buttons = Array.from(row.querySelectorAll(row.classList.contains("ve-oblock") ? ".ve-obadge" : "button:not([disabled])"));
+      var idx2 = buttons.indexOf(a);
+      if (idx2 < 0) return;
+      var isRtl = document.documentElement.getAttribute("dir") === "rtl";
+      var step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : e.key === "ArrowRight" ? (isRtl ? -1 : 1) :
+        e.key === "ArrowLeft" ? (isRtl ? 1 : -1) : 0;
+      var next = e.key === "Home" ? 0 : e.key === "End" ? buttons.length - 1 : (idx2 + step + buttons.length) % buttons.length;
+      buttons[next].focus();
+      e.preventDefault();
     });
     document.addEventListener("click", function (e) {
       if (r.ocard && r.ocard.classList.contains("is-open") && !r.ocard.contains(e.target)) {
@@ -2302,6 +2572,7 @@
     var mods = (D.modBits[i] || []).map(function (c) { return D.dict.mod[c]; });
     if (mods.length) meta.push(esc(mods.join(", ")));
     if (D.oc[i] >= 0) meta.push(esc(t("qo_" + D.dict.oc[D.oc[i]])));
+    if (D.rk && D.rk[i]) meta.push('<span class="ve-qa-rankn">' + esc(t("qa_rank_n", { n: num(D.rk[i]) })) + "</span>");
     if (D.ne[i]) meta.push('<span title="' + esc(t("q_events")) + '">💬 ' + num(D.ne[i]) + "</span>");
     if (D.at[i]) meta.push(esc(D.at[i]));
     return '<div class="ve-row-top"><span class="ve-row-title">' + esc(D.title[i] || D.ids[i]) + '</span><span class="ve-row-badges">' +
@@ -2333,7 +2604,7 @@
       var keep = tab === "el" ? null : state[tab].id;
       var fresh = C.emptyState()[tab];
       if (keep) fresh.id = keep;
-      fresh.g = state[tab].g; fresh.s = state[tab].s;   // Gruppierung/Sortierung ist kein Filter
+      fresh.o = state[tab].o;   // Gruppierung/Sortierung ist kein Filter
       state[tab] = fresh;
       r.q.value = "";
       refreshInteractive(tab, false, "busy_filter");
@@ -2821,8 +3092,8 @@
     r.vlist.openKey = targetId || null;
     if (C.orderActive(state, tab)) {
       mark("ve:" + tab + ":order0");
-      r.ordered = C.orderRows(D, tab, list, { g: sel.g, s: sel.s });
-      r.vlist.depth = r.ordered.groups.length ? sel.g.length : 0;
+      r.ordered = C.orderRows(D, tab, list, sel.o);
+      r.vlist.depth = r.ordered.groups.length ? sel.o.g.length : 0;
       r.vlist.setItems(C.flattenOrder(r.ordered, r.collapsed), entryKey(D, r));
       measure("ve:" + tab + ":order", "ve:" + tab + ":order0");
     } else {
@@ -3807,6 +4078,269 @@
     return h;
   }
 
+  // ------------------------------------------------------------------ Antworten (Rolle vom Worker, nie aus dem Client)
+  var qaArmed = null;
+  var qaCatalog = null;
+  function ensureQaCss() {
+    if (document.getElementById("ve-qa-css")) return;
+    var link = document.createElement("link");
+    link.id = "ve-qa-css";
+    link.rel = "stylesheet";
+    link.href = ROOT + "static/versions-explorer.css";
+    document.head.appendChild(link);
+  }
+  function qaOutcomes(kind) {
+    if (kind === "assumption") return ["confirmed", "refuted", "partially_confirmed"];
+    if (kind === "contradiction") return ["a_valid", "b_valid", "both_valid_difference_explained", "neither_valid"];
+    return ["answered", "not_an_issue"];
+  }
+  function qaShortcutOutcome(kind, which) {
+    if (which === "confirm") return qaOutcomes(kind)[0];
+    if (kind === "contradiction") return "b_valid";
+    if (kind === "assumption") return "refuted";
+    return "not_an_issue";
+  }
+  function qaAssignment(info) {
+    return (info.anchors || []).some(function (a) { return a && (a.type === "pair" || a.type === "snippet"); });
+  }
+  function qaService() {
+    try {
+      if (!window.AiAccess || !window.AiAccess.service || !window.AiAccess.idToken) return Promise.resolve(null);
+      return Promise.all([window.AiAccess.service(), window.AiAccess.idToken()]).then(function (pair) {
+        if (!pair[0] || !pair[1]) return null;
+        return { base: String(pair[0]).replace(/\/$/, ""), token: pair[1] };
+      });
+    } catch (e) { return Promise.resolve(null); }
+  }
+  function qaFetch(svc, method, path, body) {
+    return fetch(svc.base + path, {
+      method: method, credentials: "omit", mode: "cors",
+      headers: Object.assign({ Authorization: "Bearer " + svc.token, Accept: "application/json" },
+        body ? { "Content-Type": "application/json" } : {}),
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (res) {
+      return res.json().catch(function () { return null; }).then(function (json) { return { status: res.status, json: json }; });
+    });
+  }
+  function qaStep(delta) {
+    var vl = ui.q && ui.q.vlist;
+    if (!vl || !vl.items.length) return;
+    var start = vl.active < 0 ? (delta > 0 ? -1 : vl.items.length) : vl.active;
+    for (var i = 1; i <= vl.items.length; i++) {
+      var n = start + delta * i;
+      if (n < 0 || n >= vl.items.length) return;
+      if (vl.items[n] >= 0) { vl.setActive(n, true); openFromList("q", n, true); return; }
+    }
+  }
+  function qaArm(which) {
+    // c/r apply only to a mounted answer bar. They must not open a question for someone
+    // with no bar (signed out, or a role that has no outcome buttons).
+    var host = ui.q && ui.q.vbody.querySelector("[data-qa]");
+    if (!host || !host.querySelector("[data-qa-outcome]")) return;
+    qaArmed = which;
+    var outcome = qaShortcutOutcome(host.getAttribute("data-qa-kind"), qaArmed);
+    var btn = outcome && host.querySelector('[data-qa-outcome="' + outcome + '"]');
+    if (btn) { qaArmed = null; btn.click(); }
+  }
+  function qaCatalogIds() {
+    if (qaCatalog) return Promise.resolve(qaCatalog);
+    return fetchJson(ROOT + "versions/catalog.json").then(function (cat) {
+      var ids = [], items = (cat && cat.items) || [];
+      for (var i = 0; i < items.length; i++) if (items[i] && items[i].id) ids.push(String(items[i].id));
+      qaCatalog = ids;
+      return ids;
+    }).catch(function () { qaCatalog = []; return []; });
+  }
+  function mountAnswerBar(info, my) {
+    ensureQaCss();
+    qaService().then(function (svc) {
+      if (my !== token.q || !svc) return null;
+      return qaFetch(svc, "GET", "/question-answers/role").then(function (res) {
+        if (my !== token.q || !res || res.status !== 200 || !res.json || !res.json.role) return;
+        var host = document.createElement("section");
+        host.className = "ve-sect ve-qa";
+        host.setAttribute("data-qa", "");
+        host.setAttribute("data-qa-kind", info.kind || "");
+        var links = ui.q.vbody.querySelector(".ve-links");
+        if (links && links.parentNode) links.parentNode.insertBefore(host, links.nextSibling);
+        else ui.q.vbody.insertBefore(host, ui.q.vbody.firstChild);
+        renderAnswerBar(host, info, svc, res.json.role, my);
+      });
+    }).catch(function () { /* kein Dienst: keine zusätzliche Leiste */ });
+  }
+  function qaNonce() {
+    var bytes = new Uint8Array(16);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for (var i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    var hex = "";
+    for (var j = 0; j < bytes.length; j++) hex += (bytes[j] + 256).toString(16).slice(1);
+    return hex;
+  }
+  function pendingHtml(records) {
+    return (records || []).map(function (rec) {
+      var ev = (rec && rec.event) || {};
+      var bits = ['<p class="ve-qa-pending" role="status">' + esc(t("qa_pending")) + "</p>"];
+      if (ev.outcome) bits.push("<p><strong>" + esc(t("qo_" + ev.outcome)) + "</strong></p>");
+      if (ev.explanation) bits.push("<p>" + esc(ev.explanation) + "</p>");
+      if (ev.evidence) bits.push(evidenceLinks(ev.evidence));
+      return bits.join("");
+    }).join("");
+  }
+  function renderAnswerBar(host, info, svc, role, my) {
+    if (role === "user") {
+      host.innerHTML = '<div class="ve-qa-row"><button type="button" class="ve-qa-rank" data-qa-rank>' +
+        esc(t("qa_request_review")) + "</button></div>";
+      var btn = host.querySelector("[data-qa-rank]");
+      function paint(on) {
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.textContent = on ? t("qa_withdraw_review") : t("qa_request_review");
+        btn.title = t("qa_rank_title");
+      }
+      qaFetch(svc, "GET", "/question-answers/rank/mine?qid=" + encodeURIComponent(info.id)).then(function (res) {
+        if (my !== token.q) return;
+        paint(res.status === 200 && res.json && res.json.vote);
+      }).catch(function () {});
+      btn.addEventListener("click", function () {
+        var on = btn.getAttribute("aria-pressed") === "true";
+        btn.disabled = true;
+        var done = on
+          ? qaFetch(svc, "DELETE", "/question-answers/rank?qid=" + encodeURIComponent(info.id))
+          : qaFetch(svc, "POST", "/question-answers/rank", { qid: info.id, fingerprint: info.fingerprint || "" });
+        done.then(function (res) {
+          btn.disabled = false;
+          if (res.status === 200) paint(!on);
+          else host.insertAdjacentHTML("beforeend", '<p class="ve-qa-pending" role="alert">' + esc(t("qa_err")) + "</p>");
+        }).catch(function () { btn.disabled = false; });
+      });
+      return;
+    }
+    var outcomes = qaOutcomes(info.kind);
+    var binding = role === "curator" || role === "admin";
+    var head = binding ? t("qa_binding_head") : t("qa_review_head");
+    var outcomeBtns = outcomes.map(function (o) {
+      return '<button type="button" data-qa-outcome="' + esc(o) + '" aria-pressed="false">' + esc(t("qa_oc_" + o)) + "</button>";
+    }).join("");
+    var dismiss = binding && info.kind === "assumption"
+      ? '<button type="button" class="ve-qa-dismiss" data-qa-dismiss aria-pressed="false">' + esc(t("qa_dismiss")) + "</button>" : "";
+    var assess = !binding && qaAssignment(info)
+      ? '<label>' + esc(t("qa_assessment")) + '<input type="number" data-qa-assess min="0" max="0.95" step="0.05" inputmode="decimal"></label>' : "";
+    host.innerHTML = '<h3>' + esc(head) + '</h3><div class="ve-qa-form">' +
+      '<div class="ve-qa-outcomes" role="group">' + outcomeBtns + "</div>" +
+      '<label>' + esc(t("qa_explain")) + '<textarea data-qa-explain maxlength="4000" placeholder="' + esc(t("qa_explain_ph")) + '"></textarea></label>' +
+      '<label>' + esc(t("qa_evidence")) + '<input type="text" data-qa-ev autocomplete="off" placeholder="' + esc(t("qa_evidence_ph")) + '"></label>' +
+      '<ul class="ve-qa-suggest" data-qa-suggest hidden></ul><ul class="ve-qa-chips" data-qa-chips></ul>' +
+      assess + '<div class="ve-qa-row">' + dismiss +
+      '<button type="button" class="ve-qa-send" data-qa-send>' + esc(t("qa_send")) + "</button></div>" +
+      '<div data-qa-note></div></div>';
+    var chosen = "";
+    var chips = [];
+    var explain = host.querySelector("[data-qa-explain]");
+    function setOutcome(value, dismissMode) {
+      chosen = dismissMode ? "" : value;
+      host.querySelectorAll("[data-qa-outcome]").forEach(function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-qa-outcome") === value && !dismissMode ? "true" : "false");
+      });
+      var d = host.querySelector("[data-qa-dismiss]");
+      if (d) d.setAttribute("aria-pressed", dismissMode ? "true" : "false");
+      host.setAttribute("data-qa-mode", dismissMode ? "dismiss" : "outcome");
+    }
+    host.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-qa-outcome]");
+      if (b) { setOutcome(b.getAttribute("data-qa-outcome"), false); explain.focus(); return; }
+      if (e.target.closest("[data-qa-dismiss]")) { setOutcome("", true); explain.focus(); return; }
+      var sug = e.target.closest("[data-qa-sug]");
+      if (sug) { addChip(sug.getAttribute("data-qa-sug")); host.querySelector("[data-qa-ev]").value = ""; paintSug([]); return; }
+      var rm = e.target.closest("[data-qa-rm]");
+      if (rm) { chips = chips.filter(function (c) { return c !== rm.getAttribute("data-qa-rm"); }); paintChips(); }
+    });
+    function addChip(id) { if (id && chips.indexOf(id) < 0 && chips.length < 5) { chips.push(id); paintChips(); } }
+    function paintChips() {
+      host.querySelector("[data-qa-chips]").innerHTML = chips.map(function (c) {
+        return '<li><span>' + esc(c) + '</span> <button type="button" data-qa-rm="' + esc(c) + '" aria-label="' + esc(c) + '">×</button></li>';
+      }).join("");
+    }
+    function paintSug(ids) {
+      var ul = host.querySelector("[data-qa-suggest]");
+      ul.hidden = !ids.length;
+      ul.innerHTML = ids.map(function (id) { return '<li><button type="button" data-qa-sug="' + esc(id) + '">' + esc(id) + "</button></li>"; }).join("");
+    }
+    var evInput = host.querySelector("[data-qa-ev]");
+    evInput.addEventListener("input", function () {
+      var q = evInput.value.trim().toLowerCase();
+      if (q.length < 2) { paintSug([]); return; }
+      qaCatalogIds().then(function (ids) {
+        if (my !== token.q) return;
+        var pref = [], rest = [];
+        for (var i = 0; i < ids.length && pref.length + rest.length < 8; i++) {
+          var id = ids[i], low = id.toLowerCase();
+          if (low.indexOf(q) === 0) pref.push(id);
+          else if (low.indexOf(q) > 0) rest.push(id);
+        }
+        paintSug(pref.concat(rest).slice(0, 8));
+      });
+    });
+    evInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        var first = host.querySelector("[data-qa-sug]");
+        var raw = evInput.value.trim();
+        addChip(first ? first.getAttribute("data-qa-sug") : raw);
+        evInput.value = "";
+        paintSug([]);
+      }
+    });
+    function showPending(records) {
+      var note = host.querySelector("[data-qa-note]");
+      if (note && records && records.length) note.innerHTML = pendingHtml(records);
+    }
+    qaFetch(svc, "GET", "/question-answers/pending?qid=" + encodeURIComponent(info.id)).then(function (res) {
+      if (my !== token.q || !res || res.status !== 200) return;
+      showPending((res.json && res.json.records) || []);
+    }).catch(function () {});
+    host.querySelector("[data-qa-send]").addEventListener("click", function () {
+      var text = explain.value.replace(/\s+/g, " ").trim();
+      var dismissMode = host.getAttribute("data-qa-mode") === "dismiss";
+      if (!text || text.length < 3) { explain.focus(); return; }
+      if (!dismissMode && !chosen) return;
+      var raw = evInput.value.trim();
+      if (raw) addChip(raw);
+      var payload = {
+        qid: info.id, fingerprint: info.fingerprint || "", anchor_hash: info.anchor_hash || "",
+        kind: info.kind, op: dismissMode ? "dismiss" : (binding ? "answer" : "assess"),
+        explanation: text, evidence: chips.slice()
+      };
+      if (!dismissMode) payload.outcome = chosen;
+      payload.idempotency_key = qaNonce();
+      var assessInput = host.querySelector("[data-qa-assess]");
+      if (assessInput && assessInput.value !== "") {
+        payload.assignment = true;
+        payload.assessment = Number(assessInput.value);
+      }
+      var send = host.querySelector("[data-qa-send]");
+      send.disabled = true;
+      qaFetch(svc, "POST", "/question-answers", payload).then(function (res) {
+        send.disabled = false;
+        var note = host.querySelector("[data-qa-note]");
+        if (res && res.status === 200 && res.json && res.json.duplicate) {
+          note.insertAdjacentHTML("afterbegin", '<p class="ve-qa-pending ve-qa-duplicate" role="status">' + esc(t("qa_duplicate")) + "</p>");
+          return;
+        }
+        if (!res || res.status !== 200 || !res.json || !res.json.record) {
+          note.insertAdjacentHTML("afterbegin", '<p role="alert">' + esc(t("qa_err")) + "</p>");
+          return;
+        }
+        note.insertAdjacentHTML("afterbegin", pendingHtml([res.json.record]));
+        explain.value = "";
+        setOutcome("", false);
+      }).catch(function () { send.disabled = false; });
+    });
+    if (qaArmed) {
+      setOutcome(qaShortcutOutcome(info.kind, qaArmed), false);
+      qaArmed = null;
+      explain.focus();
+    }
+  }
+
   // ------------------------------------------------------------------ Fragen-Viewer
   // Detail je Frage (versions/explorer/questions/<Q-…>.json, export_questions.py): Wortlaut in der Quellsprache,
   // englische Normalform als Zweitzeile, Art, Status, Ausgang, Anker mit Seiten-Links (Release bleibt), Verlauf aus
@@ -3823,6 +4357,7 @@
       if (!info || !info.ok) throw new Error(t("not_found", { id: id }));
       shown.q = id;
       r.vbody.innerHTML = questionHtml(info);
+      mountAnswerBar(info, my);
       r.vbody.parentNode.scrollTop = 0;
       if (userAction && !narrowMQ.matches) r.list.focus({ preventScroll: true });
     }).catch(function (err) {
@@ -3841,10 +4376,13 @@
     return '<a href="' + esc(src.url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + "</a>";
   }
   function evidenceLinks(list) {
-    list = (list || []).filter(function (e) { return e && /^https:\/\//.test(e.url || ""); });
+    list = (list || []).filter(function (e) {
+      return e && (/^https:\/\//.test(e.url || "") || /^[A-Za-z][A-Za-z0-9_.:-]{0,120}$/.test(e.id || ""));
+    });
     if (!list.length) return "";
     return '<ul class="ve-q-evidence">' + list.map(function (e) {
-      return '<li><a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer">' + esc(e.label || e.url) + "</a></li>";
+      if (e.url) return '<li><a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer">' + esc(e.label || e.url) + "</a></li>";
+      return '<li><button type="button" class="ve-linkbtn" data-open-el="' + esc(e.id) + '">' + esc(e.id) + "</button></li>";
     }).join("") + "</ul>";
   }
   function historyHtml(info) {
@@ -3881,14 +4419,20 @@
       } else {
         if (h.outcome) body.push("<strong>" + esc(t("qo_" + h.outcome)) + "</strong>");
         if (h.explanation) body.push(esc(h.explanation));
-        if (h.text) body.push(esc(h.text));
-        if (h.reason) body.push('<span class="ve-muted">' + esc(t("q_reason", { r: h.reason })) + "</span>");
+        if (typeof h.assessment === "number") body.push('<span class="ve-muted">' + esc(t("qa_assessment")) + " " + esc(String(h.assessment)) + "</span>");
+        if (h.text && h.text !== h.explanation) body.push(esc(h.text));
+        if (h.reason && h.reason !== h.explanation) body.push('<span class="ve-muted">' + esc(t("q_reason", { r: h.reason })) + "</span>");
         if (h.evidence && h.evidence.length) body.push(evidenceLinks(h.evidence));
       }
-      var who = op === "generated" ? t("qby_guide") : h.origin === "derived" ? t("qby_harvest") : op === "normalise" ? t("qby_worker")
+      var roleLabel = h.role === "review" ? t("qa_review_head")
+        : h.role === "curation" ? t("qby_" + (by.kind === "admin" ? "admin" : "curator")) : "";
+      var handle = by.name && by.name !== "—" ? by.name : "";
+      var who = roleLabel ? (handle ? t("qa_author", { role: roleLabel, handle: handle }) : roleLabel)
+        : op === "generated" ? t("qby_guide") : h.origin === "derived" ? t("qby_harvest") : op === "normalise" ? t("qby_worker")
         : (by.name ? by.name + " (" + t("qby_" + (by.kind || "curator")) + ")" : t("qby_" + (by.kind || "curator")));
+      var opLabel = h.role === "review" ? t("qa_review_op") : t("qh_" + op);
       var src = h.source && op !== "normalise" ? srcLink(h.source) : "";
-      return '<li class="ve-q-ev ve-q-ev-' + esc(op) + '"><div class="ve-q-evhead"><span class="ve-q-evop">' + esc(t("qh_" + op)) +
+      return '<li class="ve-q-ev ve-q-ev-' + esc(op) + (h.role === "review" ? " ve-q-ev-review" : "") + '"><div class="ve-q-evhead"><span class="ve-q-evop">' + esc(opLabel) +
         "</span>" + (h.at ? ' <time datetime="' + esc(h.at) + '">' + esc(fmtDate(h.at)) + "</time>" : "") +
         ' <span class="ve-muted">' + esc(who) + "</span>" + (src ? " · " + src : "") + "</div>" +
         (body.length ? '<div class="ve-q-evbody">' + body.join("<br>") + "</div>" : "") + "</li>";
@@ -3936,6 +4480,10 @@
   }
   function questionHtml(info) {
     var st = info.status || "", reason = info.status_reason;
+    var reasonRepeated = reason && (info.history || []).some(function (h) {
+      return h && (h.explanation === reason || h.reason === reason && h.explanation === h.reason);
+    });
+    if (reason && (reason === info.explanation || reasonRepeated)) reason = "";
     var chips = '<span class="ve-mini ve-qk ve-qk-' + esc(info.kind) + '">' + esc(t("qk_" + info.kind)) + "</span>" +
       '<span class="ve-qstat ve-qst-' + esc(st) + '">' + esc(t("qs_" + st)) + "</span>" +
       (info.outcome ? '<span class="ve-mini ve-qoc">' + esc(t("qo_" + info.outcome)) + "</span>" : "") +
@@ -3992,6 +4540,15 @@
     TABS.forEach(function (tab) { if (ui[tab]) setDetailMode(tab, !!selectedKey(tab) && narrowMQ.matches); });
   });
   document.addEventListener("keydown", function (e) {
+    if (state.tab === "q" && (e.key === "j" || e.key === "k" || e.key === "c" || e.key === "r") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      var typing = e.target && e.target.closest && e.target.closest("input, textarea, select, [contenteditable]");
+      if (!typing) {
+        if (e.key === "j" || e.key === "k") { e.preventDefault(); qaStep(e.key === "j" ? 1 : -1); return; }
+        e.preventDefault();
+        qaArm(e.key === "c" ? "confirm" : "refute");
+        return;
+      }
+    }
     if (e.key === "Escape") {
       var r = ui[state.tab];
       if (r && r.panel.classList.contains("facets-open")) { setFacetsOpen(state.tab, false); r.ftoggle.focus(); }
@@ -4012,6 +4569,7 @@
     try { window.history.replaceState(window.history.state, "", window.location.pathname + C.serializeState(state) + window.location.hash); }
     catch (e) { /* ignore */ }
   }
+  canonicalOrderUrl();
   TABS.forEach(function (tab) {
     renderOrderPanel(tab);
   });

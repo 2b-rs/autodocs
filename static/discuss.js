@@ -975,7 +975,8 @@
       if (trigger) {
         event.preventDefault();
         var recId = trigger.getAttribute("data-open-discuss");
-        var actions = trigger.closest(".ai-commentary-actions") || trigger.parentElement;
+        // Kopfzeile des Guides (.ai-guide-head): das Panel öffnet direkt darunter, nicht in der Zeile
+        var actions = trigger.closest(".ai-guide-head") || trigger.closest(".ai-commentary-actions") || trigger.parentElement;
         var isCurrentInline = (panel.dataset.dock === "inline" && panel.previousElementSibling === actions);
         if (isCurrentInline && !panel.hidden) {
           setOpen(false);

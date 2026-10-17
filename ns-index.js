@@ -200,12 +200,19 @@
     var cluName = root.getAttribute("data-cluster") || "", cluClassic = root.getAttribute("data-platform") !== "adaptive";
     // Signaturen der Nicht-Member-Funktionen nach Name (für „Kommt vor in“)
     var fnIndex = dict();
+    // Verweis „zum Record“ (a.nsx-go): auf Clusterseiten führt der Link auf die Seite des Teils (data-fn trägt die ID),
+    // sonst ist er ein Seitenanker (#ID)
+    function fnId(go) { return go.getAttribute("data-fn") || go.getAttribute("href").slice(1); }
+    // In der Kompaktansicht wählt der Verweis den Eintrag hier aus (Klickbehandlung über recOwner), statt die Seite zu wechseln
+    root.querySelectorAll(".nsx-row a.nsx-go[data-fn]").forEach(function (go) {
+      if (recOwner[go.getAttribute("data-fn")]) go.setAttribute("href", "#" + go.getAttribute("data-fn"));
+    });
     root.querySelectorAll(".nsx-row .nsx-sig").forEach(function (sg) {
       var code = sg.querySelector("code"), go = sg.querySelector("a.nsx-go");
       var m = code && go && /(operator\s*[^\s(]+|[A-Za-z_~][\w:]*)\s*\(/.exec(code.textContent);
       if (!m) return;
       var fname = m[1].replace(/\s+/g, "").split("::").pop();
-      (fnIndex[fname] = fnIndex[fname] || []).push({ id: go.getAttribute("href").slice(1), code: code });
+      (fnIndex[fname] = fnIndex[fname] || []).push({ id: fnId(go), code: code });
     });
 
     // ---- Clusterseiten: Definition und Modulkarten als Folds mit Griffen
@@ -2270,7 +2277,7 @@
           var code = sg.querySelector("code"), go = sg.querySelector("a.nsx-go");
           var fm = code && /(operator\s*[^\s(]+|[A-Za-z_~][\w:]*)\s*\(/.exec(code.textContent);
           var fname = fm ? fm[1].replace(/\s+/g, "").split("::").pop() : go && go.textContent;
-          if (code && go) fl.insertAdjacentHTML("beforeend", '<li class="nsx-ifn"><a class="nsx-fname" href="' + esc(go.getAttribute("href")) + '">' + esc(fname) + '</a><code class="nsx-isig">' + code.innerHTML + "</code></li>");
+          if (code && go) fl.insertAdjacentHTML("beforeend", '<li class="nsx-ifn"><a class="nsx-fname" href="#' + esc(fnId(go)) + '">' + esc(fname) + '</a><code class="nsx-isig">' + code.innerHTML + "</code></li>");
         });
         section(labels.fns, own.length).appendChild(fl);
       }
@@ -3172,28 +3179,113 @@
       nodata: "Keine Versionsdaten verfügbar.", loading: "Versionsdaten werden geladen …", text: "Text",
       notext: "Wortlaut in diesem Release nicht erfasst", pick: "Zelle zeigen oder anklicken: gegen das gewählte Release vergleichen · Release-Kopf anklicken: Release wählen",
       selrel: "Release wählen", props: "Angaben", rel: "Release", elem: "Element", onlyone: "Nur ein Release mit Wortlaut",
-      pdf: "im PDF vorhanden, Wortlaut noch nicht übernommen", cap: "Wortlaut erstmals erfasst"
+      pdf: "im PDF vorhanden, Wortlaut noch nicht übernommen", cap: "Wortlaut erstmals erfasst",
+      since: "unverändert seit {rel}", colors: "Release-Farben",
+      oldest: "ältestes Release", newest: "neuestes Release"
     } : {
       add: "added", chg: "changed", pre: "unchanged", del: "removed", none: "not included",
       changes: "Changes", same: "No change in content", first: "First in", gone: "Removed in",
       nodata: "No version data available.", loading: "Loading version data …", text: "Text",
       notext: "Wording not captured for this release", pick: "Hover or click a cell: compare with the selected release · Click a release header: select the release",
       selrel: "Select release", props: "Properties", rel: "Release", elem: "Element", onlyone: "Only one release with wording",
-      pdf: "present in PDF, wording not yet imported", cap: "Wording captured for the first time"
+      pdf: "present in PDF, wording not yet imported", cap: "Wording captured for the first time",
+      since: "unchanged since {rel}", colors: "Release colors",
+      oldest: "oldest release", newest: "newest release"
     };
     // Beschriftungen der Seite (übersetzt über _src/i18n/ui.json, Gruppe „kind“) haben Vorrang;
     // die Tabellen oben sind nur der Rückfall für Seiten ohne diese Beschriftungen
     Object.keys(HL).forEach(function (k) { if (labels["h" + k]) HL[k] = labels["h" + k]; });
+    // Chronologische Gesamtreihenfolge aller im Repository belegten Releases. Die R-Bezeichner
+    // tragen Jahr und Monat; die Änderungshistorien der Classic-Dossiers belegen 4.0.1 am 2009-12-18,
+    // 4.1.1 am 2013-03-15, 4.2.1 am 2014-10-31, 4.3.0 am 2016-11-30 und 4.4.0 am 2018-10-31.
+    // 4.4 und R18-10 fallen in denselben Monat (Store-Alias: derselbe Stand); 4.4 steht davor.
+    // Für S-Core v0.6.0 enthält das Repository kein Publikationsdatum; es steht nach R25-11. Einziger
+    // Datumshinweis ist der Commit-Zeitstempel des Tag-Archivs (2026-06-24), kein Publikationsdatum.
+    var REPOSITORY_RELEASE_ORDER = [
+      "4.0", "4.1", "4.2", "4.3", "R17-03", "R17-10", "R18-03", "4.4", "R18-10",
+      "R19-03", "R19-11", "R20-11", "R21-11", "R22-11", "R23-11", "R24-11", "R25-11",
+      "v0.6.0"
+    ];
+    var repositoryReleaseRank = {};
+    REPOSITORY_RELEASE_ORDER.forEach(function (rel, i) { repositoryReleaseRank[rel] = i; });
     function histKey(r) {
+      if (Object.prototype.hasOwnProperty.call(repositoryReleaseRank, r)) return repositoryReleaseRank[r];
       var m = /^R(\d+)-(\d+)/.exec(r || "");
-      if (m) return +m[1] * 100 + +m[2];
+      if (m) return 1000 + +m[1] * 100 + +m[2];
       m = /^(\d+)\.(\d+)/.exec(r || "");
-      return m ? +m[1] * 10 + +m[2] : 0;
+      if (m) return 2000 + +m[1] * 10 + +m[2];
+      m = /^v(\d+)\.(\d+)(?:\.(\d+))?/.exec(r || "");
+      return m ? 3000 + +m[1] * 10000 + +m[2] * 100 + +(m[3] || 0) : 4000;
     }
     function bySort(a, b) { return histKey(a) - histKey(b) || (a < b ? -1 : a > b ? 1 : 0); }
+
+    // Wellenlängen-zu-sRGB-Näherung nach den Farbwinkel-Stützstellen von Brutons Spektralfunktion
+    // (580 nm Gelb, 510 nm Grün, 490 nm Cyan, 440 nm Blau, 400 nm Violett). Brutons flaches Rotband
+    // 645…700 nm entfällt: der Farbwinkel fällt bis 700 nm stetig auf 0° (Tiefrot), dazwischen wird
+    // er stückweise linear interpoliert. Die Spektralfarben liegen außerhalb des sRGB-Gamuts; statt
+    // abgeschnittener Kanäle bleibt die Sättigung konstant, und ein Helligkeitsbogen dunkelt beide
+    // Enden ab (geringere Hellempfindlichkeit an den Spektralrändern). Weil der Farbwinkel streng
+    // monoton ist, bleiben Nachbarränge verschieden.
+    function wavelengthRgb(wavelength) {
+      var SPECTRAL_HUE_STOPS = [[700, 0], [580, 60], [510, 120], [490, 180], [440, 240], [400, 275]];
+      var w = Math.max(400, Math.min(700, wavelength)), h = 275, t = (700 - w) / 300;
+      for (var k = 1; k < SPECTRAL_HUE_STOPS.length; k += 1) {
+        var hi = SPECTRAL_HUE_STOPS[k - 1], lo = SPECTRAL_HUE_STOPS[k];
+        if (w >= lo[0]) { h = hi[1] + (lo[1] - hi[1]) * (hi[0] - w) / (hi[0] - lo[0]); break; }
+      }
+      var s = 0.82, v = 0.58 + 0.18 * Math.sin(Math.PI * t) + 0.08 * t;
+      var c = v * s, hp = h / 60, x = c * (1 - Math.abs(hp % 2 - 1));
+      var rgb = hp < 1 ? [c, x, 0] : hp < 2 ? [x, c, 0] : hp < 3 ? [0, c, x] :
+        hp < 4 ? [0, x, c] : hp < 5 ? [x, 0, c] : [c, 0, x];
+      var m = v - c;
+      return rgb.map(function (channel) { return Math.round(255 * (channel + m)); });
+    }
+    function rgbCss(rgb) { return "rgb(" + rgb.join(", ") + ")"; }
+    function lighten(rgb, amount) {
+      return rgb.map(function (x) { return Math.round(x + (255 - x) * amount); });
+    }
+    function repositoryReleases() {
+      var seen = {}, rels = [], cfg = window.__autodocsRelease && window.__autodocsRelease.u;
+      REPOSITORY_RELEASE_ORDER.forEach(function (rel) { seen[rel] = 1; rels.push(rel); });
+      if (cfg) Object.keys(cfg).forEach(function (uid) {
+        ((cfg[uid] && cfg[uid].r) || []).forEach(function (rel) {
+          if (!seen[rel]) { seen[rel] = 1; rels.push(rel); }
+        });
+      });
+      histColumns().forEach(function (rel) { if (!seen[rel]) { seen[rel] = 1; rels.push(rel); } });
+      return rels.sort(bySort);
+    }
+    var releaseRainbow = null;
+    function installReleaseRainbow() {
+      if (releaseRainbow) return releaseRainbow;
+      var rels = repositoryReleases(), index = {};
+      rels.forEach(function (rel, i) {
+        index[rel] = i;
+        var wavelength = rels.length < 2 ? 550 : 700 - 300 * i / (rels.length - 1);
+        var rgb = wavelengthRgb(wavelength);
+        root.style.setProperty("--nsx-rel-" + i, rgbCss(rgb));
+        root.style.setProperty("--nsx-rel-" + i + "-dark", rgbCss(lighten(rgb, 0.18)));
+      });
+      root.dataset.nsxReleaseOrder = JSON.stringify(rels);
+      var stops = rels.map(function (_, i) { return "var(--nsx-rel-" + i + ")"; });
+      var darkStops = rels.map(function (_, i) { return "var(--nsx-rel-" + i + "-dark)"; });
+      root.style.setProperty("--nsx-rainbow-gradient", "linear-gradient(to right," + stops.join(",") + ")");
+      root.style.setProperty("--nsx-rainbow-gradient-dark", "linear-gradient(to right," + darkStops.join(",") + ")");
+      releaseRainbow = { rels: rels, index: index };
+      return releaseRainbow;
+    }
     function entryRels(r) {
       var all = words(r, "data-releases").concat(words(r, "data-changes"), words(r, "data-dropped"), words(r, "data-present"));
       return all.filter(function (x, i) { return all.indexOf(x) === i; }).sort(bySort);
+    }
+    function spanStartIndexes(states) {
+      var starts = [], start = -1;
+      states.forEach(function (state, i) {
+        if (state === "add" || state === "chg" || state === "cap") start = i;
+        else if (state !== "pre") start = -1;
+        starts[i] = start;
+      });
+      return starts;
     }
     // Zustand einer Zelle: add (erstes Auftreten), chg (geändert), pre (unverändert enthalten), del (entfallen),
     // pdf (im PDF vorhanden, Wortlaut noch nicht übernommen: kein Vergleich, nie „unverändert“/„geändert“),
@@ -3213,9 +3305,22 @@
       return Object.keys(seen).sort(bySort);
     }
     function shortRel(x) { return String(x).replace(/^R/, ""); }
+    function historyLegend(rainbow) {
+      if (!rainbow.rels.length) return "";
+      var oldest = rainbow.rels[0], newest = rainbow.rels[rainbow.rels.length - 1];
+      var scaleLabel = HL.colors + ": " + HL.oldest + " " + oldest + ", " + HL.newest + " " + newest;
+      return '<span class="nsx-hlegend" role="img" data-oldest="' + esc(oldest) + '" data-newest="' + esc(newest) +
+        '" aria-label="' + esc(scaleLabel) + '"><span class="nsx-hlegend-states">' +
+        '<span><i class="nsx-hlegend-swatch nsx-hc-add span-start" aria-hidden="true"></i>' + esc(HL.add) + '</span>' +
+        '<span><i class="nsx-hlegend-swatch nsx-hc-chg span-start" aria-hidden="true"></i>' + esc(HL.chg) + '</span>' +
+        '<span><i class="nsx-hlegend-swatch nsx-hc-cap span-start" aria-hidden="true"></i>' + esc(HL.cap) + '</span></span>' +
+        '<span class="nsx-hscale" title="' + esc(scaleLabel) + '"><span>' + esc(oldest) +
+        '</span><i class="nsx-hscale-bar" aria-hidden="true"></i><span>' + esc(newest) + '</span></span></span>';
+    }
     function renderHistory() {
       var cur = currentRelease() || latestRel();
       histCols = histColumns();
+      var rainbow = installReleaseRainbow();
       var ol = root.querySelector('.nsx-ol[data-by="since"]');
       if (ol) {
         var head = ol.querySelector(":scope > .nsx-hhead");
@@ -3224,7 +3329,7 @@
           head.className = "nsx-hhead";
           ol.insertBefore(head, ol.firstChild);
         }
-        head.innerHTML = '<span class="nsx-hhead-n">' + esc(HL.elem) + '</span><span class="nsx-hcells">' + histCols.map(function (c) {
+        head.innerHTML = '<span class="nsx-hhead-n"><span class="nsx-hhead-title">' + esc(HL.elem) + '</span>' + historyLegend(rainbow) + '</span><span class="nsx-hcells">' + histCols.map(function (c) {
           return '<span class="nsx-hcol' + (c === cur ? " cur" : "") + '" role="button" tabindex="0" aria-pressed="' + (c === cur) + '" data-rel="' + esc(c) +
             '" title="' + esc(HL.selrel + ": " + c) + '" aria-label="' + esc(HL.selrel + ": " + c) + '">' + esc(shortRel(c)) + "</span>";
         }).join("") + "</span>";
@@ -3235,14 +3340,23 @@
         var n = a.getAttribute("data-n"), r = rows[n];
         if (!r) return;
         var stts = histCols.map(function (c) { return cellState(r, c); });
+        var spanStarts = spanStartIndexes(stts);
         var html = histCols.map(function (c, i) {
           var stt = stts[i];
-          var prevPre = i > 0 && stts[i - 1] === "pre", nextPre = i + 1 < stts.length && stts[i + 1] === "pre";
-          var run = stt === "pre" ? (prevPre && nextPre ? " run-m" : prevPre ? " run-e" : nextPre ? " run-s" : "") : "";
+          var start = spanStarts[i], inSpan = start >= 0;
+          var prevSpan = inSpan && i > 0 && spanStarts[i - 1] === start;
+          var nextSpan = inSpan && i + 1 < stts.length && spanStarts[i + 1] === start;
+          var run = inSpan && (prevSpan || nextSpan) ? (prevSpan && nextSpan ? " run-m span-m" : prevSpan ? " run-e span-e" : " run-s span-s") : (inSpan ? " span-one" : "");
+          var spanRel = inSpan ? histCols[start] : "", rank = rainbow.index[spanRel];
+          var spanAttrs = inSpan ? ' data-span-start="' + esc(spanRel) + '" data-release-rank="' + rank + '"' +
+            ' style="--nsx-span-color:var(--nsx-rel-' + rank + ');--nsx-span-color-dark:var(--nsx-rel-' + rank + '-dark)"' : "";
+          var spanClass = inSpan ? " nsx-hc-span" + (i === start ? " span-start" : "") : "";
           var curCls = c === cur ? " cur" + (!stt || stt === "del" ? " cur-abs" : "") : "";
           var picked = histPick && histPick.name === n && histPick.rel === c && c !== cur;
-          return '<span class="nsx-hc' + (stt ? " nsx-hc-" + stt : "") + run + curCls + (picked ? " sel" : "") + '" role="button" tabindex="-1" data-rel="' + esc(c) +
-            '" title="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '" aria-label="' + esc(c + " · " + (stt ? HL[stt] : HL.none)) + '"></span>';
+          var since = String(HL.since || "").replace("{rel}", spanRel);
+          var label = c + " · " + (stt ? HL[stt] : HL.none) + (inSpan ? " · " + since : "");
+          return '<span class="nsx-hc' + (stt ? " nsx-hc-" + stt : "") + spanClass + run + curCls + (picked ? " sel" : "") + '" role="button" tabindex="-1" data-rel="' + esc(c) + '"' + spanAttrs +
+            ' title="' + esc(label) + '" aria-label="' + esc(label) + '"></span>';
         }).join("");
         a.insertAdjacentHTML("beforeend", '<span class="nsx-hcells">' + html + "</span>");
       });

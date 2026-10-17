@@ -1362,6 +1362,7 @@
     bindSnippetCurationControls();
     bindGuideTabs();
     bindGuideLevels();
+    bindGuideVariants();
   }
 
   // Volltextsuche der Kopfzeile: static/site-search.js (Index search/, _src/tools/export_search.py) wird
@@ -1461,8 +1462,8 @@
       var d = span.closest("details");
       if (!d) return;
       var cands = Array.prototype.filter.call(d.querySelectorAll(".ai[data-ai-oneliner]"), function (ai) {
-        var v = ai.closest(".ai-guide-release-variant");
-        return !v || v.style.display !== "none";
+        var v = ai.closest(".ai-guide-release-variant"), f = ai.closest(".ai-variant");
+        return (!v || v.style.display !== "none") && (!f || !f.hidden);
       });
       var ai = cands[0];
       if (!ai) return;
@@ -1520,12 +1521,955 @@
     },
     oneliner: function (scope) {
       var cands = Array.prototype.filter.call((scope || document).querySelectorAll(".ai[data-ai-oneliner]"), function (ai) {
-        var v = ai.closest(".ai-guide-release-variant");
-        return !v || v.style.display !== "none";
+        var v = ai.closest(".ai-guide-release-variant"), f = ai.closest(".ai-variant");
+        return (!v || v.style.display !== "none") && (!f || !f.hidden);
       });
       return cands.length ? cands[0].getAttribute("data-ai-oneliner") || "" : "";
     }
   };
+
+  // ---- Fassungen der KI-Leitfäden in den Zielsprachen (direct_recipes.py, lib_docmodel._render_single_ai_fragment)
+  // .ai-variants enthält zwei .ai-variant: "translated" (übersetzt aus dem deutschen Leitfaden) und "direct"
+  // (direkt in der Zielsprache KI-generiert). Der Fassungs-Badge im Kopf des Guides schaltet ohne Neuladen um
+  // (Klick, Enter, Leertaste; Klick auf die andere Bezeichnung springt direkt), die Wahl gilt je Seite und Leitfaden
+  // und liegt im Browser-Speicher. Der Daumen „Diese Version gefällt mir besser“ stimmt nur angemeldet ab
+  // (proxy/guide-votes.mjs, POST/DELETE /guide-votes); abgemeldet öffnet er die Anmeldung. Zählungen und die
+  // Liste der Stimmen liefert der Dienst nur Kuration und Verwaltern (GET /guide-votes antwortet sonst 403);
+  // für alle anderen bleibt die Zählung verborgen.
+  var GUIDE_VARIANT_KEY = "autodocs-guide-variant:";
+  function variantEsc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function variantPageId() {
+    // Seitenpfad relativ zur Website-Wurzel (z. B. fr/modules/com.html): Tiefe aus dem Stylesheet-Verweis
+    var css = document.querySelector('link[rel="stylesheet"][href$="style.css"]');
+    var up = css ? (css.getAttribute("href").match(/\.\.\//g) || []).length : 0;
+    var segs = location.pathname.split("/").filter(Boolean);
+    if (!segs.length || /\/$/.test(location.pathname)) segs.push("index.html");
+    return segs.slice(Math.max(0, segs.length - up - 1)).join("/").replace(/[^A-Za-z0-9_.\/-]/g, "_").slice(0, 200);
+  }
+  function variantStoreKey(box) { return GUIDE_VARIANT_KEY + variantPageId() + "|" + (box.getAttribute("data-ai-guide-id") || ""); }
+  function variantShown(box) {
+    var v = Array.prototype.filter.call(box.children, function (c) { return c.classList.contains("ai-variant") && !c.hidden; })[0];
+    return v ? v.getAttribute("data-ai-variant") : "";
+  }
+  function showGuideVariant(box, v, remember, focus) {
+    var prev = variantShown(box);
+    var target = null, prevAi = null;
+    Array.prototype.forEach.call(box.children, function (c) {
+      if (!c.classList.contains("ai-variant")) return;
+      var on = c.getAttribute("data-ai-variant") === v;
+      if (!on && !c.hidden) prevAi = c.querySelector(".ai[data-ai-levels]");
+      c.hidden = !on;
+      if (on) target = c;
+    });
+    if (!target) return;
+    box.setAttribute("data-ai-variant-cur", v);
+    // gleiche Ausführlichkeitsstufe in der neuen Fassung
+    var ai = target.querySelector(".ai[data-ai-levels]");
+    if (ai && prevAi && window.autodocsGuideLevels) {
+      window.autodocsGuideLevels.set(ai, parseInt(prevAi.getAttribute("data-ai-level-cur"), 10) || 0, false);
+    }
+    if (remember) { try { localStorage.setItem(variantStoreKey(box), v); } catch (e) {} }
+    if (window.autodocsGuideLevels) window.autodocsGuideLevels.syncOneLiners();
+    if (focus && prev !== v) {
+      var t = target.querySelector("[data-ai-variant-toggle]");
+      if (t && t.focus) t.focus({ preventScroll: true });
+    }
+  }
+  function variantService() {
+    return window.AiAccess && window.AiAccess.service ? window.AiAccess.service() : Promise.resolve("");
+  }
+  function variantBoxes(scope) { return (scope || document).querySelectorAll(".ai-variants[data-ai-guide-id]"); }
+  var GUIDE_VOTE_PENDING_KEY = "autodocs-guide-vote-pending";
+  // IDs of pending actions consumed or cancelled while removeItem refused to delete them, per guide+language,
+  // each with the time it was consumed: a stored record with such an ID is not replayed again, also after a
+  // reload. Suppression is by identity only; a record time never suppresses another action. An ID is pruned
+  // only by age, once every record that could carry it has expired (GUIDE_VOTE_CONSUMED_KEEP); there is no
+  // count cap, so volume can never un-suppress a live pending record.
+  var GUIDE_VOTE_CONSUMED_KEY = "autodocs-guide-vote-pending-consumed";
+  // New actions carry 32 hex digits; a record stored before IDs existed gets a derived "l" + 16 hex digits.
+  var GUIDE_VOTE_PENDING_ID_RX = /^(?:[0-9a-f]{32}|l[0-9a-f]{16})$/;
+  var GUIDE_VOTE_PENDING_TTL = 10 * 60 * 1000;
+  // A pending record stamped further ahead than this is corrupt and dropped.
+  var GUIDE_VOTE_PENDING_FUTURE = 60 * 1000;
+  // A record valid when its ID was consumed is stamped at most FUTURE ahead and expires TTL after its stamp.
+  var GUIDE_VOTE_CONSUMED_KEEP = GUIDE_VOTE_PENDING_TTL + GUIDE_VOTE_PENDING_FUTURE;
+  var GUIDE_VOTE_LANGS = ["en", "es", "pt", "fr", "nl", "ru", "ar", "hi", "ko", "zh"];
+  var GUIDE_VOTE_ID_RX = /^[a-z0-9][a-z0-9_.\/-]{0,199}$/i;
+  var GUIDE_VOTE_HEX64 = /^[0-9a-f]{64}$/;
+  var GUIDE_VOTE_MAX_REV = 2147483647;
+  var pendingVote = null;
+  // IDs of pending records consumed or cancelled by this document (kept for its lifetime, also when no
+  // storage accepts the consumed marker): a stored copy with such an ID is not replayed again.
+  var consumedPendingIds = {};
+  var replayingPending = false;
+  var lastCastVotes = {};
+  // Server revision per guide+language as last seen by this page (GET /mine, POST/DELETE, 409).
+  // Every mutation sends it as base_rev; the Worker applies it only when it is still current, so
+  // causal order across tabs and devices never depends on a client clock. A page that has not seen the
+  // rev reads /mine before it mutates, so every mutation carries one. Only a Worker without revisions
+  // (voteRevsSupported false) gets none (last writer wins, the legacy contract).
+  var voteRevs = {};
+  var voteRevsSupported = null;
+  function validRev(n) { return typeof n === "number" && Math.floor(n) === n && n >= 0 && n <= GUIDE_VOTE_MAX_REV; }
+  function learnRev(gk, n) { if (validRev(n)) voteRevs[gk] = n; }
+  function voteKeyFromItem(v) {
+    if (!v) return "";
+    if (typeof v === "string") {
+      if (v === "direct" || v === "translated") return v + ":1";
+      return v;
+    }
+    if (typeof v.value === "string" && /^(translated:[12]|direct:[12]|equal)$/.test(v.value)) return v.value;
+    var ch = v.choice || v.variant || "";
+    if (ch === "equal") return "equal";
+    if (ch === "direct" || ch === "translated") {
+      var st = Number(v.strength);
+      return ch + ":" + (st === 2 ? 2 : 1);
+    }
+    return "";
+  }
+  function parseVoteKey(key) {
+    var k = voteKeyFromItem(key);
+    if (k === "equal") return { voteKey: "equal", choice: "equal", strength: 0 };
+    var m = /^(translated|direct):([12])$/.exec(k);
+    if (m) return { voteKey: k, choice: m[1], strength: Number(m[2]) };
+    return null;
+  }
+  function defaultVoteLabel(b) {
+    var attr = b.getAttribute("data-vote-label");
+    if (attr) return attr;
+    var ch = b.getAttribute("data-vote-choice");
+    var st = b.getAttribute("data-vote-strength");
+    if (ch === "equal" || b.getAttribute("data-ai-variant-vote") === "equal") return T("Beide Versionen sind gleich gut");
+    if (st === "2" || /:2$/.test(b.getAttribute("data-ai-variant-vote") || "")) return T("Diese Version ist deutlich besser");
+    return T("Diese Version ist besser");
+  }
+  function setVoteState(box, voted) {
+    var key = voteKeyFromItem(voted);
+    box.querySelectorAll("[data-ai-variant-vote]").forEach(function (b) {
+      var on = !!key && b.getAttribute("data-ai-variant-vote") === key;
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      var lbl = on ? T("Stimme zurücknehmen") : defaultVoteLabel(b);
+      b.title = lbl; b.setAttribute("aria-label", lbl);
+    });
+    box.setAttribute("data-ai-voted", key || "");
+  }
+  function signedIn() {
+    try { return !!(window.AiAccess && window.AiAccess.snapshot().auth === "signed-in"); } catch (e) { return false; }
+  }
+  // Complete schema of a pending operation before it is replayed: op, guide, lang, page, base_rev, id, the
+  // record time within [now - TTL, now + 60 s] (TTL only; ordering is the server rev, identity is the id),
+  // and for a put a consistent choice, strength, voteKey and both hashes. Records without op predate
+  // retraction replay and are puts; records without id predate action IDs (see pendingRecordId).
+  function validPendingVote(p, now) {
+    if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+    var op = p.op === undefined ? "put" : p.op;
+    if (op !== "put" && op !== "delete") return false;
+    if (typeof p.guide !== "string" || !GUIDE_VOTE_ID_RX.test(p.guide) || p.guide.indexOf("|") >= 0) return false;
+    if (GUIDE_VOTE_LANGS.indexOf(p.lang) < 0) return false;
+    if (p.page !== undefined && p.page !== "" && (typeof p.page !== "string" || !GUIDE_VOTE_ID_RX.test(p.page)
+        || p.page.indexOf("|") >= 0)) return false;
+    if (p.base_rev !== undefined && !validRev(p.base_rev)) return false;
+    if (p.id !== undefined && (typeof p.id !== "string" || !GUIDE_VOTE_PENDING_ID_RX.test(p.id))) return false;
+    var at = p.at;
+    if (typeof at !== "number" || !isFinite(at) || Math.floor(at) !== at) return false;
+    if (at < now - GUIDE_VOTE_PENDING_TTL || at > now + GUIDE_VOTE_PENDING_FUTURE) return false;
+    if (op === "delete") return true;
+    var parsed = parseVoteKey(p.voteKey);
+    if (!parsed || typeof p.voteKey !== "string" || parsed.voteKey !== p.voteKey) return false;
+    if (p.choice !== parsed.choice || p.strength !== parsed.strength) return false;
+    var h = p.hashes;
+    return !!(h && typeof h === "object" && typeof h.direct === "string" && typeof h.translated === "string"
+      && GUIDE_VOTE_HEX64.test(h.direct) && GUIDE_VOTE_HEX64.test(h.translated));
+  }
+  function loadPendingVote() {
+    var p = pendingVote;
+    if (!p) {
+      try {
+        var raw = sessionStorage.getItem(GUIDE_VOTE_PENDING_KEY);
+        p = raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        // Unreadable JSON is a corrupt record: dropped like any other invalid one.
+        savePendingVote(null);
+        return null;
+      }
+      if (p && typeof p === "object" && !Array.isArray(p) && p.id === undefined) p.id = legacyPendingId(raw);
+      if (p && pendingConsumed(p)) return null;
+    }
+    if (!p) return null;
+    // Corrupt, expired or future-stamped records are dropped silently, never sent.
+    if (!validPendingVote(p, Date.now())) {
+      savePendingVote(null);
+      return null;
+    }
+    pendingVote = p;
+    return p;
+  }
+  // Returns false when sessionStorage refused the write. The in-memory record stays authoritative for this
+  // page; a pending action survives a reload only when persisted, so the person is told not to reload.
+  function savePendingVote(p) {
+    if (p && !p.at) p.at = Date.now();
+    if (p && !p.id) p.id = newPendingId();
+    var cleared = pendingVote;
+    pendingVote = p;
+    try {
+      if (p) sessionStorage.setItem(GUIDE_VOTE_PENDING_KEY, JSON.stringify(p));
+      else sessionStorage.removeItem(GUIDE_VOTE_PENDING_KEY);
+      return true;
+    } catch (e) {
+      if (p) voteToast("Bitte nach der Anmeldung die Seite nicht neu laden");
+      else if (cleared) markPendingConsumed(cleared);
+      return false;
+    }
+  }
+  var pendingIdSeq = 0;
+  function randomPendingId() {
+    var c = typeof crypto !== "undefined" ? crypto : null;
+    if (c && typeof c.randomUUID === "function") {
+      try { return c.randomUUID().replace(/-/g, "").toLowerCase(); } catch (e) {}
+    }
+    var b = [];
+    if (c && typeof c.getRandomValues === "function") {
+      try { b = Array.prototype.slice.call(c.getRandomValues(new Uint8Array(16))); } catch (e2) { b = []; }
+    }
+    if (b.length !== 16) {
+      // No Web Crypto: a per-document counter (2 bytes), the time (6 bytes) and the sub-millisecond page
+      // clock (2 bytes) make IDs of this document distinct, Math.random (6 bytes) separates documents.
+      pendingIdSeq = (pendingIdSeq + 1) & 0xffff;
+      var t = Date.now(), pf = 0;
+      try { pf = Math.floor((performance.now() % 1) * 65536) & 0xffff; } catch (e3) { pf = 0; }
+      b = [pendingIdSeq >>> 8, pendingIdSeq & 255];
+      for (var s = 5; s >= 0; s--) b.push(Math.floor(t / Math.pow(256, s)) % 256);
+      b.push(pf >>> 8, pf & 255);
+      for (var i = 0; i < 6; i++) b.push(Math.floor(Math.random() * 256) & 255);
+    }
+    return b.map(function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join("");
+  }
+  // Is id already held by a pending action of this document or its storage, or by a consumed one?
+  function pendingIdTaken(id) {
+    if (consumedPendingIds[id] || (pendingVote && pendingVote.id === id)) return true;
+    try {
+      var raw = sessionStorage.getItem(GUIDE_VOTE_PENDING_KEY), s = raw ? JSON.parse(raw) : null;
+      if (s && s.id === id) return true;
+    } catch (e) {}
+    var all = readConsumedIds();
+    return Object.keys(all).some(function (gk) { return consumedIdIn(all, gk, id); });
+  }
+  // Immutable identity of one pending action, fixed when it is created; regenerated while taken (by default
+  // pendingIdTaken) says it is in use.
+  function newPendingId(taken) {
+    var isTaken = typeof taken === "function" ? taken : pendingIdTaken;
+    var id = randomPendingId();
+    for (var n = 0; n < 64 && isTaken(id); n++) id = randomPendingId();
+    return id;
+  }
+  // A record stored before action IDs existed gets an ID derived from its stored bytes, so the same stored
+  // copy has the same identity after every reload (two FNV-1a 32-bit hashes, 16 hex digits).
+  function legacyPendingId(raw) {
+    var s = String(raw || "");
+    function fnv(seed) {
+      var h = seed >>> 0;
+      for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+      return ("0000000" + h.toString(16)).slice(-8);
+    }
+    return "l" + fnv(2166136261) + fnv(0x9747b28c);
+  }
+  function consumedGuideKey(p) { return String(p.guide) + "|" + String(p.lang); }
+  // Persisted consumed IDs: { "guide|lang": [[id, consumedAt], ...] }, oldest first. parseConsumedIds merges
+  // one stored value into acc (an ID in both keeps the later time) and drops entries older than
+  // GUIDE_VOTE_CONSUMED_KEEP. A bare ID (the earlier count-bounded form) counts as consumed at now.
+  // Unreadable or foreign values (e.g. the former record-time marker) add nothing.
+  function parseConsumedIds(raw, acc, now) {
+    var out = acc || {}, m = null;
+    if (typeof now !== "number") now = Date.now();
+    try { m = JSON.parse(raw || "null"); } catch (e) { m = null; }
+    if (!m || typeof m !== "object" || Array.isArray(m)) return out;
+    Object.keys(m).forEach(function (gk) {
+      if (!Array.isArray(m[gk])) return;
+      m[gk].forEach(function (e) {
+        var id = Array.isArray(e) ? e[0] : e, at = Array.isArray(e) ? e[1] : now;
+        if (typeof id !== "string" || !GUIDE_VOTE_PENDING_ID_RX.test(id)) return;
+        if (typeof at !== "number" || !isFinite(at) || at < now - GUIDE_VOTE_CONSUMED_KEEP) return;
+        var list = out[gk] || (out[gk] = []);
+        for (var i = 0; i < list.length; i++) {
+          if (list[i][0] === id) { list[i][1] = Math.max(list[i][1], at); return; }
+        }
+        list.push([id, at]);
+      });
+    });
+    Object.keys(out).forEach(function (gk) { out[gk].sort(function (a, b) { return a[1] - b[1]; }); });
+    return out;
+  }
+  // Adds id to gk as consumed at now and prunes by AGE ONLY (older than GUIDE_VOTE_CONSUMED_KEEP = pending TTL +
+  // skew). There is deliberately no count cap: a tombstone must outlive every pending record that it suppresses, and
+  // the number of actions inside that window is bounded by the user's own click rate (each action needs a completed
+  // operation of the per-guide lock), so the set cannot grow beyond a few thousand short entries.
+  function addConsumedId(all, gk, id, now) {
+    if (typeof now !== "number") now = Date.now();
+    var next = {};
+    function byTime(a, b) { return a[1] - b[1]; }
+    Object.keys(all).forEach(function (k) {
+      var list = (all[k] || []).filter(function (e) {
+        return Array.isArray(e) && !(k === gk && e[0] === id) && e[1] >= now - GUIDE_VOTE_CONSUMED_KEEP;
+      }).map(function (e) { return [e[0], e[1]]; }).sort(byTime);
+      if (list.length) next[k] = list;
+    });
+    (next[gk] || (next[gk] = [])).push([id, now]);
+    return next;
+  }
+  // Union of sessionStorage and its localStorage mirror.
+  function readConsumedIds() {
+    var out = {}, now = Date.now();
+    [function () { return sessionStorage; }, function () { return localStorage; }].forEach(function (get) {
+      try { parseConsumedIds(get().getItem(GUIDE_VOTE_CONSUMED_KEY), out, now); } catch (e) {}
+    });
+    return out;
+  }
+  function consumedIdIn(all, gk, id) {
+    var list = all[gk];
+    return !!(list && list.some(function (e) { return e[0] === id; }));
+  }
+  function pendingConsumed(p) {
+    if (typeof p.id !== "string") return false;
+    if (consumedPendingIds[p.id]) return true;
+    return consumedIdIn(readConsumedIds(), consumedGuideKey(p), p.id);
+  }
+  // The retained copy must not replay after a reload: its ID is kept for this document and persisted under
+  // another key (sessionStorage and a localStorage mirror) until every record that could carry it has
+  // expired. If every write refuses, the stored copy is found again after each reload and replays
+  // again. That stays non-destructive by compare-and-swap: the copy carries the base_rev it was sent with
+  // (or reads the current one first), so the Worker answers 409 with the current vote, or the replay finds
+  // its own choice already stored and writes nothing. Server state is never changed by such a repeat.
+  function markPendingConsumed(p) {
+    if (!p || typeof p.id !== "string") return;
+    consumedPendingIds[p.id] = true;
+    var v = JSON.stringify(addConsumedId(readConsumedIds(), consumedGuideKey(p), p.id, Date.now()));
+    try { sessionStorage.setItem(GUIDE_VOTE_CONSUMED_KEY, v); } catch (e) {}
+    try { localStorage.setItem(GUIDE_VOTE_CONSUMED_KEY, v); } catch (e2) {}
+  }
+  // Current own vote and rev for one guide+language (per-page /mine, the form every Worker serves).
+  // rev is undefined only when the Worker has no revisions. A vote on other guide content is no vote.
+  async function fetchOwnVote(guide, lang, boxes) {
+    var gk = guide + "|" + lang;
+    var r = await variantFetch("GET", "/guide-votes/mine?page=" + encodeURIComponent(variantPageId())
+      + currentHashQuery(boxes));
+    if (r.unavailable || r.status !== 200 || !r.json) return { ok: false, res: r };
+    var found = null;
+    (r.json.votes || []).forEach(function (v) { if (v.guide + "|" + v.lang === gk) found = v; });
+    var revs = r.json.revs && typeof r.json.revs === "object" ? r.json.revs : null;
+    voteRevsSupported = !!revs || !!(found && validRev(found.rev));
+    var rev = revs ? (validRev(revs[gk]) ? revs[gk] : (found && validRev(found.rev) ? found.rev : 0))
+      : (found && validRev(found.rev) ? found.rev : undefined);
+    if (found && boxes.length && !boxes.every(function (box) { return voteIsCurrent(box, found); })) found = null;
+    return { ok: true, vote: found, rev: rev };
+  }
+  // A pending action is an explicit operation: "put" (choice and strength) or "delete" (retract).
+  // base_rev is the server rev this page had seen when the action was made; the replay sends it, so it can
+  // never overwrite a newer vote from another tab or device. at only bounds the record's lifetime; id is
+  // its identity (a consumed copy is recognised by it, never by time).
+  function pendingAction(op, guide, lang, parsed, hashes) {
+    var p = { op: op, page: variantPageId(), guide: guide, lang: lang, at: Date.now(), id: newPendingId() };
+    var rev = voteRevs[guide + "|" + lang];
+    if (validRev(rev)) p.base_rev = rev;
+    if (op === "put") {
+      p.voteKey = parsed.voteKey; p.choice = parsed.choice; p.strength = parsed.strength; p.hashes = hashes;
+    }
+    return p;
+  }
+  function deleteVotePath(guide, lang, baseRev) {
+    return "/guide-votes?guide=" + encodeURIComponent(guide) + "&lang=" + encodeURIComponent(lang)
+      + (validRev(baseRev) ? "&base_rev=" + baseRev : "");
+  }
+  function putVoteBody(page, guide, lang, choice, strength, hashes, baseRev) {
+    var b = { page: page, guide: guide, lang: lang, choice: choice, strength: strength, hashes: hashes };
+    if (validRev(baseRev)) b.base_rev = baseRev;
+    return b;
+  }
+  // 409 stale_rev: the vote changed since base_rev (another tab, device or an earlier action). The
+  // response carries the current vote (or null) and rev.
+  function staleRev(r) {
+    return !!(r && r.status === 409 && r.json && r.json.error && r.json.error.code === "stale_rev");
+  }
+  function dropPendingFor(guide, lang) {
+    var p = loadPendingVote();
+    if (p && p.guide === guide && p.lang === lang) savePendingVote(null);
+  }
+  function voteToast(de) {
+    if (window.AiAccess && window.AiAccess.toast) window.AiAccess.toast(T(de));
+  }
+  // One in-flight vote per guide+language. A response may change the pressed state only
+  // when its token still owns the lock; a read stamped earlier is stale after commit.
+  function createVoteOpGate() {
+    var locks = Object.create(null);
+    var rev = Object.create(null);
+    var seq = 0;
+    return {
+      tryBegin: function (key) {
+        if (locks[key]) return null;
+        seq += 1;
+        locks[key] = seq;
+        return seq;
+      },
+      isCurrent: function (key, token) {
+        return locks[key] === token;
+      },
+      stamp: function (key) { return rev[key] || 0; },
+      canApplyRead: function (key, stamp) {
+        return !locks[key] && (rev[key] || 0) === stamp;
+      },
+      commit: function (key, token) {
+        if (locks[key] !== token) return false;
+        rev[key] = (rev[key] || 0) + 1;
+        return true;
+      },
+      end: function (key, token) {
+        if (locks[key] !== token) return false;
+        delete locks[key];
+        return true;
+      },
+      busy: function () {
+        for (var k in locks) return true;
+        return false;
+      }
+    };
+  }
+  var voteOpGate = createVoteOpGate();
+  var GUIDE_VOTE_DEADLINE_MS = 12000;
+  var GUIDE_VOTE_CHANGED_KEY = "autodocs-guide-vote-changed";
+  var voteReadSeq = 0;
+  var reconcileQueued = false;
+  var voteChannel = null;
+  function voteDeadlineMs() {
+    var n = window.__autodocsVoteDeadlineMs;
+    if (typeof n === "number" && isFinite(n) && n >= 0 && n <= 60000) return n;
+    return GUIDE_VOTE_DEADLINE_MS;
+  }
+  function issueVoteRead() {
+    voteReadSeq += 1;
+    return voteReadSeq;
+  }
+  function voteReadCurrent(id) { return id === voteReadSeq; }
+  // Another tab stored a newer vote. Refresh /mine; a read stamped under the lock is not applied.
+  function signalRemoteVote() {
+    reconcileQueued = true;
+    refreshVariantVotes();
+  }
+  function notifyVoteChanged(guide, lang) {
+    var msg = { type: "changed", guide: guide, lang: lang };
+    try { if (voteChannel) voteChannel.postMessage(msg); } catch (e) {}
+    try {
+      localStorage.setItem(GUIDE_VOTE_CHANGED_KEY, JSON.stringify({
+        type: "changed", guide: guide, lang: lang, at: Date.now()
+      }));
+    } catch (e2) {}
+  }
+  function setVoteBusy(box, on) {
+    if (!box) return;
+    if (on) box.setAttribute("aria-busy", "true");
+    else box.removeAttribute("aria-busy");
+    box.querySelectorAll("[data-ai-variant-vote]").forEach(function (b) {
+      if (on) {
+        b.setAttribute("aria-disabled", "true");
+        b.classList.add("is-busy");
+      } else {
+        b.removeAttribute("aria-disabled");
+        b.classList.remove("is-busy");
+      }
+    });
+  }
+  // Discovery, token, fetch and JSON share one deadline so a hung promise cannot leave the controls disabled.
+  // Tests shorten it with window.__autodocsVoteDeadlineMs (milliseconds).
+  async function variantFetch(method, path, body) {
+    var ms = voteDeadlineMs();
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = null;
+    var timed = new Promise(function (resolve) {
+      timer = setTimeout(function () {
+        if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+        resolve({ status: 0, unavailable: true, timeout: true, json: null });
+      }, ms);
+    });
+    var work = (async function () {
+      try {
+        var base = await variantService();
+        var tok = window.AiAccess && await window.AiAccess.idToken();
+        // Missing service or token is not a 401: a signed-in static preview must not open the login dialog.
+        if (!base || !tok) return { status: 0, unavailable: true, json: null };
+        var res = await fetch(base + path, { method: method, credentials: "omit", mode: "cors",
+          signal: ctrl ? ctrl.signal : undefined,
+          headers: Object.assign({ Authorization: "Bearer " + tok }, body ? { "Content-Type": "application/json" } : {}),
+          body: body ? JSON.stringify(body) : undefined });
+        var json = null;
+        try { json = await res.json(); } catch (e) { json = null; }
+        return { status: res.status, json: json };
+      } catch (e) {
+        if (e && e.name === "AbortError") return { status: 0, unavailable: true, timeout: true, json: null };
+        throw e;
+      }
+    })();
+    work.then(function () {}, function () {});
+    try {
+      return await Promise.race([work, timed]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  function countOf(a, field, valueKey) {
+    if (a && typeof a[field] === "number") return a[field];
+    if (a && a.by_value && typeof a.by_value[valueKey] === "number") return a.by_value[valueKey];
+    return 0;
+  }
+  function curatorCounts(box, agg) {
+    var a = agg || {};
+    box.querySelectorAll(".ai-variant-counts").forEach(function (span) {
+      span.hidden = false;
+      span.textContent = "";
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "ai-variant-counts-open";
+      b.setAttribute("data-ai-variant-votes-open", "");
+      b.title = T("Stimmen anzeigen");
+      var line = T("Stimmen: Ü👍👍 {t2} · Ü👍 {t1} · ⚖ {eq} · KI👍 {d1} · KI👍👍 {d2}", {
+        t2: countOf(a, "translated_2", "translated:2"),
+        t1: countOf(a, "translated_1", "translated:1"),
+        eq: countOf(a, "equal", "equal"),
+        d1: countOf(a, "direct_1", "direct:1"),
+        d2: countOf(a, "direct_2", "direct:2")
+      });
+      var stale = typeof a.stale === "number" ? a.stale : 0;
+      if (stale) line += " · " + T("veraltet: {n}", { n: stale });
+      b.textContent = "👍 " + line;
+      span.appendChild(b);
+    });
+  }
+  function currentHashQuery(boxes) {
+    var map = {};
+    boxes.forEach(function (box) {
+      var badge = box.querySelector(".ai-variant-badge[data-hash-direct]");
+      if (!badge) return;
+      var g = box.getAttribute("data-ai-guide-id"), l = box.getAttribute("data-ai-lang");
+      var d = badge.getAttribute("data-hash-direct") || "", t = badge.getAttribute("data-hash-translated") || "";
+      if (g && l && /^[0-9a-f]{64}$/.test(d) && /^[0-9a-f]{64}$/.test(t)) map[g + "|" + l] = { direct: d, translated: t };
+    });
+    return Object.keys(map).length ? "&current=" + encodeURIComponent(JSON.stringify(map)) : "";
+  }
+  function voteIsCurrent(box, v) {
+    if (!v || !v.hashes) return true;
+    var badge = box.querySelector(".ai-variant-badge[data-hash-direct]");
+    if (!badge) return true;
+    return badge.getAttribute("data-hash-direct") === v.hashes.direct
+      && badge.getAttribute("data-hash-translated") === v.hashes.translated;
+  }
+  var variantVotes = {};
+  async function refreshVariantVotes(scope) {
+    var boxes = Array.prototype.slice.call(variantBoxes(scope));
+    if (!boxes.length) return;
+    boxes.forEach(function (box) {
+      box.querySelectorAll(".ai-variant-counts").forEach(function (s) { s.hidden = true; s.textContent = ""; });
+    });
+    if (!signedIn()) { boxes.forEach(function (box) { setVoteState(box, ""); }); return; }
+    var pageRaw = variantPageId();
+    var pend = loadPendingVote();
+    // A second refresh (auth callback racing the explicit one) must not post the same vote twice.
+    if (!replayingPending && pend && pend.guide && pend.lang && (!pend.page || pend.page === pageRaw)) {
+      var pk = pend.guide + "|" + pend.lang;
+      var replayToken = voteOpGate.tryBegin(pk);
+      if (replayToken != null) {
+        replayingPending = true;
+        var replayBoxes = [];
+        boxes.forEach(function (box) {
+          if (box.getAttribute("data-ai-guide-id") === pend.guide && box.getAttribute("data-ai-lang") === pend.lang) {
+            replayBoxes.push(box);
+          }
+        });
+        var keptFocus = document.activeElement;
+        replayBoxes.forEach(function (box) { setVoteBusy(box, true); });
+        // Records without op predate retraction replay and are puts. The replay carries the base_rev seen
+        // when the action was made: if the vote changed since, the Worker answers 409 and keeps the newer one.
+        var replayDelete = pend.op === "delete";
+        var wantKey = replayDelete ? "" : pend.voteKey;
+        try {
+          var pr = null, settled = "", own = null;
+          var replayRev = pend.base_rev;
+          if (!validRev(replayRev)) {
+            // No rev was seen when the action was made (first signed-out click). Read the current vote first:
+            // none -> send with that rev (compare-and-swap); the same -> done; another -> it stays.
+            own = await fetchOwnVote(pend.guide, pend.lang, replayBoxes);
+            if (!own.ok) pr = own.res;
+            else {
+              learnRev(pk, own.rev);
+              var ownKey = own.vote ? voteKeyFromItem(own.vote) : "";
+              if (ownKey === wantKey) settled = "same";
+              else if (ownKey) settled = "kept";
+              else {
+                replayRev = own.rev;
+                if (validRev(replayRev) && pendingVote === pend) {
+                  // A failed send keeps the record; its later replay then compares against this rev.
+                  pend.base_rev = replayRev;
+                  try { sessionStorage.setItem(GUIDE_VOTE_PENDING_KEY, JSON.stringify(pend)); } catch (e3) {}
+                }
+              }
+            }
+          }
+          if (!pr && !settled) {
+            pr = replayDelete
+              ? await variantFetch("DELETE", deleteVotePath(pend.guide, pend.lang, replayRev))
+              : await variantFetch("POST", "/guide-votes", putVoteBody(pend.page || pageRaw, pend.guide, pend.lang,
+                  pend.choice, pend.strength, pend.hashes, replayRev));
+          }
+          if (voteOpGate.isCurrent(pk, replayToken)) {
+            if (settled) {
+              // Nothing is written: the server already holds this choice, or a vote from another tab or device
+              // that the person made after this action could have been seen. The server state is shown.
+              savePendingVote(null);
+              voteOpGate.commit(pk, replayToken);
+              replayBoxes.forEach(function (box) { applyServerVote(box, pk, own.vote); });
+              voteToast(settled === "same" ? (replayDelete ? "Stimme zurücknehmen" : "Stimme gespeichert.")
+                : "Deine Stimme von einem anderen Gerät bleibt bestehen");
+            } else if (staleRev(pr)) {
+              // Superseded: drop it, show the current server state; the /mine read below confirms it.
+              savePendingVote(null);
+              voteOpGate.commit(pk, replayToken);
+              learnRev(pk, pr.json.rev);
+              replayBoxes.forEach(function (box) { applyServerVote(box, pk, pr.json.vote || null); });
+              voteToast("Die Stimme wurde inzwischen an anderer Stelle geändert; der aktuelle Stand wird angezeigt.");
+            } else if (pr.status === 200) {
+              savePendingVote(null);
+              voteOpGate.commit(pk, replayToken);
+              if (pr.json && validRev(pr.json.rev)) voteRevsSupported = true;
+              learnRev(pk, pr.json && pr.json.rev);
+              if (replayDelete) delete lastCastVotes[pk];
+              else lastCastVotes[pk] = pend.voteKey;
+              replayBoxes.forEach(function (box) { setVoteState(box, replayDelete ? "" : pend.voteKey); });
+              notifyVoteChanged(pend.guide, pend.lang);
+              voteToast(replayDelete ? "Stimme zurücknehmen" : "Stimme gespeichert.");
+            } else if (pr.unavailable) {
+              voteToast("Abstimmung derzeit nicht verfügbar");
+            } else {
+              voteToast("Abstimmung fehlgeschlagen.");
+            }
+          }
+        } catch (e) {
+          if (voteOpGate.isCurrent(pk, replayToken)) voteToast("Abstimmung fehlgeschlagen.");
+        } finally {
+          if (voteOpGate.isCurrent(pk, replayToken)) {
+            voteOpGate.end(pk, replayToken);
+            replayBoxes.forEach(function (box) { setVoteBusy(box, false); });
+          }
+          replayingPending = false;
+          if (keptFocus && keptFocus !== document.body && keptFocus !== document.documentElement
+              && typeof keptFocus.focus === "function" && document.contains(keptFocus)) {
+            try { keptFocus.focus({ preventScroll: true }); } catch (e2) {}
+          }
+        }
+      }
+    }
+    var page = encodeURIComponent(pageRaw);
+    var curQ = currentHashQuery(boxes);
+    var stamps = {};
+    boxes.forEach(function (box) {
+      var gk = box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang");
+      stamps[gk] = voteOpGate.stamp(gk);
+    });
+    var readId = 0;
+    try {
+      readId = issueVoteRead();
+      var mine = await variantFetch("GET", "/guide-votes/mine?page=" + page + curQ);
+      // A failed or empty-because-failed /mine must not revive lastCastVotes as the pressed state.
+      // A read that started before a newer vote committed, or while a vote is in flight, is ignored.
+      // A newer read issued since this one started wins; this body must not paint over it.
+      if (!voteReadCurrent(readId)) {
+        if (voteOpGate.busy() || replayingPending) reconcileQueued = true;
+      } else if (!mine.unavailable && mine.status === 200 && mine.json) {
+        var byGuide = {};
+        var mineVotes = mine.json.votes || [];
+        mineVotes.forEach(function (v) {
+          byGuide[v.guide + "|" + v.lang] = v;
+        });
+        var mineRevs = mine.json.revs && typeof mine.json.revs === "object" ? mine.json.revs : null;
+        voteRevsSupported = !!mineRevs || mineVotes.some(function (v) { return validRev(v.rev); });
+        var kept = {};
+        var blocked = false;
+        boxes.forEach(function (box) {
+          var gk = box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang");
+          if (!voteOpGate.canApplyRead(gk, stamps[gk])) {
+            blocked = true;
+            if (lastCastVotes[gk]) kept[gk] = lastCastVotes[gk];
+            return;
+          }
+          var v = byGuide[gk];
+          // A Worker with revisions lists every rev of this page; a guide it omits was never voted on (rev 0).
+          if (mineRevs) learnRev(gk, validRev(mineRevs[gk]) ? mineRevs[gk] : (v && validRev(v.rev) ? v.rev : 0));
+          else if (v) learnRev(gk, v.rev);
+          if (v && voteIsCurrent(box, v)) {
+            kept[gk] = voteKeyFromItem(v);
+            setVoteState(box, kept[gk]);
+          } else {
+            setVoteState(box, "");
+          }
+        });
+        lastCastVotes = kept;
+        reconcileQueued = blocked;
+      }
+      if (!voteReadCurrent(readId)) return;
+      // Zählungen nur, wenn der Dienst sie herausgibt (Kuration, Verwalter); 403 sonst: nichts zeigen
+      var all = await variantFetch("GET", "/guide-votes?page=" + page + curQ);
+      if (!voteReadCurrent(readId)) return;
+      if (all.status !== 200 || !all.json) return;
+      variantVotes = {};
+      (all.json.votes || []).forEach(function (v) {
+        (variantVotes[v.guide + "|" + v.lang] = variantVotes[v.guide + "|" + v.lang] || []).push(v);
+      });
+      var aggs = {};
+      (all.json.aggregates || []).forEach(function (a) { aggs[a.guide + "|" + a.lang] = a; });
+      boxes.forEach(function (box) {
+        curatorCounts(box, aggs[box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang")]);
+      });
+    } catch (e) { /* Dienst nicht erreichbar: kein Zustand */ }
+    finally {
+      if (reconcileQueued && !voteOpGate.busy() && !replayingPending && !refreshVariantVotes._retry) {
+        refreshVariantVotes._retry = true;
+        reconcileQueued = false;
+        try { await refreshVariantVotes(scope); }
+        finally { refreshVariantVotes._retry = false; }
+      }
+    }
+  }
+  function applyServerVote(box, gk, voteOrNull) {
+    if (voteOrNull && voteIsCurrent(box, voteOrNull)) {
+      var key = voteKeyFromItem(voteOrNull);
+      lastCastVotes[gk] = key;
+      setVoteState(box, key);
+      return;
+    }
+    delete lastCastVotes[gk];
+    setVoteState(box, "");
+  }
+  async function castVariantVote(btn) {
+    var box = btn.closest(".ai-variants");
+    if (!box) return;
+    var parsed = parseVoteKey(btn.getAttribute("data-ai-variant-vote"));
+    if (!parsed) return;
+    var badge = btn.closest(".ai-variant-badge");
+    var guide = box.getAttribute("data-ai-guide-id"), lang = box.getAttribute("data-ai-lang");
+    var hashes = { direct: badge.getAttribute("data-hash-direct"), translated: badge.getAttribute("data-hash-translated") };
+    if (!signedIn()) {
+      savePendingVote(pendingAction("put", guide, lang, parsed, hashes));
+      if (window.AiAccess && window.AiAccess.feedback && window.AiAccess.feedback.signIn) window.AiAccess.feedback.signIn();
+      else if (window.AiAccess && window.AiAccess.open) window.AiAccess.open("signin");
+      return;
+    }
+    var gk = guide + "|" + lang;
+    if (btn.getAttribute("aria-disabled") === "true") return;
+    var token = voteOpGate.tryBegin(gk);
+    if (token == null) return;
+    var previous = box.getAttribute("data-ai-voted") || "";
+    var withdraw = btn.getAttribute("aria-pressed") === "true";
+    // This explicit action supersedes any action still pending for this guide+language (a copy that
+    // storage refuses to delete is marked consumed by its ID).
+    dropPendingFor(guide, lang);
+    setVoteBusy(box, true);
+    var applied = false, superseded = false;
+    var baseRev = voteRevs[gk];
+    try {
+      var r = null;
+      if (!validRev(baseRev) && voteRevsSupported !== false) {
+        // This page has not seen the rev (e.g. its /mine failed): read it, so the mutation is a compare-and-swap.
+        var own = await fetchOwnVote(guide, lang, [box]);
+        if (!voteOpGate.isCurrent(gk, token)) return;
+        if (!own.ok) {
+          if (own.res.unavailable || own.res.status === 401) r = own.res;
+          else throw new Error("status " + own.res.status);
+        } else {
+          learnRev(gk, own.rev);
+          baseRev = own.rev;
+        }
+      }
+      if (!r) {
+        r = withdraw
+          ? await variantFetch("DELETE", deleteVotePath(guide, lang, baseRev))
+          : await variantFetch("POST", "/guide-votes", putVoteBody(variantPageId(), guide, lang,
+              parsed.choice, parsed.strength, hashes, baseRev));
+      }
+      if (!voteOpGate.isCurrent(gk, token)) return;
+      if (r.unavailable) {
+        voteToast("Abstimmung derzeit nicht verfügbar");
+        setVoteState(box, previous);
+        return;
+      }
+      if (r.status === 401 && window.AiAccess && window.AiAccess.feedback) {
+        savePendingVote(pendingAction(withdraw ? "delete" : "put", guide, lang, parsed, hashes));
+        window.AiAccess.feedback.signIn();
+        setVoteState(box, previous);
+        return;
+      }
+      if (staleRev(r)) {
+        // The vote changed elsewhere since this page read it: show the current state, no error.
+        // The next action uses the fresh rev; /mine is re-read once the lock is released.
+        if (voteOpGate.commit(gk, token)) {
+          superseded = true;
+          learnRev(gk, r.json.rev);
+          applyServerVote(box, gk, r.json.vote || null);
+          voteToast("Die Stimme wurde inzwischen an anderer Stelle geändert; der aktuelle Stand wird angezeigt.");
+        }
+        return;
+      }
+      if (r.status !== 200) throw new Error("status " + r.status);
+      learnRev(gk, r.json && r.json.rev);
+      if (r.json && validRev(r.json.rev)) voteRevsSupported = true;
+      var confirmRead = issueVoteRead();
+      var mine = await variantFetch("GET", "/guide-votes/mine?page=" + encodeURIComponent(variantPageId()) + currentHashQuery([box]));
+      if (!voteOpGate.isCurrent(gk, token) || !voteOpGate.commit(gk, token)) return;
+      applied = true;
+      if (voteReadCurrent(confirmRead)) {
+        if (!mine.unavailable && mine.status === 200 && mine.json) {
+          var found = null;
+          (mine.json.votes || []).forEach(function (v) {
+            if (v.guide + "|" + v.lang === gk) found = v;
+          });
+          if (mine.json.revs && validRev(mine.json.revs[gk])) learnRev(gk, mine.json.revs[gk]);
+          else if (found) learnRev(gk, found.rev);
+          applyServerVote(box, gk, found);
+        } else if (withdraw || (r.json && r.json.deleted)) {
+          applyServerVote(box, gk, null);
+        } else {
+          applyServerVote(box, gk, (r.json && r.json.vote) || parsed.voteKey);
+        }
+      }
+      notifyVoteChanged(guide, lang);
+      if (window.AiAccess && window.AiAccess.toast) window.AiAccess.toast(T(withdraw ? "Stimme zurücknehmen" : "Stimme gespeichert."));
+    } catch (e) {
+      if (voteOpGate.isCurrent(gk, token)) {
+        voteToast("Abstimmung fehlgeschlagen.");
+        setVoteState(box, previous);
+      }
+    } finally {
+      if (voteOpGate.isCurrent(gk, token)) {
+        voteOpGate.end(gk, token);
+        setVoteBusy(box, false);
+        if (btn.focus) btn.focus({ preventScroll: true });
+      }
+    }
+    if (applied || superseded || (reconcileQueued && !voteOpGate.busy())) {
+      reconcileQueued = false;
+      refreshVariantVotes(box.parentNode);
+    }
+  }
+  function openVariantVotes(btn) {
+    var box = btn.closest(".ai-variants");
+    if (!box) return;
+    var list = variantVotes[box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang")] || [];
+    var dlg = document.getElementById("ai-variant-votes-dialog");
+    if (!dlg) {
+      dlg = document.createElement("dialog");
+      dlg.id = "ai-variant-votes-dialog";
+      dlg.className = "ai-variant-votes-dialog";
+      dlg.setAttribute("aria-labelledby", "ai-variant-votes-title");
+      document.body.appendChild(dlg);
+    }
+    var names = { direct: T("KI-generiert"), translated: T("übersetzt aus deutschem Leitfaden"), equal: T("Beide Versionen sind gleich gut") };
+    var rows = list.map(function (v) {
+      var ch = v.choice || v.variant || "";
+      var st = Number(v.strength) || (ch === "equal" ? 0 : 1);
+      var vLabel = ch === "equal" ? ("⚖ " + names.equal) : ((names[ch] || ch) + " " + (st === 2 ? "👍👍" : "👍"));
+      return "<tr><td>" + variantEsc(vLabel) + "</td><td>" +
+        variantEsc(String(v.at || "").replace("T", " ").slice(0, 16)) + "</td></tr>";
+    }).join("");
+    dlg.innerHTML = '<h3 id="ai-variant-votes-title">' + variantEsc(T("Stimmen zu diesem Leitfaden")) + "</h3>" +
+      (rows ? '<table class="ai-variant-votes"><thead><tr><th>' + variantEsc(T("Fassung")) +
+        "</th><th>" + variantEsc(T("Zeitpunkt")) + "</th></tr></thead><tbody>" + rows + "</tbody></table>"
+            : "<p>" + variantEsc(T("Noch keine Stimmen.")) + "</p>") +
+      '<form method="dialog"><button type="submit" class="btn">' + variantEsc(T("Schließen")) + "</button></form>";
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+  }
+  function initGuideVariants(scope) {
+    variantBoxes(scope).forEach(function (box) {
+      var v = "";
+      try { v = localStorage.getItem(variantStoreKey(box)) || ""; } catch (e) { v = ""; }
+      if (v === "direct" || v === "translated") showGuideVariant(box, v, false, false);
+    });
+    refreshVariantVotes(scope);
+  }
+  function bindGuideVariants() {
+    if (bindGuideVariants.done) { initGuideVariants(); return; }
+    bindGuideVariants.done = true;
+    initGuideVariants();
+    document.addEventListener("click", function (e) {
+      var vote = e.target.closest && e.target.closest("[data-ai-variant-vote]");
+      if (vote) { e.preventDefault(); castVariantVote(vote); return; }
+      var open = e.target.closest && e.target.closest("[data-ai-variant-votes-open]");
+      if (open) { e.preventDefault(); openVariantVotes(open); return; }
+      var tog = e.target.closest && e.target.closest("[data-ai-variant-toggle]");
+      if (!tog) return;
+      var box = tog.closest(".ai-variants"), own = tog.closest(".ai-variant");
+      if (!box || !own) return;
+      e.preventDefault();
+      var cur = own.getAttribute("data-ai-variant");
+      var go = e.target.closest("[data-ai-variant-go]");
+      var next = go && go.getAttribute("data-ai-variant-go") !== cur ? go.getAttribute("data-ai-variant-go")
+        : (cur === "direct" ? "translated" : "direct");
+      showGuideVariant(box, next, true, true);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      if (e.target && e.target.closest && e.target.closest("[data-ai-variant-vote]")) return;
+      var tog = e.target && e.target.closest && e.target.closest("[data-ai-variant-toggle]");
+      if (!tog) return;
+      var box = tog.closest(".ai-variants"), own = tog.closest(".ai-variant");
+      if (!box || !own) return;
+      e.preventDefault();
+      var cur = own.getAttribute("data-ai-variant");
+      showGuideVariant(box, cur === "direct" ? "translated" : "direct", true, true);
+    });
+    window.addEventListener("aiaccess-change", function () { refreshVariantVotes(); });
+    window.addEventListener("autodocs:navigated", function () { initGuideVariants(); });
+    try {
+      if (typeof BroadcastChannel === "function") {
+        voteChannel = new BroadcastChannel("autodocs-guide-votes");
+        voteChannel.onmessage = function (ev) {
+          var d = ev && ev.data;
+          if (!d || d.type !== "changed" || !d.guide || !d.lang) return;
+          signalRemoteVote();
+        };
+      }
+    } catch (e) {}
+    window.addEventListener("storage", function (e) {
+      if (!e || e.key !== GUIDE_VOTE_CHANGED_KEY || !e.newValue) return;
+      signalRemoteVote();
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") signalRemoteVote();
+    });
+    window.addEventListener("focus", function () { signalRemoteVote(); });
+    // Closing the sign-in dialog without signing in drops the remembered vote.
+    document.addEventListener("close", function (e) {
+      var d = e.target;
+      if (!d || !d.classList || !d.classList.contains("aia-dialog") || d.classList.contains("aia-sub")) return;
+      if (!signedIn()) savePendingVote(null);
+    }, true);
+    // Escape does not reach the dialog's native cancel on these pages, so close it here.
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      var dialogs = document.querySelectorAll("dialog.aia-dialog");
+      for (var i = 0; i < dialogs.length; i++) {
+        var d = dialogs[i];
+        if (!d.open || d.classList.contains("aia-sub")) continue;
+        try { d.close(); } catch (err) { /* already closed */ }
+      }
+    }, true);
+  }
+  window.autodocsGuideVariants = { show: showGuideVariant, pageId: variantPageId, refresh: refreshVariantVotes };
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports._createVoteOpGate = createVoteOpGate;
+    module.exports._validPendingVote = validPendingVote;
+    module.exports._newPendingId = newPendingId;
+    module.exports._legacyPendingId = legacyPendingId;
+    module.exports._parseConsumedIds = parseConsumedIds;
+    module.exports._addConsumedId = addConsumedId;
+  }
 
   // Reiter „User Guide“ / „Implementer's Guide“ an Elementen (ARIA tablist, Klick + Pfeiltasten)
   function bindGuideTabs() {
