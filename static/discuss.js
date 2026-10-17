@@ -34,6 +34,7 @@
     submitLabel: "In Curation übergeben",
     dockLabel: "Andocken",
     closeLabel: "Schließen",
+    composeHint: "Enter sendet · Shift+Enter fügt eine neue Zeile ein",
     authority: "Vorschläge werden nicht selbst freigegeben."
   };
   var SECRET_SOURCES = [
@@ -319,6 +320,15 @@
     return !!(previousId && previousId !== nextId);
   }
 
+  function shouldSubmitMessage(event) {
+    return !!(event && event.key === "Enter" && !event.shiftKey &&
+      !event.isComposing && event.keyCode !== 229);
+  }
+
+  function preferredContextRecordId(selectedRecordId, triggerRecordId) {
+    return String(selectedRecordId || triggerRecordId || "").trim();
+  }
+
   function panelContract() {
     return {
       title: PANEL.title,
@@ -327,6 +337,7 @@
       privacyBadge: PANEL.privacyBadge,
       deriveLabel: PANEL.deriveLabel,
       submitLabel: PANEL.submitLabel,
+      composeHint: PANEL.composeHint,
       prompts: QUICK_PROMPTS.slice(),
       authority: PANEL.authority
     };
@@ -393,9 +404,15 @@
       ".discuss-bubble.assistant{align-self:flex-start;background:#fff;border:1px solid #D4D1CA}",
       ".discuss-bubble.pending{opacity:.65;font-style:italic;background:#f0f8f8;border:1px dashed #01696F}",
       ".discuss-bubble.error{align-self:flex-start;background:#fdecea;color:#7a1f14;border:1px solid #f1b0a7;font-style:normal;opacity:1}",
+      ".discuss-question-offer{margin-top:10px;padding:10px;border:1px solid #D8A928;border-radius:8px;background:#FFF8DF;white-space:normal}",
+      ".discuss-question-offer h3{margin:0 0 6px;font-size:14px}",
+      ".discuss-question-offer dl{margin:0}.discuss-question-offer dt{font-weight:650;margin-top:5px}.discuss-question-offer dd{margin:0;overflow-wrap:anywhere}",
+      ".discuss-question-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.discuss-question-actions button{background:#fff;color:#01696F;border:1px solid #B6B2A8;border-radius:7px;padding:6px 8px;cursor:pointer}.discuss-question-actions button:first-child{background:#01696F;color:#fff;border-color:#01696F}",
       ".discuss-quick,.discuss-toolbar,.discuss-compose,.discuss-inspector,.discuss-proposal{padding:8px 12px}",
       ".discuss-quick{display:flex;flex-wrap:wrap;gap:6px}",
       ".discuss-compose textarea{flex:1;min-height:64px;resize:vertical;border:1px solid #D4D1CA;border-radius:8px;padding:8px;font:inherit;background:#fff;color:#28251D}",
+      ".discuss-compose{flex-wrap:wrap}",
+      ".discuss-compose-help{flex-basis:100%;margin:0;color:#5F5D58;font-size:12px}",
       ".discuss-inspector{border-top:1px solid #D4D1CA;background:#FBFBF9}",
       ".discuss-inspector summary{cursor:pointer;font-weight:650}",
       ".discuss-fields{margin:8px 0}",
@@ -458,12 +475,19 @@
     compose.className = "discuss-compose";
     var input = document.createElement("textarea");
     input.setAttribute("aria-label", "Nachricht an die KI");
+    input.setAttribute("aria-describedby", "discuss-compose-help");
+    input.setAttribute("aria-keyshortcuts", "Enter");
     input.maxLength = 4000;
     var sendButton = document.createElement("button");
     sendButton.type = "submit";
     sendButton.textContent = PANEL.sendLabel;
+    var composeHelp = document.createElement("p");
+    composeHelp.id = "discuss-compose-help";
+    composeHelp.className = "discuss-compose-help";
+    composeHelp.textContent = PANEL.composeHint;
     compose.appendChild(input);
     compose.appendChild(sendButton);
+    compose.appendChild(composeHelp);
 
     var inspector = document.createElement("details");
     inspector.className = "discuss-inspector";
@@ -572,6 +596,53 @@
       }
     }
 
+    function selectRecordId(recordId, nsxRoot) {
+      var article = document.getElementById(recordId);
+      if (article && article.matches && article.matches("article.rec")) {
+        selectArticle(article);
+      } else {
+        var previousId = state.context && state.context.record_id;
+        if (threadResetNeeded(previousId, recordId)) {
+          persist();
+          thread.textContent = "";
+          state.messages = [];
+          state.proposal = null;
+        }
+        var row = null;
+        if (nsxRoot && nsxRoot.querySelectorAll) {
+          Array.prototype.some.call(nsxRoot.querySelectorAll("[data-recs], [data-fns]"), function (candidate) {
+            var ids = ((candidate.getAttribute("data-recs") || "") + " " +
+              (candidate.getAttribute("data-fns") || "")).split(/\s+/);
+            if (ids.indexOf(recordId) === -1) return false;
+            row = candidate;
+            return true;
+          });
+        }
+        var meta = pageMeta();
+        state.context = packageContextFromFields({
+          recordId: recordId,
+          universe: meta.universe,
+          module: meta.module,
+          requirementText: row ? (row.textContent || "").replace(/\s+/g, " ").trim() : "",
+          found: true
+        });
+        proposalBox.hidden = false;
+        diff.hidden = true;
+        submit.disabled = true;
+        renderInspector();
+      }
+      var option = Array.prototype.find.call(picker.options || [], function (candidate) {
+        return candidate.value === recordId;
+      });
+      if (!option) {
+        option = document.createElement("option");
+        option.value = recordId;
+        option.textContent = recordId;
+        picker.appendChild(option);
+      }
+      picker.value = recordId;
+    }
+
     function fillPicker() {
       picker.textContent = "";
       var articles = document.querySelectorAll("article.rec, details.fold[id^='ai-']");
@@ -617,7 +688,10 @@
 
     function restore(saved) {
       state.messages = saved.messages || [];
-      state.messages.forEach(function (item) { bubble(item.role, item.text); });
+      state.messages.forEach(function (item) {
+        var restoredBubble = bubble(item.role, item.text);
+        if (item.question_offer) renderQuestionOffer(restoredBubble, item.question_offer, item.provider, item.model);
+      });
       if (saved.proposal) showProposal(saved.proposal);
     }
 
@@ -650,6 +724,76 @@
       meta.className = "discuss-answer-meta";
       meta.textContent = text;
       bubbleEl.appendChild(meta);
+    }
+
+    function renderQuestionOffer(bubbleEl, offer, provider, modelName) {
+      if (!bubbleEl || !offer || offer.authority !== "proposal-only" || offer.dismissed) return;
+      var card = document.createElement("section");
+      card.className = "discuss-question-offer";
+      card.setAttribute("aria-label", "Nicht belegte Annahme prüfen");
+      var heading = document.createElement("h3");
+      heading.textContent = "Nicht belegte Annahme prüfen";
+      card.appendChild(heading);
+      var facts = document.createElement("dl");
+      [["Annahme", offer.assumption], ["Prüffrage", offer.question], ["Begründung", offer.rationale]].forEach(function (pair) {
+        var dt = document.createElement("dt");
+        var dd = document.createElement("dd");
+        dt.textContent = pair[0];
+        dd.textContent = pair[1] || "—";
+        facts.appendChild(dt);
+        facts.appendChild(dd);
+      });
+      card.appendChild(facts);
+      var actions = document.createElement("div");
+      actions.className = "discuss-question-actions";
+      var propose = document.createElement("button");
+      propose.type = "button";
+      propose.textContent = "Als Spezifikationslücken-/Kontextfrage vorschlagen";
+      var dismiss = document.createElement("button");
+      dismiss.type = "button";
+      dismiss.textContent = "Nicht jetzt";
+      var status = document.createElement("p");
+      status.setAttribute("role", "status");
+      status.hidden = !offer.submitted;
+      if (offer.submitted) {
+        propose.disabled = true;
+        status.textContent = "Vorschlag wurde bereits vorbereitet; er ist noch keine bestätigte Kontextfrage.";
+      }
+      propose.addEventListener("click", async function () {
+        if (propose.disabled) return;
+        propose.disabled = true;
+        var access = typeof window !== "undefined" ? window.AiAccess : null;
+        try {
+          if (!access || !access.questionIssue || !access.openIssue) throw new Error("KI-Zugang nicht verfügbar");
+          var issue = access.questionIssue({
+            record_id: offer.record_id,
+            kind: offer.kind,
+            assumption: offer.assumption,
+            question: offer.question,
+            rationale: offer.rationale,
+            provider: provider || "",
+            model: modelName || ""
+          });
+          await access.openIssue(issue.title, issue.body);
+          offer.submitted = true;
+          status.textContent = "Vorschlag vorbereitet. Erst der validierte Ingest kann daraus eine offene Kontextfrage machen.";
+          persist();
+        } catch (error) {
+          status.textContent = "Vorschlag konnte nicht geöffnet werden: " + String((error && error.message) || error);
+          propose.disabled = false;
+        }
+        status.hidden = false;
+      });
+      dismiss.addEventListener("click", function () {
+        offer.dismissed = true;
+        persist();
+        card.remove();
+      });
+      actions.appendChild(propose);
+      actions.appendChild(dismiss);
+      card.appendChild(actions);
+      card.appendChild(status);
+      bubbleEl.appendChild(card);
     }
 
     async function postDiscuss(payload) {
@@ -837,6 +981,9 @@
       }
 
       if (!failure && answer && aiRoute.kind !== "byok" && access) addAnswerMeta(assistantBubble, access.answerLabel(answer, aiRoute));
+      if (!failure && answer && answer.question_offer) {
+        renderQuestionOffer(assistantBubble, answer.question_offer, answer.provider, answer.model);
+      }
       state.messages.push(failure ? {
         role: "assistant error",
         text: "⚠️ Keine KI-Antwort: " + failure,
@@ -847,6 +994,7 @@
         text: (answer && answer.reply) || accumulated || "",
         suggestion: (answer && answer.suggestion) || null,
         rationale: (answer && answer.rationale) || "",
+        question_offer: (answer && answer.question_offer) || null,
         provider: (answer && answer.provider) || "",
         model: (answer && answer.model) || ""
       });
@@ -957,7 +1105,7 @@
       send();
     });
     input.addEventListener("keydown", function (event) {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      if (shouldSubmitMessage(event)) {
         event.preventDefault();
         send();
       }
@@ -975,6 +1123,9 @@
       if (trigger) {
         event.preventDefault();
         var recId = trigger.getAttribute("data-open-discuss");
+        var nsxRoot = trigger.closest("section.nsx") || document.querySelector("section.nsx[data-discuss-record-id]");
+        var selectedRecordId = nsxRoot && nsxRoot.getAttribute("data-discuss-record-id");
+        var contextRecordId = preferredContextRecordId(selectedRecordId, recId);
         // Kopfzeile des Guides (.ai-guide-head): das Panel öffnet direkt darunter, nicht in der Zeile
         var actions = trigger.closest(".ai-guide-head") || trigger.closest(".ai-commentary-actions") || trigger.parentElement;
         var isCurrentInline = (panel.dataset.dock === "inline" && panel.previousElementSibling === actions);
@@ -986,9 +1137,11 @@
           actions.parentNode.insertBefore(panel, actions.nextSibling);
           panel.dataset.dock = "inline";
         }
-        if (recId && document.getElementById(recId)) {
-          selectArticle(document.getElementById(recId));
-          if (picker) picker.value = recId;
+        if (selectedRecordId) {
+          selectRecordId(contextRecordId, nsxRoot);
+        } else if (contextRecordId && document.getElementById(contextRecordId)) {
+          selectArticle(document.getElementById(contextRecordId));
+          picker.value = contextRecordId;
         }
         setOpen(true);
         try { panel.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) { /* ignore */ }
@@ -1012,6 +1165,8 @@
     submissionResult: submissionResult,
     panelContract: panelContract,
     threadResetNeeded: threadResetNeeded,
+    shouldSubmitMessage: shouldSubmitMessage,
+    preferredContextRecordId: preferredContextRecordId,
     init: init
   };
 });

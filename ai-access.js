@@ -884,7 +884,15 @@
       "   Empfohlene Korrektur: <Konkreter Änderungsvorschlag>",
       "   [ENDE-REVIEW-FINDING]",
       "   Dieser Block wird vom System automatisch erkannt und dem Nutzer als 1-Klick-Aktion 'Als Review-Finding anlegen' angeboten.",
-      "5. Formatiere die Antwort übersichtlich in 2-4 Absätzen oder Aufzählungspunkten."
+      "5. Wenn deine Antwort eine technisch notwendige Architektur- oder Praxisannahme verwendet, die aus dem bereitgestellten Kontext und den zitierten Referenzen nicht belegt werden kann, füge genau einen strukturierten Block an:",
+      "   [CONTEXT-QUESTION]",
+      "   Kind: <gap | unclear>",
+      "   Assumption: <knappe Aussage>",
+      "   Question: <prüfbare Frage>",
+      "   Rationale: <warum die Antwort diese Klärung benötigt>",
+      "   [END-CONTEXT-QUESTION]",
+      "   Keinen solchen Block bei bloßer sprachlicher Vorsicht, optionalen Ideen oder bereits belegten Aussagen. Die Annahme wird dadurch weder bestätigt noch in die Spezifikation übernommen; das System bietet sie nur als zu prüfende Kontextfrage an.",
+      "6. Formatiere die Antwort übersichtlich in 2-4 Absätzen oder Aufzählungspunkten."
     );
     return parts.join("\n");
   }
@@ -911,6 +919,36 @@
       };
     }
     return { suggestion: null, rationale: "", finding: null };
+  }
+  var CONTEXT_QUESTION_RE = /\[CONTEXT-QUESTION\]([\s\S]*?)\[END-CONTEXT-QUESTION\]/ig;
+  var RECORD_ID_RE = /^[A-Za-z0-9][A-Za-z0-9:_.-]{0,199}$/;
+  function extractContextQuestion(out, recId) {
+    if (!RECORD_ID_RE.test(String(recId || ""))) return null;
+    var text = String(out || "");
+    CONTEXT_QUESTION_RE.lastIndex = 0;
+    var matches = [], hit;
+    while ((hit = CONTEXT_QUESTION_RE.exec(text)) !== null) matches.push(hit[1]);
+    CONTEXT_QUESTION_RE.lastIndex = 0;
+    if (matches.length !== 1) return null;
+    var raw = pyStrip(matches[0]);
+    var names = ["Kind", "Assumption", "Question", "Rationale"];
+    var labels = [], labelRe = /^\s*(Kind|Assumption|Question|Rationale)\s*:/gim, labelHit;
+    while ((labelHit = labelRe.exec(raw)) !== null) labels.push(labelHit[1]);
+    if (labels.join("|") !== names.join("|")) return null;
+    var values = {};
+    for (var i = 0; i < names.length; i++) {
+      var name = names[i];
+      var re = new RegExp("^\\s*" + name + "\\s*:\\s*(.+?)(?=\\n\\s*(?:Kind|Assumption|Question|Rationale)\\s*:|$)", "ims");
+      var m = re.exec(raw);
+      if (!m) return null;
+      values[name.toLowerCase()] = pyStrip(m[1]).split(/\s+/).filter(Boolean).join(" ");
+    }
+    if (values.kind !== "gap" && values.kind !== "unclear") return null;
+    if (!values.assumption || clen(values.assumption) > 1000 ||
+        !values.question || clen(values.question) > 2000 ||
+        !values.rationale || clen(values.rationale) > 4000) return null;
+    return { record_id: String(recId), kind: values.kind, assumption: values.assumption,
+             question: values.question, rationale: values.rationale, authority: "proposal-only" };
   }
   var SECRET_RES = [
     /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
@@ -2599,7 +2637,9 @@
     if (!pyStrip(reply)) throw new Error("Leere Antwort vom Modell.");
     var recId = (opts.context && opts.context.record_id) || "";
     var f = extractFinding(reply, opts.message, recId);
+    var questionOffer = extractContextQuestion(reply, recId);
     return { ok: true, reply: pyStrip(reply), suggestion: f.suggestion, rationale: f.rationale, finding: f.finding,
+             question_offer: questionOffer,
              provider: r.provider, model: meta.model || r.model, profile: meta.profile || "", mode: "byok" };
   }
 
@@ -2623,6 +2663,28 @@
     var title = "Kuration: KI-Diskussionsvorschlag zu " + p.record_id;
     var body = "**KI-Diskussionsvorschlag** zu `" + p.record_id + "`\n\n" +
       "> " + payload.rationale.replace(/\n/g, "\n> ") + "\n\n" +
+      "```json\n" + JSON.stringify(payload, null, 2) + "\n```\n";
+    return { title: title, body: body, payload: payload };
+  }
+  function questionIssue(p) {
+    p = p || {};
+    var payload = {
+      schema: "ai-context-question-proposal@v1",
+      authority: "proposal-only",
+      record_id: String(p.record_id || ""),
+      kind: p.kind === "gap" || p.kind === "unclear" ? p.kind : "",
+      assumption: cp(redact(p.assumption || ""), 1000),
+      question: cp(redact(p.question || ""), 2000),
+      rationale: cp(redact(p.rationale || ""), 4000),
+      provider: cp(String(p.provider || ""), 200),
+      model: cp(String(p.model || ""), 200),
+      page: root.location ? cp(String(root.location.pathname || ""), 1000) : "",
+      submitted_at: new Date().toISOString(),
+      client: "autodocs-web"
+    };
+    var title = "Kontextfrage zu " + payload.record_id + ": " + cp(payload.question, 120);
+    var body = "**Vorschlag für eine offene Kontextfrage** zu `" + payload.record_id + "`\n\n" +
+      "Dieser Vorschlag ist nicht bestätigt und ändert weder Spezifikation noch Dokumentation.\n\n" +
       "```json\n" + JSON.stringify(payload, null, 2) + "\n```\n";
     return { title: title, body: body, payload: payload };
   }
@@ -3960,11 +4022,11 @@
     feedback: { channel: fbChannel, send: fbSend, mine: fbMine, withdraw: fbWithdraw, openAdmin: openFeedbackAdmin,
                 isAdmin: function () { return !!quota.admin && fbConfigured(); }, newCount: fbNewCount, normalize: fbNormalize,
                 signIn: function () { state.afterSignIn = "account"; openDialog("signin"); } },
-    proposalIssue: proposalIssue, openIssue: openIssue, toast: toast, snapshot: snapshot, idToken: idToken,
+    proposalIssue: proposalIssue, questionIssue: questionIssue, openIssue: openIssue, toast: toast, snapshot: snapshot, idToken: idToken,
     // Basis-URL des Projektdienstes (proxy/nexos-worker.mjs), z. B. für die Stimmen zu Leitfaden-Fassungen (fold.js)
     service: async function () { await loadConfig(); return projectBase(); },
     // für Tests
-    _buildDiscussPrompt: buildDiscussPrompt, _extractFinding: extractFinding, _redact: redact,
+    _buildDiscussPrompt: buildDiscussPrompt, _extractFinding: extractFinding, _extractContextQuestion: extractContextQuestion, _redact: redact,
     _providers: PROVIDERS, _pickDefault: pickDefault, _state: state, _accessOrder: accessOrder, _routeSync: routeSync,
     _normalizeEndpoint: normalizeEndpoint, _provOf: provOf, _keyIds: keyIds, _viewAdmin: viewAdmin, _quota: function () { return quota; },
     _statusPanel: statusPanel, _decide: decide, _aboModels: aboModels, _setChoice: setChoice,

@@ -95,6 +95,138 @@
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var behavior = reduceMotion ? "auto" : "smooth";
 
+  // Requirement-Verweise in KI-Leitfäden bleiben normale Links. Bei Hover bzw. Tastaturfokus
+  // ergänzt ein leichtgewichtiges, nicht-modales Popover den im Versions-Store vorhandenen
+  // Wortlaut und dessen Release-/PDF-Provenienz. So muss man den Lesekontext nicht verlassen,
+  // kann den Link mit Klick/Enter aber weiterhin unverändert öffnen.
+  function requirementCaseMask(id) {
+    var out = "", value = 0, count = 0;
+    String(id).split("").forEach(function (ch) {
+      if (!/[A-Za-z]/.test(ch)) return;
+      value = value * 2 + (/[A-Z]/.test(ch) ? 1 : 0);
+      count += 1;
+      if (count === 4) { out += value.toString(16); value = 0; count = 0; }
+    });
+    if (count) out += (value << (4 - count)).toString(16);
+    return out || "0";
+  }
+  function installRequirementPreviews() {
+    if (document._nsxRequirementPreviews) return;
+    document._nsxRequirementPreviews = true;
+    var cache = dict(), active = null, closeTimer = 0;
+    var pop = document.createElement("aside");
+    pop.className = "req-preview";
+    pop.id = "req-preview";
+    pop.hidden = true;
+    pop.setAttribute("role", "tooltip");
+    document.body.appendChild(pop);
+
+    function candidate(target) {
+      var a = target && target.closest && target.closest("a.spec-record-ref[data-req]");
+      return a && a.closest(".ai, .ai-guide-container, details[data-fold^='guide']") ? a : null;
+    }
+    function getJson(id) {
+      if (cache[id]) return cache[id];
+      var stem = String(id).replace(/[^A-Za-z0-9_.\-]/g, "_");
+      function get(name) {
+        return fetch(SITE_ROOT + "versions/data/" + encodeURIComponent(name) + ".json").then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        });
+      }
+      cache[id] = get(stem).then(function (data) {
+        var own = String(data && data.canonical_id || "").split("/").pop();
+        if (own && own !== id && own.toLowerCase() === String(id).toLowerCase()) throw new Error("case variant");
+        return data;
+      }).catch(function () { return get(stem + "~" + requirementCaseMask(id)); });
+      cache[id].catch(function () { delete cache[id]; });
+      return cache[id];
+    }
+    function versionFor(data) {
+      var all = (data && data.versions || []), captured = all.filter(function (v) { return v && v.content; });
+      if (!captured.length) return null;
+      var rel = currentRelease(), exact = captured.filter(function (v) { return rel && v.release === rel; })[0];
+      if (exact) return exact;
+      if (rel) {
+        var at = all.map(function (v) { return v.release; }).indexOf(rel), prior = at < 0 ? [] : all.slice(0, at + 1).filter(function (v) { return v && v.content; });
+        if (prior.length) return prior[prior.length - 1];
+      }
+      return captured[captured.length - 1];
+    }
+    function place() {
+      if (!active || pop.hidden) return;
+      var r = active.getBoundingClientRect(), margin = 10, width = Math.min(480, document.documentElement.clientWidth - margin * 2);
+      pop.style.width = width + "px";
+      var h = pop.offsetHeight, below = r.bottom + 8, top = below + h <= innerHeight - margin ? below : Math.max(margin, r.top - h - 8);
+      pop.style.top = Math.round(top) + "px";
+      pop.style.left = Math.round(Math.min(Math.max(margin, r.left), document.documentElement.clientWidth - width - margin)) + "px";
+    }
+    function clearDescription(a) {
+      if (!a) return;
+      var before = a.getAttribute("data-req-preview-describedby");
+      if (before) a.setAttribute("aria-describedby", before); else a.removeAttribute("aria-describedby");
+      a.removeAttribute("data-req-preview-describedby");
+    }
+    function close() {
+      clearTimeout(closeTimer);
+      clearDescription(active);
+      active = null;
+      pop.hidden = true;
+      pop.textContent = "";
+    }
+    function laterClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 120); }
+    function render(a, id, data) {
+      if (active !== a) return;
+      var version = versionFor(data);
+      if (!version) { close(); return; }
+      pop.textContent = "";
+      var head = document.createElement("div");
+      head.className = "req-preview-head";
+      var code = document.createElement("code");
+      code.textContent = id;
+      var release = document.createElement("span");
+      release.className = "req-preview-release";
+      release.textContent = version.release || "";
+      head.appendChild(code); head.appendChild(release);
+      var text = document.createElement("p");
+      text.className = "req-preview-text";
+      text.textContent = version.content;
+      var source = document.createElement("p");
+      source.className = "req-preview-source";
+      source.textContent = (version.meta && version.meta.source_pdf) || "Versions-Store";
+      pop.appendChild(head); pop.appendChild(text); pop.appendChild(source);
+      place();
+    }
+    function show(a) {
+      clearTimeout(closeTimer);
+      if (active === a && !pop.hidden) return;
+      if (active && active !== a) clearDescription(active);
+      active = a;
+      var old = a.getAttribute("aria-describedby") || "";
+      a.setAttribute("data-req-preview-describedby", old);
+      a.setAttribute("aria-describedby", [old, pop.id].filter(Boolean).join(" "));
+      pop.hidden = false;
+      pop.innerHTML = '<p class="req-preview-loading">Requirement wird geladen …</p>';
+      place();
+      var id = a.getAttribute("data-req") || "";
+      getJson(id).then(function (data) { render(a, id, data); }, function () { if (active === a) close(); });
+    }
+    document.addEventListener("mouseover", function (ev) { var a = candidate(ev.target); if (a && a !== active) show(a); });
+    document.addEventListener("mouseout", function (ev) {
+      if (!active) return;
+      var next = ev.relatedTarget;
+      if (next && (active.contains(next) || pop.contains(next))) return;
+      laterClose();
+    });
+    document.addEventListener("focusin", function (ev) { var a = candidate(ev.target); if (a) show(a); });
+    document.addEventListener("focusout", function (ev) { if (active && ev.target === active) laterClose(); });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && active) close(); });
+    pop.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
+    pop.addEventListener("mouseleave", laterClose);
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, { passive: true });
+  }
+
   function init(root) {
     if (root._nsxInitialized) return;
     root._nsxInitialized = true;
@@ -2844,6 +2976,12 @@
       });
     }
     var selAnchor = "";   // Anker der Auswahl im URL-Hash (Eintrag nsx-e-… oder Record-ID)
+    function discussRecordId(name, opts) {
+      var row = rows[name];
+      if (!row) return "";
+      if (opts && opts.anchor && recOwner[opts.anchor] === name) return opts.anchor;
+      return words(row, "data-recs")[0] || words(row, "data-fns")[0] || "";
+    }
     // opts.origin: "map" (Themenkarte), "side" (Gliederung, Inspektor), "nav" (Anker von außen)
     // opts.from: angeklicktes Element; opts.ai / opts.anchor: Sprungziel in der Detailansicht
     function select(name, opts) {
@@ -2864,6 +3002,9 @@
       if (anchorEl === detFold) anchorEl = null;
       selected = name;
       selAnchor = opts.anchor && recOwner[opts.anchor] === name ? opts.anchor : (rows[name].id || "");
+      var discussId = discussRecordId(name, opts);
+      if (discussId) root.setAttribute("data-discuss-record-id", discussId);
+      else root.removeAttribute("data-discuss-record-id");
       writeHash(selAnchor, !!opts.ai);
       root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
       (oitems[name] || []).forEach(function (o) { o.classList.add("sel"); o.setAttribute("aria-current", "true"); });
@@ -2887,6 +3028,7 @@
         updateEmpty();
         selected = null;
         selAnchor = "";
+        root.removeAttribute("data-discuss-record-id");
         histPick = null;
         root.querySelectorAll(".nsx-hc.sel").forEach(function (x) { x.classList.remove("sel"); });
         updateHistArrows();
@@ -3795,6 +3937,7 @@
   }
   function boot() {
     var any = !!document.querySelector("section.nsx");    // vor init: Modulseiten entfernen sie im Komfortmodus
+    if (any) installRequirementPreviews();
     document.querySelectorAll("section.nsx").forEach(init);
     // Ein Beobachter je Dokument: der Seamless Router (fold.js) ruft boot nach jedem Seitenwechsel erneut auf
     if (window.MutationObserver && any && !boot.watching) {
