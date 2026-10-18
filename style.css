@@ -6934,7 +6934,7 @@ table.nsx-hprops tr.nsx-hl-del { background: color-mix(in srgb, var(--nsx-h-del)
 .ai-variant-toggle:hover { border-color: var(--primary); }
 .ai-variant-toggle:focus-visible, .ai-variant-vote:focus-visible, .ai-variant-layout:focus-visible {
   outline: 2px solid var(--color-focus, var(--primary)); outline-offset: 2px; }
-.ai-variant-opt-wrap { display: inline-flex; align-items: center; gap: 2px; padding-inline-end: 3px; }
+.ai-variant-opt-wrap { display: inline-flex; align-items: center; gap: 2px; padding-inline: 3px; }
 .ai-variant-opt-wrap.is-current { background: color-mix(in srgb, var(--primary) 10%, transparent); }
 .ai-variant-opt { padding: 2px 6px; font-weight: 600; white-space: nowrap; }
 .ai-variant-opt.is-current { background: var(--primary); color: #fff; font-weight: 600; }
@@ -6943,9 +6943,10 @@ table.nsx-hprops tr.nsx-hl-del { background: color-mix(in srgb, var(--nsx-h-del)
 .ai-variant-vote { font: inherit; font-size: 11px; line-height: 1; padding: 1px 3px; min-width: 28px; min-height: 28px;
   border: 1px solid var(--border-default, var(--border)); border-radius: 999px; background: var(--bg, #fff); cursor: pointer;
   filter: grayscale(1); opacity: .78; white-space: nowrap; flex: none; }
-.ai-variant-opt-wrap > .ai-variant-vote + .ai-variant-vote { margin-inline-start: -9px; transform: translateY(-3px); }
-.ai-variant-opt-wrap > .ai-variant-vote:first-child { transform: translateY(3px); }
-.ai-variant-layout { align-self: center; margin: 1px 2px; padding: 1px 7px; min-width: 32px; min-height: 32px;
+.ai-double-thumb { display: inline-block; position: relative; width: 16px; height: 15px; vertical-align: -3px; }
+.ai-double-thumb > span { position: absolute; inset: 0 auto auto 0; font-size: 10px; line-height: 1; }
+.ai-double-thumb > span:last-child { inset: 4px 0 auto auto; }
+.ai-variant-layout { align-self: center; margin: 1px; padding: 0; width: 28px; min-width: 28px; min-height: 28px;
   border: 1px solid var(--border-default, var(--border)); border-radius: 5px; background: var(--bg, #fff);
   color: var(--text); cursor: pointer; font: 600 14px/1 inherit; }
 .ai-variant-layout[aria-pressed="true"] { border-color: var(--primary); background: var(--primary-highlight, rgba(1,105,111,.16)); }
@@ -6955,7 +6956,17 @@ table.nsx-hprops tr.nsx-hl-del { background: color-mix(in srgb, var(--nsx-h-del)
 .ai-variant-vote[aria-disabled="true"] { cursor: progress; }
 .ai-variant-vote.is-busy { cursor: progress; opacity: .55; }
 .ai-variant[hidden] { display: none !important; }
-.ai-variants[data-ai-variant-layout="side-by-side"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.ai-variant-compare-toolbar { display: none; }
+.ai-variants[data-ai-variant-layout="side-by-side"] { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px; row-gap: 0; align-items: start; }
+.ai-variants[data-ai-variant-layout="side-by-side"]::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 50%;
+  border-inline-start: 1px solid var(--border-default, var(--border)); pointer-events: none; }
+.ai-variants[data-ai-variant-layout="side-by-side"] > .ai-variant-compare-toolbar { display: flex; grid-column: 1 / -1;
+  justify-content: center; position: relative; z-index: 1; margin: 0 auto 8px; padding-inline: 6px; background: var(--bg, #fff); }
+.ai-variants[data-ai-variant-layout="side-by-side"] > .ai-variant > .ai > .ai-guide-head .ai-variant-badge { display: none; }
+.ai-variant-compare-toolbar .ai-variant-badge { flex: none; }
+.ai-variant-compare-toolbar .ai-variant-meta { display: none; }
+.ai-variant [data-ai-heading-align] { padding-block-start: var(--ai-heading-align, 0); scroll-margin-top: 6rem; }
 .ai-variant[data-ai-relative-score] .ai-level { font-size: calc(1em * var(--ai-variant-font-factor)); }
 .ai-variant[data-ai-relative-score] .ai-level :is(button, input, select, textarea) { font-size: calc(1em / var(--ai-variant-font-factor)); }
 /* Komfortansicht: etwas mehr Luft; Kompaktansicht: kleinere Knöpfe, Werkzeugtexte nur als Symbol mit Tooltip */
@@ -6965,6 +6976,7 @@ table.nsx-hprops tr.nsx-hl-del { background: color-mix(in srgb, var(--nsx-h-del)
 [data-density="compact"] .ai-guide-head .btn-feedback-action { padding: 2px 8px; font-size: 12px; }
 @media (max-width: 640px) {
   .ai-variants[data-ai-variant-layout="side-by-side"] { grid-template-columns: minmax(0, 1fr); }
+  .ai-variants[data-ai-variant-layout="side-by-side"]::before { display: none; }
   .ai-guide-head .btn-curate-link { margin-inline-start: 0; }
   .ai-variant-badge[data-ai-guide-id] { flex: 1 1 100%; flex-wrap: wrap; }
   .ai-variant-toggle { flex: 0 1 auto; }

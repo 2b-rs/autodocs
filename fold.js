@@ -1528,6 +1528,8 @@
     if (remember) {
       try { localStorage.setItem(GUIDE_LEVEL_KEY + (ai.getAttribute("data-ai-level-kind") || "guide"), String(n)); } catch (e) {}
     }
+    var variants = ai.closest && ai.closest(".ai-variants");
+    if (variants) scheduleGuideVariantAlignment(variants);
   }
   function syncOneLiners(scope) {
     (scope || document).querySelectorAll("details > summary .ai-oneliner").forEach(function (span) {
@@ -1621,6 +1623,91 @@
     var v = Array.prototype.filter.call(box.children, function (c) { return c.classList.contains("ai-variant") && !c.hidden; })[0];
     return v ? v.getAttribute("data-ai-variant") : "";
   }
+  function layoutLabel(sideBySide) { return T(sideBySide ? "Vereinigen" : "Trennen"); }
+  function setLayoutButtonState(box, sideBySide) {
+    box.querySelectorAll("[data-ai-variant-layout]").forEach(function (b) {
+      var label = layoutLabel(sideBySide);
+      b.setAttribute("aria-pressed", sideBySide ? "true" : "false");
+      b.title = label;
+      b.setAttribute("aria-label", label);
+      var icon = b.querySelector(".ai-variant-layout-icon") || b.querySelector("[aria-hidden='true']");
+      if (icon) { icon.className = "ai-variant-layout-icon"; icon.textContent = sideBySide ? "▣" : "▥"; }
+    });
+  }
+  function compactDoubleThumb(button) {
+    if (!button || button.getAttribute("data-vote-strength") !== "2" || button.querySelector(".ai-double-thumb")) return;
+    button.innerHTML = '<span class="ai-double-thumb" aria-hidden="true"><span>👍</span><span>👍</span></span>';
+  }
+  function normalizeVariantControls(box) {
+    box.querySelectorAll("[data-ai-variant-opt]").forEach(function (wrap) {
+      var kind = wrap.getAttribute("data-ai-variant-opt");
+      var label = wrap.querySelector("[data-ai-variant-go]");
+      var single = wrap.querySelector('[data-vote-strength="1"]');
+      var double = wrap.querySelector('[data-vote-strength="2"]');
+      compactDoubleThumb(double);
+      if (!label || !single || !double) return;
+      if (kind === "translated") { wrap.appendChild(double); wrap.appendChild(single); wrap.appendChild(label); }
+      else { wrap.appendChild(label); wrap.appendChild(single); wrap.appendChild(double); }
+    });
+    Array.prototype.forEach.call(box.children, function (panel) {
+      if (!panel.classList.contains("ai-variant")) return;
+      var kind = panel.getAttribute("data-ai-variant") || "";
+      var badgeLabel = panel.querySelector('[data-ai-variant-opt="' + kind + '"] [data-ai-variant-go]');
+      panel.querySelectorAll(".btn-feedback-action, .btn-discuss-ai").forEach(function (button) {
+        if (!button.getAttribute("data-ai-variant-context")) button.setAttribute("data-ai-variant-context", kind);
+        if (!button.getAttribute("data-ai-variant-context-label") && badgeLabel) {
+          button.setAttribute("data-ai-variant-context-label", (badgeLabel.textContent || "").trim());
+        }
+      });
+    });
+  }
+  function ensureVariantCompareToolbar(box) {
+    var toolbar = box.querySelector(":scope > .ai-variant-compare-toolbar");
+    if (toolbar) return toolbar;
+    var source = box.querySelector(":scope > .ai-variant .ai-variant-badge[data-ai-guide-id]");
+    if (!source) return null;
+    toolbar = document.createElement("div");
+    toolbar.className = "ai-variant-compare-toolbar";
+    toolbar.setAttribute("role", "group");
+    var badge = source.cloneNode(true);
+    badge.classList.add("ai-variant-badge--shared");
+    var meta = badge.querySelector(".ai-variant-meta");
+    if (meta) meta.remove();
+    toolbar.appendChild(badge);
+    box.insertBefore(toolbar, box.firstChild);
+    return toolbar;
+  }
+  function guideVariantHeadings(panel) {
+    var ai = panel && panel.querySelector(".ai[data-ai-levels]");
+    if (!ai) return [];
+    return Array.prototype.filter.call(ai.querySelectorAll(".ai-level h3, .ai-level h4, .ai-level h5"), function (h) {
+      return h.getClientRects().length > 0;
+    });
+  }
+  function alignGuideVariantHeadings(box) {
+    box.querySelectorAll("[data-ai-heading-align]").forEach(function (h) {
+      h.style.removeProperty("--ai-heading-align");
+      h.removeAttribute("data-ai-heading-align");
+    });
+    if (box.getAttribute("data-ai-variant-layout") !== "side-by-side" || window.matchMedia("(max-width: 640px)").matches) return;
+    var panels = Array.prototype.filter.call(box.children, function (c) { return c.classList.contains("ai-variant"); });
+    if (panels.length !== 2) return;
+    var left = guideVariantHeadings(panels[0]), right = guideVariantHeadings(panels[1]);
+    for (var i = 0; i < Math.min(left.length, right.length); i += 1) {
+      var delta = left[i].getBoundingClientRect().top - right[i].getBoundingClientRect().top;
+      var earlier = delta < 0 ? left[i] : right[i];
+      var space = Math.abs(delta);
+      if (space > 0.5) {
+        earlier.style.setProperty("--ai-heading-align", space.toFixed(1) + "px");
+        earlier.setAttribute("data-ai-heading-align", "");
+      }
+    }
+  }
+  function scheduleGuideVariantAlignment(box) {
+    if (!box) return;
+    cancelAnimationFrame(box._aiHeadingAlignFrame || 0);
+    box._aiHeadingAlignFrame = requestAnimationFrame(function () { alignGuideVariantHeadings(box); });
+  }
   function showGuideVariant(box, v, remember, focus) {
     var prev = variantShown(box);
     var target = null, prevAi = null;
@@ -1633,7 +1720,7 @@
     });
     if (!target) return;
     box.removeAttribute("data-ai-variant-layout");
-    box.querySelectorAll("[data-ai-variant-layout]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    setLayoutButtonState(box, false);
     box.setAttribute("data-ai-variant-cur", v);
     // gleiche Ausführlichkeitsstufe in der neuen Fassung
     var ai = target.querySelector(".ai[data-ai-levels]");
@@ -1650,6 +1737,7 @@
   function setGuideVariantLayout(box, sideBySide) {
     if (!box) return;
     if (sideBySide) {
+      ensureVariantCompareToolbar(box);
       box.setAttribute("data-ai-variant-layout", "side-by-side");
       Array.prototype.forEach.call(box.children, function (c) {
         if (c.classList.contains("ai-variant")) c.hidden = false;
@@ -1658,9 +1746,8 @@
       box.removeAttribute("data-ai-variant-layout");
       showGuideVariant(box, box.getAttribute("data-ai-variant-cur") || box.getAttribute("data-ai-variant-default"), false, false);
     }
-    box.querySelectorAll("[data-ai-variant-layout]").forEach(function (b) {
-      b.setAttribute("aria-pressed", sideBySide ? "true" : "false");
-    });
+    setLayoutButtonState(box, sideBySide);
+    scheduleGuideVariantAlignment(box);
     if (window.autodocsGuideLevels) window.autodocsGuideLevels.syncOneLiners();
   }
   function variantService() {
@@ -2433,15 +2520,17 @@
       button.removeAttribute("data-vote-label");
       button.setAttribute("data-ai-variant-layout", "");
       button.setAttribute("aria-pressed", "false");
-      var label = T("Vergleichen");
+      var label = T("Trennen");
       button.title = label;
       button.setAttribute("aria-label", label);
-      button.innerHTML = '<span aria-hidden="true">▥</span>';
+      button.innerHTML = '<span class="ai-variant-layout-icon" aria-hidden="true">▥</span>';
     });
   }
   function initGuideVariants(scope) {
     upgradeLegacyVariantLayoutControls(scope);
     variantBoxes(scope).forEach(function (box) {
+      normalizeVariantControls(box);
+      setLayoutButtonState(box, false);
       var v = "";
       try { v = localStorage.getItem(variantStoreKey(box)) || ""; } catch (e) { v = ""; }
       if (v === "direct" || v === "translated") showGuideVariant(box, v, false, false);
@@ -2459,16 +2548,20 @@
       if (layout) {
         e.preventDefault();
         var layoutBox = layout.closest(".ai-variants");
-        setGuideVariantLayout(layoutBox, layoutBox.getAttribute("data-ai-variant-layout") !== "side-by-side");
-        layout.focus({ preventScroll: true });
+        var open = layoutBox.getAttribute("data-ai-variant-layout") !== "side-by-side";
+        setGuideVariantLayout(layoutBox, open);
+        var focusLayout = open ? layoutBox.querySelector(":scope > .ai-variant-compare-toolbar [data-ai-variant-layout]") :
+          layoutBox.querySelector(":scope > .ai-variant:not([hidden]) [data-ai-variant-layout]");
+        if (focusLayout) focusLayout.focus({ preventScroll: true });
         return;
       }
       var tog = e.target.closest && e.target.closest("[data-ai-variant-toggle]");
       if (!tog) return;
       var box = tog.closest(".ai-variants"), own = tog.closest(".ai-variant");
-      if (!box || !own) return;
+      if (!box) return;
       e.preventDefault();
-      var cur = own.getAttribute("data-ai-variant");
+      var cur = own ? own.getAttribute("data-ai-variant") :
+        (box.getAttribute("data-ai-variant-cur") || box.getAttribute("data-ai-variant-default"));
       var go = e.target.closest("[data-ai-variant-go]");
       var next = go && go.getAttribute("data-ai-variant-go") !== cur ? go.getAttribute("data-ai-variant-go")
         : (cur === "direct" ? "translated" : "direct");
@@ -2481,10 +2574,17 @@
       var tog = e.target && e.target.closest && e.target.closest("[data-ai-variant-toggle]");
       if (!tog) return;
       var box = tog.closest(".ai-variants"), own = tog.closest(".ai-variant");
-      if (!box || !own) return;
+      if (!box) return;
       e.preventDefault();
-      var cur = own.getAttribute("data-ai-variant");
+      var cur = own ? own.getAttribute("data-ai-variant") :
+        (box.getAttribute("data-ai-variant-cur") || box.getAttribute("data-ai-variant-default"));
       showGuideVariant(box, cur === "direct" ? "translated" : "direct", true, true);
+    });
+    window.addEventListener("resize", function () {
+      variantBoxes().forEach(function (box) { scheduleGuideVariantAlignment(box); });
+    });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () {
+      variantBoxes().forEach(function (box) { scheduleGuideVariantAlignment(box); });
     });
     window.addEventListener("aiaccess-change", function () { refreshVariantVotes(); });
     window.addEventListener("autodocs:navigated", function () { initGuideVariants(); });
