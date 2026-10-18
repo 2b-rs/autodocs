@@ -20,8 +20,41 @@
      markiert; ohne Elementdaten für das Release erscheint ein Hinweis.
    Ohne Skript bleibt die Seite als Liste mit Dokumentation vollständig lesbar. */
 
-/* Historie-Vergleich (Inspektor/Mitte): gleicher nichtleerer text_key = unverändert;
-   Roh-OCR/content nur wenn ein Schlüssel fehlt oder leer ist. Exportiert für gezielte Tests. */
+/* Historie-Vergleich (Inspektor/Mitte): gleicher nichtleerer text_key = unverändert.
+   Jede Schlüsselgruppe benutzt eine einzige deterministische Vergleichsfassung; damit
+   hängt etwa R19→R25 nicht davon ab, welches nur typografisch abweichende Mitglied
+   derselben R20–R24-Gruppe angeklickt wurde. Exportiert für gezielte Tests. */
+function nsxHistReleaseKey(rel) {
+  var m = /^R?(\d{2})-(\d{2})/.exec(String(rel || ""));
+  return m ? parseInt(m[1], 10) * 100 + parseInt(m[2], 10) : 999999;
+}
+function nsxHistCompareRelease(a, b) {
+  var d = nsxHistReleaseKey(a) - nsxHistReleaseKey(b);
+  if (d) return d;
+  var aa = String(a || ""), bb = String(b || "");
+  return aa < bb ? -1 : aa > bb ? 1 : 0;
+}
+function nsxHistComparisonText(v) {
+  return v && (v.comparison_content || v.content) || "";
+}
+function nsxHistCanonicalText(doc, version) {
+  var key = version && version.text_key || "";
+  if (!key) return nsxHistComparisonText(version);
+  var group = (doc && doc.versions || []).filter(function (v) {
+    return v && v.text_captured !== false && v.content && v.text_key === key;
+  }).slice().sort(function (a, b) {
+    // Neueste Fassung der Gruppe: neuere PDFs haben in der Regel die sauberste
+    // Tabellenextraktion und liegen bei einer folgenden echten Änderung am nächsten.
+    var d = nsxHistCompareRelease(b.release, a.release);
+    if (d) return d;
+    var ai = String(a.version_id || ""), bi = String(b.version_id || "");
+    d = ai < bi ? -1 : ai > bi ? 1 : 0;
+    if (d) return d;
+    var at = nsxHistComparisonText(a), bt = nsxHistComparisonText(b);
+    return at < bt ? -1 : at > bt ? 1 : 0;
+  });
+  return nsxHistComparisonText(group[0] || version);
+}
 function nsxHistRecordState(d, fromRel, toRel) {
   function versionAt(doc, rel) {
     var vs = (doc && doc.versions || []).filter(function (v) { return v.release === rel; });
@@ -33,14 +66,72 @@ function nsxHistRecordState(d, fromRel, toRel) {
   var vb = toRel ? versionAt(d, toRel) : null;
   if (va === false || vb === false) return { state: "notext" };
   if (va === null && vb === null) return { state: "none" };
-  if (va === null) return { state: "add", a: null, b: vb.content };
-  if (vb === null) return { state: "del", a: va.content, b: null };
+  if (va === null) return { state: "add", a: null, b: nsxHistCanonicalText(d, vb) };
+  if (vb === null) return { state: "del", a: nsxHistCanonicalText(d, va), b: null };
   var ka = va.text_key || "", kb = vb.text_key || "";
-  if (ka && kb && ka === kb) return { state: "same", text_key: ka, a: va.content, b: vb.content };
-  return { state: "raw", a: va.content || "", b: vb.content || "", text_key_a: ka, text_key_b: kb };
+  if (ka && kb && ka === kb) {
+    var same = nsxHistCanonicalText(d, va);
+    return { state: "same", text_key: ka, a: same, b: same };
+  }
+  return { state: "raw", a: nsxHistCanonicalText(d, va), b: nsxHistCanonicalText(d, vb),
+           text_key_a: ka, text_key_b: kb };
 }
-if (typeof window !== "undefined") window.nsxHistRecordState = nsxHistRecordState;
-if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecordState = nsxHistRecordState;
+
+/* Vergleichsbasis der Historienzeile. ``picked`` gilt nur für seine eigene Zeile.
+   Fehlt das Element im globalen Release, wird auf die erste vorhandene Fassung in
+   Richtung der Zielzelle gerückt. ``base``/``target`` behalten die Pfeilrichtung,
+   ``from``/``to`` sind für den Wortdiff chronologisch. */
+function nsxHistoryPair(name, releases, globalRel, picked, targetRel) {
+  var have = (releases || []).filter(function (x, i, a) { return x && a.indexOf(x) === i; })
+    .sort(nsxHistCompareRelease);
+  var local = picked && picked.name === name ? picked.rel : null;
+  var requested = local || globalRel || null;
+  var target = targetRel || (local ? local : globalRel) || null;
+
+  // Ohne Hover wird nur die jeweilige Basis gezeigt: für diese Zeile die lokal
+  // angeklickte vorhandene Zelle, für alle anderen das globale Release. Erst das
+  // Ziel unter dem Cursor bildet mit dieser Basis ein Vergleichspaar.
+  if (!targetRel) return { name: name, from: null, to: target, base: requested, target: target };
+
+  function actualBase(base, toward) {
+    if (!base || have.indexOf(base) >= 0 || !toward) return base;
+    var dir = nsxHistCompareRelease(toward, base);
+    if (!dir) return base;
+    var candidates = have.filter(function (r) {
+      var fromBase = nsxHistCompareRelease(r, base), toTarget = nsxHistCompareRelease(r, toward);
+      return dir > 0 ? fromBase > 0 && toTarget <= 0 : fromBase < 0 && toTarget >= 0;
+    }).sort(function (a, b) { return dir > 0 ? nsxHistCompareRelease(a, b) : nsxHistCompareRelease(b, a); });
+    return candidates[0] || base;
+  }
+
+  // Eine lokale Auswahl ist selbst eine vorhandene Zelle. Ohne lokale Auswahl
+  // wird die globale Basis gegebenenfalls zur Zielzelle hin korrigiert.
+  var base = local ? local : actualBase(globalRel, target);
+  if (!base || !target || base === target) {
+    return { name: name, from: null, to: target || base, base: base, target: target || base };
+  }
+  var ordered = [base, target].sort(nsxHistCompareRelease);
+  return { name: name, from: ordered[0], to: ordered[1], base: base, target: target };
+}
+function nsxHistoryTogglePick(picked, name, rel, globalRel) {
+  if (!name || !rel || rel === globalRel || (picked && picked.name === name && picked.rel === rel)) return null;
+  return { name: name, rel: rel };
+}
+function nsxHistoryFirstRelease(doc, fallback) {
+  return doc && doc.lifecycle && doc.lifecycle.first_active_release ||
+    doc && doc.element && doc.element.first || fallback || "";
+}
+
+if (typeof window !== "undefined") {
+  window.nsxHistRecordState = nsxHistRecordState;
+  window.nsxHistoryPair = nsxHistoryPair;
+}
+if (typeof module !== "undefined" && module.exports) {
+  module.exports.nsxHistRecordState = nsxHistRecordState;
+  module.exports.nsxHistoryPair = nsxHistoryPair;
+  module.exports.nsxHistoryTogglePick = nsxHistoryTogglePick;
+  module.exports.nsxHistoryFirstRelease = nsxHistoryFirstRelease;
+}
 
 (function () {
   "use strict";
@@ -3541,22 +3632,23 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
       updateHistArrows();
     }
 
-    // Vergleichspaar je Element {name, from, to} folgt aus der Auswahl in der Gliederung:
-    // Ohne angeklickte/überfahrene Zelle oder bei der Zelle des gewählten Releases (cur) gibt es
-    // keinen Vergleich (from: null, to: cur); sonst das Paar aus Zelle und gewähltem Release (älter → neuer).
+    // Vergleichspaar je Element {name, from, to, base, target}. Eine angeklickte Zelle ist
+    // die lokale Basis nur ihrer Zeile; andere Zeilen behalten das global gewählte Release.
+    // Bei globaler Abwesenheit rückt die tatsächliche Basis zur überfahrenen Zielzelle hin.
     var histPick = null, hoverPair = null;
     function selRel() { return currentRelease() || latestRel(); }
-    function pairWith(name, cell) {
-      var s = selRel();
-      if (!cell || cell === s || !s) return { name: name, from: null, to: s || null };
-      var two = [cell, s].sort(bySort);
-      return { name: name, from: two[0], to: two[1] };
+    function pairWith(name, target) {
+      var r = rows[name];
+      return nsxHistoryPair(name, r ? words(r, "data-releases") : [], selRel(), histPick, target);
     }
     function pairFor(name) {
       if (hoverPair && hoverPair.name === name) return hoverPair;
-      return pairWith(name, histPick && histPick.name === name ? histPick.rel : null);
+      return pairWith(name, null);
     }
-    function samePair(a, b) { return !!a && !!b && a.name === b.name && a.from === b.from && a.to === b.to; }
+    function samePair(a, b) {
+      return !!a && !!b && a.name === b.name && a.from === b.from && a.to === b.to &&
+        a.base === b.base && a.target === b.target;
+    }
     function updateHistArrows() {
       root.querySelectorAll(".nsx-harrow").forEach(function (x) { x.remove(); });
       if (!histOn()) return;
@@ -3570,22 +3662,22 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
         root.querySelectorAll('.nsx-ol[data-by="since"] a.nsx-oi-h[data-n="' + CSS.escape(name) + '"]').forEach(function (a) {
           var box = a.querySelector(".nsx-hcells");
           if (!box) return;
-          var cFrom = box.querySelector('.nsx-hc[data-rel="' + CSS.escape(pr.from) + '"]');
-          var cTo = box.querySelector('.nsx-hc[data-rel="' + CSS.escape(pr.to) + '"]');
+          var cFrom = box.querySelector('.nsx-hc[data-rel="' + CSS.escape(pr.base || pr.from) + '"]');
+          var cTo = box.querySelector('.nsx-hc[data-rel="' + CSS.escape(pr.target || pr.to) + '"]');
           if (!cFrom || !cTo) return;
           var x1, x2;
           if (cFrom.offsetWidth > 0 && cTo.offsetWidth > 0) {
             x1 = cFrom.offsetLeft + cFrom.offsetWidth / 2;
             x2 = cTo.offsetLeft + cTo.offsetWidth / 2;
           } else {
-            var i1 = histCols.indexOf(pr.from), i2 = histCols.indexOf(pr.to), nCols = histCols.length;
+            var i1 = histCols.indexOf(pr.base || pr.from), i2 = histCols.indexOf(pr.target || pr.to), nCols = histCols.length;
             x1 = (rtl ? nCols - 1 - i1 : i1) * 17 + 7.5;
             x2 = (rtl ? nCols - 1 - i2 : i2) * 17 + 7.5;
           }
           var left = Math.min(x1, x2), w = Math.max(1, Math.abs(x2 - x1)), toRight = x2 >= x1;
           var xs = toRight ? 0 : w, xe = toRight ? w : 0, d = toRight ? 1 : -1;
           var ah = Math.min(3.5, w * 0.35);
-          var svg = '<svg class="nsx-harrow" aria-hidden="true" data-from="' + esc(pr.from) + '" data-to="' + esc(pr.to) +
+          var svg = '<svg class="nsx-harrow" aria-hidden="true" data-from="' + esc(pr.base || pr.from) + '" data-to="' + esc(pr.target || pr.to) +
             '" data-dir="' + (toRight ? "ltr" : "rtl") + '" style="left:' + left + "px;width:" + w + 'px" viewBox="0 0 ' + w + ' 6" preserveAspectRatio="none">' +
             '<path d="M' + xs + " 0.5 Q" + (w / 2) + " 5 " + xe + ' 1.5" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>' +
             '<path d="M' + (xe - d * ah) + " 0.4 L" + xe + " 1.5 L" + (xe - d * ah * 0.75) + ' 4.2" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>' +
@@ -3710,14 +3802,15 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
           var d = ds[k];
           if (!d) return { id: id, state: "none" };
           var cmp = nsxHistRecordState(d, pr.from, pr.to);
-          if (cmp.state === "notext") return { id: id, state: "notext" };
-          if (cmp.state === "none") return { id: id, state: "none" };
-          if (cmp.state === "same") return { id: id, state: "same", fields: [] };
+          var first = nsxHistoryFirstRelease(d, pr.to);
+          if (cmp.state === "notext") return { id: id, state: "notext", first: first };
+          if (cmp.state === "none") return { id: id, state: "none", first: first };
+          if (cmp.state === "same") return { id: id, state: "same", fields: [], first: first };
           var a = cmp.a, b = cmp.b;
           var fields = fieldDiff(a, b);
           var state = cmp.state === "add" || cmp.state === "del" ? cmp.state
             : fields.some(function (f) { return f.kind !== "same"; }) ? "chg" : "same";
-          return { id: id, state: state, fields: fields };
+          return { id: id, state: state, fields: fields, first: first };
         });
       });
     }
@@ -3764,7 +3857,7 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
           if (x.state === "none") return;
           if (x.state === "notext") { html += '<p class="nsx-hint">' + esc(HL.notext) + "</p>"; return; }
           if (x.state === "same") { html += '<p class="nsx-hint">' + esc(HL.same) + "</p>"; return; }
-          if (x.state === "add" && list.length === 1) html += '<p class="nsx-hstate nsx-hk-add">' + esc(HL.first + " " + pr.to) + "</p>";
+          if (x.state === "add" && list.length === 1) html += '<p class="nsx-hstate nsx-hk-add">' + esc(HL.first + " " + (x.first || pr.to)) + "</p>";
           if (x.state === "del" && list.length === 1) html += '<p class="nsx-hstate nsx-hk-del">' + esc(HL.gone + " " + pr.to) + "</p>";
           var ch = x.fields.filter(function (f) { return f.kind !== "same"; });
           if (x.state === "add" || x.state === "del") ch = ch.filter(function (f) { return f.label === "Syntax" || f.label === "Description"; });
@@ -3796,7 +3889,7 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
     function histDetail(name) {
       clearHistMarks();
       if (!histOn() || name !== selected || !detBody) return;
-      var pr = hoverPair && hoverPair.name === name ? pairWith(name, histPick && histPick.name === name ? histPick.rel : null) : pairFor(name), my = token;
+      var pr = pairFor(name), my = token;
       if (!pr.from) {
         var r = rows[name], stt = r && pr.to ? cellState(r, pr.to) : "";
         if (r && pr.to && (!stt || stt === "del")) {
@@ -3813,7 +3906,7 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
       }
       histCompare(name, pr).then(function (list) {
         if (my !== token || !histOn()) return;
-        var now = pairWith(name, histPick && histPick.name === name ? histPick.rel : null);
+        var now = pairFor(name);
         if (!samePair(now, pr)) return;
         clearHistMarks();
         list.forEach(function (x) {
@@ -3866,8 +3959,8 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
       rest.unshift("release=" + rel);
       location.hash = (hp.target ? [hp.target] : []).concat(rest).join("&");
     }
-    // Vorschau beim Überfahren einer Zelle: Unterschied des Elements zwischen diesem und dem
-    // gewählten Release im Inspektor; beim Verlassen wieder der gewählte Vergleich
+    // Vorschau beim Überfahren einer Zelle: dasselbe berechnete Paar steuert Pfeil,
+    // Inspektor und Mitte; beim Verlassen wieder der dauerhaft gewählte Vergleich.
     var hoverTimer = 0, noHoverCell = null;
     function endHover() {
       clearTimeout(hoverTimer);
@@ -3876,7 +3969,7 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
       var was = hoverPair.name;
       hoverPair = null;
       updateHistArrows();
-      if (selected) showRelations(selected);
+      if (selected) { showRelations(selected); histDetail(selected); }
       else if (relBox && relBox.getAttribute("data-owner") === was) showRelations(was);
     }
     if (outline) {
@@ -3884,7 +3977,7 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
         if (!histOn()) return;
         var c = ev.target.closest && ev.target.closest(".nsx-hc"), a = c && c.closest("a.nsx-oi"), n = a && a.getAttribute("data-n");
         var crel = c && c.getAttribute("data-rel");
-        if (!c || !n || !rows[n] || !cellState(rows[n], crel) || crel === selRel()) {
+        if (!c || !n || !rows[n] || !cellState(rows[n], crel)) {
           if (!c) noHoverCell = null;
           if (hoverPair) { clearTimeout(hoverTimer); hoverTimer = setTimeout(endHover, 120); }
           return;
@@ -3897,6 +3990,7 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
         hoverPair = pr;
         updateHistArrows();
         showRelations(n);
+        if (n === selected) histDetail(n);
       });
       outline.addEventListener("mouseleave", endHover);
       outline.addEventListener("keydown", function (ev) {
@@ -3922,12 +4016,8 @@ if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecor
         noHoverCell = hn + ":" + hrel;
         clearTimeout(hoverTimer);
         root.querySelectorAll(".nsx-hc.sel").forEach(function (x) { x.classList.remove("sel"); });
-        if (hrel === cur || (histPick && histPick.name === hn && histPick.rel === hrel)) {
-          histPick = null;
-        } else {
-          histPick = { name: hn, rel: hrel };
-          hc.classList.add("sel");
-        }
+        histPick = nsxHistoryTogglePick(histPick, hn, hrel, cur);
+        if (histPick) hc.classList.add("sel");
         updateHistArrows();
         if (hn === selected) { showRelations(hn); histDetail(hn); }
         else select(hn, { origin: "side", from: ha });
