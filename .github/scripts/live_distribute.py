@@ -268,7 +268,8 @@ def _github_ids() -> Dict[str, Any]:
     return {"run_id": run_id_out, "run_attempt": attempt, "unknown": unknown}
 
 
-def _progress_obj(done: Optional[int], total: Optional[int]) -> Dict[str, Any]:
+def _progress_obj(done: Optional[int], total: Optional[int],
+                  by_kind: Optional[Dict[str, Dict[str, int]]] = None) -> Dict[str, Any]:
     unknown: List[str] = []
     done_out: Optional[int] = done
     total_out: Optional[int] = total
@@ -281,7 +282,46 @@ def _progress_obj(done: Optional[int], total: Optional[int]) -> Dict[str, Any]:
     if total_out is None or isinstance(total_out, bool) or not isinstance(total_out, int) or total_out < 0:
         unknown.append("total")
         total_out = None
-    return {"done": done_out, "total": total_out, "unknown": unknown}
+    out: Dict[str, Any] = {"done": done_out, "total": total_out, "unknown": unknown}
+    if by_kind is not None:
+        clean: Dict[str, Dict[str, int]] = {}
+        for kind in core.UNIT_KINDS:
+            item = by_kind.get(kind) if isinstance(by_kind, dict) else None
+            if not isinstance(item, dict):
+                raise ValueError(f"missing progress for {kind}")
+            values = {name: item.get(name) for name in ("done", "total", "remaining")}
+            if any(isinstance(value, bool) or not isinstance(value, int) or value < 0
+                   for value in values.values()):
+                raise ValueError(f"invalid progress for {kind}")
+            if values["done"] > values["total"] or values["remaining"] != values["total"] - values["done"]:
+                raise ValueError(f"inconsistent progress for {kind}")
+            clean[kind] = values
+        out["by_kind"] = clean
+    return out
+
+
+def absolute_progress_by_kind(plan: List[Dict[str, Any]], todo: List[Dict[str, Any]],
+                              completed_by_kind: Optional[Dict[str, int]] = None) -> Dict[str, Dict[str, int]]:
+    """Absolute per-kind progress for a run, never a snapshot-relative delta."""
+    completed_by_kind = completed_by_kind or {}
+    planned = {kind: 0 for kind in core.UNIT_KINDS}
+    open_at_start = {kind: 0 for kind in core.UNIT_KINDS}
+    for unit in plan:
+        if unit.get("kind") in planned:
+            planned[unit["kind"]] += 1
+    for unit in todo:
+        if unit.get("kind") in open_at_start:
+            open_at_start[unit["kind"]] += 1
+    out: Dict[str, Dict[str, int]] = {}
+    for kind in core.UNIT_KINDS:
+        delta = completed_by_kind.get(kind, 0)
+        if isinstance(delta, bool) or not isinstance(delta, int) or delta < 0:
+            raise ValueError(f"invalid completed delta for {kind}")
+        done = planned[kind] - open_at_start[kind] + delta
+        if done > planned[kind]:
+            raise ValueError(f"completed delta exceeds plan for {kind}")
+        out[kind] = {"done": done, "total": planned[kind], "remaining": planned[kind] - done}
+    return out
 
 
 def _live_worker_target() -> Optional[str]:
@@ -450,6 +490,7 @@ def _usable_performance_run(run: Any, config_key: Optional[str]) -> bool:
 
 def publish_live_worker(*, event: str, phase: str, state: str,
                         done: Optional[int] = None, total: Optional[int] = None,
+                        progress_by_kind: Optional[Dict[str, Dict[str, int]]] = None,
                         counters: Optional[Dict[str, Any]] = None,
                         outcome: Optional[str] = None, reason: Optional[str] = None,
                         performance: Optional[Dict[str, Any]] = None,
@@ -457,6 +498,7 @@ def publish_live_worker(*, event: str, phase: str, state: str,
     """PUT one live-worker fragment. Failure-open: never raises, never changes distribution rc."""
     try:
         return _publish_live_worker(event=event, phase=phase, state=state, done=done, total=total,
+                                    progress_by_kind=progress_by_kind,
                                     counters=counters, outcome=outcome, reason=reason,
                                     performance=performance, ended=ended)
     except Exception as exc:
@@ -466,6 +508,7 @@ def publish_live_worker(*, event: str, phase: str, state: str,
 
 def _publish_live_worker(*, event: str, phase: str, state: str,
                          done: Optional[int] = None, total: Optional[int] = None,
+                         progress_by_kind: Optional[Dict[str, Dict[str, int]]] = None,
                          counters: Optional[Dict[str, Any]] = None,
                          outcome: Optional[str] = None, reason: Optional[str] = None,
                          performance: Optional[Dict[str, Any]] = None,
@@ -493,6 +536,8 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
         if event == "terminal" and done is None and total is None:
             done = last_prog.get("done")
             total = last_prog.get("total")
+        if event == "terminal" and progress_by_kind is None and isinstance(last_prog.get("by_kind"), dict):
+            progress_by_kind = last_prog["by_kind"]
         if isinstance(counters, dict) and counters:
             resolved_counters: Dict[str, Any] = dict(counters)
         elif event == "terminal" and isinstance(worker_state.get("last_counters"), dict):
@@ -509,7 +554,7 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
             "phase": phase,
             "state": state,
             "interval": {"started": started, "ended": now if ended or event == "terminal" else None},
-            "progress": _progress_obj(done, total),
+            "progress": _progress_obj(done, total, progress_by_kind),
             "counters": resolved_counters,
             "timestamp": now,
             "outcome": outcome,
@@ -599,6 +644,8 @@ def cmd_dashboard(a: argparse.Namespace) -> int:
                 return EXIT_OK
             publish_live_worker(event="terminal", phase="terminal", state=state,
                                 done=last.get("done"), total=last.get("total"),
+                                progress_by_kind=(last.get("by_kind")
+                                                  if isinstance(last.get("by_kind"), dict) else None),
                                 counters=last_counters,
                                 outcome=outcome, reason=reason, ended=True)
     except Exception as exc:
@@ -1737,6 +1784,7 @@ def cmd_pending(a: argparse.Namespace) -> int:
     if rc == EXIT_OK and plan is not None and todo is not None:
         publish_live_worker(event="progress", phase="pending", state="idle" if not n else "active",
                             done=len(plan) - n, total=len(plan),
+                            progress_by_kind=absolute_progress_by_kind(plan, todo),
                             counters={"remaining": n, "planned": len(plan)})
     if rc == EXIT_OK and not n:
         log("nichts zu tun")
@@ -1752,8 +1800,10 @@ def cmd_run(a: argparse.Namespace) -> int:
         return rc
     base_done = len(plan) - len(todo)
     plan_total = len(plan)
+    initial_progress_by_kind = absolute_progress_by_kind(plan, todo)
     publish_live_worker(event="progress", phase="distribute", state="active" if todo else "idle",
                         done=base_done, total=plan_total,
+                        progress_by_kind=initial_progress_by_kind,
                         counters={"remaining": len(todo), "completed": 0, "calls": 0,
                                   "started_calls": 0, "in_flight_calls": 0, "failed_batches": 0,
                                   "elapsed_seconds": 0.0})
@@ -1772,6 +1822,7 @@ def cmd_run(a: argparse.Namespace) -> int:
         log(f"Trockenlauf: erste {len(sizes)} Batches, Prompt-Bytes Median {sorted(sizes)[len(sizes) // 2] if sizes else 0}, "
             f"Maximum {max(sizes) if sizes else 0}; kein Modellaufruf")
         publish_live_worker(event="terminal", phase="terminal", state="idle", done=base_done, total=plan_total,
+                            progress_by_kind=initial_progress_by_kind,
                             counters={"remaining": len(todo), "completed": 0, "calls": 0,
                                       "started_calls": 0, "in_flight_calls": 0, "failed_batches": 0,
                                       "elapsed_seconds": 0.0},
@@ -1781,6 +1832,7 @@ def cmd_run(a: argparse.Namespace) -> int:
     if not base_profiles:
         log("keine agy-Profile (setup-agy, AUTODOCS_AGY_PROFILES)")
         publish_live_worker(event="terminal", phase="terminal", state="error", done=base_done, total=plan_total,
+                            progress_by_kind=initial_progress_by_kind,
                             counters={"remaining": len(todo), "completed": 0, "calls": 0,
                                       "started_calls": 0, "in_flight_calls": 0, "failed_batches": 0,
                                       "elapsed_seconds": 0.0},
@@ -1839,6 +1891,7 @@ def cmd_run(a: argparse.Namespace) -> int:
                 publish_live_worker(
                     event="progress", phase="distribute", state="active",
                     done=base_done + tot["completed"], total=plan_total,
+                    progress_by_kind=absolute_progress_by_kind(plan, todo, tot["completed_by_kind"]),
                     counters=distribution_worker_counters(
                         calls=tot["calls"], started_calls=started_calls,
                         in_flight_calls=in_flight_calls, completed=tot["completed"],
@@ -1907,6 +1960,7 @@ def cmd_run(a: argparse.Namespace) -> int:
                         publish_live_worker(
                             event="progress", phase="distribute", state="active",
                             done=base_done + tot["completed"], total=plan_total,
+                            progress_by_kind=absolute_progress_by_kind(plan, todo, tot["completed_by_kind"]),
                             counters=distribution_worker_counters(
                                 calls=tot["calls"], started_calls=started_calls,
                                 in_flight_calls=in_flight_calls, completed=tot["completed"],
@@ -1928,6 +1982,7 @@ def cmd_run(a: argparse.Namespace) -> int:
                 publish_live_worker(
                     event="progress", phase="distribute", state="active",
                     done=base_done + tot["completed"], total=plan_total,
+                    progress_by_kind=absolute_progress_by_kind(plan, todo, tot["completed_by_kind"]),
                     counters=distribution_worker_counters(
                         calls=tot["calls"], started_calls=started_calls,
                         in_flight_calls=in_flight_calls, completed=tot["completed"],
@@ -2005,6 +2060,7 @@ def cmd_run(a: argparse.Namespace) -> int:
     started_calls, _ = job.call_counts()
     publish_live_worker(event="terminal", phase="terminal", state=worker_state_name,
                         done=base_done + completed_now, total=plan_total,
+                        progress_by_kind=absolute_progress_by_kind(plan, todo, tot["completed_by_kind"]),
                         counters=distribution_worker_counters(
                             calls=tot["calls"], started_calls=started_calls,
                             in_flight_calls=0, completed=tot["completed"],
