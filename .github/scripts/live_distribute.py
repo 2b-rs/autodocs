@@ -12,7 +12,7 @@ Quell-Repos, siehe ``live_bundle.py vendor``) und lokal in den Tests.
     live_distribute.py status --live-repo DIR
 
 Ablauf von ``run``: Bündel laden und prüfen (SHA-256, Manifest, Code-Hashes), Kette prüfen, offene Einheiten des
-Plans bestimmen (Schlüssel nicht im Protokoll), Batches bilden (Snippets, dann Schaubilder, dann Elemente; Größe
+Plans bestimmen (Schlüssel nicht im Protokoll), volle Batches je Art bilden und fair im Rundlauf einplanen (Größe
 und Prompt-Bytes begrenzt), je Batch agy über ``agy_switch.py`` aufrufen (gesperrt: eigenes HOME je Arbeitsplatz,
 settings.json erlaubt nur Lesen im leeren Aufrufverzeichnis, jeder Befehl verboten, nie
 ``--dangerously-skip-permissions``), Antworten prüfen, Entscheidungen anhängen, danach die Prüfregeln (Patrouille
@@ -1030,7 +1030,8 @@ class Job:
             return None
         return dict(u, cand=cand[:lo], cand_all=cand, trimmed=len(cand) - lo)
 
-    def batches(self, todo: List[Dict[str, Any]]) -> Iterator[Batch]:
+    def _ordered_batches(self, todo: List[Dict[str, Any]]) -> Iterator[Batch]:
+        """Build full batches for one kind while preserving the plan order."""
         cur: List[Dict[str, Any]] = []
         prompt = ""
         for u in todo:
@@ -1057,6 +1058,31 @@ class Job:
             prompt = trial
         if cur:
             yield Batch(cur[0]["kind"], cur, prompt)
+
+    def batches(self, todo: List[Dict[str, Any]]) -> Iterator[Batch]:
+        """Yield one full batch per open kind in a stable round-robin.
+
+        The plan is intentionally grouped by kind. Consuming it directly made
+        every time-bounded invocation spend its whole budget on snippets, so
+        figures and elements could remain untouched forever. Per-kind batch
+        builders preserve batching efficiency; only their dispatch order is
+        interleaved.
+        """
+        queues = {
+            kind: iter(self._ordered_batches([unit for unit in todo if unit.get("kind") == kind]))
+            for kind in core.UNIT_KINDS
+            if any(unit.get("kind") == kind for unit in todo)
+        }
+        while queues:
+            for kind in list(core.UNIT_KINDS):
+                queue = queues.get(kind)
+                if queue is None:
+                    continue
+                batch = next(queue, None)
+                if batch is None:
+                    del queues[kind]
+                else:
+                    yield batch
 
     # --- Aufruf mit Wiederholung ------------------------------------------------------------------------
     def _call(self, slot: Slot, prompt: str, schema: Dict[str, Any], res: BatchResult) -> Optional[Dict[str, Any]]:
@@ -1782,8 +1808,9 @@ def cmd_run(a: argparse.Namespace) -> int:
     in_flight: Dict[Any, Tuple[Slot, str]] = {}
     pending: Optional[Batch] = None
     exhausted_gen = False
-    kind_started: Dict[str, float] = {}
-    kind_ended: Dict[str, float] = {}
+    kind_active_since: Dict[str, float] = {}
+    kind_active_count = {kind: 0 for kind in core.UNIT_KINDS}
+    kind_elapsed = {kind: 0.0 for kind in core.UNIT_KINDS}
     last_telemetry_at = time.monotonic()
     with ThreadPoolExecutor(max_workers=len(slots)) as ex:
         while True:
@@ -1793,11 +1820,11 @@ def cmd_run(a: argparse.Namespace) -> int:
                     if pending is None:
                         exhausted_gen = True
                         break
-                # Reihenfolge der Arten: eine spätere Art startet erst, wenn die frühere ganz abgeschlossen ist
-                if any(kind != pending.kind for _, kind in in_flight.values()):
-                    break
                 slot = free.pop()
-                kind_started.setdefault(pending.kind, time.monotonic())
+                dispatch_at = time.monotonic()
+                if kind_active_count[pending.kind] == 0:
+                    kind_active_since[pending.kind] = dispatch_at
+                kind_active_count[pending.kind] += 1
                 in_flight[ex.submit(job.process, pending, slot)] = (slot, pending.kind)
                 pending = None
             if not in_flight:
@@ -1823,7 +1850,10 @@ def cmd_run(a: argparse.Namespace) -> int:
             emitted_in_batch = False
             for f in done:
                 slot, batch_kind = in_flight.pop(f)
-                kind_ended[batch_kind] = time.monotonic()
+                finished_at = time.monotonic()
+                kind_active_count[batch_kind] = max(0, kind_active_count[batch_kind] - 1)
+                if kind_active_count[batch_kind] == 0:
+                    kind_elapsed[batch_kind] += max(0.0, finished_at - kind_active_since.pop(batch_kind, finished_at))
                 free.append(slot)
                 try:
                     r: BatchResult = f.result()
@@ -1924,8 +1954,8 @@ def cmd_run(a: argparse.Namespace) -> int:
     stop = ("errors" if tot["failed_batches"] and not new_decisions
             else budget.reason() or ("errors" if remaining else "done"))
     elapsed_s = max(0.0, time.monotonic() - budget.t0)
-    elapsed_by_kind = {kind: round(max(0.0, kind_ended[kind] - started_at), 3)
-                       for kind, started_at in kind_started.items() if kind in kind_ended}
+    elapsed_by_kind = {kind: round(seconds, 3) if seconds > 0 else None
+                       for kind, seconds in kind_elapsed.items()}
     per_minute = completed_now * 60.0 / elapsed_s if elapsed_s > 0 else 0.0
     eta_s = (remaining * elapsed_s / completed_now
              if completed_now and stop not in ("errors", "exhausted", "needs-login") else None)
