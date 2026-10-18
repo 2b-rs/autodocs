@@ -744,11 +744,16 @@ import json, os, sys, time
 home = os.environ.get("HOME", "")
 name = os.path.basename(home.rstrip("/")).replace("agy-profile-", "")
 log = __LOG__
-rec = {"profile": name, "call_id": os.environ.get("AGY_CALL_ID", ""), "pid": os.getpid()}
-with open(log, "a") as fh:
-    fh.write(json.dumps(rec) + "\n")
+ready = __READY__
+rec = {"ready": True, "profile": name, "call_id": os.environ.get("AGY_CALL_ID", ""), "pid": os.getpid()}
+payload = (json.dumps(rec) + "\n").encode()
+with open(log, "ab") as fh:
+    fh.write(payload)
     fh.flush()
     os.fsync(fh.fileno())
+fd = os.open(ready, os.O_WRONLY)
+os.write(fd, payload)
+os.close(fd)
 time.sleep(600)
 sys.exit(0)
 '''
@@ -765,21 +770,68 @@ class TimeoutAttributionTest(LiveJobCase):
 
     def _install_hang(self):
         hang_log = self.root / "hang-agy.log"
+        ready = self.root / "hang-agy.ready"
+        os.mkfifo(ready)
         agy = self.root / "bin" / "agy"
-        agy.write_text(HANG_AGY.replace("__PY__", sys.executable).replace("__LOG__", repr(str(hang_log))))
+        agy.write_text(HANG_AGY.replace("__PY__", sys.executable)
+                       .replace("__LOG__", repr(str(hang_log)))
+                       .replace("__READY__", repr(str(ready))))
         agy.chmod(agy.stat().st_mode | stat.S_IXUSR)
-        return hang_log
+        return hang_log, ready
 
-    def _fast_run_group(self):
+    def _await_provider_ready(self, ready_fifo, deadline):
+        fd = os.open(ready_fifo, os.O_RDONLY | os.O_NONBLOCK)
+        buf = b""
+        try:
+            while time.monotonic() < deadline:
+                try:
+                    chunk = os.read(fd, 4096)
+                except BlockingIOError:
+                    chunk = b""
+                if chunk:
+                    buf += chunk
+                    line = buf.splitlines()[0] if buf.splitlines() else b""
+                    if line:
+                        rec = json.loads(line.decode())
+                        if rec.get("ready") is True and rec.get("pid") and rec.get("call_id"):
+                            return rec
+                time.sleep(0.02)
+        finally:
+            os.close(fd)
+        return None
+
+    def _fast_run_group(self, ready_fifo):
         real = LD._run_group
+        bound = 8.0
 
         def wrapped(cmd, timeout, env, cwd):
-            return real(cmd, min(float(timeout), 1.5), env, cwd)
+            self.provider_ready = None
+            deadline = time.monotonic() + bound
+            box, err = {}, {}
+
+            def run():
+                try:
+                    box["result"] = real(cmd, min(float(timeout), bound), env, cwd)
+                except BaseException as exc:
+                    err["exc"] = exc
+
+            thread = threading.Thread(target=run)
+            thread.start()
+            ready = self._await_provider_ready(ready_fifo, deadline)
+            self.provider_ready = ready
+            thread.join(timeout=max(0.0, deadline - time.monotonic()) + 2.0)
+            if err.get("exc") is not None:
+                raise err["exc"]
+            if "result" not in box:
+                raise AssertionError("parent run did not finish within the 8s provider-ready bound")
+            if ready is None:
+                raise AssertionError("provider child ready record missing before parent kill assertions")
+            return box["result"]
 
         return wrapped
 
     def test_hang_kill_attributes_exact_call_and_rotates(self):
-        hang_log = self._install_hang()
+        hang_log, ready_fifo = self._install_hang()
         sw = self._switch()
         state = self.root / "agy-state.json"
         homes = self.profiles.split(",")
@@ -787,7 +839,7 @@ class TimeoutAttributionTest(LiveJobCase):
         agy = LD.Agy(HERE / "agy_switch.py", state, "gemini-test", "low", 1, sys.executable)
         env = {"PATH": self.path, "DASHBOARD_WRITE_TOKEN": TOKEN}
         with mock.patch.dict(os.environ, env, clear=False), \
-                mock.patch.object(LD, "_run_group", self._fast_run_group()):
+                mock.patch.object(LD, "_run_group", self._fast_run_group(ready_fifo)):
             first = agy.call(slot, "public-hang-prompt", {"type": "object"})
         self.assertEqual("timeout", first.outcome)
         self.assertEqual("leo", first.profile)
@@ -803,6 +855,16 @@ class TimeoutAttributionTest(LiveJobCase):
         rows = [json.loads(l) for l in hang_log.read_text().splitlines() if l.strip()]
         self.assertEqual(1, len(rows))
         self.assertEqual(last["call_id"], rows[0]["call_id"])
+        self.assertIsNotNone(self.provider_ready)
+        self.assertTrue(self.provider_ready.get("ready"))
+        self.assertEqual(last["call_id"], self.provider_ready["call_id"])
+        self.assertEqual(rows[0]["pid"], self.provider_ready["pid"])
+        try:
+            os.kill(int(rows[0]["pid"]), 0)
+            alive = True
+        except (OSError, ProcessLookupError):
+            alive = False
+        self.assertFalse(alive)
         nxt = sw.acquire_lease(state, homes, "bbbbbbbbbbbbbbbb", now=time.time(), lease_s=30, cooldown_s=300)
         self.assertEqual("neo", nxt["profile"])
 
@@ -821,7 +883,7 @@ class TimeoutAttributionTest(LiveJobCase):
         self.assertEqual("leo", later["profile"])
 
     def test_timeout_is_one_call_one_failed_batch_zero_completed(self):
-        self._install_hang()
+        _hang_log, ready_fifo = self._install_hang()
         parser = LD.build_parser()
         argv = ["run", "--bundle-file", str(self.bundle), "--bundle-sha256", self.sha,
                 "--live-repo", str(self.clone), "--work", str(self.root / "work"),
@@ -832,7 +894,7 @@ class TimeoutAttributionTest(LiveJobCase):
         env = {"PATH": self.path, "AUTODOCS_AGY_PROFILES": self.profiles,
                "DASHBOARD_WRITE_TOKEN": TOKEN}
         with mock.patch.dict(os.environ, env, clear=False), \
-                mock.patch.object(LD, "_run_group", self._fast_run_group()):
+                mock.patch.object(LD, "_run_group", self._fast_run_group(ready_fifo)):
             rc = LD.cmd_run(args)
         self.assertEqual(rc, LD.EXIT_ERROR)
         run = [e for e in core.verify_chain(self.clone).entries if e["kind"] == "run"][-1]
