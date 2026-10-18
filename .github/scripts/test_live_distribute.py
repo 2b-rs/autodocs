@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -452,6 +453,122 @@ class LiveWorkerTelemetryTest(LiveJobCase):
         self.assertGreaterEqual(progress["progress"]["total"], progress["progress"]["done"])
         self.assertEqual([], progress["progress"]["unknown"])
         self.assertIn("completed", progress["counters"])
+        for req in receiver.requests:
+            counters = req["body"].get("counters") or {}
+            for key in ("started_calls", "in_flight_calls", "calls", "completed", "failed_batches"):
+                if key in counters:
+                    self.assertIsInstance(counters[key], int, key)
+                    self.assertFalse(isinstance(counters[key], bool), key)
+                    self.assertGreaterEqual(counters[key], 0, key)
+        terminal = next(req["body"] for req in receiver.requests if req["body"]["event"] == "terminal")
+        if "in_flight_calls" in (terminal.get("counters") or {}):
+            self.assertEqual(0, terminal["counters"]["in_flight_calls"])
+
+    def _cmd_args(self, *extra):
+        return LD.build_parser().parse_args([
+            "run", "--bundle-file", str(self.bundle), "--bundle-sha256", self.sha,
+            "--live-repo", str(self.clone), "--work", str(self.root / "work"),
+            "--state", str(self.root / "agy-state.json"), "--run-id", "hb1", *extra,
+        ])
+
+    def test_provider_call_timeout_default_unchanged(self):
+        args = self._cmd_args()
+        self.assertEqual(300, args.call_timeout)
+        self.assertGreaterEqual(LD.HEARTBEAT_INTERVAL_S, 10.0)
+        self.assertLessEqual(LD.HEARTBEAT_INTERVAL_S, 15.0)
+
+    def test_long_pending_call_emits_multiple_coordinator_heartbeats(self):
+        seen = []
+
+        def capture(**kwargs):
+            payload = dict(kwargs)
+            if kwargs.get("counters"):
+                payload["counters"] = dict(kwargs["counters"])
+            seen.append(payload)
+            return True
+
+        def slow_call(_self, slot, prompt, schema):
+            time.sleep(0.22)
+            return LD.CallResult("timeout", profile="leo")
+
+        args = self._cmd_args("--concurrency", "1", "--max-failures", "1", "--max-calls", "1",
+                              "--batch-snippets", "1")
+        env = {"AUTODOCS_AGY_PROFILES": self.profiles,
+               "PATH": self.path}
+        with mock.patch.dict(os.environ, env, clear=False), \
+                mock.patch.object(LD, "HEARTBEAT_INTERVAL_S", 0.05), \
+                mock.patch.object(LD, "publish_live_worker", side_effect=capture), \
+                mock.patch.object(LD.Agy, "call", slow_call):
+            rc = LD.cmd_run(args)
+        self.assertEqual(rc, LD.EXIT_ERROR)
+        beats = [item for item in seen if item.get("event") == "progress"
+                 and (item.get("counters") or {}).get("in_flight_calls", 0) >= 1]
+        self.assertGreaterEqual(len(beats), 2, [item.get("counters") for item in seen])
+        terminal = next(item for item in seen if item.get("event") == "terminal")
+        self.assertEqual(0, terminal["counters"]["in_flight_calls"])
+        self.assertGreaterEqual(terminal["counters"]["started_calls"], 1)
+
+    def test_overlapping_calls_report_in_flight_and_started(self):
+        seen = []
+        barrier = threading.Barrier(2)
+        release = threading.Event()
+
+        def capture(**kwargs):
+            payload = dict(kwargs)
+            if kwargs.get("counters"):
+                payload["counters"] = dict(kwargs["counters"])
+            seen.append(payload)
+            if (payload.get("counters") or {}).get("in_flight_calls", 0) >= 2:
+                release.set()
+            return True
+
+        def overlapping_call(_self, slot, prompt, schema):
+            barrier.wait(timeout=2)
+            if not release.wait(timeout=2):
+                raise TimeoutError("coordinator did not observe overlapping in-flight calls")
+            return LD.CallResult("timeout", profile="leo")
+
+        args = self._cmd_args("--concurrency", "2", "--max-failures", "2", "--max-calls", "2",
+                              "--batch-snippets", "1")
+        env = {"AUTODOCS_AGY_PROFILES": self.profiles, "PATH": self.path}
+        with mock.patch.dict(os.environ, env, clear=False), \
+                mock.patch.object(LD, "HEARTBEAT_INTERVAL_S", 0.05), \
+                mock.patch.object(LD, "publish_live_worker", side_effect=capture), \
+                mock.patch.object(LD.Agy, "call", overlapping_call):
+            rc = LD.cmd_run(args)
+        self.assertEqual(rc, LD.EXIT_ERROR)
+        self.assertTrue(any((item.get("counters") or {}).get("in_flight_calls", 0) >= 2 for item in seen),
+                        [item.get("counters") for item in seen])
+        terminal = next(item for item in seen if item.get("event") == "terminal")
+        self.assertEqual(0, terminal["counters"]["in_flight_calls"])
+        self.assertGreaterEqual(terminal["counters"]["started_calls"], 2)
+
+    def test_timeout_completion_keeps_real_counters(self):
+        seen = []
+
+        def capture(**kwargs):
+            payload = dict(kwargs)
+            if kwargs.get("counters"):
+                payload["counters"] = dict(kwargs["counters"])
+            seen.append(payload)
+            return True
+
+        def timeout_call(_self, slot, prompt, schema):
+            return LD.CallResult("timeout", profile="leo")
+
+        args = self._cmd_args("--concurrency", "1", "--max-failures", "1", "--max-calls", "1")
+        env = {"AUTODOCS_AGY_PROFILES": self.profiles, "PATH": self.path}
+        with mock.patch.dict(os.environ, env, clear=False), \
+                mock.patch.object(LD, "publish_live_worker", side_effect=capture), \
+                mock.patch.object(LD.Agy, "call", timeout_call):
+            rc = LD.cmd_run(args)
+        self.assertEqual(rc, LD.EXIT_ERROR)
+        terminal = next(item for item in seen if item.get("event") == "terminal")
+        counters = terminal["counters"]
+        self.assertEqual(0, counters["in_flight_calls"])
+        self.assertGreaterEqual(counters["started_calls"], 1)
+        self.assertEqual(counters["started_calls"], counters["calls"])
+        self.assertGreaterEqual(counters["failed_batches"], 1)
 
     def test_retry_resends_same_seq(self):
         with FakeLiveWorker(fail_times=2) as receiver:

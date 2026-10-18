@@ -44,7 +44,7 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
@@ -74,6 +74,7 @@ LIVE_WORKER_URL = "https://autodocs-nexos.autodocs-2b-rs.workers.dev/dashboard/l
 DASHBOARD_TOKEN_ENV = "DASHBOARD_WRITE_TOKEN"
 TELEMETRY_ATTEMPTS = 3
 TELEMETRY_TIMEOUT_S = 15.0
+HEARTBEAT_INTERVAL_S = 10.0  # coordinator cadence while futures are pending; keep within 10–15s
 TELEMETRY_WARN_MAX = 180
 TERMINAL_STOPS = {"errors", "exhausted", "needs-login"}
 SUCCESSFUL_STOPS = {"done", "budget-time", "budget-calls", "budget-usd"}
@@ -354,16 +355,37 @@ def _last_error_view(run: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def distribution_worker_counters(*, calls: int, completed: int, failed_batches: int, remaining: int,
-                                 elapsed_seconds: float, completed_by_kind: Dict[str, int]) -> Dict[str, Any]:
+                                 elapsed_seconds: float, completed_by_kind: Dict[str, int],
+                                 started_calls: int = 0, in_flight_calls: int = 0) -> Dict[str, Any]:
     """Counters the live-worker allowlist accepts. Findings stay on the run record."""
     return {
         "calls": calls,
+        "started_calls": started_calls,
+        "in_flight_calls": in_flight_calls,
         "completed": completed,
         "failed_batches": failed_batches,
         "remaining": remaining,
         "elapsed_seconds": elapsed_seconds,
         "completed_by_kind": dict(completed_by_kind),
     }
+
+
+def _parse_utc_iso(value: Any) -> Optional[datetime]:
+    if not isinstance(value, str) or not value.endswith("Z"):
+        return None
+    try:
+        return datetime.fromisoformat(value[:-1]).replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _monotonic_utc_now(prev_ts: Any) -> str:
+    now_str = core.utc_now()
+    now_dt = _parse_utc_iso(now_str)
+    prev_dt = _parse_utc_iso(prev_ts)
+    if now_dt is not None and prev_dt is not None and now_dt <= prev_dt:
+        return (prev_dt + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return now_str
 
 
 def _confidence(sample_count: int, *, remaining: int, eta_ok: bool) -> Optional[str]:
@@ -462,9 +484,21 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
             return True
         if event == "start" and worker_state.get("started") and _acked_seq(worker_state.get("seq")) > 0:
             return True
-        now = core.utc_now()
+        now = _monotonic_utc_now(worker_state.get("last_timestamp"))
         started = worker_state.get("started") or now
         seq = _acked_seq(worker_state.get("seq")) + 1
+        last_prog = worker_state.get("last_progress") if isinstance(worker_state.get("last_progress"), dict) else {}
+        if event == "terminal" and done is None and total is None:
+            done = last_prog.get("done")
+            total = last_prog.get("total")
+        if isinstance(counters, dict) and counters:
+            resolved_counters: Dict[str, Any] = dict(counters)
+        elif event == "terminal" and isinstance(worker_state.get("last_counters"), dict):
+            resolved_counters = dict(worker_state["last_counters"])
+        else:
+            resolved_counters = {}
+        if event == "terminal" and "in_flight_calls" in resolved_counters:
+            resolved_counters["in_flight_calls"] = 0
         fragment: Dict[str, Any] = {
             "schema": LIVE_WORKER_SCHEMA,
             "github": _github_ids(),
@@ -474,7 +508,7 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
             "state": state,
             "interval": {"started": started, "ended": now if ended or event == "terminal" else None},
             "progress": _progress_obj(done, total),
-            "counters": counters or {},
+            "counters": resolved_counters,
             "timestamp": now,
             "outcome": outcome,
             "reason": reason,
@@ -488,8 +522,11 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
             _telemetry_warn(f"encode:{type(exc).__name__}")
             return False
         worker_state["started"] = started
-        worker_state["last_progress"] = fragment["progress"]
-        worker_state["last_counters"] = fragment["counters"]
+        worker_state["last_timestamp"] = now
+        if done is not None or total is not None or "last_progress" not in worker_state:
+            worker_state["last_progress"] = fragment["progress"]
+        if resolved_counters or "last_counters" not in worker_state:
+            worker_state["last_counters"] = dict(resolved_counters)
         worker_state["pending"] = {
             "body": body.decode("utf-8"),
             "event": event,
@@ -551,13 +588,16 @@ def cmd_dashboard(a: argparse.Namespace) -> int:
             path = _worker_state_path()
             worker_state = _load_worker_state(path)
             last = worker_state.get("last_progress") if isinstance(worker_state.get("last_progress"), dict) else {}
+            last_counters = (dict(worker_state["last_counters"])
+                             if isinstance(worker_state.get("last_counters"), dict) else {})
+            if "in_flight_calls" in last_counters:
+                last_counters["in_flight_calls"] = 0
             outcome, reason, state = _workflow_terminal_fields()
             if worker_state.get("terminal_sent"):
                 return EXIT_OK
             publish_live_worker(event="terminal", phase="terminal", state=state,
                                 done=last.get("done"), total=last.get("total"),
-                                counters=worker_state.get("last_counters")
-                                if isinstance(worker_state.get("last_counters"), dict) else {},
+                                counters=last_counters,
                                 outcome=outcome, reason=reason, ended=True)
     except Exception as exc:
         _telemetry_warn(f"dashboard:{type(exc).__name__}")
@@ -906,9 +946,26 @@ class Job:
         self.a, self.bundle, self.data, self.live, self.agy, self.budget, self.run_id = a, bundle, data, live, agy, budget, run_id
         self.assets = {"bundle": bundle.sha256, "manifest": bundle.manifest_hash}
         self.call_no = 0
+        self.started_calls = 0
+        self.in_flight_calls = 0
         self._lock = threading.Lock()
         self.sizes = {"snippet": a.batch_snippets, "figure": a.batch_figures, "element": a.batch_elements}
         self.skipped = {"missing": 0, "oversize": 0}
+
+    def _enter_call(self) -> Tuple[int, int]:
+        with self._lock:
+            self.started_calls += 1
+            self.in_flight_calls += 1
+            return self.started_calls, self.in_flight_calls
+
+    def _exit_call(self) -> Tuple[int, int]:
+        with self._lock:
+            self.in_flight_calls = max(0, self.in_flight_calls - 1)
+            return self.started_calls, self.in_flight_calls
+
+    def call_counts(self) -> Tuple[int, int]:
+        with self._lock:
+            return self.started_calls, self.in_flight_calls
 
     # --- Prompts ---------------------------------------------------------------------------------------
     def items_for(self, units: List[Dict[str, Any]]) -> List[M.Item]:
@@ -983,7 +1040,11 @@ class Job:
             # An exception there must never become a zero-call success again.
             res.calls += 1
             res.retries += 1 if n else 0
-            r = self.agy.call(slot, text, schema)
+            self._enter_call()
+            try:
+                r = self.agy.call(slot, text, schema)
+            finally:
+                self._exit_call()
             usd = M.list_price(self.agy.model, r.tokens)
             self.budget.spend(usd)
             res.usd += usd
@@ -1635,7 +1696,9 @@ def cmd_run(a: argparse.Namespace) -> int:
     plan_total = len(plan)
     publish_live_worker(event="progress", phase="distribute", state="active" if todo else "idle",
                         done=base_done, total=plan_total,
-                        counters={"remaining": len(todo), "completed": 0, "calls": 0, "failed_batches": 0})
+                        counters={"remaining": len(todo), "completed": 0, "calls": 0,
+                                  "started_calls": 0, "in_flight_calls": 0, "failed_batches": 0,
+                                  "elapsed_seconds": 0.0})
     if not todo:
         log("nichts zu tun")
         return EXIT_OK
@@ -1651,13 +1714,19 @@ def cmd_run(a: argparse.Namespace) -> int:
         log(f"Trockenlauf: erste {len(sizes)} Batches, Prompt-Bytes Median {sorted(sizes)[len(sizes) // 2] if sizes else 0}, "
             f"Maximum {max(sizes) if sizes else 0}; kein Modellaufruf")
         publish_live_worker(event="terminal", phase="terminal", state="idle", done=base_done, total=plan_total,
-                            counters={"remaining": len(todo)}, outcome="ok", reason="dry-run", ended=True)
+                            counters={"remaining": len(todo), "completed": 0, "calls": 0,
+                                      "started_calls": 0, "in_flight_calls": 0, "failed_batches": 0,
+                                      "elapsed_seconds": 0.0},
+                            outcome="ok", reason="dry-run", ended=True)
         return EXIT_OK
     base_profiles = [p for p in os.environ.get("AUTODOCS_AGY_PROFILES", "").split(",") if p]
     if not base_profiles:
         log("keine agy-Profile (setup-agy, AUTODOCS_AGY_PROFILES)")
         publish_live_worker(event="terminal", phase="terminal", state="error", done=base_done, total=plan_total,
-                            counters={"remaining": len(todo)}, outcome="needs-login", reason="needs-login",
+                            counters={"remaining": len(todo), "completed": 0, "calls": 0,
+                                      "started_calls": 0, "in_flight_calls": 0, "failed_batches": 0,
+                                      "elapsed_seconds": 0.0},
+                            outcome="needs-login", reason="needs-login",
                             ended=True)
         return EXIT_LOGIN
     state = Path(a.state or os.environ.get("AGY_STATE") or (work / "agy-state.json"))
@@ -1683,6 +1752,7 @@ def cmd_run(a: argparse.Namespace) -> int:
     exhausted_gen = False
     kind_started: Dict[str, float] = {}
     kind_ended: Dict[str, float] = {}
+    last_telemetry_at = time.monotonic()
     with ThreadPoolExecutor(max_workers=len(slots)) as ex:
         while True:
             while free and not exhausted_gen and not budget.reason():
@@ -1700,7 +1770,25 @@ def cmd_run(a: argparse.Namespace) -> int:
                 pending = None
             if not in_flight:
                 break
-            done, _ = wait(list(in_flight), return_when=FIRST_COMPLETED)
+            hb_interval = float(HEARTBEAT_INTERVAL_S)
+            wait_timeout = max(0.0, (last_telemetry_at + hb_interval) - time.monotonic())
+            done, _ = wait(list(in_flight), timeout=wait_timeout, return_when=FIRST_COMPLETED)
+            if not done:
+                started_calls, in_flight_calls = job.call_counts()
+                elapsed = max(0.001, time.monotonic() - budget.t0)
+                remain_now = max(0, len(todo) - tot["completed"])
+                publish_live_worker(
+                    event="progress", phase="distribute", state="active",
+                    done=base_done + tot["completed"], total=plan_total,
+                    counters=distribution_worker_counters(
+                        calls=tot["calls"], started_calls=started_calls,
+                        in_flight_calls=in_flight_calls, completed=tot["completed"],
+                        failed_batches=tot["failed_batches"], remaining=remain_now,
+                        elapsed_seconds=round(elapsed, 3),
+                        completed_by_kind=tot["completed_by_kind"]))
+                last_telemetry_at = time.monotonic()
+                continue
+            emitted_in_batch = False
             for f in done:
                 slot, batch_kind = in_flight.pop(f)
                 kind_ended[batch_kind] = time.monotonic()
@@ -1750,15 +1838,20 @@ def cmd_run(a: argparse.Namespace) -> int:
                         log(f"Fortschritt: {len(new_decisions)} Entscheidungen, {tot['calls']} Aufrufe, "
                             f"{tot['usd']:.3f} $ Listenpreis, {per_minute:.1f}/min, "
                             f"offen {remain_now}, ETA {eta_text}")
-                    if not progress_sent or crossed:
+                    if not progress_sent or crossed or (time.monotonic() - last_telemetry_at >= hb_interval):
                         progress_sent = True
+                        emitted_in_batch = True
+                        started_calls, in_flight_calls = job.call_counts()
                         publish_live_worker(
                             event="progress", phase="distribute", state="active",
                             done=base_done + tot["completed"], total=plan_total,
-                            counters={"calls": tot["calls"], "completed": tot["completed"],
-                                      "failed_batches": tot["failed_batches"], "remaining": remain_now,
-                                      "elapsed_seconds": round(elapsed, 3),
-                                      "completed_by_kind": dict(tot["completed_by_kind"])})
+                            counters=distribution_worker_counters(
+                                calls=tot["calls"], started_calls=started_calls,
+                                in_flight_calls=in_flight_calls, completed=tot["completed"],
+                                failed_batches=tot["failed_batches"], remaining=remain_now,
+                                elapsed_seconds=round(elapsed, 3),
+                                completed_by_kind=tot["completed_by_kind"]))
+                        last_telemetry_at = time.monotonic()
                 elif r.outcome not in ("budget", "exhausted", "login"):
                     tot["failed_batches"] += 1
                     consecutive_fail += 1
@@ -1766,6 +1859,20 @@ def cmd_run(a: argparse.Namespace) -> int:
                     log(f"Batch ohne Ergebnis ({r.batch.kind}, {len(r.batch.units)} Einheiten): {r.outcome} [{detail}]")
                     if consecutive_fail >= a.max_failures:
                         budget.halt("errors")
+            if not emitted_in_batch and (time.monotonic() - last_telemetry_at >= hb_interval):
+                started_calls, in_flight_calls = job.call_counts()
+                elapsed = max(0.001, time.monotonic() - budget.t0)
+                remain_now = max(0, len(todo) - tot["completed"])
+                publish_live_worker(
+                    event="progress", phase="distribute", state="active",
+                    done=base_done + tot["completed"], total=plan_total,
+                    counters=distribution_worker_counters(
+                        calls=tot["calls"], started_calls=started_calls,
+                        in_flight_calls=in_flight_calls, completed=tot["completed"],
+                        failed_batches=tot["failed_batches"], remaining=remain_now,
+                        elapsed_seconds=round(elapsed, 3),
+                        completed_by_kind=tot["completed_by_kind"]))
+                last_telemetry_at = time.monotonic()
     # Patrouille Stufe 1: Prüfregeln über die neuen Entscheidungen
     findings_new = run_validators(bundle, data, live, new_decisions, run_id)
     known = live.finding_ids()
@@ -1833,10 +1940,12 @@ def cmd_run(a: argparse.Namespace) -> int:
         perf = build_status(live, plan, bundle, state, performance_config).get("performance")
     except Exception:
         perf = None
+    started_calls, _ = job.call_counts()
     publish_live_worker(event="terminal", phase="terminal", state=worker_state_name,
                         done=base_done + completed_now, total=plan_total,
                         counters=distribution_worker_counters(
-                            calls=tot["calls"], completed=tot["completed"],
+                            calls=tot["calls"], started_calls=started_calls,
+                            in_flight_calls=0, completed=tot["completed"],
                             failed_batches=tot["failed_batches"], remaining=remaining,
                             elapsed_seconds=round(elapsed_s, 3),
                             completed_by_kind=tot["completed_by_kind"]),
