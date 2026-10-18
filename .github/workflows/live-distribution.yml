@@ -73,7 +73,6 @@ jobs:
       # Nur Dispatcher-Provenienz; keine kryptografische Attestierung.
       AUTODOCS_TRIGGER_KIND: ${{ inputs.trigger_kind }}
       AUTODOCS_SCHEDULED_AT: ${{ inputs.scheduled_at }}
-      AUTODOCS_LIVE_WORKER_STATE: ${{ runner.temp }}/live-worker-state.json
     steps:
       # Das Repository enthält die ganze Website (mehrere GB); der Job braucht nur .github/.
       - uses: actions/checkout@v4
@@ -87,6 +86,7 @@ jobs:
         shell: bash
         env:
           DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
+          AUTODOCS_LIVE_WORKER_STATE: ${{ runner.temp }}/live-worker-state.json
         run: |
           set +e -uo pipefail
           script="$GITHUB_WORKSPACE/.github/scripts/live_distribute.py"
@@ -147,6 +147,7 @@ jobs:
         env:
           IN_KINDS: ${{ inputs.kinds }}
           DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
+          AUTODOCS_LIVE_WORKER_STATE: ${{ runner.temp }}/live-worker-state.json
         run: |
           set +e -uo pipefail
           python3 "$GITHUB_WORKSPACE/.github/scripts/live_distribute.py" pending \
@@ -191,6 +192,7 @@ jobs:
           IN_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
           RUN_ID: gh-${{ github.run_id }}-${{ github.run_attempt }}
           DASHBOARD_WRITE_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
+          AUTODOCS_LIVE_WORKER_STATE: ${{ runner.temp }}/live-worker-state.json
         run: |
           set +e -uo pipefail          # Exitcodes des Jobs auswerten statt abbrechen
           [ -n "${AUTODOCS_AGY_PROFILES:-}" ] || { echo "::error::Keine agy-Profile (AGY_OAUTH_TOKEN_1/_2)"; echo "rc=77" >> "$GITHUB_OUTPUT"; exit 0; }
@@ -272,6 +274,7 @@ jobs:
           PENDING: ${{ steps.pending.outputs.pending }}
           RUN_OUTCOME: ${{ steps.run.outcome }}
           PENDING_OUTCOME: ${{ steps.pending.outcome }}
+          AUTODOCS_LIVE_WORKER_STATE: ${{ runner.temp }}/live-worker-state.json
         run: |
           set +e -uo pipefail
           script="$GITHUB_WORKSPACE/.github/scripts/live_distribute.py"
