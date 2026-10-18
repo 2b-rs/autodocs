@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -42,6 +43,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -778,6 +780,30 @@ def _terminate(signum, _frame) -> None:
     os._exit(128 + signum)
 
 
+def _switch_runtime(switch: Path):
+    """Load the paired agy_switch.py next to this job (public copy) or the canonical source path."""
+    path = Path(switch)
+    spec = importlib.util.spec_from_file_location("_agy_switch_runtime", path)
+    if spec is None or spec.loader is None:
+        raise ImportError("agy_switch unreadable")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _attribute_timeout(switch: Path, state: Path, call_id: str) -> Dict[str, Any]:
+    """Mark the recorded in-flight call timed out and read the attribution back. Never invent tokens."""
+    try:
+        runtime = _switch_runtime(switch)
+        attr = getattr(runtime, "attribute_timeout", None)
+        if not callable(attr):
+            return {}
+        found = attr(state, call_id) or {}
+        return found if isinstance(found, dict) else {}
+    except (OSError, ImportError, ValueError, AttributeError, TypeError):
+        return {}
+
+
 def _run_group(cmd: List[str], timeout: float, env: Dict[str, str], cwd: str) -> Tuple[int, str, str, bool]:
     """Prozess in eigener Gruppe; bei Zeitüberschreitung wird die ganze Gruppe (auch agy) beendet."""
     env = _scrubbed_env(env)
@@ -822,13 +848,17 @@ class Agy:
     def call(self, slot: Slot, prompt: str, schema: Dict[str, Any]) -> CallResult:
         if not slot.lock():
             return CallResult("error", rc=EXIT_CONFIG)
+        call_id = uuid.uuid4().hex
+        env = self.env(slot)
+        env["AGY_CALL_ID"] = call_id
+        env["AGY_LEASE_S"] = str(max(1, int(self.timeout_s) + 60))
         cmd = [self.python, str(self.switch), "--state", str(self.state), "--",
                "-p", prompt, "--model", self.model, "--effort", self.effort, "--output-format", "stream-json",
                "--json-schema", json.dumps(schema, separators=(",", ":")), "--disable-slash-commands",
                "--print-timeout", f"{self.timeout_s}s"]
         t0 = time.monotonic()
         try:
-            rc, out, err, timed_out = _run_group(cmd, self.timeout_s + 60, self.env(slot), str(slot.call_dir))
+            rc, out, err, timed_out = _run_group(cmd, self.timeout_s + 60, env, str(slot.call_dir))
         except (OSError, ValueError) as exc:    # z. B. E2BIG oder ein für argv unzulässiger Wert
             return CallResult("error", rc=EXIT_ERROR, wall_s=time.monotonic() - t0,
                               diagnostic=f"agy-start:{type(exc).__name__}")
@@ -844,6 +874,8 @@ class Agy:
                     sw = {}
         profile = str(sw.get("profile") or "")
         if timed_out:
+            attributed = _attribute_timeout(self.switch, self.state, call_id)
+            profile = str(attributed.get("profile") or profile)
             return CallResult("timeout", profile=profile, rc=rc, wall_s=wall)
         if rc == EXIT_EXHAUSTED:
             return CallResult("exhausted", profile=profile, rc=rc, wall_s=wall)

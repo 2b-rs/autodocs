@@ -739,5 +739,142 @@ class LiveWorkerTelemetryTest(LiveJobCase):
             self.assertEqual([], receiver.requests)
 
 
+HANG_AGY = r'''#!__PY__
+import json, os, sys, time
+home = os.environ.get("HOME", "")
+name = os.path.basename(home.rstrip("/")).replace("agy-profile-", "")
+log = __LOG__
+rec = {"profile": name, "call_id": os.environ.get("AGY_CALL_ID", ""), "pid": os.getpid()}
+with open(log, "a") as fh:
+    fh.write(json.dumps(rec) + "\n")
+    fh.flush()
+    os.fsync(fh.fileno())
+time.sleep(600)
+sys.exit(0)
+'''
+
+
+class TimeoutAttributionTest(LiveJobCase):
+    def _switch(self):
+        import importlib.util
+        path = HERE / "agy_switch.py"
+        spec = importlib.util.spec_from_file_location("agy_switch_public", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def _install_hang(self):
+        hang_log = self.root / "hang-agy.log"
+        agy = self.root / "bin" / "agy"
+        agy.write_text(HANG_AGY.replace("__PY__", sys.executable).replace("__LOG__", repr(str(hang_log))))
+        agy.chmod(agy.stat().st_mode | stat.S_IXUSR)
+        return hang_log
+
+    def _fast_run_group(self):
+        real = LD._run_group
+
+        def wrapped(cmd, timeout, env, cwd):
+            return real(cmd, min(float(timeout), 1.5), env, cwd)
+
+        return wrapped
+
+    def test_hang_kill_attributes_exact_call_and_rotates(self):
+        hang_log = self._install_hang()
+        sw = self._switch()
+        state = self.root / "agy-state.json"
+        homes = self.profiles.split(",")
+        slot = LD.Slot(0, homes, self.root / "timeout-slots")
+        agy = LD.Agy(HERE / "agy_switch.py", state, "gemini-test", "low", 1, sys.executable)
+        env = {"PATH": self.path, "DASHBOARD_WRITE_TOKEN": TOKEN}
+        with mock.patch.dict(os.environ, env, clear=False), \
+                mock.patch.object(LD, "_run_group", self._fast_run_group()):
+            first = agy.call(slot, "public-hang-prompt", {"type": "object"})
+        self.assertEqual("timeout", first.outcome)
+        self.assertEqual("leo", first.profile)
+        self.assertEqual({"input": 0, "cached": 0, "output": 0, "thinking": 0}, first.tokens)
+        blob = state.read_text(encoding="utf-8")
+        self.assertNotIn(TOKEN, blob)
+        self.assertNotIn("public-hang-prompt", blob)
+        recorded = json.loads(blob)
+        last = recorded["leo"]["last_call"]
+        self.assertEqual("timeout", last["result"])
+        self.assertTrue(sw.CALL_ID_RE.fullmatch(last["call_id"]))
+        self.assertGreater(recorded["leo"]["cooldown_until"], time.time())
+        rows = [json.loads(l) for l in hang_log.read_text().splitlines() if l.strip()]
+        self.assertEqual(1, len(rows))
+        self.assertEqual(last["call_id"], rows[0]["call_id"])
+        nxt = sw.acquire_lease(state, homes, "bbbbbbbbbbbbbbbb", now=time.time(), lease_s=30, cooldown_s=300)
+        self.assertEqual("neo", nxt["profile"])
+
+    def test_stale_in_flight_recovers_without_instant_reuse(self):
+        sw = self._switch()
+        state = self.root / "stale-state.json"
+        homes = self.profiles.split(",")
+        now = 1_700_000_000.0
+        first = sw.acquire_lease(state, homes, "aaaaaaaaaaaaaaaa", now=now, lease_s=10, cooldown_s=50)
+        self.assertEqual("leo", first["profile"])
+        recovered = sw.recover_stale(state, now=now + 11, cooldown_s=50)
+        self.assertEqual(["leo"], recovered["recovered"])
+        nxt = sw.acquire_lease(state, homes, "bbbbbbbbbbbbbbbb", now=now + 12, lease_s=10, cooldown_s=50)
+        self.assertEqual("neo", nxt["profile"])
+        later = sw.acquire_lease(state, homes, "dddddddddddddddd", now=now + 70, lease_s=10, cooldown_s=50)
+        self.assertEqual("leo", later["profile"])
+
+    def test_timeout_is_one_call_one_failed_batch_zero_completed(self):
+        self._install_hang()
+        parser = LD.build_parser()
+        argv = ["run", "--bundle-file", str(self.bundle), "--bundle-sha256", self.sha,
+                "--live-repo", str(self.clone), "--work", str(self.root / "work"),
+                "--switch", str(HERE / "agy_switch.py"), "--state", str(self.root / "agy-state.json"),
+                "--run-id", "run-timeout-attr", "--concurrency", "1", "--max-failures", "1", "--max-calls", "1",
+                "--batch-snippets", "1"]
+        args = parser.parse_args(argv)
+        env = {"PATH": self.path, "AUTODOCS_AGY_PROFILES": self.profiles,
+               "DASHBOARD_WRITE_TOKEN": TOKEN}
+        with mock.patch.dict(os.environ, env, clear=False), \
+                mock.patch.object(LD, "_run_group", self._fast_run_group()):
+            rc = LD.cmd_run(args)
+        self.assertEqual(rc, LD.EXIT_ERROR)
+        run = [e for e in core.verify_chain(self.clone).entries if e["kind"] == "run"][-1]
+        self.assertEqual("errors", run["stop"])
+        self.assertEqual(1, run["calls"])
+        self.assertEqual(1, run["failed_batches"])
+        self.assertEqual(0, run["decided"])
+        self.assertEqual({"input": 0, "cached": 0, "output": 0, "thinking": 0}, run["tokens"])
+        self.assertNotIn(TOKEN, json.dumps(run))
+
+    def test_lease_and_timeout_atomic_under_races(self):
+        sw = self._switch()
+        state = self.root / "race-state.json"
+        homes = self.profiles.split(",")
+        now = 1_700_000_100.0
+        barrier = threading.Barrier(2)
+        got = []
+
+        def grab(call_id):
+            barrier.wait(timeout=2)
+            got.append(sw.acquire_lease(state, homes, call_id, now=now, lease_s=30, cooldown_s=40))
+
+        threads = [threading.Thread(target=grab, args=(cid,)) for cid in ("1111111111111111", "2222222222222222")]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=2)
+        names = sorted(item["profile"] for item in got if item.get("profile"))
+        self.assertEqual(["leo", "neo"], names)
+        timeout_first = sw.attribute_timeout(state, "1111111111111111", now=now + 1, cooldown_s=40)
+        complete_after = sw.complete_call(state, timeout_first["profile"], "1111111111111111", "ok", now=now + 2)
+        recorded = json.loads(state.read_text(encoding="utf-8"))
+        winner = timeout_first["profile"]
+        self.assertEqual("timeout", recorded[winner]["last_call"]["result"])
+        self.assertEqual("conflict", complete_after["result"])
+
+    def test_public_agy_switch_matches_vendor_job_import(self):
+        import live_distribute as job
+        self.assertTrue((HERE / "agy_switch.py").is_file())
+        self.assertTrue(hasattr(job, "_attribute_timeout"))
+        self.assertIn("self.timeout_s + 60", Path(job.__file__).read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()
