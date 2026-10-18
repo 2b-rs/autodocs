@@ -65,6 +65,283 @@
     return { text: value, count: count };
   }
 
+  var QUESTION_TEXT_MIN = 3;
+  var QUESTION_TEXT_MAX = 4000;
+  var QUESTION_DETAIL_MAX = 1500;
+  var QUESTION_PROPOSAL_LEAD = "Kontextfrage (Vorschlag, nicht angenommen, nicht beantwortet).";
+  var questionDialogState = {
+    opener: null,
+    offer: null,
+    submitting: false,
+    submitGen: 0,
+    onSubmitted: null
+  };
+
+  function clipChars(text, max) {
+    return Array.from(String(text == null ? "" : text)).slice(0, max).join("");
+  }
+
+  function questionProposalReceiptMessage(result) {
+    var id = result && result.id ? String(result.id) : "";
+    return "Vorschlag gespeichert" + (id ? " (Beleg " + id + ")" : "") +
+      ". Erst der validierte Ingest kann daraus eine offene Kontextfrage machen. Das ist keine Annahme und keine Antwort.";
+  }
+
+  function questionDialogIsOpen(doc) {
+    var root = doc || (typeof document !== "undefined" ? document : null);
+    var dlg = root && root.getElementById ? root.getElementById("discuss-question-dialog") : null;
+    return !!(dlg && (dlg.open || dlg.hasAttribute("open")));
+  }
+
+  function questionFeedbackRecord(fields) {
+    fields = fields || {};
+    var question = redactSecrets(String(fields.question == null ? "" : fields.question).replace(/\r\n?/g, "\n").trim()).text;
+    var detail = redactSecrets(String(fields.detail == null ? "" : fields.detail).replace(/\r\n?/g, "\n").trim()).text;
+    var assumption = redactSecrets(String(fields.assumption == null ? "" : fields.assumption).replace(/\s+/g, " ").trim()).text;
+    var rationale = redactSecrets(String(fields.rationale == null ? "" : fields.rationale).replace(/\s+/g, " ").trim()).text;
+    var recordId = clipChars(fields.record_id || "", 256);
+    var page = clipChars(fields.page || "", 300);
+    var kind = fields.kind === "gap" || fields.kind === "unclear" ? fields.kind : "";
+    var questionChars = Array.from(question);
+    if (questionChars.length < QUESTION_TEXT_MIN) return { error: "question-short" };
+    if (questionChars.length > QUESTION_TEXT_MAX) return { error: "question-long" };
+    if (Array.from(detail).length > QUESTION_DETAIL_MAX) return { error: "detail-long" };
+    var parts = [QUESTION_PROPOSAL_LEAD, question];
+    if (kind) parts.push("Art: " + kind);
+    if (recordId) parts.push("Eintrag: " + recordId);
+    if (assumption) parts.push("Annahme: " + clipChars(assumption, 1000));
+    if (rationale) parts.push("Begründung: " + clipChars(rationale, 1500));
+    if (detail) parts.push("Details: " + detail);
+    var text = clipChars(parts.join("\n\n"), QUESTION_TEXT_MAX);
+    var ctx = {};
+    if (page) ctx.page = page;
+    if (recordId) ctx.target = recordId;
+    ctx.fold = "Discuss with AI: Kontextfrage";
+    ctx.title = clipChars("Kontextfrage zu " + (recordId || "Eintrag"), 200);
+    var selection = clipChars([assumption, rationale].filter(Boolean).join(" — "), 1000);
+    if (selection) ctx.selection = selection;
+    if (fields.release) ctx.release = clipChars(fields.release, 40);
+    if (fields.lang) ctx.lang = clipChars(fields.lang, 8);
+    return { art: "wunsch", text: text, ctx: ctx };
+  }
+
+  function ensureQuestionDialog(doc) {
+    var root = doc || document;
+    var existing = root.getElementById("discuss-question-dialog");
+    if (existing) return existing;
+    if (!root.getElementById("discuss-question-dialog-style")) {
+      var style = root.createElement("style");
+      style.id = "discuss-question-dialog-style";
+      style.textContent = [
+        ".discuss-question-dialog{max-width:min(36rem,calc(100vw - 24px));width:100%;padding:0;border:1px solid #D4D1CA;border-radius:12px;box-shadow:0 16px 40px rgba(28,27,25,.28);background:#F9F8F5;color:#28251D;font:15px/1.45 -apple-system,Segoe UI,sans-serif}",
+        ".discuss-question-dialog::backdrop{background:rgba(28,27,25,.42)}",
+        ".discuss-question-dialog form{display:flex;flex-direction:column;gap:8px;padding:16px}",
+        ".discuss-question-dialog h2{margin:0;font-size:17px}",
+        ".discuss-question-dialog p,.discuss-question-dialog dl{margin:0}",
+        ".discuss-question-dialog dt{font-weight:650;margin-top:6px}",
+        ".discuss-question-dialog dd{margin:0;overflow-wrap:anywhere}",
+        ".discuss-question-dialog label{font-weight:650}",
+        ".discuss-question-dialog textarea{width:100%;min-height:72px;resize:vertical;border:1px solid #D4D1CA;border-radius:8px;padding:8px;font:inherit;background:#fff;color:#28251D;box-sizing:border-box}",
+        ".discuss-question-dialog [data-q-actions]{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}",
+        ".discuss-question-dialog button{background:#fff;color:#01696F;border:1px solid #B6B2A8;border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit}",
+        ".discuss-question-dialog [data-q-submit]{background:#01696F;color:#fff;border-color:#01696F}",
+        ".discuss-question-dialog [data-q-submit][disabled],.discuss-question-dialog textarea[disabled]{opacity:.65;cursor:not-allowed}",
+        ".discuss-question-dialog [data-q-status]{min-height:1.35em;color:#7A3418}",
+        ".discuss-question-dialog [data-q-status][data-kind='ok']{color:#135C2F}",
+        ".discuss-question-dialog button:focus-visible,.discuss-question-dialog textarea:focus-visible{outline:3px solid #01696F;outline-offset:2px}"
+      ].join("");
+      (root.head || root.documentElement || root.body).appendChild(style);
+    }
+    var dlg = root.createElement("dialog");
+    dlg.id = "discuss-question-dialog";
+    dlg.className = "discuss-question-dialog";
+    dlg.setAttribute("aria-labelledby", "discuss-question-dialog-title");
+    dlg.innerHTML = '<form data-q-form novalidate>' +
+      '<h2 id="discuss-question-dialog-title">Kontextfrage vorschlagen</h2>' +
+      '<p data-q-authority>Dieser Vorschlag ist nicht angenommen und keine Antwort. Erst der validierte Ingest kann daraus eine offene Kontextfrage machen.</p>' +
+      '<dl>' +
+      '<dt>Eintrag</dt><dd data-q-record></dd>' +
+      '<dt>Seite</dt><dd data-q-page></dd>' +
+      '<dt>Annahme</dt><dd data-q-assumption></dd>' +
+      '<dt>Begründung</dt><dd data-q-rationale></dd>' +
+      '</dl>' +
+      '<label for="discuss-question-text">Prüffrage</label>' +
+      '<textarea id="discuss-question-text" data-q-question required minlength="3" maxlength="4000"></textarea>' +
+      '<label for="discuss-question-detail">Details (optional)</label>' +
+      '<textarea id="discuss-question-detail" data-q-detail maxlength="1500"></textarea>' +
+      '<p role="status" data-q-status></p>' +
+      '<div data-q-actions>' +
+      '<button type="submit" data-q-submit>Vorschlag senden</button>' +
+      '<button type="button" data-q-cancel>Abbrechen</button>' +
+      '</div></form>';
+    (root.body || root.documentElement).appendChild(dlg);
+    var form = dlg.querySelector("[data-q-form]");
+    var cancel = dlg.querySelector("[data-q-cancel]");
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      submitQuestionProposal(dlg);
+    });
+    cancel.addEventListener("click", function () {
+      closeQuestionProposalDialog(dlg);
+    });
+    dlg.addEventListener("cancel", function (event) {
+      event.preventDefault();
+      closeQuestionProposalDialog(dlg);
+    });
+    dlg.addEventListener("close", function () {
+      restoreQuestionDialogFocus();
+    });
+    return dlg;
+  }
+
+  function restoreQuestionDialogFocus() {
+    var opener = questionDialogState.opener;
+    questionDialogState.opener = null;
+    questionDialogState.submitting = false;
+    if (opener && typeof opener.focus === "function" && (!opener.closest || opener.closest("body") || opener.isConnected !== false)) {
+      try { opener.focus(); } catch (error) { /* opener may have been removed */ }
+    }
+  }
+
+  function closeQuestionProposalDialog(dlg) {
+    questionDialogState.submitGen += 1;
+    questionDialogState.submitting = false;
+    if (!dlg) return;
+    if (typeof dlg.close === "function" && (dlg.open || dlg.hasAttribute("open"))) {
+      try { dlg.close(); return; } catch (error) { /* fall through */ }
+    }
+    dlg.removeAttribute("open");
+    restoreQuestionDialogFocus();
+  }
+
+  function setQuestionDialogBusy(dlg, busy) {
+    var submit = dlg.querySelector("[data-q-submit]");
+    var question = dlg.querySelector("[data-q-question]");
+    var detail = dlg.querySelector("[data-q-detail]");
+    questionDialogState.submitting = !!busy;
+    if (submit) {
+      submit.disabled = !!busy || !!(questionDialogState.offer && questionDialogState.offer.submitted);
+      if (busy) submit.setAttribute("aria-busy", "true");
+      else submit.removeAttribute("aria-busy");
+    }
+    if (question) question.disabled = !!busy;
+    if (detail) detail.disabled = !!busy;
+    if (busy) dlg.setAttribute("aria-busy", "true");
+    else dlg.removeAttribute("aria-busy");
+  }
+
+  function showQuestionDialogStatus(dlg, kind, text) {
+    var status = dlg.querySelector("[data-q-status]");
+    if (!status) return;
+    status.dataset.kind = kind || "";
+    status.textContent = text || "";
+  }
+
+  function questionDialogCompletionIsCurrent(dlg, gen, offer) {
+    if (gen !== questionDialogState.submitGen) return false;
+    if (!offer || questionDialogState.offer !== offer) return false;
+    if (!dlg || (!dlg.open && !dlg.hasAttribute("open"))) return false;
+    var live = dlg.ownerDocument && dlg.ownerDocument.getElementById
+      ? dlg.ownerDocument.getElementById("discuss-question-dialog") : null;
+    return !live || live === dlg;
+  }
+
+  function submitQuestionProposal(dlg) {
+    if (!dlg || questionDialogState.submitting) return;
+    var offer = questionDialogState.offer || {};
+    if (offer.submitted) return;
+    var questionEl = dlg.querySelector("[data-q-question]");
+    var detailEl = dlg.querySelector("[data-q-detail]");
+    var record = questionFeedbackRecord({
+      question: questionEl ? questionEl.value : "",
+      detail: detailEl ? detailEl.value : "",
+      assumption: offer.assumption,
+      rationale: offer.rationale,
+      record_id: offer.record_id,
+      kind: offer.kind,
+      page: questionDialogState.page,
+      release: questionDialogState.release,
+      lang: questionDialogState.lang
+    });
+    if (record.error === "question-short") {
+      showQuestionDialogStatus(dlg, "err", "Bitte eine Prüffrage mit mindestens drei Zeichen eingeben.");
+      if (questionEl && typeof questionEl.focus === "function") questionEl.focus();
+      return;
+    }
+    if (record.error) {
+      showQuestionDialogStatus(dlg, "err", "Die Eingabe ist unvollständig oder zu lang.");
+      return;
+    }
+    var access = questionDialogState.access || (typeof window !== "undefined" ? window.AiAccess : null);
+    if (!access || !access.feedback || typeof access.feedback.send !== "function") {
+      showQuestionDialogStatus(dlg, "err", "Rückkanal nicht verfügbar. Der Vorschlag wurde nicht gespeichert.");
+      return;
+    }
+    var gen = (questionDialogState.submitGen += 1);
+    var submittedOffer = offer;
+    var onSubmitted = questionDialogState.onSubmitted;
+    setQuestionDialogBusy(dlg, true);
+    showQuestionDialogStatus(dlg, "", "Vorschlag wird gesendet…");
+    Promise.resolve(access.feedback.send(record)).then(function (result) {
+      if (!questionDialogCompletionIsCurrent(dlg, gen, submittedOffer)) return;
+      submittedOffer.submitted = true;
+      if (typeof onSubmitted === "function") onSubmitted(result, record);
+      setQuestionDialogBusy(dlg, false);
+      var submit = dlg.querySelector("[data-q-submit]");
+      if (submit) submit.disabled = true;
+      showQuestionDialogStatus(dlg, "ok", questionProposalReceiptMessage(result));
+      var cancel = dlg.querySelector("[data-q-cancel]");
+      if (cancel) cancel.textContent = "Schließen";
+    }).catch(function (error) {
+      if (!questionDialogCompletionIsCurrent(dlg, gen, submittedOffer)) return;
+      submittedOffer.submitted = false;
+      setQuestionDialogBusy(dlg, false);
+      showQuestionDialogStatus(dlg, "err",
+        "Vorschlag konnte nicht gespeichert werden: " + String((error && error.message) || error) +
+        " Du kannst es erneut versuchen.");
+    });
+  }
+
+  function openQuestionProposalDialog(opts) {
+    opts = opts || {};
+    var offer = opts.offer || {};
+    if (typeof document === "undefined") return { error: "no-document" };
+    var dlg = ensureQuestionDialog(opts.document || document);
+    if (questionDialogIsOpen(dlg.ownerDocument) && questionDialogState.offer === offer && offer.submitted) {
+      return { error: "already-submitted" };
+    }
+    questionDialogState.submitGen += 1;
+    questionDialogState.submitting = false;
+    questionDialogState.offer = offer;
+    questionDialogState.opener = opts.opener || null;
+    questionDialogState.onSubmitted = opts.onSubmitted || null;
+    questionDialogState.access = opts.access || (typeof window !== "undefined" ? window.AiAccess : null);
+    questionDialogState.page = opts.page || (typeof location !== "undefined" ? String(location.pathname || "") : "");
+    questionDialogState.release = opts.release || "";
+    questionDialogState.lang = opts.lang || ((dlg.ownerDocument || document).documentElement || {}).lang || "";
+    dlg.querySelector("[data-q-record]").textContent = offer.record_id || "—";
+    dlg.querySelector("[data-q-page]").textContent = questionDialogState.page || "—";
+    dlg.querySelector("[data-q-assumption]").textContent = offer.assumption || "—";
+    dlg.querySelector("[data-q-rationale]").textContent = offer.rationale || "—";
+    dlg.querySelector("[data-q-question]").value = String(offer.question || "");
+    dlg.querySelector("[data-q-detail]").value = "";
+    var cancel = dlg.querySelector("[data-q-cancel]");
+    if (cancel) cancel.textContent = "Abbrechen";
+    setQuestionDialogBusy(dlg, false);
+    showQuestionDialogStatus(dlg, "", "");
+    if (typeof dlg.showModal === "function") {
+      try { dlg.showModal(); }
+      catch (error) { dlg.setAttribute("open", ""); }
+    } else {
+      dlg.setAttribute("open", "");
+    }
+    var questionEl = dlg.querySelector("[data-q-question]");
+    if (questionEl && typeof questionEl.focus === "function") {
+      try { questionEl.focus(); } catch (error) { /* ignore */ }
+    }
+    return { ok: true, dialog: dlg };
+  }
+
   function transmittedText(context) {
     var citations = (context.cited_references || []).map(function (item) {
       return [item.id || "", item.document || "", item.href || ""].join(" ");
@@ -759,30 +1036,24 @@
         propose.disabled = true;
         status.textContent = "Vorschlag wurde bereits vorbereitet; er ist noch keine bestätigte Kontextfrage.";
       }
-      propose.addEventListener("click", async function () {
+      propose.addEventListener("click", function () {
         if (propose.disabled) return;
-        propose.disabled = true;
-        var access = typeof window !== "undefined" ? window.AiAccess : null;
-        try {
-          if (!access || !access.questionIssue || !access.openIssue) throw new Error("KI-Zugang nicht verfügbar");
-          var issue = access.questionIssue({
-            record_id: offer.record_id,
-            kind: offer.kind,
-            assumption: offer.assumption,
-            question: offer.question,
-            rationale: offer.rationale,
-            provider: provider || "",
-            model: modelName || ""
-          });
-          await access.openIssue(issue.title, issue.body);
-          offer.submitted = true;
-          status.textContent = "Vorschlag vorbereitet. Erst der validierte Ingest kann daraus eine offene Kontextfrage machen.";
-          persist();
-        } catch (error) {
-          status.textContent = "Vorschlag konnte nicht geöffnet werden: " + String((error && error.message) || error);
-          propose.disabled = false;
-        }
-        status.hidden = false;
+        openQuestionProposalDialog({
+          offer: offer,
+          provider: provider,
+          model: modelName,
+          opener: propose,
+          page: typeof location !== "undefined" ? String(location.pathname || "") : "",
+          release: state.context && (state.context.viewed_release || state.context.guide_release || ""),
+          lang: document.documentElement ? document.documentElement.lang : "",
+          onSubmitted: function (receipt) {
+            offer.submitted = true;
+            propose.disabled = true;
+            status.textContent = questionProposalReceiptMessage(receipt);
+            status.hidden = false;
+            persist();
+          }
+        });
       });
       dismiss.addEventListener("click", function () {
         offer.dismissed = true;
@@ -1111,7 +1382,7 @@
       }
     });
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && !panel.hidden) setOpen(false);
+      if (event.key === "Escape" && !panel.hidden && !questionDialogIsOpen(document)) setOpen(false);
     });
     picker.addEventListener("change", function () {
       selectArticle(document.getElementById(picker.value));
@@ -1167,6 +1438,10 @@
     threadResetNeeded: threadResetNeeded,
     shouldSubmitMessage: shouldSubmitMessage,
     preferredContextRecordId: preferredContextRecordId,
+    questionFeedbackRecord: questionFeedbackRecord,
+    questionProposalReceiptMessage: questionProposalReceiptMessage,
+    openQuestionProposalDialog: openQuestionProposalDialog,
+    closeQuestionProposalDialog: closeQuestionProposalDialog,
     init: init
   };
 });
