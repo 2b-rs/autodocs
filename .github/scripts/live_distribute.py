@@ -328,6 +328,44 @@ def _put_live_worker(url: str, token: str, body: bytes) -> Tuple[int, str]:
         return 0, type(exc).__name__
 
 
+_ABORTED_REASONS = {
+    "errors": "error-threshold",
+    "exhausted": "provider-capacity-exhausted",
+    "needs-login": "login-required",
+}
+
+
+def _aborted_stop(stop: Any) -> bool:
+    return stop in _ABORTED_REASONS
+
+
+def _last_error_view(run: Dict[str, Any]) -> Dict[str, Any]:
+    stop = run.get("stop")
+    return {
+        "run": run.get("run"),
+        "started": run.get("started"),
+        "ended": run.get("ended"),
+        "elapsed_seconds": run.get("elapsed_seconds"),
+        "stop": stop,
+        "reason": _ABORTED_REASONS.get(stop, "failed-batches"),
+        "failed_batches": int(run.get("failed_batches") or 0),
+        "codes": sorted((run.get("error_diagnostics") or {}).keys()),
+    }
+
+
+def distribution_worker_counters(*, calls: int, completed: int, failed_batches: int, remaining: int,
+                                 elapsed_seconds: float, completed_by_kind: Dict[str, int]) -> Dict[str, Any]:
+    """Counters the live-worker allowlist accepts. Findings stay on the run record."""
+    return {
+        "calls": calls,
+        "completed": completed,
+        "failed_batches": failed_batches,
+        "remaining": remaining,
+        "elapsed_seconds": elapsed_seconds,
+        "completed_by_kind": dict(completed_by_kind),
+    }
+
+
 def _confidence(sample_count: int, *, remaining: int, eta_ok: bool) -> Optional[str]:
     if remaining == 0:
         return "stable"
@@ -420,7 +458,7 @@ def _publish_live_worker(*, event: str, phase: str, state: str,
         worker_state = _load_worker_state(path)
         if not _flush_pending_event(url, token, path, worker_state):
             return False
-        if event == "terminal" and worker_state.get("terminal_sent") is True:
+        if worker_state.get("terminal_sent") is True:
             return True
         if event == "start" and worker_state.get("started") and _acked_seq(worker_state.get("seq")) > 0:
             return True
@@ -1471,9 +1509,7 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
             c = e["finding"].get("class", "other")
             findings[c] = findings.get(c, 0) + 1
     head = live.head
-    last_error_run = next((run for run in reversed(runs)
-                           if run.get("stop") in {"errors", "exhausted", "needs-login"}
-                           or int(run.get("failed_batches") or 0)), None)
+    last_error_run = next((run for run in reversed(runs) if _aborted_stop(run.get("stop"))), None)
     return {
         "schema": "live-status@v1",
         "updated": core.utc_now(),
@@ -1496,13 +1532,7 @@ def build_status(live: core.LiveLog, plan: List[Dict[str, Any]], bundle: core.Bu
             "state": "idle",
             "trigger": (runs[-1].get("trigger") if runs else None) or _trigger(),
             "config": config,
-            "last_error": ({"run": last_error_run.get("run"), "started": last_error_run.get("started"),
-                            "ended": last_error_run.get("ended"),
-                            "elapsed_seconds": last_error_run.get("elapsed_seconds"),
-                            "stop": last_error_run.get("stop"),
-                            "failed_batches": int(last_error_run.get("failed_batches") or 0),
-                            "codes": sorted((last_error_run.get("error_diagnostics") or {}).keys())}
-                           if last_error_run else None),
+            "last_error": (_last_error_view(last_error_run) if last_error_run else None),
         },
         "performance": _performance(runs, by_kind, config),
     }
@@ -1805,11 +1835,11 @@ def cmd_run(a: argparse.Namespace) -> int:
         perf = None
     publish_live_worker(event="terminal", phase="terminal", state=worker_state_name,
                         done=base_done + completed_now, total=plan_total,
-                        counters={"calls": tot["calls"], "completed": tot["completed"],
-                                  "failed_batches": tot["failed_batches"], "remaining": remaining,
-                                  "elapsed_seconds": round(elapsed_s, 3),
-                                  "completed_by_kind": dict(tot["completed_by_kind"]),
-                                  "findings": n_findings},
+                        counters=distribution_worker_counters(
+                            calls=tot["calls"], completed=tot["completed"],
+                            failed_batches=tot["failed_batches"], remaining=remaining,
+                            elapsed_seconds=round(elapsed_s, 3),
+                            completed_by_kind=tot["completed_by_kind"]),
                         outcome=outcome, reason=reason, performance=perf, ended=True)
     if not chain_ok:
         return EXIT_DATA
