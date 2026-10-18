@@ -19,6 +19,29 @@
    - Release-Kontext (#release=… bzw. ?release=…): entfallene Elemente werden
      markiert; ohne Elementdaten für das Release erscheint ein Hinweis.
    Ohne Skript bleibt die Seite als Liste mit Dokumentation vollständig lesbar. */
+
+/* Historie-Vergleich (Inspektor/Mitte): gleicher nichtleerer text_key = unverändert;
+   Roh-OCR/content nur wenn ein Schlüssel fehlt oder leer ist. Exportiert für gezielte Tests. */
+function nsxHistRecordState(d, fromRel, toRel) {
+  function versionAt(doc, rel) {
+    var vs = (doc && doc.versions || []).filter(function (v) { return v.release === rel; });
+    if (!vs.length) return null;
+    var withText = vs.filter(function (v) { return v.text_captured !== false && v.content; });
+    return withText.length ? withText[withText.length - 1] : false;
+  }
+  var va = fromRel ? versionAt(d, fromRel) : null;
+  var vb = toRel ? versionAt(d, toRel) : null;
+  if (va === false || vb === false) return { state: "notext" };
+  if (va === null && vb === null) return { state: "none" };
+  if (va === null) return { state: "add", a: null, b: vb.content };
+  if (vb === null) return { state: "del", a: va.content, b: null };
+  var ka = va.text_key || "", kb = vb.text_key || "";
+  if (ka && kb && ka === kb) return { state: "same", text_key: ka, a: va.content, b: vb.content };
+  return { state: "raw", a: va.content || "", b: vb.content || "", text_key_a: ka, text_key_b: kb };
+}
+if (typeof window !== "undefined") window.nsxHistRecordState = nsxHistRecordState;
+if (typeof module !== "undefined" && module.exports) module.exports.nsxHistRecordState = nsxHistRecordState;
+
 (function () {
   "use strict";
   var SVGNS = "http://www.w3.org/2000/svg";
@@ -91,7 +114,8 @@
     try { history.replaceState(history.state, "", location.pathname + location.search + next); } catch (e) { /* file:// u. ä. */ }
   }
   // Wurzel der veröffentlichten Seite (ns-index.js liegt dort): versions/data/, static/
-  var SITE_ROOT = ((document.currentScript && document.currentScript.src) || "").replace(/[^\/]*$/, "");
+  var SITE_ROOT = (typeof document !== "undefined" && document.currentScript && document.currentScript.src)
+    ? document.currentScript.src.replace(/[^\/]*$/, "") : "";
   var specTextI18nReady = null;
   function loadSpecTextI18n() {
     if (window.SpecTextI18n) return Promise.resolve(window.SpecTextI18n);
@@ -3621,10 +3645,10 @@
     // Wortlaut eines Records in einem Release: letzte erfasste Fassung; null = nicht enthalten,
     // false = enthalten, aber ohne erfassten Wortlaut
     function textIn(d, rel) {
-      var vs = (d && d.versions || []).filter(function (v) { return v.release === rel; });
-      if (!vs.length) return null;
-      var withText = vs.filter(function (v) { return v.text_captured !== false && v.content; });
-      return withText.length ? withText[withText.length - 1].content : false;
+      var st = nsxHistRecordState(d, rel, rel);
+      if (st.state === "none") return null;
+      if (st.state === "notext") return false;
+      return st.a || st.b || "";
     }
     // Spezifikationstabelle in Angaben zerlegen (Classic-Funktionen und -Typen); sonst ein Feld „Text“
     var FIELD_SETS = [
@@ -3677,6 +3701,7 @@
       return ids;
     }
     // Ergebnis je Record für das aktuelle Paar: {id, state: same|chg|add|del|none|notext, fields}
+    // Gleicher nichtleerer text_key: unverändert (kein OCR-del/ins); Rohvergleich nur ohne Schlüssel.
     function histCompare(name, pr) {
       var ids = histRecIds(name);
       return Promise.all([textDiffLib()].concat(ids.map(versionsOf))).then(function (res) {
@@ -3684,11 +3709,14 @@
         return ids.map(function (id, k) {
           var d = ds[k];
           if (!d) return { id: id, state: "none" };
-          var a = pr.from ? textIn(d, pr.from) : null, b = pr.to ? textIn(d, pr.to) : null;
-          if (a === false || b === false) return { id: id, state: "notext", a: a, b: b };
-          if (a === null && b === null) return { id: id, state: "none" };
+          var cmp = nsxHistRecordState(d, pr.from, pr.to);
+          if (cmp.state === "notext") return { id: id, state: "notext" };
+          if (cmp.state === "none") return { id: id, state: "none" };
+          if (cmp.state === "same") return { id: id, state: "same", fields: [] };
+          var a = cmp.a, b = cmp.b;
           var fields = fieldDiff(a, b);
-          var state = a === null ? "add" : b === null ? "del" : fields.some(function (f) { return f.kind !== "same"; }) ? "chg" : "same";
+          var state = cmp.state === "add" || cmp.state === "del" ? cmp.state
+            : fields.some(function (f) { return f.kind !== "same"; }) ? "chg" : "same";
           return { id: id, state: state, fields: fields };
         });
       });
@@ -3959,6 +3987,11 @@
       }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-density"] });
     }
   }
-  window.initNsx = boot;
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+  if (typeof window !== "undefined") {
+    window.initNsx = boot;
+    // Node-Tests laden nur nsxHistRecordState; ohne document kein Auto-Boot.
+    if (typeof document !== "undefined") {
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+    }
+  }
 })();
