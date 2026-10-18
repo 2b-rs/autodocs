@@ -92,6 +92,26 @@
   }
   // Wurzel der veröffentlichten Seite (ns-index.js liegt dort): versions/data/, static/
   var SITE_ROOT = ((document.currentScript && document.currentScript.src) || "").replace(/[^\/]*$/, "");
+  var specTextI18nReady = null;
+  function loadSpecTextI18n() {
+    if (window.SpecTextI18n) return Promise.resolve(window.SpecTextI18n);
+    if (specTextI18nReady) return specTextI18nReady;
+    specTextI18nReady = new Promise(function (resolve) {
+      var script = document.querySelector('script[data-nsx-spec-text-i18n], script[src$="static/spec-text-i18n.js"], script[src*="static/spec-text-i18n.js?"]');
+      if (!script) {
+        script = document.createElement("script");
+        script.src = SITE_ROOT + "static/spec-text-i18n.js";
+        script.setAttribute("data-nsx-spec-text-i18n", "1");
+        document.head.appendChild(script);
+      } else {
+        script.setAttribute("data-nsx-spec-text-i18n", "1");
+      }
+      function done() { resolve(window.SpecTextI18n || null); }
+      script.addEventListener("load", done, { once: true });
+      script.addEventListener("error", done, { once: true });
+    });
+    return specTextI18nReady;
+  }
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var behavior = reduceMotion ? "auto" : "smooth";
 
@@ -179,23 +199,41 @@
       if (active !== a) return;
       var version = versionFor(data);
       if (!version) { close(); return; }
-      pop.textContent = "";
-      var head = document.createElement("div");
-      head.className = "req-preview-head";
-      var code = document.createElement("code");
-      code.textContent = id;
-      var release = document.createElement("span");
-      release.className = "req-preview-release";
-      release.textContent = version.release || "";
-      head.appendChild(code); head.appendChild(release);
-      var text = document.createElement("p");
-      text.className = "req-preview-text";
-      text.textContent = version.content;
-      var source = document.createElement("p");
-      source.className = "req-preview-source";
-      source.textContent = (version.meta && version.meta.source_pdf) || "Versions-Store";
-      pop.appendChild(head); pop.appendChild(text); pop.appendChild(source);
-      place();
+      var lang = String(document.documentElement.lang || "en").toLowerCase().split("-")[0];
+      loadSpecTextI18n().then(function (api) {
+        var original = api ? api.decodeFully(api.shownContent(version)) : String(version.content || "");
+        var lookup = api && version.text_key ? api.lookup(SITE_ROOT, lang, id, version.text_key) : Promise.resolve(null);
+        return lookup.then(function (fields) { return { api: api, fields: fields, original: original }; });
+      }).then(function (result) {
+        if (active !== a) return;
+        var api = result.api, fields = result.fields, original = result.original;
+        var tr = fields && fields.description, translated = !!tr;
+        var wording = original;
+        if (tr) {
+          var tmp = document.createElement("div");
+          tmp.innerHTML = tr.html;
+          wording = tmp.textContent || original;
+        }
+        var S = api ? api.strings(lang) : { note: "Machine-translated", original_note: "Showing the original (English)" };
+        pop.textContent = "";
+        var head = document.createElement("div");
+        head.className = "req-preview-head";
+        var code = document.createElement("code");
+        code.textContent = id;
+        var release = document.createElement("span");
+        release.className = "req-preview-release";
+        release.textContent = version.release || "";
+        head.appendChild(code); head.appendChild(release);
+        var text = document.createElement("p");
+        text.className = "req-preview-text";
+        text.textContent = wording;
+        var source = document.createElement("p");
+        source.className = "req-preview-source";
+        source.textContent = (translated ? S.note : S.original_note) + " · "
+          + ((version.meta && version.meta.source_pdf) || "Versions-Store");
+        pop.appendChild(head); pop.appendChild(text); pop.appendChild(source);
+        place();
+      }, function () { if (active === a) close(); });
     }
     function show(a) {
       clearTimeout(closeTimer);
@@ -206,7 +244,9 @@
       a.setAttribute("data-req-preview-describedby", old);
       a.setAttribute("aria-describedby", [old, pop.id].filter(Boolean).join(" "));
       pop.hidden = false;
-      pop.innerHTML = '<p class="req-preview-loading">Requirement wird geladen …</p>';
+      var api = window.SpecTextI18n, lang = String(document.documentElement.lang || "en").toLowerCase().split("-")[0];
+      var heading = api ? api.strings(lang).heading : "Specification Text";
+      pop.innerHTML = '<p class="req-preview-loading">' + esc(heading) + ' …</p>';
       place();
       var id = a.getAttribute("data-req") || "";
       getJson(id).then(function (data) { render(a, id, data); }, function () { if (active === a) close(); });
@@ -1032,33 +1072,13 @@
       var h = r.getAttribute("data-href") || "";
       return !!h && h.charAt(0) !== "#" && !r.getAttribute("data-recs");
     }
-    function formatModelName(m) {
-      if (!m) return "";
-      var l = m.toLowerCase();
-      if (l.indexOf("claude-3-5-sonnet") >= 0) return "Claude 3.5 Sonnet";
-      if (l.indexOf("claude-3-7-sonnet") >= 0) return "Claude 3.7 Sonnet";
-      if (l.indexOf("claude-opus-5-5") >= 0) return "Claude Opus 5.5";
-      if (l.indexOf("claude-opus") >= 0) return "Claude Opus";
-      if (l.indexOf("claude-sonnet") >= 0) return "Claude Sonnet";
-      if (l.indexOf("gpt-4o") >= 0) return "GPT-4o";
-      if (l.indexOf("o1") >= 0) return "o1";
-      if (l.indexOf("o3") >= 0) return "o3";
-      return m.replace(/^[\w.-]*\//, "").replace(/-20\d{6}$/, "");
-    }
-
-    // Kennzahlen eines KI-Texts: Prüfstatus, Release, Abschnitte, Lesezeit, SWS-Verweise, Diagramme
+    // Sichtbare Kurzmetadaten eines KI-Texts: Prüfstatus, Release und Abschnitte; das Dossier bleibt separat.
     function statsHtml(scope) {
       var rel = currentRelease(), all = scope.querySelectorAll(".ai-guide-release-variant");
       var v = Array.prototype.filter.call(all, function (x) { return rel && words(x, "data-applicable-releases").indexOf(rel) >= 0; })[0] || all[0] || scope;
       var ai = v.matches && v.matches(".ai") ? v : (v.querySelector(".ai") || v);
       // Guides mit Ausführlichkeitsstufen: Kennzahlen der ausführlichen Fassung (Stufe 4)
       var body = (ai.querySelector && ai.querySelector(':scope > .ai-level[data-ai-level="4"]')) || ai;
-      var c = body.cloneNode(true);
-      c.querySelectorAll(".ai-trace-badge, .ai-note, .ai-commentary-actions, script, style, svg").forEach(function (x) { x.remove(); });
-      var txt = c.textContent, nw = (txt.match(/\S+/g) || []).length;
-      if (/[\u3040-\u9fff\uac00-\ud7af]/.test(txt)) nw = Math.max(nw, txt.replace(/\s/g, "").length / 2.5);
-      var refs = {};
-      body.querySelectorAll(".spec-record-ref[data-req]").forEach(function (a) { refs[a.getAttribute("data-req")] = 1; });
       var rev = ai.querySelector(".ai-review-state"), parts = [];
       var revState = ai.getAttribute("data-trace-review") || "";
       // "ungeprüft" weglassen (Nutzerwunsch: Ungeprüft wird in der Titelzeile nicht benötigt)
@@ -1066,22 +1086,10 @@
         parts.push('<span class="nsx-st nsx-st-rev nsx-st-' + esc(revState) + '">' + esc(rev.textContent.trim()) + "</span>");
       }
 
-      var model = ai.getAttribute("data-trace-model");
-      if (!model) {
-        var mCode = ai.querySelector(".ai-trace-meta code");
-        if (mCode) model = mCode.textContent.trim();
-      }
-      if (model) {
-        parts.push('<span class="nsx-st nsx-st-model" title="' + esc(labels.model || "KI-Modell") + '">' + esc(formatModelName(model)) + '</span>');
-      }
-
       var asof = v.getAttribute && v.getAttribute("data-asof-release");
       if (asof) parts.push('<span class="nsx-st nsx-st-asof">' + esc(asof) + "</span>");
       function st(k, n) { if (n) parts.push('<span class="nsx-st nsx-st-' + k + '">' + esc(labels[k] || "") + " <b>" + n + "</b></span>"); }
       st("secs", body.querySelectorAll("h4, h3").length);
-      if (nw) parts.push('<span class="nsx-st nsx-st-read">' + esc(labels.read || "") + " <b>≈" + Math.max(1, Math.round(nw / 200)) + " min</b></span>");
-      st("refs", Object.keys(refs).length);
-      st("diag", body.querySelectorAll(".diagram").length);
 
       var dosBtn = scope.querySelector(".dossier-open-link, .ai-badge-dossier-btn");
       var dossierHtml = "";
@@ -3937,7 +3945,10 @@
   }
   function boot() {
     var any = !!document.querySelector("section.nsx");    // vor init: Modulseiten entfernen sie im Komfortmodus
-    if (any) installRequirementPreviews();
+    if (document.querySelector("a.spec-record-ref[data-req]")) {
+      loadSpecTextI18n();
+      installRequirementPreviews();
+    }
     document.querySelectorAll("section.nsx").forEach(init);
     // Ein Beobachter je Dokument: der Seamless Router (fold.js) ruft boot nach jedem Seitenwechsel erneut auf
     if (window.MutationObserver && any && !boot.watching) {
