@@ -1604,16 +1604,10 @@
   // .ai-variants enthält zwei .ai-variant: "translated" (übersetzt aus dem deutschen Leitfaden) und "direct"
   // (direkt in der Zielsprache KI-generiert). Der Fassungs-Badge im Kopf des Guides schaltet ohne Neuladen um
   // (Klick, Enter, Leertaste; Klick auf die andere Bezeichnung springt direkt), die Wahl gilt je Seite und Leitfaden
-  // und liegt im Browser-Speicher. Der Daumen „Diese Version gefällt mir besser“ stimmt nur angemeldet ab
-  // (proxy/guide-votes.mjs, POST/DELETE /guide-votes); abgemeldet öffnet er die Anmeldung. Zählungen und die
-  // Liste der Stimmen liefert der Dienst nur Kuration und Verwaltern (GET /guide-votes antwortet sonst 403);
-  // für alle anderen bleibt die Zählung verborgen.
+  // und liegt im Browser-Speicher. Die Daumen stimmen nur angemeldet ab (proxy/guide-votes.mjs, POST/DELETE
+  // /guide-votes); abgemeldet öffnen sie die Anmeldung. Nur ein relativer Gesamtscore beeinflusst die Schriftgröße;
+  // Einzelzählungen und Stimmzettel werden nicht gerendert.
   var GUIDE_VARIANT_KEY = "autodocs-guide-variant:";
-  function variantEsc(s) {
-    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
   function variantPageId() {
     // Seitenpfad relativ zur Website-Wurzel (z. B. fr/modules/com.html): Tiefe aus dem Stylesheet-Verweis
     var css = document.querySelector('link[rel="stylesheet"][href$="style.css"]');
@@ -1638,6 +1632,8 @@
       if (on) target = c;
     });
     if (!target) return;
+    box.removeAttribute("data-ai-variant-layout");
+    box.querySelectorAll("[data-ai-variant-layout]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
     box.setAttribute("data-ai-variant-cur", v);
     // gleiche Ausführlichkeitsstufe in der neuen Fassung
     var ai = target.querySelector(".ai[data-ai-levels]");
@@ -1650,6 +1646,22 @@
       var t = target.querySelector("[data-ai-variant-toggle]");
       if (t && t.focus) t.focus({ preventScroll: true });
     }
+  }
+  function setGuideVariantLayout(box, sideBySide) {
+    if (!box) return;
+    if (sideBySide) {
+      box.setAttribute("data-ai-variant-layout", "side-by-side");
+      Array.prototype.forEach.call(box.children, function (c) {
+        if (c.classList.contains("ai-variant")) c.hidden = false;
+      });
+    } else {
+      box.removeAttribute("data-ai-variant-layout");
+      showGuideVariant(box, box.getAttribute("data-ai-variant-cur") || box.getAttribute("data-ai-variant-default"), false, false);
+    }
+    box.querySelectorAll("[data-ai-variant-layout]").forEach(function (b) {
+      b.setAttribute("aria-pressed", sideBySide ? "true" : "false");
+    });
+    if (window.autodocsGuideLevels) window.autodocsGuideLevels.syncOneLiners();
   }
   function variantService() {
     return window.AiAccess && window.AiAccess.service ? window.AiAccess.service() : Promise.resolve("");
@@ -1728,6 +1740,20 @@
       b.title = lbl; b.setAttribute("aria-label", lbl);
     });
     box.setAttribute("data-ai-voted", key || "");
+  }
+  function setVariantRelative(box, raw) {
+    var relative = typeof raw === "number" && isFinite(raw) ? Math.max(-1, Math.min(1, raw)) : null;
+    Array.prototype.forEach.call(box.children, function (panel) {
+      if (!panel.classList.contains("ai-variant")) return;
+      var factor = panel.getAttribute("data-ai-variant") === "direct" ? 1 + relative : 1 - relative;
+      if (relative === null) {
+        panel.style.removeProperty("--ai-variant-font-factor");
+        panel.removeAttribute("data-ai-relative-score");
+      } else {
+        panel.style.setProperty("--ai-variant-font-factor", String(factor));
+        panel.setAttribute("data-ai-relative-score", String(relative));
+      }
+    });
   }
   function signedIn() {
     try { return !!(window.AiAccess && window.AiAccess.snapshot().auth === "signed-in"); } catch (e) { return false; }
@@ -2089,34 +2115,6 @@
       clearTimeout(timer);
     }
   }
-  function countOf(a, field, valueKey) {
-    if (a && typeof a[field] === "number") return a[field];
-    if (a && a.by_value && typeof a.by_value[valueKey] === "number") return a.by_value[valueKey];
-    return 0;
-  }
-  function curatorCounts(box, agg) {
-    var a = agg || {};
-    box.querySelectorAll(".ai-variant-counts").forEach(function (span) {
-      span.hidden = false;
-      span.textContent = "";
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "ai-variant-counts-open";
-      b.setAttribute("data-ai-variant-votes-open", "");
-      b.title = T("Stimmen anzeigen");
-      var line = T("Stimmen: Ü👍👍 {t2} · Ü👍 {t1} · ⚖ {eq} · KI👍 {d1} · KI👍👍 {d2}", {
-        t2: countOf(a, "translated_2", "translated:2"),
-        t1: countOf(a, "translated_1", "translated:1"),
-        eq: countOf(a, "equal", "equal"),
-        d1: countOf(a, "direct_1", "direct:1"),
-        d2: countOf(a, "direct_2", "direct:2")
-      });
-      var stale = typeof a.stale === "number" ? a.stale : 0;
-      if (stale) line += " · " + T("veraltet: {n}", { n: stale });
-      b.textContent = "👍 " + line;
-      span.appendChild(b);
-    });
-  }
   function currentHashQuery(boxes) {
     var map = {};
     boxes.forEach(function (box) {
@@ -2135,13 +2133,10 @@
     return badge.getAttribute("data-hash-direct") === v.hashes.direct
       && badge.getAttribute("data-hash-translated") === v.hashes.translated;
   }
-  var variantVotes = {};
   async function refreshVariantVotes(scope) {
     var boxes = Array.prototype.slice.call(variantBoxes(scope));
     if (!boxes.length) return;
-    boxes.forEach(function (box) {
-      box.querySelectorAll(".ai-variant-counts").forEach(function (s) { s.hidden = true; s.textContent = ""; });
-    });
+    boxes.forEach(function (box) { setVariantRelative(box, null); });
     if (!signedIn()) { boxes.forEach(function (box) { setVoteState(box, ""); }); return; }
     var pageRaw = variantPageId();
     var pend = loadPendingVote();
@@ -2279,6 +2274,7 @@
           if (v && voteIsCurrent(box, v)) {
             kept[gk] = voteKeyFromItem(v);
             setVoteState(box, kept[gk]);
+            setVariantRelative(box, v.relative);
           } else {
             setVoteState(box, "");
           }
@@ -2291,14 +2287,11 @@
       var all = await variantFetch("GET", "/guide-votes?page=" + page + curQ);
       if (!voteReadCurrent(readId)) return;
       if (all.status !== 200 || !all.json) return;
-      variantVotes = {};
-      (all.json.votes || []).forEach(function (v) {
-        (variantVotes[v.guide + "|" + v.lang] = variantVotes[v.guide + "|" + v.lang] || []).push(v);
-      });
       var aggs = {};
       (all.json.aggregates || []).forEach(function (a) { aggs[a.guide + "|" + a.lang] = a; });
       boxes.forEach(function (box) {
-        curatorCounts(box, aggs[box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang")]);
+        var a = aggs[box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang")];
+        setVariantRelative(box, a && a.relative);
       });
     } catch (e) { /* Dienst nicht erreichbar: kein Zustand */ }
     finally {
@@ -2430,34 +2423,24 @@
       refreshVariantVotes(box.parentNode);
     }
   }
-  function openVariantVotes(btn) {
-    var box = btn.closest(".ai-variants");
-    if (!box) return;
-    var list = variantVotes[box.getAttribute("data-ai-guide-id") + "|" + box.getAttribute("data-ai-lang")] || [];
-    var dlg = document.getElementById("ai-variant-votes-dialog");
-    if (!dlg) {
-      dlg = document.createElement("dialog");
-      dlg.id = "ai-variant-votes-dialog";
-      dlg.className = "ai-variant-votes-dialog";
-      dlg.setAttribute("aria-labelledby", "ai-variant-votes-title");
-      document.body.appendChild(dlg);
-    }
-    var names = { direct: T("KI-generiert"), translated: T("übersetzt aus deutschem Leitfaden"), equal: T("Beide Versionen sind gleich gut") };
-    var rows = list.map(function (v) {
-      var ch = v.choice || v.variant || "";
-      var st = Number(v.strength) || (ch === "equal" ? 0 : 1);
-      var vLabel = ch === "equal" ? ("⚖ " + names.equal) : ((names[ch] || ch) + " " + (st === 2 ? "👍👍" : "👍"));
-      return "<tr><td>" + variantEsc(vLabel) + "</td><td>" +
-        variantEsc(String(v.at || "").replace("T", " ").slice(0, 16)) + "</td></tr>";
-    }).join("");
-    dlg.innerHTML = '<h3 id="ai-variant-votes-title">' + variantEsc(T("Stimmen zu diesem Leitfaden")) + "</h3>" +
-      (rows ? '<table class="ai-variant-votes"><thead><tr><th>' + variantEsc(T("Fassung")) +
-        "</th><th>" + variantEsc(T("Zeitpunkt")) + "</th></tr></thead><tbody>" + rows + "</tbody></table>"
-            : "<p>" + variantEsc(T("Noch keine Stimmen.")) + "</p>") +
-      '<form method="dialog"><button type="submit" class="btn">' + variantEsc(T("Schließen")) + "</button></form>";
-    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+  function upgradeLegacyVariantLayoutControls(scope) {
+    (scope || document).querySelectorAll('.ai-variants[data-ai-guide-id] [data-ai-variant-vote="equal"]').forEach(function (button) {
+      button.classList.remove("ai-variant-vote", "ai-variant-vote-equal");
+      button.classList.add("ai-variant-layout");
+      button.removeAttribute("data-ai-variant-vote");
+      button.removeAttribute("data-vote-choice");
+      button.removeAttribute("data-vote-strength");
+      button.removeAttribute("data-vote-label");
+      button.setAttribute("data-ai-variant-layout", "");
+      button.setAttribute("aria-pressed", "false");
+      var label = T("Vergleichen");
+      button.title = label;
+      button.setAttribute("aria-label", label);
+      button.innerHTML = '<span aria-hidden="true">▥</span>';
+    });
   }
   function initGuideVariants(scope) {
+    upgradeLegacyVariantLayoutControls(scope);
     variantBoxes(scope).forEach(function (box) {
       var v = "";
       try { v = localStorage.getItem(variantStoreKey(box)) || ""; } catch (e) { v = ""; }
@@ -2472,8 +2455,14 @@
     document.addEventListener("click", function (e) {
       var vote = e.target.closest && e.target.closest("[data-ai-variant-vote]");
       if (vote) { e.preventDefault(); castVariantVote(vote); return; }
-      var open = e.target.closest && e.target.closest("[data-ai-variant-votes-open]");
-      if (open) { e.preventDefault(); openVariantVotes(open); return; }
+      var layout = e.target.closest && e.target.closest("[data-ai-variant-layout]");
+      if (layout) {
+        e.preventDefault();
+        var layoutBox = layout.closest(".ai-variants");
+        setGuideVariantLayout(layoutBox, layoutBox.getAttribute("data-ai-variant-layout") !== "side-by-side");
+        layout.focus({ preventScroll: true });
+        return;
+      }
       var tog = e.target.closest && e.target.closest("[data-ai-variant-toggle]");
       if (!tog) return;
       var box = tog.closest(".ai-variants"), own = tog.closest(".ai-variant");
@@ -2488,6 +2477,7 @@
     document.addEventListener("keydown", function (e) {
       if (e.key !== "Enter" && e.key !== " ") return;
       if (e.target && e.target.closest && e.target.closest("[data-ai-variant-vote]")) return;
+      if (e.target && e.target.closest && e.target.closest("[data-ai-variant-layout]")) return;
       var tog = e.target && e.target.closest && e.target.closest("[data-ai-variant-toggle]");
       if (!tog) return;
       var box = tog.closest(".ai-variants"), own = tog.closest(".ai-variant");
