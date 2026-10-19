@@ -17,7 +17,8 @@ eine endliche Abkühlung; abgelaufene Leases nach einem Elternabsturz werden ebe
 nicht sofort wiederverwendet. Es gibt keinen Timeout-Retry und keine zweite Provider-Invocation.
 
 Ausgabe von agy auf stdout, eine Statuszeile "agy-switch: {...}" auf stderr (nie Token- oder Antworttext).
-Exit: 0 Erfolg, 75 alle Profile erschöpft, 77 kein Profil angemeldet, sonst der Exitcode von agy.
+Exit: 0 Erfolg, 75 alle nutzbaren Profile nachweislich quotenerschöpft, 76 Profile nur vorübergehend belegt
+oder in endlicher Timeout-Abkühlung, 77 kein Profil angemeldet, sonst der Exitcode von agy.
 """
 import json
 import os
@@ -42,6 +43,9 @@ CALL_ID_RE = re.compile(r"^[0-9a-f]{8,64}$")
 TIMEOUT_COOLDOWN_S = 300
 # Standard-Lease deckt den äußeren Wait (call_timeout + 60) des Live-Jobs.
 DEFAULT_LEASE_S = 360
+# Ein belegtes Profil kann vor Ablauf seines Leases frei werden. In diesem Fall
+# kurz pollen; reine Timeout-Abkühlungen haben dagegen einen bekannten Termin.
+BUSY_POLL_S = 1.0
 STATUS_KEYS = ("profile", "call_id", "result", "tried", "wait_s", "rc", "needs_login", "cooldown_s",
                "cooldown_until")
 
@@ -210,6 +214,63 @@ def _ready(entry: dict, now: float) -> bool:
     return True
 
 
+def acquisition_status(state: dict, homes, now: float = None) -> dict:
+    """Explain why no profile can currently be leased without conflating it with quota exhaustion.
+
+    Only an explicit ``last_call.result == exhausted`` is quota evidence.  A live lease, a timeout cooldown,
+    and legacy/ambiguous cooldown state are temporary.  The caller can therefore wait and retry acquisition
+    without repeating a provider invocation.
+    """
+    now = _now() if now is None else now
+    login = []
+    quota = []
+    temporary = []
+    waits = []
+    busy = False
+    names = [name_of(home) for home in homes if name_of(home)]
+    for name in names:
+        entry = _entry(state, name)
+        if entry.get("needs_login"):
+            login.append(name)
+            continue
+        inflight = entry.get("in_flight") if isinstance(entry.get("in_flight"), dict) else {}
+        try:
+            lease_until = float(inflight.get("lease_until") or 0)
+        except (TypeError, ValueError):
+            lease_until = 0.0
+        if lease_until > now:
+            temporary.append(name)
+            waits.append(lease_until - now)
+            busy = True
+            continue
+        try:
+            cooldown_until = float(entry.get("cooldown_until") or 0)
+        except (TypeError, ValueError):
+            cooldown_until = 0.0
+        if cooldown_until > now:
+            last = entry.get("last_call") if isinstance(entry.get("last_call"), dict) else {}
+            if last.get("result") == "exhausted":
+                quota.append(name)
+            else:
+                temporary.append(name)
+                waits.append(cooldown_until - now)
+
+    if names and len(login) == len(names):
+        return {"result": "needs_login", "needs_login": login, "wait_s": 0.0}
+    if temporary:
+        wait_s = min(waits) if waits else BUSY_POLL_S
+        if busy:
+            wait_s = min(wait_s, BUSY_POLL_S)
+        return {"result": "unavailable", "needs_login": login,
+                "wait_s": max(0.05, float(wait_s))}
+    non_login = [name for name in names if name not in login]
+    if non_login and all(name in quota for name in non_login):
+        return {"result": "exhausted", "needs_login": login, "wait_s": 0.0}
+    # A profile became ready between the failed lease attempt and this snapshot,
+    # or the persisted legacy state is incomplete.  Neither is quota evidence.
+    return {"result": "unavailable", "needs_login": login, "wait_s": 0.05}
+
+
 def acquire_lease(state_path: Path, homes, call_id: str, now: float = None, lease_s: float = None,
                   cooldown_s: float = None) -> dict:
     """Erstes bereites Profil atomar belegen. Stale-in-flight wird endlich abgekühlt, nicht sofort genommen."""
@@ -368,13 +429,14 @@ def main(argv):
         emit_status({"profile": name, "call_id": call_id, "result": "error", "rc": rc, "tried": tried})
         return rc
     state, _ = mutate_state(state_path, lambda st: recover_stale_in_state(st, _now(), _cooldown_s()))
-    login = [n for n, s in state.items() if isinstance(s, dict) and s.get("needs_login")]
+    status = acquisition_status(state, homes)
+    login = status.get("needs_login") or []
     waits = {n: max(0, int((s.get("cooldown_until") or 0) - time.time()))
              for n, s in state.items() if isinstance(s, dict) and (s.get("cooldown_until") or 0) > time.time()}
-    all_login = all((_entry(state, name_of(h)).get("needs_login")) for h in homes)
-    emit_status({"result": "needs_login" if all_login else "exhausted", "tried": tried,
-                 "needs_login": login, "cooldown_s": waits, "call_id": call_id})
-    return 77 if all_login else 75
+    result = status["result"]
+    emit_status({"result": result, "tried": tried, "needs_login": login, "cooldown_s": waits,
+                 "wait_s": status.get("wait_s", 0.0), "call_id": call_id})
+    return {"needs_login": 77, "unavailable": 76}.get(result, 75)
 
 
 if __name__ == "__main__":

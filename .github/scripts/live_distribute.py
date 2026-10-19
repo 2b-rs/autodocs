@@ -55,7 +55,8 @@ sys.path.insert(0, str(HERE))
 import live_core as core  # noqa: E402
 import live_method as M  # noqa: E402
 
-EXIT_OK, EXIT_ERROR, EXIT_DATA, EXIT_EXHAUSTED, EXIT_LOGIN, EXIT_CONFIG = 0, 1, 65, 75, 77, 78
+EXIT_OK, EXIT_ERROR, EXIT_DATA = 0, 1, 65
+EXIT_EXHAUSTED, EXIT_TEMPORARY, EXIT_LOGIN, EXIT_CONFIG = 75, 76, 77, 78
 # Was in einem agy-HOME bleiben darf (wie abo_relay.mjs); Verläufe, Transkripte und Logs werden nach jedem Aufruf gelöscht.
 KEEP_HOME = (".gemini",)
 KEEP_GEMINI = ("antigravity-cli",)
@@ -459,8 +460,6 @@ def _nonneg_finite_number(value: Any) -> bool:
 def _usable_performance_run(run: Any, config_key: Optional[str]) -> bool:
     if not isinstance(run, dict) or not config_key or run.get("config_key") != config_key:
         return False
-    if run.get("stop") not in SUCCESSFUL_STOPS:
-        return False
     failed_batches = run.get("failed_batches")
     if failed_batches is None:
         failed_batches = 0
@@ -473,6 +472,13 @@ def _usable_performance_run(run: Any, config_key: Optional[str]) -> bool:
         return False
     for value in completed.values():
         if not _nonneg_int(value):
+            return False
+    stop = run.get("stop")
+    if stop not in SUCCESSFUL_STOPS:
+        # A capacity stop censors the tail of an otherwise useful observation:
+        # retain measured positive work, but never turn a zero-yield abort into
+        # evidence of throughput. Login and true processing errors stay out.
+        if stop != "exhausted" or not any(value > 0 for value in completed.values()):
             return False
     elapsed = run.get("elapsed_seconds_by_kind")
     if elapsed is None:
@@ -804,7 +810,7 @@ class Slot:
 
 @dataclass
 class CallResult:
-    outcome: str                       # ok | exhausted | login | error | contaminated | empty | timeout
+    outcome: str                       # ok | exhausted | unavailable | login | error | contaminated | empty | timeout
     structured: Optional[Dict[str, Any]] = None
     tokens: Dict[str, int] = field(default_factory=lambda: {"input": 0, "cached": 0, "output": 0, "thinking": 0})
     profile: str = ""
@@ -812,6 +818,8 @@ class CallResult:
     wall_s: float = 0.0
     steps: int = 0
     diagnostic: str = ""
+    provider_invoked: bool = True
+    wait_s: float = 0.0
 
 
 _GROUPS: Set[int] = set()
@@ -920,14 +928,28 @@ class Agy:
                 except ValueError:
                     sw = {}
         profile = str(sw.get("profile") or "")
+        tried = sw.get("tried") if isinstance(sw.get("tried"), list) else []
+        provider_invoked = bool(profile or tried)
         if timed_out:
             attributed = _attribute_timeout(self.switch, self.state, call_id)
             profile = str(attributed.get("profile") or profile)
-            return CallResult("timeout", profile=profile, rc=rc, wall_s=wall)
+            return CallResult("timeout", profile=profile, rc=rc, wall_s=wall, provider_invoked=True)
         if rc == EXIT_EXHAUSTED:
-            return CallResult("exhausted", profile=profile, rc=rc, wall_s=wall)
+            return CallResult("exhausted", profile=profile, rc=rc, wall_s=wall,
+                              provider_invoked=provider_invoked)
+        if rc == EXIT_TEMPORARY:
+            try:
+                wait_s = float(sw.get("wait_s") or 0.05)
+            except (TypeError, ValueError, OverflowError):
+                wait_s = 0.05
+            if not math.isfinite(wait_s) or wait_s <= 0:
+                wait_s = 0.05
+            return CallResult("unavailable", profile=profile, rc=rc, wall_s=wall,
+                              diagnostic="profile-temporarily-unavailable",
+                              provider_invoked=provider_invoked, wait_s=wait_s)
         if rc == EXIT_LOGIN:
-            return CallResult("login", profile=profile, rc=rc, wall_s=wall)
+            return CallResult("login", profile=profile, rc=rc, wall_s=wall,
+                              provider_invoked=provider_invoked)
         try:
             result, steps, bad = M.parse_agy_stream(out)
             tokens = M.usage_tokens((result or {}).get("usage") or {})
@@ -982,6 +1004,24 @@ class Budget:
     def spend(self, usd: float) -> None:
         with self._lock:
             self.usd += usd
+
+    def refund_call(self) -> None:
+        """Undo a reservation when profile acquisition proved that no provider was invoked."""
+        with self._lock:
+            self.calls = max(0, self.calls - 1)
+
+    def wait_for_availability(self, requested_s: float) -> bool:
+        """Wait no longer than the remaining wall-clock budget; False means the run must stop."""
+        if self.reason():
+            return False
+        delay = max(0.05, float(requested_s or 0.0))
+        if self.max_s:
+            remaining = self.max_s - (time.monotonic() - self.t0)
+            if remaining <= 0:
+                return False
+            delay = min(delay, remaining)
+        time.sleep(delay)
+        return self.reason() is None
 
     _RANK = {"needs-login": 3, "exhausted": 2, "errors": 1}
 
@@ -1040,6 +1080,12 @@ class Job:
     def _exit_call(self) -> Tuple[int, int]:
         with self._lock:
             self.in_flight_calls = max(0, self.in_flight_calls - 1)
+            return self.started_calls, self.in_flight_calls
+
+    def _discard_unstarted_call(self) -> Tuple[int, int]:
+        """Remove an acquisition-only probe from provider-call telemetry."""
+        with self._lock:
+            self.started_calls = max(0, self.started_calls - 1)
             return self.started_calls, self.in_flight_calls
 
     def call_counts(self) -> Tuple[int, int]:
@@ -1138,40 +1184,54 @@ class Job:
         if len(strict.encode("utf-8")) <= self.a.max_prompt_bytes + 2000:
             attempts.append(strict)
         for n, text in enumerate(attempts):
-            if not self.budget.take():
-                res.outcome = res.outcome if res.outcome != "ok" else "budget"
-                return None
-            # Count the reserved attempt before entering provider/decoder code.
-            # An exception there must never become a zero-call success again.
-            res.calls += 1
-            res.retries += 1 if n else 0
-            self._enter_call()
-            try:
-                r = self.agy.call(slot, text, schema)
-            finally:
-                self._exit_call()
-            usd = M.list_price(self.agy.model, r.tokens)
-            self.budget.spend(usd)
-            res.usd += usd
-            for key in res.tokens:
-                res.tokens[key] += r.tokens.get(key, 0)
-            if r.profile:
-                res.profiles[r.profile] = res.profiles.get(r.profile, 0) + 1
-            if r.diagnostic:
-                res.diagnostics[r.diagnostic] = res.diagnostics.get(r.diagnostic, 0) + 1
-            if r.outcome == "ok":
-                res.last_profile = r.profile      # type: ignore[attr-defined]
-                res.attempt = n + 1               # type: ignore[attr-defined]
-                return r.structured
-            res.outcome = r.outcome
-            if r.outcome == "exhausted":
-                self.budget.halt("exhausted")
-                return None
-            if r.outcome == "login":
-                self.budget.halt("needs-login")
-                return None
-            if r.outcome not in ("contaminated", "empty", "error"):
-                return None                      # Zeitüberschreitung: nicht wiederholen
+            while True:
+                if not self.budget.take():
+                    res.outcome = res.outcome if res.outcome != "ok" else "budget"
+                    return None
+                # Reserve before entering provider/decoder code so exceptions are
+                # counted.  A pure acquisition miss is explicitly refunded below.
+                res.calls += 1
+                self._enter_call()
+                try:
+                    r = self.agy.call(slot, text, schema)
+                finally:
+                    self._exit_call()
+                if r.diagnostic:
+                    res.diagnostics[r.diagnostic] = res.diagnostics.get(r.diagnostic, 0) + 1
+                if not r.provider_invoked:
+                    self.budget.refund_call()
+                    res.calls = max(0, res.calls - 1)
+                    self._discard_unstarted_call()
+                else:
+                    res.retries += 1 if n else 0
+                    usd = M.list_price(self.agy.model, r.tokens)
+                    self.budget.spend(usd)
+                    res.usd += usd
+                    for key in res.tokens:
+                        res.tokens[key] += r.tokens.get(key, 0)
+                    if r.profile:
+                        res.profiles[r.profile] = res.profiles.get(r.profile, 0) + 1
+                if r.outcome == "unavailable":
+                    res.outcome = "unavailable"
+                    if not self.budget.wait_for_availability(r.wait_s):
+                        res.outcome = "budget"
+                        return None
+                    continue
+                if r.outcome == "ok":
+                    res.outcome = "ok"
+                    res.last_profile = r.profile      # type: ignore[attr-defined]
+                    res.attempt = n + 1               # type: ignore[attr-defined]
+                    return r.structured
+                res.outcome = r.outcome
+                if r.outcome == "exhausted":
+                    self.budget.halt("exhausted")
+                    return None
+                if r.outcome == "login":
+                    self.budget.halt("needs-login")
+                    return None
+                if r.outcome not in ("contaminated", "empty", "error"):
+                    return None                      # Zeitüberschreitung: nicht wiederholen
+                break
         return None
 
     # --- Verarbeitung eines Batches ------------------------------------------------------------------
@@ -1496,13 +1556,15 @@ def _performance_config(a: argparse.Namespace, concurrency: int, profiles: List[
 
 def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, int]],
                  config: Dict[str, Any]) -> Dict[str, Any]:
-    """Robust, conservative ETA from successful same-config run samples.
+    """Robust, conservative ETA from usable same-config run samples.
 
     Active throughput measures productive worker time.  Scheduled yield is a
     separate wall-clock quantity: units per hourly scheduled invocation.
     Budget-time runs that still completed units after failed or timeout batches
     contribute realized yield and elapsed productive time.  Terminal errors,
-    exhaustion, login failure, malformed samples, and mismatched config stay
+    Productive capacity-stopped runs contribute censored positive observations;
+    their zero-yield kinds do not.  Login failure, true errors, wholly
+    unproductive exhaustion, malformed samples, and mismatched config stay
     excluded.  n=1 and n=2 emit provisional (low-confidence) estimates; the
     stable/high-confidence label is reserved for n>=3.  Overall ETA stays null
     while any still-open kind lacks supporting samples.
@@ -1529,10 +1591,12 @@ def _performance(runs: List[Dict[str, Any]], plan_by_kind: Dict[str, Dict[str, i
         for run in runs:
             if not _usable_performance_run(run, config_key):
                 continue
+            censored = run.get("stop") == "exhausted"
             completed = (run.get("completed_by_kind") or {}).get(kind) if isinstance(run.get("completed_by_kind"), dict) else None
             elapsed = (run.get("elapsed_seconds_by_kind") or {}).get(kind) if isinstance(run.get("elapsed_seconds_by_kind"), dict) else None
             if (kind in selected_kinds and _scheduled_sample(run.get("trigger"))
-                    and isinstance(completed, int) and not isinstance(completed, bool) and completed >= 0):
+                    and isinstance(completed, int) and not isinstance(completed, bool) and completed >= 0
+                    and (not censored or completed > 0)):
                 scheduled_yields.append(float(completed))
             if (isinstance(completed, int) and not isinstance(completed, bool) and completed > 0
                     and isinstance(elapsed, (int, float)) and not isinstance(elapsed, bool)
