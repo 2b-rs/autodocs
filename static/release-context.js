@@ -28,7 +28,7 @@
   else root.AutodocsReleaseCore = core;
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
-  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl"];
+  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl", "id", "bn", "ja", "he"];
   var STORE = "autodocs-release";
 
   function releaseOf(search, hash) {

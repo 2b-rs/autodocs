@@ -6,10 +6,11 @@
  * bringt Oberflächentexte und übersetzte Seitentitel. Durchsucht werden Spezifikations-Records
  * (Kennung, Name, Text), Seiten (Titel, Überschriften) und KI-Kommentare (Guides, Anforderungs-Notizen).
  *
- * Tokenisierung wie export_search.tokens(): NFKD ohne Zeichen der Kategorie M, klein, ß→ss,
- * Wörter aus Buchstaben/Ziffern/_, zusätzlich Teile an _ und (rein lateinisch) an Binnenmajuskeln. Jedes Suchwort
- * trifft gleiche Terme voll und längere Terme mit gleichem Anfang abgeschwächt; alle Suchwörter
- * müssen treffen (sonst Rückfall auf „eines davon“). Rang: Σ Gewicht × idf, Seiten bevorzugt.
+ * Tokenisierung wie export_search.tokens(): NFKD ohne Zeichen der Kategorie M, klein, ß→ss.
+ * Der Index enthält zusätzlich Teile an _ und Binnenmajuskeln; eine Suchanfrage, die selbst wie ein
+ * Unterstrich-Identifier aussieht, bleibt dagegen ein unteilbarer, exakter Begriff. Normale Mehrwortsuchen
+ * verlangen standardmäßig alle Wörter; „beliebiges Wort“ muss in der Oberfläche ausdrücklich gewählt werden.
+ * Rang: Σ Gewicht × idf, Seiten bevorzugt.
  *
  * fold.js lädt dieses Skript beim ersten Fokus auf das Suchfeld (oder bei ?q=… in der Adresse).
  * Der reine Kern (tokens, Bewertung, Hervorhebung) ist unter Node als module.exports verfügbar
@@ -56,6 +57,8 @@
     return out;
   }
   function queryTokens(q) {
+    var exactIdentifier = /^\s*[\p{L}\p{N}]+(?:_[\p{L}\p{N}]+)+\s*$/u.test(String(q || ""));
+    if (exactIdentifier) return [lower(fold(String(q).trim()))];
     var t = tokens(q), seen = {};
     if (!t.length) t = tokens(q, true);
     return t.filter(function (x) { if (seen[x]) return false; seen[x] = 1; return true; });
@@ -83,7 +86,7 @@
     var scores = new Map(), terms = shard && shard.t ? shard.t : {}, cands = [];
     Object.keys(terms).forEach(function (term) {
       if (term === token) cands.push([term, 1]);
-      else if (term.length > token.length && term.indexOf(token) === 0) cands.push([term, PREFIX_WEIGHT]);
+      else if (token.indexOf("_") < 0 && term.length > token.length && term.indexOf(token) === 0) cands.push([term, PREFIX_WEIGHT]);
     });
     var exact = cands.filter(function (c) { return c[1] === 1; });
     var pre = cands.filter(function (c) { return c[1] !== 1; })
@@ -99,7 +102,7 @@
   }
 
   // Punkte aller Suchwörter zusammenführen; typeOf(d) liefert den Typindex des Dokuments
-  function combine(perToken, typeOf) {
+  function combine(perToken, typeOf, allowAny) {
     var all = new Map(), and = [];
     perToken.forEach(function (m, i) {
       m.forEach(function (s, d) {
@@ -110,7 +113,7 @@
     all.forEach(function (v, d) { if (v.n === perToken.length) and.push([d, v.s]); });
     var list = and;
     var any = false;
-    if (!list.length) { any = true; all.forEach(function (v, d) { list.push([d, v.s * v.n / perToken.length]); }); }
+    if (!list.length && allowAny) { any = true; all.forEach(function (v, d) { list.push([d, v.s * v.n / perToken.length]); }); }
     list.forEach(function (x) { var t = typeOf ? typeOf(x[0]) : null; if (t != null) x[1] *= TYPE_BOOST[TYPES[t]] || 1; });
     list.sort(function (a, b) { return b[1] - a[1] || a[0] - b[0]; });
     return { hits: list.slice(0, MAX_RESULTS), partial: any, total: list.length };
@@ -200,6 +203,19 @@
     ai_modules: "Modul-Guide", ai_clusters: "Cluster-Guide", ai_classes: "Klassen-Guide", ai_namespaces: "Namespace-Guide",
     ai_services: "Service-Guide", ai_elements: "Anforderungs-Kommentar"
   };
+  var MATCH_LABELS = {
+    ar: { all: "كل الكلمات", any: "أي كلمة", exact: "المعرّف كامل" },
+    de: { all: "Alle Begriffe", any: "Beliebiger Begriff", exact: "Kennung exakt" },
+    en: { all: "All terms", any: "Any term", exact: "Exact identifier" },
+    es: { all: "Todos los términos", any: "Cualquier término", exact: "Identificador exacto" },
+    fr: { all: "Tous les termes", any: "N’importe quel terme", exact: "Identifiant exact" },
+    hi: { all: "सभी शब्द", any: "कोई भी शब्द", exact: "सटीक पहचानकर्ता" },
+    ko: { all: "모든 검색어", any: "검색어 하나", exact: "정확한 식별자" },
+    nl: { all: "Alle termen", any: "Een term", exact: "Exacte identifier" },
+    pt: { all: "Todos os termos", any: "Qualquer termo", exact: "Identificador exato" },
+    ru: { all: "Все слова", any: "Любое слово", exact: "Точный идентификатор" },
+    zh: { all: "全部词语", any: "任一词语", exact: "精确标识符" }
+  };
 
   function boot() {
     if (typeof document === "undefined") return;
@@ -258,7 +274,16 @@
     window.addEventListener("resize", place);
     window.addEventListener("scroll", place, { passive: true });
 
-    var state = { q: "", terms: [], hits: [], filter: "all", shown: PAGE_SIZE, active: -1, partial: false, seq: 0 };
+    var state = { q: "", terms: [], hits: [], filter: "all", match: "all", identifier: false,
+      shown: PAGE_SIZE, active: -1, partial: false, seq: 0 };
+
+    function matchControls() {
+      var labels = MATCH_LABELS[lang] || MATCH_LABELS.en;
+      if (state.identifier) return '<div class="ss-match" role="group"><button type="button" aria-pressed="true" disabled>' + esc(labels.exact) + "</button></div>";
+      return '<div class="ss-match" role="group">' + ["all", "any"].map(function (mode) {
+        return '<button type="button" data-ss-match="' + mode + '" aria-pressed="' + (state.match === mode) + '">' + esc(labels[mode]) + "</button>";
+      }).join("") + "</div>";
+    }
 
     function typeOfFactory() {
       // Typ eines Dokuments ohne Dokumentschnitt: Seiten, KI-Texte und Records liegen in dieser Reihenfolge
@@ -270,6 +295,7 @@
       var my = ++state.seq;
       state.q = q;
       var terms = queryTokens(q);
+      state.identifier = terms.length === 1 && terms[0].indexOf("_") >= 0;
       if (!q.trim()) { close(); return; }
       open();
       if (!terms.length) { panel.innerHTML = '<p class="ss-msg">' + esc(ui("min")) + "</p>"; return; }
@@ -283,7 +309,7 @@
         if (my !== state.seq) return;
         var per = terms.map(function (t, i) { return scoreToken(t, shards[i], meta.docs); });
         titleMatches(terms).forEach(function (d) { per.forEach(function (m) { if (!m.has(d)) m.set(d, 0.0001); }); per[0].set(d, (per[0].get(d) || 0) + 40); });
-        var res = combine(per, typeOfFactory());
+        var res = combine(per, typeOfFactory(), state.match === "any" && !state.identifier);
         state.terms = terms; state.hits = res.hits; state.mixed = null; state.partial = res.partial; state.total = res.total;
         state.shown = PAGE_SIZE; state.active = -1;
         render();
@@ -321,7 +347,7 @@
       var counts = { all: state.hits.length, page: 0, ai: 0, rec: 0 };
       state.hits.forEach(function (h) { counts[TYPES[typeOf(h[0])]]++; });
       if (!state.hits.length) {
-        panel.innerHTML = '<p class="ss-msg">' + esc(ui("none", { q: state.q.trim() })) + "</p>";
+        panel.innerHTML = '<div class="ss-head">' + matchControls() + '</div><p class="ss-msg">' + esc(ui("none", { q: state.q.trim() })) + "</p>";
         return;
       }
       docs(view.map(function (h) { return h[0]; })).then(function (map) {
@@ -349,7 +375,7 @@
             "</a>";
         }).join("");
         var more = list.length > state.shown ? '<button type="button" class="ss-more" data-ss-more>' + esc(ui("more")) + " (" + (list.length - state.shown) + ")</button>" : "";
-        panel.innerHTML = '<div class="ss-head"><div class="ss-tabs" role="group">' + tabs + "</div>" +
+        panel.innerHTML = '<div class="ss-head"><div class="ss-tabs" role="group">' + tabs + "</div>" + matchControls() +
           '<span class="ss-total">' + esc(ui("results", { n: state.total > state.hits.length ? state.hits.length + "+" : state.hits.length })) + "</span></div>" +
           (state.partial ? '<p class="ss-msg ss-partial">' + esc(ui("partial")) + "</p>" : "") +
           '<div class="ss-list" role="listbox" aria-label="' + esc(ui("label")) + '">' + items + "</div>" + more +
@@ -388,6 +414,8 @@
     panel.addEventListener("click", function (e) {
       var f = e.target.closest("[data-ss-filter]");
       if (f) { state.filter = f.getAttribute("data-ss-filter"); state.shown = PAGE_SIZE; state.active = -1; render(); return; }
+      var match = e.target.closest("[data-ss-match]");
+      if (match) { state.match = match.getAttribute("data-ss-match"); run(state.q); return; }
       if (e.target.closest("[data-ss-more]")) { state.shown += PAGE_SIZE; render(); }
     });
     panel.addEventListener("mousemove", function (e) {

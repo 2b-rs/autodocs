@@ -17,7 +17,7 @@
   "use strict";
 
   var SCHEMA = "site-shell@1";
-  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl"];
+  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl", "id", "bn", "ja", "he"];
   var REQUIRED_DOMAINS = ["explore", "pipeline", "context", "versions", "extract", "build", "curate", "review", "trace", "work"];
   var ALLOWED_EXTERNAL = { "https://autodocs-nexos.autodocs-2b-rs.workers.dev/dashboard": true };
   var ID = /^[a-z][a-z0-9-]{0,31}$/;
@@ -35,7 +35,7 @@
   }
   function safeLangPrefix(value) {
     value = String(value || "");
-    return /^(?:\.\.\/)*(?:(?:de|en|es|pt|fr|ru|ar|hi|ko|zh|nl)\/)?$/.test(value) ? value : null;
+    return /^(?:\.\.\/)*(?:(?:de|en|es|pt|fr|ru|ar|hi|ko|zh|nl|id|bn|ja|he)\/)?$/.test(value) ? value : null;
   }
   function validTarget(target) {
     if (!target || typeof target !== "object" || Array.isArray(target)) return null;

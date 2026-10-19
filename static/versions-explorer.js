@@ -1704,9 +1704,9 @@
   var app = document.getElementById("ve-app");
   if (!app || !C) return;
 
-  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl"];
+  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl", "id", "bn", "ja", "he"];
   var LANG = (function () {
-    var m = window.location.pathname.match(/\/(de|en|es|pt|fr|ru|ar|hi|ko|zh|nl)\//);
+    var m = window.location.pathname.match(/\/(de|en|es|pt|fr|ru|ar|hi|ko|zh|nl|id|bn|ja|he)\//);
     if (m) return m[1];
     var h = (document.documentElement.getAttribute("lang") || "de").slice(0, 2);
     return LANGS.indexOf(h) >= 0 ? h : "de";

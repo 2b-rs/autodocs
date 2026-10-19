@@ -20,18 +20,26 @@
   <script>
   (function() {
     var SUPPORTED = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl"];
+    function matchLang(tag) {
+      if (!tag || typeof tag !== "string") return null;
+      var norm = tag.trim().toLowerCase().replace(/_/g, "-");
+      if (!norm) return null;
+      if (SUPPORTED.indexOf(norm) !== -1) return norm;
+      var code = norm.split("-")[0];
+      return SUPPORTED.indexOf(code) !== -1 ? code : null;
+    }
     var saved = null;
     try {
-      saved = localStorage.getItem("autodocs_user_lang");
+      saved = matchLang(localStorage.getItem("autodocs_user_lang"));
     } catch (e) {}
-    if (saved && SUPPORTED.indexOf(saved) !== -1) {
+    if (saved) {
       window.location.replace("./" + saved + "/");
       return;
     }
     var navLangs = navigator.languages || [navigator.language || "de"];
     for (var i = 0; i < navLangs.length; i++) {
-      var code = navLangs[i].toLowerCase().split("-")[0];
-      if (SUPPORTED.indexOf(code) !== -1) {
+      var code = matchLang(navLangs[i]);
+      if (code) {
         window.location.replace("./" + code + "/");
         return;
       }
@@ -47,13 +55,13 @@
     <a href="./de/index.html">Deutsch</a> ·
     <a href="./en/index.html">English</a> ·
     <a href="./es/index.html">Español</a> ·
-    <a href="./fr/index.html">Français</a> ·
     <a href="./pt/index.html">Português</a> ·
+    <a href="./fr/index.html">Français</a> ·
     <a href="./ru/index.html">Русский</a> ·
-    <a href="./zh/index.html">中文</a> ·
+    <a href="./ar/index.html">العربية</a> ·
     <a href="./hi/index.html">हिन्दी</a> ·
     <a href="./ko/index.html">한국어</a> ·
-    <a href="./ar/index.html">العربية</a> ·
+    <a href="./zh/index.html">中文</a> ·
     <a href="./nl/index.html">Nederlands</a>
   </p>
 </body>

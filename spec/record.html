@@ -6,9 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
   (function() {
+    var SUPPORTED = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl"];
+    function matchLang(tag) {
+      if (!tag || typeof tag !== "string") return null;
+      var norm = tag.trim().toLowerCase().replace(/_/g, "-");
+      if (!norm) return null;
+      if (SUPPORTED.indexOf(norm) !== -1) return norm;
+      var code = norm.split("-")[0];
+      return SUPPORTED.indexOf(code) !== -1 ? code : null;
+    }
     var lang = "de";
     try {
-      lang = localStorage.getItem("autodocs_user_lang") || "de";
+      lang = matchLang(localStorage.getItem("autodocs_user_lang")) || "de";
     } catch (e) {}
     window.location.replace("../" + lang + "/spec/record.html" + window.location.search + window.location.hash);
   })();

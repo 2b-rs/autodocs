@@ -16,7 +16,7 @@
   else root.RootLangLinks = core;
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
-  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl"];
+  var LANGS = ["de", "en", "es", "pt", "fr", "ru", "ar", "hi", "ko", "zh", "nl", "id", "bn", "ja", "he"];
 
   // o: { saved, referrer, origin, base, languages, dflt } -> Sprachkürzel
   function pickLang(o) {

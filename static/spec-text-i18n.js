@@ -193,7 +193,7 @@
     if (mode === "original") {
       el.innerHTML = t.originalHtml;
       el.setAttribute("lang", SOURCE_LANG);
-      el.setAttribute("dir", "ltr");          // englisches Original auch auf RTL-Seiten (ar) links beginnend
+      el.setAttribute("dir", "ltr");          // englisches Original auch auf RTL-Seiten links beginnend
       el.removeAttribute("title");
       el.setAttribute("data-spec-text", "original");
     } else {

@@ -404,6 +404,10 @@
       privacy_badge: PRIVACY_BADGE,
       diff_basis: diffBasis
     };
+    if (fields.viewedRelease) context.viewed_release = String(fields.viewedRelease);
+    if (fields.guideRelease) context.guide_release = String(fields.guideRelease);
+    if (fields.contextRelease) context.context_release = String(fields.contextRelease);
+    if (fields.staleProjection) context.stale_projection = true;
     context.token_count = estimateTokens(transmittedText(context));
     return context;
   }
@@ -446,7 +450,11 @@
       requirementText: [desc, props.join("\n")].filter(Boolean).join("\n"),
       parentIds: parents,
       citedReferences: cited,
-      found: !!((article && article.id) || page.recordId)
+      found: !!((article && article.id) || page.recordId),
+      viewedRelease: page.viewed_release || "",
+      guideRelease: page.guide_release || "",
+      contextRelease: page.context_release || "",
+      staleProjection: page.stale_projection === true
     });
   }
 
@@ -629,6 +637,266 @@
     return document.querySelector("article.rec");
   }
 
+  function releaseFromLocation(search, hash) {
+    var core = typeof window !== "undefined" && window.AutodocsReleaseCore;
+    if (core && typeof core.releaseOf === "function") {
+      var fromCore = core.releaseOf(search || "", hash || "");
+      if (fromCore) return String(fromCore);
+    }
+    var blob = String(search || "") + "&" + String(hash || "").replace(/^#/, "");
+    var match = /(?:^|[?&#])release=([^&#]+)/.exec(blob);
+    if (!match || !match[1]) return "";
+    try { return decodeURIComponent(match[1]); }
+    catch (error) { return match[1]; }
+  }
+
+  var GUIDE_REFRESH_LANGS = ["de", "en", "id", "bn", "ja", "he"];
+  var GUIDE_RELEASES = {
+    classic: ["2.1", "3.0", "3.1", "3.2", "4.0", "4.1", "4.2", "4.3", "4.4"],
+    adaptive: ["R19-11", "R20-11", "R21-11", "R22-11", "R23-11", "R24-11", "R25-11"]
+  };
+  var GUIDE_REFRESH_POINTER = "guide-refresh-operation-id";
+  var RECORD_ID_RX = /^[A-Z][A-Z0-9_]{1,63}$/;
+  var GUIDE_ID_RX = /^[A-Za-z0-9][A-Za-z0-9_./-]{0,159}$/;
+
+  function canonicalRelease(raw) {
+    var text = String(raw || "").trim();
+    if (!text) return "";
+    var adaptive = text.toUpperCase();
+    if (GUIDE_RELEASES.adaptive.indexOf(adaptive) >= 0) return adaptive;
+    if (GUIDE_RELEASES.classic.indexOf(text) >= 0) return text;
+    return "";
+  }
+
+  function releaseFamily(canon) {
+    if (GUIDE_RELEASES.adaptive.indexOf(canon) >= 0) return "adaptive";
+    if (GUIDE_RELEASES.classic.indexOf(canon) >= 0) return "classic";
+    return "";
+  }
+
+  function compareKnownReleases(left, right) {
+    var family = releaseFamily(left);
+    if (!family || family !== releaseFamily(right)) return null;
+    return GUIDE_RELEASES[family].indexOf(left) - GUIDE_RELEASES[family].indexOf(right);
+  }
+
+  function guideRefreshLanguages(languages) {
+    var requested = [];
+    (languages || []).forEach(function (lang) {
+      var code = String(lang || "").trim();
+      if (code && requested.indexOf(code) < 0) requested.push(code);
+    });
+    if (!requested.length || requested.some(function (code) { return GUIDE_REFRESH_LANGS.indexOf(code) < 0; })) {
+      return null;
+    }
+    return GUIDE_REFRESH_LANGS.filter(function (code) { return requested.indexOf(code) >= 0; });
+  }
+
+  function guideRefreshPlan(viewedRelease, guideRelease, languages, currentRelease, identity) {
+    identity = identity || {};
+    var viewedRaw = String(viewedRelease || "").trim();
+    var guideRaw = String(guideRelease || "").trim();
+    var currentRaw = String(currentRelease || "").trim();
+    var viewed = canonicalRelease(viewedRaw);
+    var guide = canonicalRelease(guideRaw);
+    var current = canonicalRelease(currentRaw);
+    var langs = guideRefreshLanguages(languages);
+    var recordId = String(identity.record_id || "").trim();
+    var guideId = String(identity.guide_id || "").trim();
+    var plan = {
+      viewed_release: viewed || viewedRaw,
+      guide_release: guide || guideRaw,
+      current_release: current || currentRaw,
+      context_release: guide || guideRaw,
+      source_release: guide || guideRaw,
+      promoted_to_current: false,
+      completed: false,
+      record_id: recordId,
+      guide_id: guideId,
+      languages: langs || []
+    };
+    if (!viewedRaw || !guideRaw) return Object.assign({ ok: false, reason: "missing-release" }, plan);
+    if (!currentRaw) return Object.assign({ ok: false, reason: "missing-current-release" }, plan, { current_release: "" });
+    if (!viewed || !guide || !current) return Object.assign({ ok: false, reason: "unknown-release" }, plan);
+    if (releaseFamily(viewed) !== releaseFamily(guide) || releaseFamily(current) !== releaseFamily(guide)) {
+      return Object.assign({ ok: false, reason: "release-family" }, plan);
+    }
+    if (!recordId || !guideId) return Object.assign({ ok: false, reason: "missing-identity" }, plan);
+    if (!RECORD_ID_RX.test(recordId) || !GUIDE_ID_RX.test(guideId)) {
+      return Object.assign({ ok: false, reason: "invalid-identity" }, plan);
+    }
+    if (!langs) return Object.assign({ ok: false, reason: "invalid-languages" }, plan);
+    if (viewed === guide) {
+      return Object.assign({ ok: false, reason: "already-current", stale: false }, plan);
+    }
+    if (compareKnownReleases(guide, viewed) > 0) {
+      return Object.assign({ ok: false, reason: "not-stale", stale: false }, plan);
+    }
+    return Object.assign({
+      ok: true,
+      action: "selective-guide-refresh",
+      stale: true
+    }, plan);
+  }
+
+  function guideRefreshNoteText(result) {
+    var rec = (result && (result.receipt || result)) || {};
+    if (result && result.ok && result.operation_id && result.completed !== true) {
+      return "Guide refresh " + (result.status || "queued") + " (" + result.operation_id + "). Guide " +
+        (rec.guide_release || "") + "; viewed " + (rec.viewed_release || "") + "; current " +
+        (rec.current_release || "") + ". Not completed.";
+    }
+    var reason = (result && (result.reason || (result.error && (result.error.code || result.error.message)))) || "refresh-failed";
+    return "Guide refresh was not queued (" + reason + "). Not completed.";
+  }
+
+  function renderGuideRefreshNote(note, result) {
+    var rec = (result && (result.receipt || result)) || {};
+    note.setAttribute("role", "status");
+    if (result && result.ok && result.operation_id && result.completed !== true) {
+      note.dataset.refreshStatus = result.status || "queued";
+      note.dataset.operationId = result.operation_id;
+    } else {
+      note.dataset.refreshStatus = "failed";
+      if (note.dataset) delete note.dataset.operationId;
+    }
+    note.textContent = guideRefreshNoteText(result && result.ok ? Object.assign({}, result, {
+      guide_release: rec.guide_release,
+      viewed_release: rec.viewed_release,
+      current_release: rec.current_release
+    }) : result);
+  }
+
+  function requestGuideRefresh(plan, deps) {
+    deps = deps || {};
+    var access = deps.access || (typeof window !== "undefined" ? window.AiAccess : null);
+    var fetchImpl = deps.fetch || (typeof fetch !== "undefined" ? fetch : null);
+    if (!plan || !plan.ok) {
+      return Promise.resolve({
+        ok: false, completed: false, status: "rejected",
+        reason: plan && plan.reason || "invalid"
+      });
+    }
+    if (!access || typeof access.service !== "function" || typeof access.idToken !== "function" || !fetchImpl) {
+      return Promise.resolve({ ok: false, completed: false, status: "unauthenticated", reason: "sign-in-required" });
+    }
+    return Promise.all([access.service(), access.idToken()]).then(function (pair) {
+      var base = String(pair[0] || "").replace(/\/$/, "");
+      var token = pair[1];
+      if (!base || !token) {
+        return { ok: false, completed: false, status: "unauthenticated", reason: "sign-in-required" };
+      }
+      return fetchImpl(base + "/guide-refresh", {
+        method: "POST",
+        credentials: "omit",
+        mode: "cors",
+        headers: {
+          Authorization: "Bearer " + token,
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          guide_id: plan.guide_id,
+          record_id: plan.record_id,
+          current_release: plan.current_release,
+          viewed_release: plan.viewed_release,
+          guide_release: plan.guide_release,
+          languages: plan.languages
+        })
+      }).then(function (response) {
+        return response.json().catch(function () { return null; }).then(function (data) {
+          data = data && typeof data === "object" ? data : {};
+          if (!response.ok || data.completed === true || !data.operation_id) {
+            return {
+              ok: false,
+              completed: false,
+              status: "failed",
+              http_status: response.status,
+              error: data.error || { code: "refresh-failed" },
+              operation_id: data.operation_id || ""
+            };
+          }
+          return data;
+        });
+      }).catch(function (error) {
+        return {
+          ok: false, completed: false, status: "failed", reason: "network",
+          error: { message: String((error && error.message) || error) }
+        };
+      });
+    });
+  }
+
+  function rememberGuideRefresh(operationId, storage) {
+    var store = storage || (typeof sessionStorage !== "undefined" ? sessionStorage : null);
+    if (!store || !operationId) return;
+    try { store.setItem(GUIDE_REFRESH_POINTER, String(operationId)); } catch (error) { /* ignore */ }
+  }
+
+  function readGuideRefreshPointer(storage) {
+    var store = storage || (typeof sessionStorage !== "undefined" ? sessionStorage : null);
+    if (!store) return "";
+    try { return String(store.getItem(GUIDE_REFRESH_POINTER) || ""); } catch (error) { return ""; }
+  }
+
+  function guideRefreshContext(refresh) {
+    var host = refresh.closest("[data-asof-release]");
+    var guideIdNode = refresh.closest("[data-ai-guide-id]");
+    var recordNode = refresh.closest("[data-record-id], [data-discuss-record-id]");
+    var currentNode = document.querySelector("[data-current-release]");
+    var recordId = "";
+    if (recordNode) {
+      recordId = recordNode.getAttribute("data-record-id") || recordNode.getAttribute("data-discuss-record-id") || "";
+    }
+    return {
+      guideRelease: host ? (host.getAttribute("data-asof-release") || "") : "",
+      guideId: guideIdNode ? (guideIdNode.getAttribute("data-ai-guide-id") || "") : "",
+      recordId: recordId,
+      currentRelease: currentNode ? (currentNode.getAttribute("data-current-release") || "") : ""
+    };
+  }
+
+  function restoreGuideRefresh(anchor, deps) {
+    deps = deps || {};
+    var operationId = readGuideRefreshPointer(deps.storage);
+    if (!operationId) return Promise.resolve(null);
+    var access = deps.access || (typeof window !== "undefined" ? window.AiAccess : null);
+    var fetchImpl = deps.fetch || (typeof fetch !== "undefined" ? fetch : null);
+    if (!access || typeof access.service !== "function" || typeof access.idToken !== "function" || !fetchImpl) {
+      return Promise.resolve(null);
+    }
+    return Promise.all([access.service(), access.idToken()]).then(function (pair) {
+      var base = String(pair[0] || "").replace(/\/$/, "");
+      if (!base || !pair[1]) return null;
+      return fetchImpl(base + "/guide-refresh?operation_id=" + encodeURIComponent(operationId), {
+        method: "GET",
+        credentials: "omit",
+        mode: "cors",
+        headers: { Authorization: "Bearer " + pair[1], Accept: "application/json" }
+      }).then(function (response) {
+        return response.json().catch(function () { return null; }).then(function (data) {
+          var note = document.getElementById("guide-refresh-live");
+          if (!note && anchor && anchor.insertAdjacentElement) {
+            note = document.createElement("p");
+            note.id = "guide-refresh-live";
+            anchor.insertAdjacentElement("afterend", note);
+          }
+          if (!note) return data;
+          if (!response.ok || !data || !data.operation_id || data.completed === true) {
+            renderGuideRefreshNote(note, {
+              ok: false,
+              completed: false,
+              reason: (data && data.error && data.error.code) || "reload-failed"
+            });
+            return data;
+          }
+          renderGuideRefreshNote(note, data);
+          return data;
+        });
+      });
+    }).catch(function () { return null; });
+  }
+
   function pageMeta() {
     // Universum aus dem Pfad (classic/…, adaptive/…), Modul aus der Seitenüberschrift;
     // der erste Brotkrumen ist „Start“ und taugt dafür nicht.
@@ -638,9 +906,18 @@
     var universe = /\/classic\//.test(path) ? "AUTOSAR Classic Platform"
       : /\/adaptive\//.test(path) ? "AUTOSAR Adaptive Platform"
       : (rel ? rel.textContent.replace(/\s+/g, " ").trim() : "AUTOSAR Adaptive Platform");
+    var search = (typeof location !== "undefined" && location.search) || "";
+    var hash = (typeof location !== "undefined" && location.hash) || "";
+    var viewed = releaseFromLocation(search, hash);
+    var guideNode = document.querySelector("[data-asof-release]");
+    var guide = guideNode ? (guideNode.getAttribute("data-asof-release") || "") : "";
     return {
       universe: universe,
-      module: h1 ? h1.textContent.replace(/\s+/g, " ").trim() : ""
+      module: h1 ? h1.textContent.replace(/\s+/g, " ").trim() : "",
+      viewed_release: viewed,
+      guide_release: guide,
+      context_release: guide || viewed,
+      stale_projection: !!(viewed && guide && viewed !== guide)
     };
   }
 
@@ -807,7 +1084,7 @@
     note.textContent = PANEL.authority;
 
     panel.appendChild(head);
-    if (typeof window !== "undefined" && window.AiAccess) {
+    if (typeof window !== "undefined" && window.AiAccess && typeof window.AiAccess.chip === "function") {
       var accessRow = document.createElement("div");
       accessRow.className = "discuss-access";
       accessRow.appendChild(window.AiAccess.chip());
@@ -1389,7 +1666,44 @@
     });
     derive.addEventListener("click", deriveProposal);
     submit.addEventListener("click", submitProposal);
+    var guideRefreshBusy = false;
     document.addEventListener("click", function (event) {
+      var refresh = event.target && event.target.closest ? event.target.closest("[data-guide-refresh]") : null;
+      if (refresh) {
+        event.preventDefault();
+        if (guideRefreshBusy) return;
+        var ctx = guideRefreshContext(refresh);
+        var plan = guideRefreshPlan(
+          releaseFromLocation(location.search, location.hash),
+          ctx.guideRelease,
+          ["de", "en", "id", "bn", "ja"],
+          ctx.currentRelease,
+          { record_id: ctx.recordId, guide_id: ctx.guideId }
+        );
+        var note = document.getElementById("guide-refresh-live");
+        if (!note) {
+          note = document.createElement("p");
+          note.id = "guide-refresh-live";
+          note.setAttribute("role", "status");
+          refresh.insertAdjacentElement("afterend", note);
+        }
+        if (!plan.ok) {
+          renderGuideRefreshNote(note, plan);
+          return;
+        }
+        guideRefreshBusy = true;
+        refresh.disabled = true;
+        requestGuideRefresh(plan).then(function (result) {
+          renderGuideRefreshNote(note, result);
+          if (result && result.ok && result.operation_id && result.completed !== true) {
+            rememberGuideRefresh(result.operation_id);
+          }
+        }).finally(function () {
+          guideRefreshBusy = false;
+          refresh.disabled = false;
+        });
+        return;
+      }
       var trigger = event.target && event.target.closest ? event.target.closest("[data-open-discuss]") : null;
       if (trigger) {
         event.preventDefault();
@@ -1420,6 +1734,9 @@
     });
     window.addEventListener("hashchange", fillPicker);
     fillPicker();
+    try { sessionStorage.removeItem("guide-refresh-plan"); } catch (error) { /* ignore */ }
+    var refreshAnchor = document.querySelector("[data-guide-refresh]");
+    if (refreshAnchor) restoreGuideRefresh(refreshAnchor);
   }
 
   return {
@@ -1438,6 +1755,12 @@
     threadResetNeeded: threadResetNeeded,
     shouldSubmitMessage: shouldSubmitMessage,
     preferredContextRecordId: preferredContextRecordId,
+    releaseFromLocation: releaseFromLocation,
+    guideRefreshPlan: guideRefreshPlan,
+    guideRefreshNoteText: guideRefreshNoteText,
+    requestGuideRefresh: requestGuideRefresh,
+    rememberGuideRefresh: rememberGuideRefresh,
+    readGuideRefreshPointer: readGuideRefreshPointer,
     questionFeedbackRecord: questionFeedbackRecord,
     questionProposalReceiptMessage: questionProposalReceiptMessage,
     openQuestionProposalDialog: openQuestionProposalDialog,
